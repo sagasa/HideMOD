@@ -12,7 +12,7 @@ public class MasterEventHandler {
 	/**プレイヤーアップデート こいつで銃の発射判定その他を行う*/
 	@SubscribeEvent
 	public void onEvent(PlayerTickEvent event)	{
-		PlayerTickHandler.PlayerUpdate(event);
+		PlayerTickHandler.PlayerTick(event);
 	}
 
 }
