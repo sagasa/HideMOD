@@ -2,7 +2,6 @@ package hideMod;
 
 import entity.EntityBullet;
 import handler.MasterEventHandler;
-import item.SumpleItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.model.ModelBakery;
@@ -45,15 +44,8 @@ public class HideMod {
     /** 起動出来るMinecraft本体のバージョン。記法はMavenのVersion Range Specificationを検索すること。 */
     public static final String MOD_ACCEPTED_MC_VERSIONS = "[1.8,1.8.9]";
 
-    public static Item testitem;
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-    	testitem = new SumpleItem()
-                .setCreativeTab(CreativeTabs.tabMaterials)/*クリエイティブのタブ*/
-                .setUnlocalizedName("testitem")/*システム名の登録*/
-                .setMaxStackSize(64);/*スタックできる量。デフォルト64*/
-    	GameRegistry.registerItem(testitem, "testitem");
-
     	//イベントハンドラ登録
     	MinecraftForge.EVENT_BUS.register(new MasterEventHandler());
     	FMLCommonHandler.instance().bus().register(new MasterEventHandler());
@@ -66,14 +58,12 @@ public class HideMod {
     		//RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new RenderBullet(Minecraft.getMinecraft().getRenderManager()));
             }
 
-    	SumpleItem.SumpleItem();
-    	System.out.println("[SAGASA Mod] " + "load");
 
     	//パケットの初期設定
     	PacketHandler.init();
 
     	//とりあえずロード
-    	//loadPack.load(event);
+    	loadPack.load(event);
 
     }
 
