@@ -18,13 +18,9 @@ public class RenderBullet extends Render {
 
 	public RenderBullet(RenderManager renderManager) {
 		super(renderManager);
-		//shadowSize = 0.5F;
+		shadowSize = 0;
 	}
 
-	@Override
-	public void doRender(Entity entity, double d0, double d1, double d2, float f, float f1) {
-
-	}
 
 	@Override
 	protected ResourceLocation getEntityTexture(Entity entity) {

@@ -1,9 +1,12 @@
 package hideMod;
 
+import java.util.List;
+
 import entity.EntityBullet;
 import handler.MasterEventHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
@@ -16,6 +19,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 
 import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
@@ -24,6 +28,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import newwork.PacketHandler;
 import render.RenderBullet;
 import types.BulletData;
+import types.ResourceLoader;
 
 @Mod(modid = HideMod.MOD_ID,
         name = HideMod.MOD_NAME,
@@ -54,22 +59,26 @@ public class HideMod {
     	EntityRegistry.registerModEntity(EntityBullet.class, "entity_bullet", 1, this, 1024, 5, true);
     	//レンダー
     	if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
-
     		//RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new RenderBullet(Minecraft.getMinecraft().getRenderManager()));
-            }
+    		List<IResourcePack> defaultResourcePacks = ObfuscationReflectionHelper.getPrivateValue(Minecraft.class, Minecraft.getMinecraft(), "defaultResourcePacks", "field_110449_ao");
+        	defaultResourcePacks.add(new ResourceLoader());
+    	}
+
+    	//リソースクラス
 
 
     	//パケットの初期設定
     	PacketHandler.init();
 
-    	//とりあえずロード
+    	//パックをロード
     	loadPack.load(event);
 
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-
+    	//アイテム登録処理
+    	loadPack.Register();
     }
 
     /**ログ出力 試験用*/

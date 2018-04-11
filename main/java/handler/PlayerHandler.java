@@ -5,6 +5,7 @@ import net.minecraftforge.client.event.MouseEvent;
 
 import item.ItemGun;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -42,9 +43,15 @@ public class PlayerHandler {
 		// player.getCurrentEquippedItem()
 		// player.getCurrentEquippedItem().getTagCompound().get;
 
-		if (leftMouseHeld) {
-			PacketHandler.INSTANCE.sendToServer(new PacketGuns(player.rotationYaw, player.rotationPitch));
+		//持っているアイテムがHideModの銃なら
+		if (player.getCurrentEquippedItem() != null&&player.getCurrentEquippedItem().hasTagCompound()&&player.getCurrentEquippedItem().getTagCompound().hasKey("isHideGun")){
+		//	String msg = player.getCurrentEquippedItem().getTagCompound().toString();
+		//	player.addChatMessage(new ChatComponentText(msg));
+			if (leftMouseHeld) {
+				PacketHandler.INSTANCE.sendToServer(new PacketGuns(player.rotationYaw, player.rotationPitch));
+			}
 		}
+
 
 	}
 	/***/

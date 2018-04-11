@@ -1,15 +1,20 @@
 package entity;
 
+import java.util.List;
+
 import hideMod.loadPack;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.relauncher.Side;
@@ -21,9 +26,9 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
 	/*
 	 */
 
-	public EntityBullet(World worldIn) {super(worldIn);}
+	public EntityBullet(World worldIn) {super(worldIn);this.setSize(0.5F, 0.5F);}
 
-	int life = 200;
+	int life = 20;
 	EntityLivingBase Shooter;
 
 	public EntityBullet(World worldIn,EntityLivingBase shooter,float yaw, float pitch) {
@@ -34,9 +39,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
 
 		Shooter.addChatMessage(new ChatComponentText("発射"));
 		//データ格納
-		//this.setSize(0.5F, 0.5F);
 
-		setLocationAndAngles(Shooter.posX, Shooter.posY, Shooter.posZ, yaw, pitch);
+		setLocationAndAngles(Shooter.posX, Shooter.posY+1F, Shooter.posZ, yaw, pitch);
 		setPosition(posX, posY, posZ);
 
 		this.motionX = 0;
@@ -44,7 +48,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
 		this.motionZ = 0;
 
 		//向いている方向に
-		float spead = 0.1F;
+		float spead = 4F;
 		this.motionX = (double)(-MathHelper.sin(this.rotationYaw / 180.0F * (float)Math.PI) * MathHelper.cos(this.rotationPitch / 180.0F * (float)Math.PI) * spead);
         this.motionZ = (double)(MathHelper.cos(this.rotationYaw / 180.0F * (float)Math.PI) * MathHelper.cos(this.rotationPitch / 180.0F * (float)Math.PI) * spead);
         this.motionY = (double)(-MathHelper.sin((this.rotationPitch) / 180.0F * (float)Math.PI) * spead);
@@ -57,9 +61,35 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
         this.lastTickPosY = this.posY;
         this.lastTickPosZ = this.posZ;
 
+        this.posX += this.motionX;
+        this.posY += this.motionY;
+        this.posZ += this.motionZ;
+        this.setPosition(this.posX, this.posY, this.posZ);
+
+
 
         if(!this.worldObj.isRemote){
         	//サーバーサイド
+        	Vec3 lvo = new Vec3(posX, posY, posZ);
+            Vec3 lvt = new Vec3(posX + motionX, posY + motionY, posZ + motionZ);
+
+            List elist = worldObj.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox().addCoord(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
+            for (Object e :elist){
+            	Entity entity = (Entity)e;
+            	if (entity instanceof EntityBullet){
+            		continue;
+            	}
+            	MovingObjectPosition lmop1 = entity.getEntityBoundingBox().calculateIntercept(lvo, lvt);
+            	if (lmop1 != null){
+            		if (entity instanceof EntityLiving){
+                	//	((EntityLiving)entity).motionY += 2F;
+            		//	Shooter.addChatMessage(new ChatComponentText("HIT"));
+                	}
+            		System.out.println(entity.getName()+" : "+lmop1);
+            	}
+            }
+
+
         	if(life<0){
     			this.setDead();
     			System.out.println("deat");
@@ -71,12 +101,6 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
         	//クライアントサイド
         	//this.worldObj.spawnParticle(EnumParticleTypes.REDSTONE, this.posX, this.posY, this.posZ, 1, 1, 1, new int[0]);
         }
-
-
-		this.posX += this.motionX;
-        this.posY += this.motionY;
-        this.posZ += this.motionZ;
-        this.setPosition(this.posX, this.posY, this.posZ);
 	}
 
 

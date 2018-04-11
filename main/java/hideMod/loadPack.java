@@ -7,6 +7,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -18,6 +19,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
+import helper.ArrayEditor;
 import item.ItemGun;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
@@ -29,6 +31,7 @@ import types.BulletData;
 import types.ContentsPack;
 import types.GunData;
 import types.ImageData;
+import types.GunData.GunDataList;
 
 /**パックの読み取り*/
 public class loadPack {
@@ -38,16 +41,16 @@ public class loadPack {
 	public static String HidePath;
 
 
-	/**追加するクリエイティブタブのリスト*/
-	public static List<ContentsPack> contentsPackList = new ArrayList<ContentsPack>();
 	/**コンテンツパックのリスト*/
+	public static List<ContentsPack> contentsPackList = new ArrayList<ContentsPack>();
+	/**追加するクリエイティブタブのリスト*/
 	public static List<String> newCreativeTabs = new ArrayList<String>();
 
 	/**弾のリスト*/
-	public static List<BulletData> bulletList = new ArrayList<BulletData>();
+	public static HashMap<String,BulletData> bulletMap = new HashMap<String,BulletData>();
 
 	/**銃のリスト*/
-	public static List<GunData> gunList = new ArrayList<GunData>();
+	public static HashMap<String,GunData> gunMap = new HashMap<String,GunData>();
 
 
 		//初期化
@@ -67,7 +70,6 @@ public class loadPack {
 		}
 		//使うパターン
 		Pattern zip = Pattern.compile("(.+).zip$");
-		Pattern json = Pattern.compile("(.+).json$");
 
 		//パックを読む
 		for (File file : HideDir.listFiles()){
@@ -82,22 +84,9 @@ public class loadPack {
 				} catch (IOException e) {
 					HideMod.log("error : IOException");
 				}
+				HideMod.log("Load Successful!");
 			}
 		}
-
-
-
-
-
-
-
-		for (String str : newCreativeTabs){
-			HideMod.log("クリエイティブタブ"+str);
-		}
-		Gson gson = new GsonBuilder().serializeNulls().create();
-
-		//レシスタに書き込む
-		Register();
 	}
 
 	/** ZIPからデータを読み込む 中身の分岐は別 */
@@ -119,7 +108,7 @@ public class loadPack {
 				byte[] data = new byte[0];
 				int size;
 				while (0 < (size = zipIn.read(buffer))) {
-				//	data = ArrayEditor.ByteArrayCombining(data, Arrays.copyOf(buffer, size));
+					data = ArrayEditor.ByteArrayCombining(data, Arrays.copyOf(buffer, size));
 					buffer = new byte[1024];
 
 				}
@@ -144,13 +133,13 @@ public class loadPack {
 		// Gun認識
 		if (Pattern.compile("^(.*)guns/(.*).json").matcher(name).matches()) {
 			GunData newGun = new GunData(new String(data, Charset.forName("UTF-8")));
-			gunList.add(newGun);
+			gunMap.put(newGun.getData(GunDataList.SHORT_NAME).toString(),newGun);
 			System.out.println("gun");
 		}
 		// bullet認識
 		else if (Pattern.compile("^(.*)bullets/(.*).json").matcher(name).matches()) {
 			BulletData newBullet = new BulletData(new String(data, Charset.forName("UTF-8")));
-			bulletList.add(newBullet);
+		//	bulletList.out(newBullet.,newBullet);
 			System.out.println("bullet");
 		}
 		// packInfo認識
@@ -182,14 +171,17 @@ public class loadPack {
 	}
 
 	/**レジスタに書き込み*/
-	static void Register() {
+	public static void Register() {
 		//アイテムをレジスタに
+		for(GunData data:gunMap.values()){
+			Item testitem = new ItemGun()
+	                .setCreativeTab(CreativeTabs.tabCombat)/*クリエイティブのタブ*/
+	                .setUnlocalizedName(data.getData(GunDataList.SHORT_NAME).toString())/*システム名の登録*/
+	                .setMaxStackSize(1);/*スタックできる量。デフォルト64*/
+	    	GameRegistry.registerItem(testitem, data.getData(GunDataList.SHORT_NAME).toString());
+	    	System.out.println(data.getData(GunDataList.SHORT_NAME).toString());
+		}
 
-		Item testitem = new ItemGun()
-                .setCreativeTab(CreativeTabs.tabMaterials)/*クリエイティブのタブ*/
-                .setUnlocalizedName("testitem")/*システム名の登録*/
-                .setMaxStackSize(64);/*スタックできる量。デフォルト64*/
-    	GameRegistry.registerItem(testitem, "testitem");
     	//ModelLoader.setCustomModelResourceLocation(testitem, 0, new ModelResourceLocation(HideMod.MOD_ID + ":" + "testitem", "inventory"));
 	}
 }
