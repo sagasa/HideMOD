@@ -28,23 +28,6 @@ public class GunData {
 		Boolean,
 		StringArray;
 	}
-	public enum GunFireMode{
-		SEMIAUTO, FULLAUTO, MINIGUN, BURST;
-		public static GunFireMode getFireMode(String s)
-		{
-			switch(s){
-			case "fullauto":
-				return FULLAUTO;
-			case "semiauto":
-				return SEMIAUTO;
-			case "minigun":
-				return MINIGUN;
-			case "burst":
-				return BURST;
-			}
-			return SEMIAUTO;
-		}
-	}
 	/**弾のデータ 初期値も同時に代入*/
 	public enum GunDataList{
 		/** 登録名 : String型 全部小文字 **/
@@ -255,14 +238,6 @@ public class GunData {
 		public DataType getType() {
 			return types;
 		}
-		/**データを返す*/
-		public Object getData(GunData d) {
-			return d.Data.get(this.getName());
-		}
-		/**Nameからデータを返す*/
-		public Object getData(GunData d,String Name) {
-			return d.Data.get(Name);
-		}
 		/**初期値を返す*/
 		public Object getDefaultValue() {
 			return defaultValue;
@@ -274,14 +249,44 @@ public class GunData {
 		/**データを設定する nullは上書きしない*/
 		public void setData(GunData d,Object obj) {
 			if (obj != null){
-				d.Data.replace(this.getName(), obj);
+				d.Data.replace(this.toString(), obj);
 			}
 		}
 	}
-
 	/**データ取得*/
-	public Object getData(GunDataList type){
-		return this.Data.get(type.getName());
+	public int getDataInt(GunDataList type){
+		if (type.types==DataType.Int){
+			return new Integer(this.Data.get(type.toString()).toString()).intValue();
+		}
+		return 0;
+	}
+	/**データ取得*/
+	public float getDataFloat(GunDataList type){
+		if (type.types==DataType.Float){
+			return new Float(this.Data.get(type.toString()).toString()).floatValue();
+		}
+		return 0;
+	}
+	/**データ取得*/
+	public String getDataString(GunDataList type){
+		if (type.types==DataType.String||type.types==DataType.Int||type.types==DataType.Float){
+			return this.Data.get(type.toString()).toString();
+		}
+		return "";
+	}
+	/**データ取得*/
+	public boolean getDataBoolean(GunDataList type){
+		if (type.types==DataType.Boolean){
+			return new Boolean(this.Data.get(type.toString()).toString()).booleanValue();
+		}
+		return false;
+	}
+	/**データ取得*/
+	public String[] getDataStringArray(GunDataList type){
+		if (type.types==DataType.StringArray){
+			return (String[])this.Data.get(type.toString());
+		}
+		return new String[0];
 	}
 
 	/** 初期値*/
@@ -300,19 +305,19 @@ public class GunData {
 			//System.out.println(d.getName()+"  "+d.getDefaultValue() + "  "+ w.getString("gun_"+d.getName(), d.getDefaultValue().toString()));
 			switch (d.types){
 			case Boolean:
-				Data.put(d.getName(), w.getBoolean(headName+d.getName(),new Boolean (d.getDefaultValue().toString())));
+				Data.put(d.toString(), w.getBoolean(headName+d.toString(),new Boolean (d.getDefaultValue().toString())));
 			break;
 			case String:
-				Data.put(d.getName(), w.getString(headName+d.getName(),d.getDefaultValue().toString()));
+				Data.put(d.toString(), w.getString(headName+d.toString(),d.getDefaultValue().toString()));
 			break;
 			case Int:
-				Data.put(d.getName(), w.getInt(headName+d.getName(), new Integer (d.getDefaultValue().toString())));
+				Data.put(d.toString(), w.getInt(headName+d.toString(), new Integer (d.getDefaultValue().toString())));
 			break;
 			case Float:
-				Data.put(d.getName(), w.getFloat(headName+d.getName(), new Float (d.getDefaultValue().toString())));
+				Data.put(d.toString(), w.getFloat(headName+d.toString(), new Float (d.getDefaultValue().toString())));
 			break;
 			case StringArray:
-				Data.put(d.getName(), w.getStringArray(headName+d.getName(), (String[]) d.getDefaultValue()));
+				Data.put(d.toString(), w.getStringArray(headName+d.toString(), (String[]) d.getDefaultValue()));
 			break;
 			}
 		}
@@ -324,20 +329,20 @@ public class GunData {
 		for (GunDataList d:GunDataList.values()){
 			switch (d.types){
 			case Boolean:
-				JsonData.addProperty(headName+d.getName(),new Boolean(d.getData(this).toString()));
+				JsonData.addProperty(headName+d.toString(),new Boolean(Data.get(d.toString()).toString()));
 			break;
 			case String:
-				JsonData.addProperty(headName+d.getName(),d.getData(this).toString());
+				JsonData.addProperty(headName+d.toString(),Data.get(d.toString()).toString());
 			break;
 			case Int:
-				JsonData.addProperty(headName+d.getName(), new Integer (d.getData(this).toString()));
+				JsonData.addProperty(headName+d.toString(), new Integer (Data.get(d.toString()).toString()));
 			break;
 			case Float:
-				JsonData.addProperty(headName+d.getName(), new Float (d.getData(this).toString()));
+				JsonData.addProperty(headName+d.toString(), new Float (Data.get(d.toString()).toString()));
 			break;
 			case StringArray:
 				JsonElement element =
-			     gson.toJsonTree((String[])d.getData(this) , new TypeToken<String[]>() {}.getType());
+			     gson.toJsonTree((String[])Data.get(d.toString()) , new TypeToken<String[]>() {}.getType());
 				JsonData.add(headName+d.getName(), element.getAsJsonArray());
 			break;
 			}

@@ -133,8 +133,8 @@ public class loadPack {
 		// Gun認識
 		if (Pattern.compile("^(.*)guns/(.*).json").matcher(name).matches()) {
 			GunData newGun = new GunData(new String(data, Charset.forName("UTF-8")));
-			gunMap.put(newGun.getData(GunDataList.SHORT_NAME).toString(),newGun);
-			System.out.println("gun");
+			gunMap.put("item."+newGun.getDataString(GunDataList.SHORT_NAME),newGun);
+			System.out.println("gun"+"item."+newGun.getDataString(GunDataList.SHORT_NAME));
 		}
 		// bullet認識
 		else if (Pattern.compile("^(.*)bullets/(.*).json").matcher(name).matches()) {
@@ -176,12 +176,15 @@ public class loadPack {
 		for(GunData data:gunMap.values()){
 			Item testitem = new ItemGun()
 	                .setCreativeTab(CreativeTabs.tabCombat)/*クリエイティブのタブ*/
-	                .setUnlocalizedName(data.getData(GunDataList.SHORT_NAME).toString())/*システム名の登録*/
+	                .setUnlocalizedName(data.getDataString(GunDataList.SHORT_NAME).toString())/*システム名の登録*/
+	                .setFull3D()
 	                .setMaxStackSize(1);/*スタックできる量。デフォルト64*/
-	    	GameRegistry.registerItem(testitem, data.getData(GunDataList.SHORT_NAME).toString());
-	    	System.out.println(data.getData(GunDataList.SHORT_NAME).toString());
+
+	    	GameRegistry.registerItem(testitem, data.getDataString(GunDataList.SHORT_NAME).toString());
+
+	    	System.out.println(data.getDataString(GunDataList.SHORT_NAME).toString());
 		}
 
-    	//ModelLoader.setCustomModelResourceLocation(testitem, 0, new ModelResourceLocation(HideMod.MOD_ID + ":" + "testitem", "inventory"));
+
 	}
 }

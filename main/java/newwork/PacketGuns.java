@@ -41,18 +41,28 @@ public class PacketGuns implements IMessage,  IMessageHandler<PacketGuns, IMessa
     }
     //受信イベント
     @Override//IMessageHandlerのメソッド
-    public IMessage onMessage(PacketGuns m, MessageContext ctx) {
+    public IMessage onMessage(final PacketGuns m, final MessageContext ctx) {
         //クライアントへ送った際に、EntityPlayerインスタンスはこのように取れる。
         //EntityPlayer player = SamplePacketMod.proxy.getEntityPlayerInstance();
         //サーバーへ送った際に、EntityPlayerインスタンス（EntityPlayerMPインスタンス）はこのように取れる。
+    	//EntityPlayer Player = ctx.getServerHandler().playerEntity;
+    	ctx.getServerHandler().playerEntity.getServerForPlayer().addScheduledTask(new Runnable()
+    	{
+    	  public void run() {
+    	    processMessage(m);
+    	  }
 
+		private void processMessage(PacketGuns m) {
+			 EntityPlayer Player = ctx.getServerHandler().playerEntity;
+		     //弾を発射
+		     //System.out.println("onMessage"+ctx.side);
+		     EntityBullet bullet = new EntityBullet(Player.worldObj, Player,m.Yaw,m.Pitch);
+		     Player.worldObj.spawnEntityInWorld(bullet);
+		}
+    	});
 
     	//プレイヤーを取得
-        EntityPlayer Player = ctx.getServerHandler().playerEntity;
-        //弾を発射
-        //System.out.println("onMessage"+ctx.side);
-        EntityBullet bullet = new EntityBullet(Player.worldObj, Player,m.Yaw,m.Pitch);
-        Player.worldObj.spawnEntityInWorld(bullet);
+
         return null;//本来は返答用IMessageインスタンスを返すのだが、旧来のパケットの使い方をするなら必要ない。
     }
 }

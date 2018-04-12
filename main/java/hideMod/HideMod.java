@@ -2,8 +2,11 @@ package hideMod;
 
 import java.util.List;
 
+import org.lwjgl.input.Keyboard;
+
 import entity.EntityBullet;
 import handler.MasterEventHandler;
+import handler.PlayerHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.IResourcePack;
@@ -60,8 +63,10 @@ public class HideMod {
     	//レンダー
     	if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
     		//RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new RenderBullet(Minecraft.getMinecraft().getRenderManager()));
+    		//リソースローダーを追加
     		List<IResourcePack> defaultResourcePacks = ObfuscationReflectionHelper.getPrivateValue(Minecraft.class, Minecraft.getMinecraft(), "defaultResourcePacks", "field_110449_ao");
         	defaultResourcePacks.add(new ResourceLoader());
+
     	}
 
     	//リソースクラス

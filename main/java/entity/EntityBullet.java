@@ -3,6 +3,7 @@ package entity;
 import java.util.List;
 
 import hideMod.loadPack;
+import helper.RayTracer;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -26,18 +27,24 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
 	/*
 	 */
 
-	public EntityBullet(World worldIn) {super(worldIn);this.setSize(0.5F, 0.5F);}
+	public EntityBullet(World worldIn) {
+		super(worldIn);
+		this.setSize(0.5F, 0.5F);
+		RayTracer = new RayTracer();
+	}
 
 	int life = 20;
+	int tick = 0;
 	EntityLivingBase Shooter;
+	RayTracer RayTracer;
 
 	public EntityBullet(World worldIn,EntityLivingBase shooter,float yaw, float pitch) {
-		super(worldIn);
+		this(worldIn);
 
 		Shooter = shooter;
-		System.out.println(this.worldObj.isRemote);
+		//System.out.println(this.worldObj.isRemote);
 
-		Shooter.addChatMessage(new ChatComponentText("発射"));
+		//Shooter.addChatMessage(new ChatComponentText("発射"));
 		//データ格納
 
 		setLocationAndAngles(Shooter.posX, Shooter.posY+1F, Shooter.posZ, yaw, pitch);
@@ -49,9 +56,9 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
 
 		//向いている方向に
 		float spead = 4F;
-		this.motionX = (double)(-MathHelper.sin(this.rotationYaw / 180.0F * (float)Math.PI) * MathHelper.cos(this.rotationPitch / 180.0F * (float)Math.PI) * spead);
-        this.motionZ = (double)(MathHelper.cos(this.rotationYaw / 180.0F * (float)Math.PI) * MathHelper.cos(this.rotationPitch / 180.0F * (float)Math.PI) * spead);
-        this.motionY = (double)(-MathHelper.sin((this.rotationPitch) / 180.0F * (float)Math.PI) * spead);
+		motionX = -Math.sin(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch)) * spead;
+		motionZ = Math.cos(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch)) * spead;
+		motionY = -Math.sin(Math.toRadians(rotationPitch)) * spead;
 
 	}
 
@@ -70,13 +77,30 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
 
         if(!this.worldObj.isRemote){
         	//サーバーサイド
-        	Vec3 lvo = new Vec3(posX, posY, posZ);
-            Vec3 lvt = new Vec3(posX + motionX, posY + motionY, posZ + motionZ);
+        	Vec3 lvo = new Vec3(lastTickPosX, lastTickPosY, lastTickPosX);
+            Vec3 lvt = new Vec3(posX, posY, posZ);
+
+
+            	for(Entity e: RayTracer.getHitEntity(this,worldObj, lvo, lvt)){
+            		System.out.println(e);
+            		if(e!=null){
+            			e.setDead();
+            			Shooter.addChatMessage(new ChatComponentText("Hit to "+e.getName()));
+            		}
+            //	System.out.println(e.getName());
+            	}
+            	//Shooter.addChatMessage(new ChatComponentText(""));
+            	 //List<Entity>
+
+
+
+
+
 
 
         	if(life<0){
     			this.setDead();
-    			System.out.println("deat");
+    		//	System.out.println("deat");
     		}else{
     			life--;
     		}
@@ -85,6 +109,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
         	//クライアントサイド
         	//this.worldObj.spawnParticle(EnumParticleTypes.REDSTONE, this.posX, this.posY, this.posZ, 1, 1, 1, new int[0]);
         }
+        tick++;
 	}
 
 

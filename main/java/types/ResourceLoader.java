@@ -27,7 +27,7 @@ public class ResourceLoader implements IResourcePack{
     	if (resource.getResourcePath().equals("lang/en_US.lang")){
     		ArrayList<String> langData = new ArrayList<String>();
     		for (GunData data:loadPack.gunMap.values()){
-    			langData.add("item."+data.getData(GunDataList.SHORT_NAME)+".name="+data.getData(GunDataList.DISPLAY_NAME));
+    			langData.add("item."+data.getDataString(GunDataList.SHORT_NAME)+".name="+data.getDataString(GunDataList.DISPLAY_NAME));
     		}
     		return new ByteArrayInputStream(String.join("\n", langData).getBytes(Charset.forName("UTF-8")));
     	}
@@ -38,7 +38,7 @@ public class ResourceLoader implements IResourcePack{
     public boolean resourceExists(ResourceLocation resource) {
         //参照されたリソースが存在するかの指定。
     	//langを渡す
-    	System.out.println("ResourceLIST : "+resource.getResourcePath());
+    	System.out.println("ResourceLIST : " + resource.getResourceDomain() + " / "+resource.getResourcePath());
     	if (resource.getResourcePath().equals("lang/en_US.lang")){
     		return true;
     	}

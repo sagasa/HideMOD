@@ -3,6 +3,7 @@ package helper;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import entity.EntityBullet;
@@ -15,7 +16,7 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
-public class HideRayTracer {
+public class RayTracer {
 	/**比較用の数値とエンティティセットのクラス*/
 	class EntitySort implements Comparable{
 		double range;
@@ -33,12 +34,11 @@ public class HideRayTracer {
 		}
 	}
 	/**ベクトルに触れたエンティティを返す EntityBulletと雪玉と矢は例外*/
-	public Entity[] getHitEntity(World w, Vec3 lv0, Vec3 lvt) {
+	public List<Entity> getHitEntity(Entity owner,World w, Vec3 lv0, Vec3 lvt) {
 		AxisAlignedBB aabb = new AxisAlignedBB(lv0.xCoord, lv0.yCoord, lv0.zCoord, lvt.xCoord, lvt.yCoord, lvt.zCoord)
 				.expand(1, 1, 1);
-		Object[] elist = w.getEntitiesWithinAABB(null, aabb).toArray();
 		List<EntitySort> allInterceptEntity = new ArrayList<EntitySort>();
-		for (Object e : elist) {
+		for (Object e : w.getEntitiesWithinAABBExcludingEntity(owner,aabb)) {
 			Entity entity = (Entity) e;
 			// 例外なら戻る
 			if (entity instanceof EntityBullet||entity instanceof EntityArrow||entity instanceof EntityThrowable) {
@@ -48,13 +48,13 @@ public class HideRayTracer {
 			MovingObjectPosition lmop1 = entity.getEntityBoundingBox().calculateIntercept(lv0, lvt);
 			if (lmop1 != null) {
 				allInterceptEntity.add(new EntitySort(entity,lv0.distanceTo(lmop1.hitVec)));
+				//System.out.println(lmop1 + " : "+lv0.distanceTo(lmop1.hitVec));
 			}
 		}
-		EntitySort[] sortVaue = (EntitySort[])allInterceptEntity.toArray();
-		Arrays.sort(sortVaue);
-		Entity[] result = new Entity[sortVaue.length];
-		for(int i =0;i<sortVaue.length;i++){
-			result[i] = sortVaue[i].entity;
+		Collections.sort(allInterceptEntity);
+		List<Entity> result = new ArrayList<Entity>();
+		for (EntitySort value : allInterceptEntity){
+			result.add(value.entity);
 		}
 		return result;
 	}
