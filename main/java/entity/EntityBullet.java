@@ -73,22 +73,6 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
         	Vec3 lvo = new Vec3(posX, posY, posZ);
             Vec3 lvt = new Vec3(posX + motionX, posY + motionY, posZ + motionZ);
 
-            List elist = worldObj.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox().addCoord(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
-            for (Object e :elist){
-            	Entity entity = (Entity)e;
-            	if (entity instanceof EntityBullet){
-            		continue;
-            	}
-            	MovingObjectPosition lmop1 = entity.getEntityBoundingBox().calculateIntercept(lvo, lvt);
-            	if (lmop1 != null){
-            		if (entity instanceof EntityLiving){
-                	//	((EntityLiving)entity).motionY += 2F;
-            		//	Shooter.addChatMessage(new ChatComponentText("HIT"));
-                	}
-            		System.out.println(entity.getName()+" : "+lmop1);
-            	}
-            }
-
 
         	if(life<0){
     			this.setDead();
