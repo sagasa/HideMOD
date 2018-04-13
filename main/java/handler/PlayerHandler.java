@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.GL11;
 
 import hideMod.loadPack;
 import net.minecraftforge.client.event.MouseEvent;
@@ -117,24 +118,33 @@ public class PlayerHandler {
 		if (pushKeys.contains(KeyBind.ChangeGunMode)){
 			System.out.println("切り替え");
 			WorldRenderer render =Tessellator.getInstance().getWorldRenderer();
-			int i = 1000;
-			int j = 1000;
-			Minecraft.getMinecraft().renderEngine.bindTexture(new ResourceLocation("hidemod","gui/hitMarker.png"));
-			GlStateManager.enableAlpha();
-			GlStateManager.enableBlend();
-			GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
-			render.startDrawingQuads();
-			render.addVertexWithUV(i / 2 - 4d, j / 2 + 5d, 0, 0D / 16D, 9D / 16D);
-			render.addVertexWithUV(i / 2 + 5d, j / 2 + 5d, 0, 9D / 16D, 9D / 16D);
-			render.addVertexWithUV(i / 2 + 5d, j / 2 - 4d, 0, 9D / 16D, 0D / 16D);
-			render.addVertexWithUV(i / 2 - 4d, j / 2 - 4d, 0, 0D / 16D, 0D / 16D);
-			Tessellator.getInstance().draw();
-			GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
-			GlStateManager.disableAlpha();
-			GlStateManager.disableBlend();
+			int width = 300;
+		    int height = 200;
+		    int depth = 100;
+			GL11.glBegin(GL11.GL_QUADS);
+
+	        //  OpenGL では頂点が左回りになっているのがポリゴンの表となる
+	        //  今は表のみ表示する設定にしているので、頂点の方向を反対にすると裏側となり、表示されなくなる
+
+			GL11.glColor3f(1.0f, 0.5f, 0.5f);            //  次に指定する座標に RGB で色を設定する
+			GL11.glVertex3f(10, 100+10, 0);  //  1 つめの座標を指定する
+
+			GL11.glColor3f(0.5f, 1.0f, 0.5f);
+			GL11.glVertex3f(10, 100-10, 0);      // 2 つめの座標を指定する
+
+	        GL11.glColor3f(0.5f, 0.5f, 1.0f);
+	        GL11.glVertex3f(-10, 100-10, 0);                //    3 つめの座標を指定する
+
+	        GL11.glColor3f(1.0f, 1.0f, 1.0f);
+	        GL11.glVertex3f(- 10, 100+10, 0);        //    4 つめの座標を指定する
+
+	        GL11.glEnd();
+
 		}
 
+
 	}
+
 	/***/
 	private static void ServerTick(EntityPlayer player){
 

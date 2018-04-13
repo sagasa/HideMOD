@@ -62,7 +62,6 @@ public class HideMod {
     	EntityRegistry.registerModEntity(EntityBullet.class, "entity_bullet", 1, this, 1024, 5, true);
     	//レンダー
     	if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
-    		//RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new RenderBullet(Minecraft.getMinecraft().getRenderManager()));
     		//リソースローダーを追加
     		List<IResourcePack> defaultResourcePacks = ObfuscationReflectionHelper.getPrivateValue(Minecraft.class, Minecraft.getMinecraft(), "defaultResourcePacks", "field_110449_ao");
         	defaultResourcePacks.add(new ResourceLoader());
@@ -83,6 +82,9 @@ public class HideMod {
     @EventHandler
     public void init(FMLInitializationEvent event) {
     	//アイテム登録処理
+    	if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+    		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new RenderBullet(Minecraft.getMinecraft().getRenderManager()));
+    	}
     	loadPack.Register();
     }
 

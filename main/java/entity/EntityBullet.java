@@ -47,7 +47,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
 		//Shooter.addChatMessage(new ChatComponentText("発射"));
 		//データ格納
 
-		setLocationAndAngles(Shooter.posX, Shooter.posY+1F, Shooter.posZ, yaw, pitch);
+		setLocationAndAngles(Shooter.posX, Shooter.posY+1.7F, Shooter.posZ, yaw, pitch);
 		setPosition(posX, posY, posZ);
 
 		this.motionX = 0;
@@ -55,7 +55,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
 		this.motionZ = 0;
 
 		//向いている方向に
-		float spead = 4F;
+		float spead = 0.2F;
 		motionX = -Math.sin(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch)) * spead;
 		motionZ = Math.cos(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch)) * spead;
 		motionY = -Math.sin(Math.toRadians(rotationPitch)) * spead;
@@ -85,7 +85,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
             		System.out.println(e);
             		if(e!=null){
             			e.setDead();
-            			Shooter.addChatMessage(new ChatComponentText("Hit to "+e.getName()));
+            			//Shooter.addChatMessage(new ChatComponentText("Hit to "+e.getName()));
             		}
             //	System.out.println(e.getName());
             	}
