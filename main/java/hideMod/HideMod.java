@@ -28,6 +28,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import newwork.PacketHandler;
 import render.RenderBullet;
 import types.BulletData;
@@ -83,9 +84,13 @@ public class HideMod {
     public void init(FMLInitializationEvent event) {
     	//アイテム登録処理
     	if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
-    		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new RenderBullet(Minecraft.getMinecraft().getRenderManager()));
+    		RegistryRenders();
     	}
     	loadPack.Register();
+    }
+    @SideOnly(Side.CLIENT)
+    void RegistryRenders(){
+    	RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new RenderBullet(Minecraft.getMinecraft().getRenderManager()));
     }
 
     /**ログ出力 試験用*/

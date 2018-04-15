@@ -14,9 +14,6 @@ import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 
 import item.ItemGun;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
@@ -78,18 +75,24 @@ public class PlayerHandler {
 
 						break;
 					case FULLAUTO:
-						PacketHandler.INSTANCE.sendToServer(new PacketGuns(player.rotationYaw, player.rotationPitch));
+						PacketHandler.INSTANCE.sendToServer(new PacketGuns(PacketGuns.GUN_SHOOT, player.rotationYaw, player.rotationPitch));
 						ShootDelay = data.getDataInt(GunDataList.RATE);
 						break;
 					case MINIGUN:
 						break;
 					case SEMIAUTO:
 						//既に撃った後でなければ
-						if (!shooted){
+						/*if (!shooted){
 							PacketHandler.INSTANCE.sendToServer(new PacketGuns(player.rotationYaw, player.rotationPitch));
 							ShootDelay = data.getDataInt(GunDataList.RATE);
 							shooted = true;
-						}
+							//リコイル
+							RecoilHandler.MakeRecoil(player, data);
+
+						}*/
+						PacketHandler.INSTANCE.sendToServer(new PacketGuns(PacketGuns.GUN_SHOOT,player.rotationYaw, player.rotationPitch));
+						ShootDelay = data.getDataInt(GunDataList.RATE);
+						RecoilHandler.MakeRecoil(player, data);
 						break;
 					}
 				}
@@ -117,32 +120,7 @@ public class PlayerHandler {
 		//銃のモード切替
 		if (pushKeys.contains(KeyBind.ChangeGunMode)){
 			System.out.println("切り替え");
-			WorldRenderer render =Tessellator.getInstance().getWorldRenderer();
-			int width = 300;
-		    int height = 200;
-		    int depth = 100;
-			GL11.glBegin(GL11.GL_QUADS);
-
-	        //  OpenGL では頂点が左回りになっているのがポリゴンの表となる
-	        //  今は表のみ表示する設定にしているので、頂点の方向を反対にすると裏側となり、表示されなくなる
-
-			GL11.glColor3f(1.0f, 0.5f, 0.5f);            //  次に指定する座標に RGB で色を設定する
-			GL11.glVertex3f(10, 100+10, 0);  //  1 つめの座標を指定する
-
-			GL11.glColor3f(0.5f, 1.0f, 0.5f);
-			GL11.glVertex3f(10, 100-10, 0);      // 2 つめの座標を指定する
-
-	        GL11.glColor3f(0.5f, 0.5f, 1.0f);
-	        GL11.glVertex3f(-10, 100-10, 0);                //    3 つめの座標を指定する
-
-	        GL11.glColor3f(1.0f, 1.0f, 1.0f);
-	        GL11.glVertex3f(- 10, 100+10, 0);        //    4 つめの座標を指定する
-
-	        GL11.glEnd();
-
 		}
-
-
 	}
 
 	/***/

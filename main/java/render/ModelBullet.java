@@ -19,7 +19,7 @@ public class ModelBullet extends ModelBase{
 	@Override
 	public void render(Entity entity, float f, float f1, float f2, float f3, float f4, float f5)
 	{
-		GL11.glScalef(5.5F,5.5F, 5.5F);
+		GL11.glScalef(0.5F,0.5F, 0.5F);
 		bulletModel.render(f5);
 	}
 }

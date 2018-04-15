@@ -14,16 +14,24 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class PacketGuns implements IMessage,  IMessageHandler<PacketGuns, IMessage> {
 
 
+	//モード
+	/**弾の出現をクライアントからサーバーにリクエスト*/
+	public static final int GUN_SHOOT = 0;
+	/**エフェクト＋ヒットマーク用にサーバーからクライアントへ通知*/
+	public static final int GUN_HIT = 1;
+
 	//メッセージの内容
-    public float Yaw;
-    public float Pitch;
+	int Mode;
+    float Yaw;
+    float Pitch;
 
     public PacketGuns(){}
 
     /**視線とプレイヤーインスタンス弾の名前のセット*/
-    public PacketGuns(float yaw,float pitch) {
+    public PacketGuns(int mode, float yaw,float pitch) {
         this.Yaw= yaw;
         this.Pitch = pitch;
+        this.Mode = mode;
     }
 
     @Override//IMessageのメソッド。ByteBufからデータを読み取る。
@@ -46,12 +54,12 @@ public class PacketGuns implements IMessage,  IMessageHandler<PacketGuns, IMessa
         //EntityPlayer player = SamplePacketMod.proxy.getEntityPlayerInstance();
         //サーバーへ送った際に、EntityPlayerインスタンス（EntityPlayerMPインスタンス）はこのように取れる。
     	//EntityPlayer Player = ctx.getServerHandler().playerEntity;
+    	System.out.println(ctx.side);
     	ctx.getServerHandler().playerEntity.getServerForPlayer().addScheduledTask(new Runnable()
     	{
     	  public void run() {
     	    processMessage(m);
     	  }
-
 		private void processMessage(PacketGuns m) {
 			 EntityPlayer Player = ctx.getServerHandler().playerEntity;
 		     //弾を発射
