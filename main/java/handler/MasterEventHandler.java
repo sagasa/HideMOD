@@ -2,6 +2,8 @@ package handler;
 
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
+import net.minecraftforge.event.entity.player.PlayerEvent.StopTracking;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
@@ -38,5 +40,13 @@ public class MasterEventHandler {
 	@SubscribeEvent
 	public void onEvent(RenderPlayerEvent.Pre event)	{
 		RenderHandler.RenderPlayerEvent(event);
+	}
+	@SubscribeEvent
+	public void onEvent(StartTracking event)	{
+		System.out.println(event.target+"Start");
+	}
+	@SubscribeEvent
+	public void onEvent(StopTracking event)	{
+		System.out.println(event.target+"Stop");
 	}
 }

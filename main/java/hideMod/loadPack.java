@@ -31,10 +31,11 @@ import types.BulletData;
 import types.ContentsPack;
 import types.GunData;
 import types.ImageData;
+import types.BulletData.BulletDataList;
 import types.GunData.GunDataList;
 
 /**パックの読み取り*/
-public class loadPack {
+public class LoadPack {
 	/**パックを置くディレクトリ*/
 	public static File HideDir;
 	/**パックを置くパス*/
@@ -133,13 +134,13 @@ public class loadPack {
 		// Gun認識
 		if (Pattern.compile("^(.*)guns/(.*).json").matcher(name).matches()) {
 			GunData newGun = new GunData(new String(data, Charset.forName("UTF-8")));
-			gunMap.put("item."+newGun.getDataString(GunDataList.SHORT_NAME),newGun);
-			System.out.println("gun"+"item."+newGun.getDataString(GunDataList.SHORT_NAME));
+			gunMap.put(newGun.getDataString(GunDataList.SHORT_NAME),newGun);
+			System.out.println("gun : "+newGun.getDataString(GunDataList.SHORT_NAME));
 		}
 		// bullet認識
 		else if (Pattern.compile("^(.*)bullets/(.*).json").matcher(name).matches()) {
 			BulletData newBullet = new BulletData(new String(data, Charset.forName("UTF-8")));
-		//	bulletList.out(newBullet.,newBullet);
+			bulletMap.put(newBullet.getDataString(BulletDataList.SHORT_NAME), newBullet);
 			System.out.println("bullet");
 		}
 		// packInfo認識
@@ -174,7 +175,7 @@ public class loadPack {
 	public static void Register() {
 		//アイテムをレジスタに
 		for(GunData data:gunMap.values()){
-			Item testitem = new ItemGun()
+			Item testitem = new ItemGun(data)
 	                .setCreativeTab(CreativeTabs.tabCombat)/*クリエイティブのタブ*/
 	                .setUnlocalizedName(data.getDataString(GunDataList.SHORT_NAME).toString())/*システム名の登録*/
 	                .setFull3D()
@@ -184,7 +185,5 @@ public class loadPack {
 
 	    	System.out.println(data.getDataString(GunDataList.SHORT_NAME).toString());
 		}
-
-
 	}
 }

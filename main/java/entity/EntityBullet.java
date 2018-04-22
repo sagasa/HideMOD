@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import org.apache.logging.log4j.core.net.DatagramSocketManager;
 
-import hideMod.loadPack;
 import helper.RayTracer;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
@@ -27,6 +26,10 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import types.GunData;
+import types.GunData.GunDataList;
+import types.HideDamage;
+import types.HideDamage.HideDamageCase;
 
 /**銃弾・砲弾・爆弾など投擲系以外の全てこのクラスで追加*/
 public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
@@ -42,13 +45,21 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
 
 	int life = 60;
 	int tick = 0;
-	EntityLivingBase Shooter;
+	public EntityLivingBase Shooter;
+
+	GunData gunData;
 	UUID Shooter_uuid;
 	RayTracer RayTracer;
 
-	public EntityBullet(World worldIn,EntityLivingBase shooter,float yaw, float pitch) {
-		this(worldIn);
+	/**init時点での速度*/
+	Vec3 Vec0;
+	boolean fastTick = true;
 
+	float DamageForPlayer = 1.5F;
+
+	public EntityBullet(World worldIn,EntityLivingBase shooter,GunData data,float yaw, float pitch) {
+		this(worldIn);
+		gunData = data;
 		Shooter = shooter;
 		Shooter_uuid = shooter.getUniqueID();
 		//System.out.println(this.worldObj.isRemote);
@@ -56,23 +67,33 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
 		//Shooter.addChatMessage(new ChatComponentText("発射"));
 		//データ格納
 
-		setLocationAndAngles(Shooter.posX, Shooter.posY+1.65F, Shooter.posZ, yaw, pitch);
+		setLocationAndAngles(Shooter.posX, Shooter.posY+1.62F, Shooter.posZ, yaw, pitch);
 		setPosition(posX, posY, posZ);
 
-		this.motionX = 0;
-		this.motionY = 0;
-		this.motionZ = 0;
-
+		//データから読み取る
+		float spead = data.getDataFloat(GunDataList.BULLET_SPEED);
 		//向いている方向に
-		float spead = 1F;
-		motionX = -Math.sin(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch)) * spead;
-		motionZ = Math.cos(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch)) * spead;
-		motionY = -Math.sin(Math.toRadians(rotationPitch)) * spead;
+		motionX = -Math.sin(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
+		motionZ = Math.cos(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
+		motionY = -Math.sin(Math.toRadians(rotationPitch));
 
+		float f2 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ + motionY * motionY);
+		motionX /= f2;
+		motionZ /= f2;
+		motionY /= f2;
+
+		motionX *= spead;
+		motionY *= spead;
+		motionZ *= spead;
+		Vec0 = new Vec3(motionX, motionY, motionZ);
 	}
 
 	@Override
 	public void onUpdate() {
+		//初期化
+		if(fastTick&&Vec0!=null){
+			setVelocity(Vec0.xCoord,Vec0.yCoord,Vec0.zCoord);
+		}
 		this.lastTickPosX = this.posX;
         this.lastTickPosY = this.posY;
         this.lastTickPosZ = this.posZ;
@@ -82,18 +103,22 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
         this.posZ += this.motionZ;
         this.setPosition(this.posX, this.posY, this.posZ);
 
-
-
         if(!this.worldObj.isRemote){
         	//サーバーサイド
-        	Vec3 lvo = new Vec3(lastTickPosX, lastTickPosY, lastTickPosX);
+        	Vec3 lvo = new Vec3(lastTickPosX, lastTickPosY, lastTickPosZ);
             Vec3 lvt = new Vec3(posX, posY, posZ);
-            	DamageSource damagesource = new EntityDamageSource("bullet",Shooter).setDamageBypassesArmor();
+            	float damage = DamageForPlayer;
+            	DamageSource damagesource = new HideDamage(HideDamageCase.GUN_BULLET,Shooter).setDamageBypassesArmor();
             	for(Entity e: RayTracer.getHitEntity(this,worldObj, lvo, lvt)){
-            		System.out.println(e);
-            		if(e!=null){
+            	//	System.out.println(e);
+            		System.out.println(e.getName());
+            		if(e!=null&&e instanceof EntityLiving || e instanceof EntityPlayer){
             			//無敵時間を殺す
-            			e.attackEntityFrom(damagesource, 1);
+            			if (e instanceof EntityPlayer){
+            				damage = RayTracer.getPartDamage(e, lvo, lvt, damage);
+
+            			}
+            			e.attackEntityFrom(damagesource, damage);
             			e.hurtResistantTime = 0;
             		//	Shooter.addChatMessage(new ChatComponentText("Hit to "+e.getName()));
             		}
@@ -107,23 +132,30 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
         	//クライアントサイド
         	//this.worldObj.spawnParticle(EnumParticleTypes.REDSTONE, this.posX, this.posY, this.posZ, 1, 1, 1, new int[0]);
         }
+     //   System.out.println(life +" "+tick);
+      //  System.out.println(posX+" "+posY+" "+posZ+"  "+worldObj.getWorldTime());
         if(life<tick){
 			this.setDead();
         }
         tick++;
 	}
-
-
+	/**クライアントに必要な情報を送る*/
 	@Override
 	public void writeSpawnData(ByteBuf buffer) {
-		// TODO 自動生成されたメソッド・スタブ
-
+	//	System.out.println("write to "+rotationYaw+ " "+rotationPitch+ " "+motionX);
+		buffer.writeFloat(rotationYaw);
+		buffer.writeFloat(rotationPitch);
+		buffer.writeDouble(motionX);
+		buffer.writeDouble(motionY);
+		buffer.writeDouble(motionZ);
 	}
 
+	/**サーバーからの情報を変数に書き込む*/
 	@Override
-	public void readSpawnData(ByteBuf additionalData) {
-		// TODO 自動生成されたメソッド・スタブ
-
+	public void readSpawnData(ByteBuf Data) {
+		rotationYaw = Data.readFloat();
+		rotationPitch = Data.readFloat();
+		Vec0 = new Vec3(Data.readDouble(), Data.readDouble(), Data.readDouble());
 	}
 
 	@Override
@@ -136,6 +168,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
 		long top = tag.getLong("ShooterUUID_top");
 		long last = tag.getLong("ShooterUUID_last");
 		String name = tag.getString("ShooterName");
+		Shooter_uuid = new UUID(top,last);
 		EntityPlayer shooter = FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().getPlayerByUsername(name);
 		if(shooter == null){
 			//this.setDead();
@@ -147,9 +180,9 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound tag) {
-		UUID uuid = Shooter.getUniqueID();
-		tag.setLong("ShooterUUID_top",uuid.getMostSignificantBits());
-		tag.setLong("ShooterUUID_last",uuid.getLeastSignificantBits());
+		//System.out.println("save"+Shooter.getName()+Shooter_uuid);
+		tag.setLong("ShooterUUID_top",Shooter_uuid.getMostSignificantBits());
+		tag.setLong("ShooterUUID_last",Shooter_uuid.getLeastSignificantBits());
 		tag.setString("ShooterName",Shooter.getName());
 	}
 

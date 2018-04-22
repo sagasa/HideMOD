@@ -1,18 +1,99 @@
 package handler;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import types.GunData;
+import types.GunData.GunDataList;
 
+@SideOnly(Side.CLIENT)
 public class RecoilHandler {
-	static void MakeRecoil (EntityPlayer player, GunData data){
-		player.rotationYaw += getRecoilYaw();
-		player.rotationPitch -= getRecoilPitch();
+
+	private static final int STAND = 0;
+	private static final int STAND_ADS = 1;
+	private static final int SNEAK = 2;
+	private static final int SNEAK_ADS = 3;
+
+	/**反動を与える*/
+	static void MakeRecoil (EntityPlayer player, GunData data,int RecoilPower){
+		int state = 0;
+		/*プレイヤーの状態を取得*/
+		if (player.isSneaking()){
+			state +=2;
+		}
+
+		player.rotationYaw += getRecoilYaw(data,RecoilPower,state);
+		player.rotationPitch -= getRecoilPitch(data,RecoilPower,state);
 	}
-	static private float getRecoilYaw(){
-		return (float) normal(0,  0.4);
+	static private float getRecoilYaw(GunData data, int RecoilPower ,int state){
+		float max_base = 0;
+		float max_spread = 0;
+		float min_base = 0;
+		float min_spread = 0;
+		switch (state) {
+		case STAND:
+			max_base = data.getDataFloat(GunDataList.MAX_YAW_RECOIL_BASE);
+			max_spread = data.getDataFloat(GunDataList.MAX_YAW_RECOIL_SPREAD);
+			min_base = data.getDataFloat(GunDataList.MIN_YAW_RECOIL_BASE);
+			min_spread = data.getDataFloat(GunDataList.MIN_YAW_RECOIL_SPREAD);
+			break;
+		case STAND_ADS:
+			max_base = data.getDataFloat(GunDataList.MAX_ADS_YAW_RECOIL_BASE);
+			max_spread = data.getDataFloat(GunDataList.MAX_ADS_YAW_RECOIL_SPREAD);
+			min_base = data.getDataFloat(GunDataList.MIN_ADS_YAW_RECOIL_BASE);
+			min_spread = data.getDataFloat(GunDataList.MIN_ADS_YAW_RECOIL_SPREAD);
+			break;
+		case SNEAK:
+			max_base = data.getDataFloat(GunDataList.MAX_SNEAK_YAW_RECOIL_BASE);
+			max_spread = data.getDataFloat(GunDataList.MAX_SNEAK_YAW_RECOIL_SPREAD);
+			min_base = data.getDataFloat(GunDataList.MIN_SNEAK_YAW_RECOIL_BASE);
+			min_spread = data.getDataFloat(GunDataList.MIN_SNEAK_YAW_RECOIL_SPREAD);
+			break;
+		case SNEAK_ADS:
+			max_base = data.getDataFloat(GunDataList.MAX_ADS_SNEAK_YAW_RECOIL_BASE);
+			max_spread = data.getDataFloat(GunDataList.MAX_ADS_SNEAK_YAW_RECOIL_SPREAD);
+			min_base = data.getDataFloat(GunDataList.MIN_ADS_SNEAK_YAW_RECOIL_BASE);
+			min_spread = data.getDataFloat(GunDataList.MIN_ADS_SNEAK_YAW_RECOIL_SPREAD);
+			break;
+		}
+		float base = min_base+(max_base-min_base/100*RecoilPower);
+		float spread = min_spread+((max_spread-min_spread)/100*RecoilPower);
+		return (float) normal(base,  spread);
 	}
-	static private float getRecoilPitch(){
-		return (float) normal(1,  0.5);
+	static private float getRecoilPitch(GunData data, int RecoilPower,int state){
+		float max_base = 0;
+		float max_spread = 0;
+		float min_base = 0;
+		float min_spread = 0;
+		switch (state) {
+		case STAND:
+			max_base = data.getDataFloat(GunDataList.MAX_PITCH_RECOIL_BASE);
+			max_spread = data.getDataFloat(GunDataList.MAX_PITCH_RECOIL_SPREAD);
+			min_base = data.getDataFloat(GunDataList.MIN_PITCH_RECOIL_BASE);
+			min_spread = data.getDataFloat(GunDataList.MIN_PITCH_RECOIL_SPREAD);
+			break;
+		case STAND_ADS:
+			max_base = data.getDataFloat(GunDataList.MAX_ADS_PITCH_RECOIL_BASE);
+			max_spread = data.getDataFloat(GunDataList.MAX_ADS_PITCH_RECOIL_SPREAD);
+			min_base = data.getDataFloat(GunDataList.MIN_ADS_PITCH_RECOIL_BASE);
+			min_spread = data.getDataFloat(GunDataList.MIN_ADS_PITCH_RECOIL_SPREAD);
+			break;
+		case SNEAK:
+			max_base = data.getDataFloat(GunDataList.MAX_SNEAK_PITCH_RECOIL_BASE);
+			max_spread = data.getDataFloat(GunDataList.MAX_SNEAK_PITCH_RECOIL_SPREAD);
+			min_base = data.getDataFloat(GunDataList.MIN_SNEAK_PITCH_RECOIL_BASE);
+			min_spread = data.getDataFloat(GunDataList.MIN_SNEAK_PITCH_RECOIL_SPREAD);
+			break;
+		case SNEAK_ADS:
+			max_base = data.getDataFloat(GunDataList.MAX_ADS_SNEAK_PITCH_RECOIL_BASE);
+			max_spread = data.getDataFloat(GunDataList.MAX_ADS_SNEAK_PITCH_RECOIL_SPREAD);
+			min_base = data.getDataFloat(GunDataList.MIN_ADS_SNEAK_PITCH_RECOIL_BASE);
+			min_spread = data.getDataFloat(GunDataList.MIN_ADS_SNEAK_PITCH_RECOIL_SPREAD);
+			break;
+		}
+		float base = min_base+(max_base-min_base/100*RecoilPower);
+		float spread = min_spread+((max_spread-min_spread)/100*RecoilPower);
+		return (float) normal(base,  spread);
 	}
 
 	/**標準偏差*/
@@ -24,7 +105,7 @@ public class RecoilHandler {
 			xw = xw + Math.random();
 		}
 		x = sd * (xw - 6.0) + ex;
-		System.out.println("calue : "+ x);
+		//System.out.println("calue : "+ x);
 		return (x);
 	}
 }

@@ -60,7 +60,7 @@ public class HideMod {
     	FMLCommonHandler.instance().bus().register(new MasterEventHandler());
 
     	//弾丸エンティティ
-    	EntityRegistry.registerModEntity(EntityBullet.class, "entity_bullet", 1, this, 1024, 5, true);
+    	EntityRegistry.registerModEntity(EntityBullet.class, "entity_bullet", 1, this, 512, 5, true);
     	//レンダー
     	if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
     		//リソースローダーを追加
@@ -76,7 +76,7 @@ public class HideMod {
     	PacketHandler.init();
 
     	//パックをロード
-    	loadPack.load(event);
+    	LoadPack.load(event);
 
     }
 
@@ -86,7 +86,7 @@ public class HideMod {
     	if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
     		RegistryRenders();
     	}
-    	loadPack.Register();
+    	LoadPack.Register();
     }
     @SideOnly(Side.CLIENT)
     void RegistryRenders(){

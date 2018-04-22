@@ -9,6 +9,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import types.BulletData;
+import types.GunData;
 
 /**送受信両用*/
 public class PacketGuns implements IMessage,  IMessageHandler<PacketGuns, IMessage> {
@@ -24,14 +26,17 @@ public class PacketGuns implements IMessage,  IMessageHandler<PacketGuns, IMessa
 	int Mode;
     float Yaw;
     float Pitch;
+    GunData gunData;
+    BulletData bulletData;
 
     public PacketGuns(){}
 
     /**視線とプレイヤーインスタンス弾の名前のセット*/
-    public PacketGuns(int mode, float yaw,float pitch) {
+    public PacketGuns(int mode,GunData data , float yaw,float pitch) {
         this.Yaw= yaw;
         this.Pitch = pitch;
         this.Mode = mode;
+        this.gunData = data;
     }
 
     @Override//IMessageのメソッド。ByteBufからデータを読み取る。
@@ -54,7 +59,7 @@ public class PacketGuns implements IMessage,  IMessageHandler<PacketGuns, IMessa
         //EntityPlayer player = SamplePacketMod.proxy.getEntityPlayerInstance();
         //サーバーへ送った際に、EntityPlayerインスタンス（EntityPlayerMPインスタンス）はこのように取れる。
     	//EntityPlayer Player = ctx.getServerHandler().playerEntity;
-    	System.out.println(ctx.side);
+    //	System.out.println(ctx.side);
     	ctx.getServerHandler().playerEntity.getServerForPlayer().addScheduledTask(new Runnable()
     	{
     	  public void run() {
@@ -64,7 +69,7 @@ public class PacketGuns implements IMessage,  IMessageHandler<PacketGuns, IMessa
 			 EntityPlayer Player = ctx.getServerHandler().playerEntity;
 		     //弾を発射
 		     //System.out.println("onMessage"+ctx.side);
-		     EntityBullet bullet = new EntityBullet(Player.worldObj, Player,m.Yaw,m.Pitch);
+		     EntityBullet bullet = new EntityBullet(Player.worldObj, Player,gunData, m.Yaw,m.Pitch);
 		     Player.worldObj.spawnEntityInWorld(bullet);
 		}
     	});
