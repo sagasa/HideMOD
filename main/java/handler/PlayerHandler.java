@@ -86,6 +86,7 @@ public class PlayerHandler {
 			}
 			//銃に持ち替えたなら
 			if (ItemGun.isGun(item)){
+				recoilPower = 0;
 				//変数にNBTから読み込み
 				NBTTagCompound nbt = item.getTagCompound().getCompoundTag(ItemGun.NBT_Name);
 
@@ -129,7 +130,7 @@ public class PlayerHandler {
 								new PacketGuns(PacketGuns.GUN_SHOOT,data, player.rotationYaw, player.rotationPitch));
 						ShootDelay = data.getDataInt(GunDataList.RATE);
 						RecoilHandler.MakeRecoil(player, data, recoilPower);
-						System.out.println(recoilPower);
+						//System.out.println(recoilPower);
 						//100を超えないように代入
 						recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, data)>100? 100 : recoilPower + RecoilHandler.getRecoilPowerAdd(player, data);
 						break;

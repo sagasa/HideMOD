@@ -92,7 +92,9 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
 	public void onUpdate() {
 		//初期化
 		if(fastTick&&Vec0!=null){
-			setVelocity(Vec0.xCoord,Vec0.yCoord,Vec0.zCoord);
+			this.motionX = Vec0.xCoord;
+	        this.motionY = Vec0.yCoord;
+	        this.motionZ = Vec0.zCoord;
 		}
 		this.lastTickPosX = this.posX;
         this.lastTickPosY = this.posY;
