@@ -63,8 +63,12 @@ public class ItemGun extends Item{
 	public static void useBullet(ItemStack gun){
 
 	}
-	/**次に発射される弾を取得*/
-	public static void reloadGun(ItemStack gun,EntityLivingBase owner){
+	/**インベントリにマガジンを排出*/
+	public static void exitMagazine(ItemStack gun,EntityLivingBase owner){
+		gun.getTagCompound().getCompoundTag(NBT_Magazines);
+	}
+	/**インベントリからマガジンをロード*/
+	public static void loadMagazine(ItemStack gun,EntityLivingBase owner){
 
 	}
 }

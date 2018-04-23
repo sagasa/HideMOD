@@ -71,7 +71,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData{
 		setPosition(posX, posY, posZ);
 
 		//データから読み取る
-		float spead = data.getDataFloat(GunDataList.BULLET_SPEED);
+		float spead = gunData.getDataFloat(GunDataList.BULLET_SPEED);
 		//向いている方向に
 		motionX = -Math.sin(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
 		motionZ = Math.cos(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));

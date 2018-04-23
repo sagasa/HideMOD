@@ -98,9 +98,8 @@ public class PlayerHandler {
 		// 持っているアイテムがHideModの銃なら
 		if (ItemGun.isGun(item)) {
 			// gunData取得
+			GunData data = ((ItemGun) item.getItem()).getGunData();
 			if (leftMouseHeld) {
-				GunData data = ((ItemGun) item.getItem()).getGunData();
-				item.getTagCompound();
 				// 射撃処理
 				if (ShootDelay <= 0) {
 					switch (GunFireMode.getFireMode(data.getDataString(GunDataList.FIRE_MODE))) {
@@ -130,13 +129,18 @@ public class PlayerHandler {
 								new PacketGuns(PacketGuns.GUN_SHOOT,data, player.rotationYaw, player.rotationPitch));
 						ShootDelay = data.getDataInt(GunDataList.RATE);
 						RecoilHandler.MakeRecoil(player, data, recoilPower);
+						System.out.println(recoilPower);
+						//100を超えないように代入
+						recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, data)>100? 100 : recoilPower + RecoilHandler.getRecoilPowerAdd(player, data);
 						break;
 					}
 				}
 			} else {
 				shooted = false;
 			}
-
+			if(recoilPower>0){
+				recoilPower -= RecoilHandler.getRecoilPowerRemove(player, data);
+			}
 			// String msg =
 			// player.getCurrentEquippedItem().getTagCompound().toString();
 			// player.addChatMessage(new ChatComponentText(msg));

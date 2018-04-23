@@ -1,9 +1,11 @@
 package newwork;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 import entity.EntityBullet;
 import helper.ParseByteArray;
+import hideMod.LoadPack;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -11,6 +13,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import types.BulletData;
 import types.GunData;
+import types.GunData.GunDataList;
 
 /**送受信両用*/
 public class PacketGuns implements IMessage,  IMessageHandler<PacketGuns, IMessage> {
@@ -43,7 +46,9 @@ public class PacketGuns implements IMessage,  IMessageHandler<PacketGuns, IMessa
     public void fromBytes(ByteBuf buf) {
     	this.Yaw = buf.readFloat();
     	this.Pitch = buf.readFloat();
-    	//System.out.println("fromByte"+Yaw+" "+Pitch);
+    	byte length = buf.readByte();
+    	this.gunData = LoadPack.gunMap.get(buf.readBytes(length).toString(Charset.forName("UTF-8")));
+    //	System.out.println("fromByte"+Yaw+" "+Pitch+" "+gunData);
     }
 
     @Override//IMessageのメソッド。ByteBufにデータを書き込む。
@@ -51,6 +56,10 @@ public class PacketGuns implements IMessage,  IMessageHandler<PacketGuns, IMessa
     	//System.out.println("toByte"+Yaw+" "+Pitch);
     	buf.writeFloat(Yaw);
     	buf.writeFloat(Pitch);
+    	//長さと一緒に文字列を送る
+    	String gunDataName = gunData.getDataString(GunDataList.SHORT_NAME);
+    	buf.writeByte(gunDataName.length());
+    	buf.writeBytes(gunDataName.getBytes());
     }
     //受信イベント
     @Override//IMessageHandlerのメソッド
@@ -68,8 +77,8 @@ public class PacketGuns implements IMessage,  IMessageHandler<PacketGuns, IMessa
 		private void processMessage(PacketGuns m) {
 			 EntityPlayer Player = ctx.getServerHandler().playerEntity;
 		     //弾を発射
-		     //System.out.println("onMessage"+ctx.side);
-		     EntityBullet bullet = new EntityBullet(Player.worldObj, Player,gunData, m.Yaw,m.Pitch);
+		  //   System.out.println("onMessage"+ctx.side+gunData);
+		     EntityBullet bullet = new EntityBullet(Player.worldObj, Player,m.gunData, m.Yaw,m.Pitch);
 		     Player.worldObj.spawnEntityInWorld(bullet);
 		}
     	});

@@ -14,6 +14,46 @@ public class RecoilHandler {
 	private static final int SNEAK = 2;
 	private static final int SNEAK_ADS = 3;
 
+	/**リコイルパワーの増加値を取得*/
+	static int getRecoilPowerAdd(EntityPlayer player,GunData data){
+		int state = 0;
+		/*プレイヤーの状態を取得*/
+		if (player.isSneaking()){
+			state +=2;
+		}
+
+		switch (state) {
+		case STAND:
+			return data.getDataInt(GunDataList.DEFAULT_RECOILPOWER_SHOOT);
+		case STAND_ADS:
+			return data.getDataInt(GunDataList.ADS_RECOILPOWER_SHOOT);
+		case SNEAK:
+			return data.getDataInt(GunDataList.SNEAK_RECOILPOWER_SHOOT);
+		case SNEAK_ADS:
+			return data.getDataInt(GunDataList.ADS_SNEAK_RECOILPOWER_SHOOT);
+		}
+		return 0;
+	}
+	/**リコイルパワーの減少値を取得*/
+	static int getRecoilPowerRemove(EntityPlayer player,GunData data){
+		int state = 0;
+		/*プレイヤーの状態を取得*/
+		if (player.isSneaking()){
+			state +=2;
+		}
+
+		switch (state) {
+		case STAND:
+			return data.getDataInt(GunDataList.DEFAULT_RECOILPOWER_TICK);
+		case STAND_ADS:
+			return data.getDataInt(GunDataList.ADS_RECOILPOWER_TICK);
+		case SNEAK:
+			return data.getDataInt(GunDataList.SNEAK_RECOILPOWER_TICK);
+		case SNEAK_ADS:
+			return data.getDataInt(GunDataList.ADS_SNEAK_RECOILPOWER_TICK);
+		}
+		return 0;
+	}
 	/**反動を与える*/
 	static void MakeRecoil (EntityPlayer player, GunData data,int RecoilPower){
 		int state = 0;

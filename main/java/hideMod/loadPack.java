@@ -21,6 +21,7 @@ import com.google.gson.reflect.TypeToken;
 
 import helper.ArrayEditor;
 import item.ItemGun;
+import item.ItemMagazine;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -184,6 +185,17 @@ public class LoadPack {
 	    	GameRegistry.registerItem(testitem, data.getDataString(GunDataList.SHORT_NAME).toString());
 
 	    	System.out.println(data.getDataString(GunDataList.SHORT_NAME).toString());
+		}
+		for(BulletData data:bulletMap.values()){
+			Item testitem = new ItemMagazine(data)
+	                .setCreativeTab(CreativeTabs.tabCombat)/*クリエイティブのタブ*/
+	                .setUnlocalizedName(data.getDataString(BulletDataList.SHORT_NAME).toString())/*システム名の登録*/
+	                .setFull3D()
+	                .setMaxStackSize(1);/*スタックできる量。デフォルト64*/
+
+	    	GameRegistry.registerItem(testitem, data.getDataString(BulletDataList.SHORT_NAME).toString());
+
+	    	System.out.println(data.getDataString(BulletDataList.SHORT_NAME).toString());
 		}
 	}
 }
