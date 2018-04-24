@@ -37,6 +37,8 @@ public class GunData extends DataBase {
 		RATE("Rate", 1, DataType.Int, 0, 1F),
 		/** 射撃モード : String配列型 **/
 		FIRE_MODE("FireMode", new String[] { "semiauto" }, DataType.StringArray, 22),
+		/** 弾速 1秒の移動距離(m)=弾速 : float型 **/
+		BULLET_POWER("BulletPower", 1, DataType.Int, 0, 1F),
 		/** バーストのレート : int型 **/
 		BURST_INTERVAL("BurstInterval", 1, DataType.Int, 22, 1F),
 		/** バーストの発射数 : int型 **/

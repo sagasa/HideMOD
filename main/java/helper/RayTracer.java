@@ -31,7 +31,7 @@ public class RayTracer {
 		@Override
 		public int compareTo(Object o) {
 			if (o instanceof EntitySort) {
-				return (int) Math.ceil(((EntitySort) o).range - this.range);
+				return (int) Math.ceil(this.range-((EntitySort) o).range);
 			}
 			return 0;
 		}
@@ -43,7 +43,7 @@ public class RayTracer {
 		AxisAlignedBB head = new AxisAlignedBB(tirget.posX - 0.3, tirget.posY + 1.2, tirget.posZ - 0.3,
 				tirget.posX + 0.3, tirget.posY + 1.8, tirget.posZ + 0.3);
 		if (head.calculateIntercept(lv0, lvt) != null) {
-			System.out.println("HEADSHOT");
+			//System.out.println("HEADSHOT");
 			damage *= 2;
 		}
 		return damage;

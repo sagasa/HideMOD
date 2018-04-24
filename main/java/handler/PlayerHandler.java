@@ -109,7 +109,7 @@ public class PlayerHandler {
 						break;
 					case FULLAUTO:
 						PacketHandler.INSTANCE.sendToServer(
-								new PacketGuns(PacketGuns.GUN_SHOOT,data, player.rotationYaw, player.rotationPitch));
+								new PacketGuns(data, player.rotationYaw, player.rotationPitch));
 						ShootDelay = data.getDataInt(GunDataList.RATE);
 						break;
 					case MINIGUN:
@@ -127,7 +127,7 @@ public class PlayerHandler {
 						 * }
 						 */
 						PacketHandler.INSTANCE.sendToServer(
-								new PacketGuns(PacketGuns.GUN_SHOOT,data, player.rotationYaw, player.rotationPitch));
+								new PacketGuns(data, player.rotationYaw, player.rotationPitch));
 						ShootDelay = data.getDataInt(GunDataList.RATE);
 						RecoilHandler.MakeRecoil(player, data, recoilPower);
 						//System.out.println(recoilPower);
