@@ -31,6 +31,10 @@ public class ResourceLoader implements IResourcePack{
     		}
     		return new ByteArrayInputStream(String.join("\n", langData).getBytes(Charset.forName("UTF-8")));
     	}
+    /*	//銃のテクスチャ
+    	if (resource.getResourcePath().startsWith("gun_",12)) {
+    		return ClassLoader.getSystemResourceAsStream("assets/hidemod/models/item/gunItem.json");
+		}*/
 		return null;
     }
 
@@ -42,6 +46,9 @@ public class ResourceLoader implements IResourcePack{
     	if (resource.getResourcePath().equals("lang/en_US.lang")){
     		return true;
     	}
+   /* 	if (resource.getResourcePath().startsWith("gun_",12)) {
+    		return true;
+		}*/
         return false;
     }
 
