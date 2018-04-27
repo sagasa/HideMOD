@@ -182,7 +182,7 @@ public class LoadPack {
 	                .setFull3D()
 	                .setMaxStackSize(1);/*スタックできる量。デフォルト64*/
 
-	    	GameRegistry.registerItem(testitem, data.getDataString(GunDataList.SHORT_NAME).toString());
+	    	GameRegistry.registerItem(testitem,"gun_"+ data.getDataString(GunDataList.SHORT_NAME).toString());
 
 	    	System.out.println(data.getDataString(GunDataList.SHORT_NAME).toString());
 		}
@@ -193,7 +193,7 @@ public class LoadPack {
 	                .setFull3D()
 	                .setMaxStackSize(1);/*スタックできる量。デフォルト64*/
 
-	    	GameRegistry.registerItem(testitem, data.getDataString(BulletDataList.SHORT_NAME).toString());
+	    	GameRegistry.registerItem(testitem,"bullet_"+data.getDataString(BulletDataList.SHORT_NAME).toString());
 
 	    	System.out.println(data.getDataString(BulletDataList.SHORT_NAME).toString());
 		}
