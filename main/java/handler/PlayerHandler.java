@@ -31,6 +31,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import newwork.PacketGuns;
 import newwork.PacketHandler;
+import scala.actors.threadpool.Arrays;
 import types.GunData;
 import types.GunData.GunDataList;
 import types.GunFireMode;
@@ -53,6 +54,7 @@ public class PlayerHandler {
 	//銃に格納するデータ
 	public static int ShootDelay = 0;
 	public static int ReloadProgress = 0;
+	public static GunFireMode fireMode;
 
 	/** プレイヤーのTicl処理 */
 	public static void PlayerTick(PlayerTickEvent event) {
@@ -92,6 +94,12 @@ public class PlayerHandler {
 
 				ShootDelay = nbt.getInteger(ItemGun.NBT_ShootDelay);
 				ReloadProgress = nbt.getInteger(ItemGun.NBT_ReloadProgress);
+
+				GunData data =((ItemGun)item.getItem()).getGunData();
+
+				//射撃モード読み込み
+				fireMode = GunFireMode.getFireMode(nbt.getString(ItemGun.NBT_FireMode));
+				//GunFireMode.getFireMode();
 			}
 		}
 		lastItem = item;
@@ -103,7 +111,7 @@ public class PlayerHandler {
 			if (leftMouseHeld) {
 				// 射撃処理
 				if (ShootDelay <= 0) {
-					switch (GunFireMode.getFireMode(data.getDataString(GunDataList.FIRE_MODE))) {
+					switch (fireMode) {
 					case BURST:
 
 						break;
@@ -111,28 +119,27 @@ public class PlayerHandler {
 						PacketHandler.INSTANCE.sendToServer(
 								new PacketGuns(data, player.rotationYaw, player.rotationPitch));
 						ShootDelay = data.getDataInt(GunDataList.RATE);
+						//リコイル
+						 RecoilHandler.MakeRecoil(player, data, recoilPower);
+						 //100を超えないように代入
+						 recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, data)>100? 100 : recoilPower + RecoilHandler.getRecoilPowerAdd(player, data);
+
 						break;
 					case MINIGUN:
 						break;
 					case SEMIAUTO:
 						// 既に撃った後でなければ
-						/*
-						 * if (!shooted){
-						 * PacketHandler.INSTANCE.sendToServer(new
-						 * PacketGuns(player.rotationYaw,
-						 * player.rotationPitch)); ShootDelay =
-						 * data.getDataInt(GunDataList.RATE); shooted = true;
-						 * //リコイル RecoilHandler.MakeRecoil(player, data);
-						 *
-						 * }
-						 */
-						PacketHandler.INSTANCE.sendToServer(
-								new PacketGuns(data, player.rotationYaw, player.rotationPitch));
-						ShootDelay = data.getDataInt(GunDataList.RATE);
-						RecoilHandler.MakeRecoil(player, data, recoilPower);
-						//System.out.println(recoilPower);
-						//100を超えないように代入
-						recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, data)>100? 100 : recoilPower + RecoilHandler.getRecoilPowerAdd(player, data);
+
+						 if (!shooted){
+							 PacketHandler.INSTANCE.sendToServer(
+										new PacketGuns(data, player.rotationYaw, player.rotationPitch));
+						 ShootDelay = data.getDataInt(GunDataList.RATE);
+						 shooted = true;
+						 //リコイル
+						 RecoilHandler.MakeRecoil(player, data, recoilPower);
+						 //100を超えないように代入
+						 recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, data)>100? 100 : recoilPower + RecoilHandler.getRecoilPowerAdd(player, data);
+						 }
 						break;
 					}
 				}

@@ -43,10 +43,10 @@ public class MasterEventHandler {
 	}
 	@SubscribeEvent
 	public void onEvent(StartTracking event)	{
-		System.out.println(event.target+"Start");
+	//	System.out.println(event.target+"Start");
 	}
 	@SubscribeEvent
 	public void onEvent(StopTracking event)	{
-		System.out.println(event.target+"Stop");
+	//	System.out.println(event.target+"Stop");
 	}
 }
