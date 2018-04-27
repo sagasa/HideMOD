@@ -8,7 +8,13 @@ import java.util.UUID;
 import org.apache.logging.log4j.core.net.DatagramSocketManager;
 
 import helper.RayTracer;
+import helper.RayTracer.HitBlock;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockBush;
+import net.minecraft.block.BlockReed;
+import net.minecraft.block.BlockSign;
+import net.minecraft.block.BlockVine;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -19,6 +25,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
@@ -52,7 +59,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	int life = 60;
-	int tick = 0;
+	public int tick = 0;
 	public EntityLivingBase Shooter;
 
 	// サーバーサイドでしか代入されていないので注意
@@ -64,10 +71,11 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	List<Entity> AlreadyHit;
 	/**あと何体に当たれるか*/
 	int bulletPower;
-
 	/** init時点での速度 */
 	Vec3 Vec0;
+
 	boolean fastTick = true;
+
 
 	float DamageForPlayer = 1.5F;
 
@@ -78,13 +86,13 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		Shooter_uuid = shooter.getUniqueID();
 		AlreadyHit = new ArrayList<Entity>();
 		bulletPower = gunData.getDataInt(GunDataList.BULLET_POWER);
-		System.out.println("Start; "+gunData.getDataInt(GunDataList.BULLET_POWER));
+		//System.out.println("Start; "+gunData.getDataInt(GunDataList.BULLET_POWER));
 		// System.out.println(this.worldObj.isRemote);
 
 		// Shooter.addChatMessage(new ChatComponentText("発射"));
 		// データ格納
 
-		setLocationAndAngles(Shooter.posX, Shooter.posY + 1.62F, Shooter.posZ, yaw, pitch);
+		setLocationAndAngles(Shooter.posX, Shooter.posY +Shooter.getEyeHeight() , Shooter.posZ, yaw, pitch);
 		setPosition(posX, posY, posZ);
 
 		// データから読み取る
@@ -124,46 +132,63 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 		if (!this.worldObj.isRemote) {
 			// サーバーサイド
+			/**ブロック衝突のフラグ*/
+			boolean isHittoBlock = false;
+
+			/**前のtickの位置ベクトル*/
 			Vec3 lvo = new Vec3(lastTickPosX, lastTickPosY, lastTickPosZ);
+			/**今のtickの位置ベクトル*/
 			Vec3 lvt = new Vec3(posX, posY, posZ);
+
+			/**レイトレーサーの終点の位置ベクトル*/
+			Vec3 lvend = lvt;
+
+			for(HitBlock pos:RayTracer.getHitBlock(this, worldObj, lvo, lvt)){
+				Block block = worldObj.getBlockState(pos.blockPos).getBlock();
+				//透過するブロック
+				if(!(block instanceof BlockBush||block instanceof BlockReed||block instanceof BlockSign||block instanceof BlockVine)){
+					isHittoBlock = true;
+					lvend = pos.hitVec;
+					break;
+				}
+			}
+
 			float damage = DamageForPlayer;
 			DamageSource damagesource = new HideDamage(HideDamageCase.GUN_BULLET, Shooter).setDamageBypassesArmor();
 
 			//BulletPowerが残ってる間HITを取る
-			Iterator<Entity> HitEntitys = RayTracer.getHitEntity(this, worldObj, lvo, lvt).iterator();
+			Iterator<Entity> HitEntitys = RayTracer.getHitEntity(this, worldObj, lvo, lvend).iterator();
 			//System.out.println(bulletPower);
 			while (HitEntitys.hasNext()&&bulletPower>0){
 				Entity e = HitEntitys.next();
 				//多段ヒット防止
 				if (!AlreadyHit.contains(e)){
 					//ダメージが与えられる対象なら
-					if (e instanceof EntityLivingBase&&!(e == Shooter)){
+					if (e instanceof EntityLivingBase&&((EntityLivingBase)e).deathTime==0&&!(e == Shooter)){
+						//ヘッドショットを判定するEntity
 						if (e instanceof EntityPlayer||e instanceof EntityZombie||e instanceof EntityPigZombie||e instanceof EntitySkeleton) {
-							damage = RayTracer.getPartDamage(e, lvo, lvt, damage);
+							damage = RayTracer.getPartDamage(e, lvo, lvend, damage);
 						}
 						e.attackEntityFrom(damagesource, damage);
 						e.hurtResistantTime = 0;
 						bulletPower--;
-						System.out.println("ヒット"+e.getName());
 						AlreadyHit.add(e);
 					}
-				}else{
-					System.out.println("多段ヒット"+e.getName());
 				}
 
 			}
-			if(bulletPower == 0){
-
+			if(bulletPower == 0||isHittoBlock){
+				//爆破処理
 				setDead();
 			}
 
 		} else {
 
 			// クライアントサイド
-			// this.worldObj.spawnParticle(EnumParticleTypes.REDSTONE,
+			 this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE,posX,posY,posZ,0,0,0,new int[0]);
 			// this.posX, this.posY, this.posZ, 1, 1, 1, new int[0]);
 		}
-		// System.out.println(life +" "+tick);
+	//	System.out.println(Shooter);
 		// System.out.println(posX+" "+posY+" "+posZ+"
 		// "+worldObj.getWorldTime());
 		if (life < tick) {
@@ -206,8 +231,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		EntityPlayer shooter = FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager()
 				.getPlayerByUsername(name);
 		if (shooter == null) {
-			// this.setDead();
-			System.out.println("ロード時にプレイヤーが見つかりませんでいた");
+			this.setDead();
 		} else {
 			Shooter = shooter;
 		}
@@ -215,10 +239,13 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound tag) {
-		// System.out.println("save"+Shooter.getName()+Shooter_uuid);
-		tag.setLong("ShooterUUID_top", Shooter_uuid.getMostSignificantBits());
-		tag.setLong("ShooterUUID_last", Shooter_uuid.getLeastSignificantBits());
-		tag.setString("ShooterName", Shooter.getName());
+		if(Shooter!=null){
+			tag.setLong("ShooterUUID_top", Shooter_uuid.getMostSignificantBits());
+			tag.setLong("ShooterUUID_last", Shooter_uuid.getLeastSignificantBits());
+			tag.setString("ShooterName", Shooter.getName());
+		}else{
+			setDead();
+		}
 	}
 
 }

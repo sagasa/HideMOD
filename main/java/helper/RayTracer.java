@@ -7,11 +7,13 @@ import java.util.Collections;
 import java.util.List;
 
 import entity.EntityBullet;
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -19,22 +21,56 @@ import net.minecraft.world.World;
 
 public class RayTracer {
 	/** 比較用の数値とエンティティセットのクラス */
-	class EntitySort implements Comparable {
+	public class HitEntity implements Comparable {
 		double range;
 		Entity entity;
 
-		EntitySort(Entity e, double range) {
+		HitEntity(Entity e, double range) {
 			this.range = range;
 			this.entity = e;
 		}
 
 		@Override
 		public int compareTo(Object o) {
-			if (o instanceof EntitySort) {
-				return (int) Math.ceil(this.range-((EntitySort) o).range);
+			if (o instanceof HitEntity) {
+				return (int) Math.ceil(this.range-((HitEntity) o).range);
 			}
 			return 0;
 		}
+	}
+
+	/** BlockPosのみを比較するクラス */
+	public class HitBlock {
+		public Vec3 hitVec;
+		public BlockPos blockPos;
+
+		HitBlock(BlockPos block, Vec3 hetvec) {
+			this.hitVec = hetvec;
+			this.blockPos = block;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return blockPos.equals(((HitBlock)obj).blockPos);
+		}
+	}
+
+	/** 当たったブロックを取得*/
+	public HitBlock[] getHitBlock(Entity owner, World w, Vec3 lv0, Vec3 lvt){
+		ArrayList<HitBlock> hitBlocks = new ArrayList<HitBlock>();
+
+		Vec3 vm = lvt.subtract(lv0).normalize();
+		MovingObjectPosition lmop1 = w.rayTraceBlocks(lv0, lvt);
+		Vec3 lvm = lmop1!=null?lmop1.hitVec:lv0;
+		for (;lmop1!=null&&lvm.distanceTo(lv0)<lvt.distanceTo(lv0);lmop1 = w.rayTraceBlocks(lvm, lvt)){
+			//hitBlocks.add(arg0)
+			HitBlock Hit = new HitBlock(lmop1.getBlockPos(),lmop1.hitVec);
+			if(!hitBlocks.contains(Hit)){
+				hitBlocks.add(Hit);
+			}
+			lvm = lvm.add(vm);
+		}
+		return hitBlocks.toArray(new HitBlock[hitBlocks.size()]);
 	}
 
 	/** 部位ダメージ判定 */
@@ -54,7 +90,7 @@ public class RayTracer {
 	public List<Entity> getHitEntity(Entity owner, World w, Vec3 lv0, Vec3 lvt) {
 		AxisAlignedBB aabb = new AxisAlignedBB(lv0.xCoord, lv0.yCoord, lv0.zCoord, lvt.xCoord, lvt.yCoord, lvt.zCoord)
 				.expand(1, 1, 1);
-		List<EntitySort> allInterceptEntity = new ArrayList<EntitySort>();
+		List<HitEntity> allInterceptEntity = new ArrayList<HitEntity>();
 		for (Object e : w.getEntitiesWithinAABBExcludingEntity(owner, aabb)) {
 			Entity entity = (Entity) e;
 			// 例外なら戻る
@@ -62,18 +98,17 @@ public class RayTracer {
 					|| entity.isDead || entity.getEntityBoundingBox() == null||entity==owner) {
 				continue;
 			}
-		//	System.out.println(entity+" "+((EntityBullet)owner).Shooter);
 			// ヒットボックスを取得して
 
 			MovingObjectPosition lmop1 = entity.getEntityBoundingBox().calculateIntercept(lv0, lvt);
 			//System.out.println(lmop1+entity.getEntityBoundingBox().expand(0.2, 0.2, 0.2).toString());
 			if (lmop1 != null) {
-				allInterceptEntity.add(new EntitySort(entity, lv0.distanceTo(lmop1.hitVec)));
+				allInterceptEntity.add(new HitEntity(entity, lv0.distanceTo(lmop1.hitVec)));
 			}
 		}
 		Collections.sort(allInterceptEntity);
 		List<Entity> result = new ArrayList<Entity>();
-		for (EntitySort value : allInterceptEntity) {
+		for (HitEntity value : allInterceptEntity) {
 			result.add(value.entity);
 		}
 		return result;
