@@ -23,11 +23,13 @@ public class RayTracer {
 	/** 比較用の数値とエンティティセットのクラス */
 	public class HitEntity implements Comparable {
 		double range;
-		Entity entity;
+		public Vec3 hitVec;
+		public Entity entity;
 
-		HitEntity(Entity e, double range) {
+		HitEntity(Entity e, Vec3 hitvec, double range) {
 			this.range = range;
 			this.entity = e;
+			this.hitVec = hitvec;
 		}
 
 		@Override
@@ -74,20 +76,15 @@ public class RayTracer {
 	}
 
 	/** 部位ダメージ判定 */
-	public float getPartDamage(Entity tirget, Vec3 lv0, Vec3 lvt, float damage) {
+	public boolean isHeadShot(Entity tirget, Vec3 lv0, Vec3 lvt) {
 		// 頭の判定
 		AxisAlignedBB head = new AxisAlignedBB(tirget.posX - 0.3, tirget.posY + 1.2, tirget.posZ - 0.3,
 				tirget.posX + 0.3, tirget.posY + 1.8, tirget.posZ + 0.3);
-		if (head.calculateIntercept(lv0, lvt) != null) {
-			//System.out.println("HEADSHOT");
-			damage *= 2;
-		}
-		return damage;
-
+		return head.calculateIntercept(lv0, lvt) != null;
 	}
 
 	/** ベクトルに触れたエンティティを返す EntityBulletと雪玉と矢は例外 */
-	public List<Entity> getHitEntity(Entity owner, World w, Vec3 lv0, Vec3 lvt) {
+	public List<HitEntity> getHitEntity(Entity owner, World w, Vec3 lv0, Vec3 lvt) {
 		AxisAlignedBB aabb = new AxisAlignedBB(lv0.xCoord, lv0.yCoord, lv0.zCoord, lvt.xCoord, lvt.yCoord, lvt.zCoord)
 				.expand(1, 1, 1);
 		List<HitEntity> allInterceptEntity = new ArrayList<HitEntity>();
@@ -103,14 +100,10 @@ public class RayTracer {
 			MovingObjectPosition lmop1 = entity.getEntityBoundingBox().calculateIntercept(lv0, lvt);
 			//System.out.println(lmop1+entity.getEntityBoundingBox().expand(0.2, 0.2, 0.2).toString());
 			if (lmop1 != null) {
-				allInterceptEntity.add(new HitEntity(entity, lv0.distanceTo(lmop1.hitVec)));
+				allInterceptEntity.add(new HitEntity(entity,lmop1.hitVec, lv0.distanceTo(lmop1.hitVec)));
 			}
 		}
 		Collections.sort(allInterceptEntity);
-		List<Entity> result = new ArrayList<Entity>();
-		for (HitEntity value : allInterceptEntity) {
-			result.add(value.entity);
-		}
-		return result;
+		return allInterceptEntity;
 	}
 }

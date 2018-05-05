@@ -1,6 +1,7 @@
 package handler;
 
 import net.minecraftforge.client.event.MouseEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerEvent.StopTracking;
@@ -48,5 +49,10 @@ public class MasterEventHandler {
 	@SubscribeEvent
 	public void onEvent(StopTracking event)	{
 	//	System.out.println(event.target+"Stop");
+	}
+	@SubscribeEvent
+	public void onEvent(RenderGameOverlayEvent event)	{
+	//	System.out.println(event.target+"Stop");
+		RenderHandler.RenderTest();
 	}
 }

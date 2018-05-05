@@ -5,8 +5,12 @@ import java.util.List;
 import org.lwjgl.input.Keyboard;
 
 import entity.EntityBullet;
+import entity.EntityDebug;
 import handler.MasterEventHandler;
+import handler.PacketHandler;
 import handler.PlayerHandler;
+import item.ItemGun;
+import item.ItemMagazine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.IResourcePack;
@@ -29,8 +33,8 @@ import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import newwork.PacketHandler;
 import render.RenderBullet;
+import render.RenderDebugEntity;
 import types.BulletData;
 import types.ResourceLoader;
 
@@ -61,6 +65,9 @@ public class HideMod {
 
     	//弾丸エンティティ
     	EntityRegistry.registerModEntity(EntityBullet.class, "entity_bullet", 1, this, 512, 5, true);
+
+    	//デバッグ用エンティティ
+    	EntityRegistry.registerModEntity(EntityDebug.class, "entity_debug", 1, this, 512, 5, false);
     	//レンダー
     	if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
     		//リソースローダーを追加
@@ -76,21 +83,26 @@ public class HideMod {
     	PacketHandler.init();
 
     	//パックをロード
-    	LoadPack.load(event);
+    	PackLoader.load(event);
 
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
     	//アイテム登録処理
+    	GameRegistry.registerItem(new ItemGun(),"gun");
+    	GameRegistry.registerItem(new ItemMagazine(),"bullet");
+
     	if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
     		RegistryRenders();
     	}
-    	LoadPack.Register();
+    	PackLoader.Register();
     }
     @SideOnly(Side.CLIENT)
     void RegistryRenders(){
+    //	Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta, location);
     	RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new RenderBullet(Minecraft.getMinecraft().getRenderManager()));
+    	RenderingRegistry.registerEntityRenderingHandler(EntityDebug.class, new RenderDebugEntity(Minecraft.getMinecraft().getRenderManager()));
     }
 
     /**ログ出力 試験用*/

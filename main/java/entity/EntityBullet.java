@@ -7,8 +7,10 @@ import java.util.UUID;
 
 import org.apache.logging.log4j.core.net.DatagramSocketManager;
 
+import handler.PacketHandler;
 import helper.RayTracer;
 import helper.RayTracer.HitBlock;
+import helper.RayTracer.HitEntity;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBush;
@@ -21,7 +23,9 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.monster.EntityZombie;
+import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
@@ -40,7 +44,8 @@ import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import newwork.PacketGuns;
-import newwork.PacketHandler;
+import newwork.PacketHit;
+import types.BulletData;
 import types.GunData;
 import types.GunData.GunDataList;
 import types.HideDamage;
@@ -65,6 +70,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	// サーバーサイドでしか代入されていないので注意
 	/**データ取り出し元*/
 	GunData gunData;
+	BulletData bulletData;
 	UUID Shooter_uuid;
 	RayTracer RayTracer;
 	/**当たったエンティティのリスト 多段ヒット防止用*/
@@ -157,25 +163,33 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			DamageSource damagesource = new HideDamage(HideDamageCase.GUN_BULLET, Shooter).setDamageBypassesArmor();
 
 			//BulletPowerが残ってる間HITを取る
-			Iterator<Entity> HitEntitys = RayTracer.getHitEntity(this, worldObj, lvo, lvend).iterator();
+			Iterator<HitEntity> HitEntitys = RayTracer.getHitEntity(this, worldObj, lvo, lvend).iterator();
 			//System.out.println(bulletPower);
 			while (HitEntitys.hasNext()&&bulletPower>0){
-				Entity e = HitEntitys.next();
+				HitEntity hit = HitEntitys.next();
+				Entity e = hit.entity;
 				//多段ヒット防止
 				if (!AlreadyHit.contains(e)){
 					//ダメージが与えられる対象なら
 					if (e instanceof EntityLivingBase&&((EntityLivingBase)e).deathTime==0&&!(e == Shooter)){
+						boolean isHeadShot = false;
 						//ヘッドショットを判定するEntity
-						if (e instanceof EntityPlayer||e instanceof EntityZombie||e instanceof EntityPigZombie||e instanceof EntitySkeleton) {
-							damage = RayTracer.getPartDamage(e, lvo, lvend, damage);
+						if (e instanceof EntityPlayer||e instanceof EntityZombie||e instanceof EntityPigZombie||e instanceof EntitySkeleton||e instanceof EntityVillager) {
+							isHeadShot = RayTracer.isHeadShot(e, lvo, lvend);
+							if(isHeadShot){
+								damage *= 2;
+							}
 						}
 						e.attackEntityFrom(damagesource, damage);
 						e.hurtResistantTime = 0;
+						//パケット
+						if(Shooter instanceof EntityPlayerMP){
+							PacketHandler.INSTANCE.sendTo(new PacketHit(isHeadShot), (EntityPlayerMP) Shooter);
+						}
 						bulletPower--;
 						AlreadyHit.add(e);
 					}
 				}
-
 			}
 			if(bulletPower == 0||isHittoBlock){
 				//爆破処理
@@ -185,7 +199,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		} else {
 
 			// クライアントサイド
-			 this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE,posX,posY,posZ,0,0,0,new int[0]);
+			 //this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE,posX,posY,posZ,0,0,0,new int[0]);
 			// this.posX, this.posY, this.posZ, 1, 1, 1, new int[0]);
 		}
 	//	System.out.println(Shooter);

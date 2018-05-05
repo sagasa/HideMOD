@@ -8,7 +8,8 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-import hideMod.LoadPack;
+import entity.EntityBullet;
+import entity.EntityDebug;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 
@@ -19,6 +20,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Vec3;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
@@ -30,8 +32,8 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import newwork.PacketGuns;
-import newwork.PacketHandler;
 import scala.actors.threadpool.Arrays;
+import types.BulletData;
 import types.GunData;
 import types.GunData.GunDataList;
 import types.GunFireMode;
@@ -51,9 +53,13 @@ public class PlayerHandler {
 	private static HashMap<String, Boolean> oldKeys = new HashMap<String, Boolean>();
 	private static HashMap<String, Boolean> newKeys = new HashMap<String, Boolean>();
 
-	//銃に格納するデータ
+	public static int HitMarkerTime = 0;
+	public static int HitMarkerTime_H = 0;
+
+	// 銃に格納するデータ
+	public static String UsingBulletName;
 	public static int ShootDelay = 0;
-	public static int ReloadProgress = 0;
+	public static int ReloadProgress = -1;
 	public static GunFireMode fireMode;
 
 	/** プレイヤーのTicl処理 */
@@ -71,6 +77,16 @@ public class PlayerHandler {
 
 	/** サウンド処理 描画処理 入力処理 */
 	private static void CientTick(EntityPlayer player) {
+		// キー入力の取得 押された変化を取得
+		ArrayList<KeyBind> pushKeys = new ArrayList<KeyBind>();
+		oldKeys.putAll(newKeys);
+		for (KeyBind bind : KeyBind.values()) {
+			newKeys.put(bind.getBindName(), bind.getKeyDown());
+			if (newKeys.get(bind.getBindName()) && !oldKeys.get(bind.getBindName())) {
+				pushKeys.add(bind);
+			}
+		}
+
 		ItemStack item = player.getCurrentEquippedItem();
 		// アイテムの持ち替え検知
 		if (!ItemStack.areItemStacksEqual(item, lastItem)||player.inventory.currentItem!=lastCurrentItem) {
@@ -89,13 +105,19 @@ public class PlayerHandler {
 			//銃に持ち替えたなら
 			if (ItemGun.isGun(item)){
 				recoilPower = 0;
+				//NBTが入ってるか確認 無ければ設定
+				if(!item.hasTagCompound()){
+					ItemGun.setGunNBT(item);
+				}
+
 				//変数にNBTから読み込み
 				NBTTagCompound nbt = item.getTagCompound().getCompoundTag(ItemGun.NBT_Name);
 
+				UsingBulletName = nbt.getString(ItemGun.NBT_UseingBullet);
 				ShootDelay = nbt.getInteger(ItemGun.NBT_ShootDelay);
 				ReloadProgress = nbt.getInteger(ItemGun.NBT_ReloadProgress);
 
-				GunData data =((ItemGun)item.getItem()).getGunData();
+				GunData data =((ItemGun)item.getItem()).getGunData(item);
 
 				//射撃モード読み込み
 				fireMode = GunFireMode.getFireMode(nbt.getString(ItemGun.NBT_FireMode));
@@ -107,38 +129,25 @@ public class PlayerHandler {
 		// 持っているアイテムがHideModの銃なら
 		if (ItemGun.isGun(item)) {
 			// gunData取得
-			GunData data = ((ItemGun) item.getItem()).getGunData();
+			GunData gundata = ((ItemGun) item.getItem()).getGunData(item);
 			if (leftMouseHeld) {
 				// 射撃処理
+				ReloadProgress = -1;
 				if (ShootDelay <= 0) {
 					switch (fireMode) {
 					case BURST:
 
 						break;
 					case FULLAUTO:
-						PacketHandler.INSTANCE.sendToServer(
-								new PacketGuns(data, player.rotationYaw, player.rotationPitch));
-						ShootDelay = data.getDataInt(GunDataList.RATE);
-						//リコイル
-						 RecoilHandler.MakeRecoil(player, data, recoilPower);
-						 //100を超えないように代入
-						 recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, data)>100? 100 : recoilPower + RecoilHandler.getRecoilPowerAdd(player, data);
-
+						gunShoot(player,gundata,null);
 						break;
 					case MINIGUN:
 						break;
 					case SEMIAUTO:
 						// 既に撃った後でなければ
-
 						 if (!shooted){
-							 PacketHandler.INSTANCE.sendToServer(
-										new PacketGuns(data, player.rotationYaw, player.rotationPitch));
-						 ShootDelay = data.getDataInt(GunDataList.RATE);
-						 shooted = true;
-						 //リコイル
-						 RecoilHandler.MakeRecoil(player, data, recoilPower);
-						 //100を超えないように代入
-						 recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, data)>100? 100 : recoilPower + RecoilHandler.getRecoilPowerAdd(player, data);
+							 gunShoot(player,gundata,null);
+							 shooted = true;
 						 }
 						break;
 					}
@@ -146,36 +155,60 @@ public class PlayerHandler {
 			} else {
 				shooted = false;
 			}
+			// 各機能へのキーインプット入力
+			// 銃のモード切替
+			if (pushKeys.contains(KeyBind.GUN_FIREMODE)) {
+				System.out.println("切り替え");
+			}
+			//リロード
+			if (pushKeys.contains(KeyBind.GUN_RELOAD)) {
+				if(ReloadProgress==-1){
+					ReloadProgress = gundata.getDataInt(GunDataList.RELOAD_TIME);
+				}
+			}
+			//リロード完了処理
+			if(ReloadProgress == 0){
+				PacketHandler.INSTANCE.sendToServer(new PacketGuns(UsingBulletName));
+				System.out.println(UsingBulletName);
+				ReloadProgress = -1;
+			}else if(ReloadProgress>0){
+				ReloadProgress--;
+			}
 			if(recoilPower>0){
-				recoilPower -= RecoilHandler.getRecoilPowerRemove(player, data);
+				recoilPower -= RecoilHandler.getRecoilPowerRemove(player, gundata);
+			}
+			if (ShootDelay > 0) {
+				ShootDelay--;
 			}
 			// String msg =
 			// player.getCurrentEquippedItem().getTagCompound().toString();
 			// player.addChatMessage(new ChatComponentText(msg));
 
 		}
-
-
-
-		if (ShootDelay > 0) {
-			ShootDelay--;
+		if (HitMarkerTime > 0) {
+			HitMarkerTime--;
+		}
+		if (HitMarkerTime_H > 0) {
+			HitMarkerTime_H--;
 		}
 
-		// キー入力の取得 押された変化を取得
-		ArrayList<KeyBind> pushKeys = new ArrayList<KeyBind>();
-		oldKeys.putAll(newKeys);
-		for (KeyBind bind : KeyBind.values()) {
-			newKeys.put(bind.getBindName(), bind.getKeyDown());
-			if (newKeys.get(bind.getBindName()) && !oldKeys.get(bind.getBindName())) {
-				pushKeys.add(bind);
-			}
-		}
-		// 各機能へのキーインプット入力
-		// 銃のモード切替
-		if (pushKeys.contains(KeyBind.ChangeGunMode)) {
-			System.out.println("切り替え");
-			System.out.println(player.posX + " " + player.posY + " " + player.posZ + "  " + player.getEyeHeight());
-		}
+
+
+	}
+
+	private static void gunShoot(EntityPlayer player, GunData gun, BulletData bullet) {
+		PacketHandler.INSTANCE.sendToServer(new PacketGuns(gun, player.rotationYaw, player.rotationPitch));
+		ShootDelay = gun.getDataInt(GunDataList.RATE);
+		// リコイル
+		RecoilHandler.MakeRecoil(player, gun, recoilPower);
+		// 100を超えないように代入
+		recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun) > 100 ? 100
+				: recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun);
+
+		// どっとを表示
+		// EntityDebug dot = new EntityDebug(player.worldObj, new
+		// Vec3(player.posX,player.posY, player.posZ));
+		// player.worldObj.spawnEntityInWorld(dot);
 	}
 
 	/***/
@@ -203,7 +236,7 @@ public class PlayerHandler {
 
 	/** クライアントサイドでのみ動作 */
 	enum KeyBind {
-		ChangeGunMode(Keyboard.KEY_F);
+		GUN_RELOAD(Keyboard.KEY_R), GUN_FIREMODE(Keyboard.KEY_F);
 
 		HashMap<String, Integer> keyConfig = new HashMap<String, Integer>();
 

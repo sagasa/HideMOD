@@ -2,6 +2,9 @@ package item;
 
 import java.util.List;
 
+import com.mojang.realmsclient.gui.ChatFormatting;
+
+import hideMod.PackLoader;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -15,9 +18,9 @@ import types.BulletData;
 import types.GunData;
 import types.GunData.GunDataList;
 
-public class ItemGun extends Item{
-	private GunData gundata;
-	/**NBTのルート直下にこの名前でデータ保存用タグを保存*/
+public class ItemGun extends Item {
+
+	/** NBTのルート直下にこの名前でデータ保存用タグを保存 */
 	public static final String NBT_Name = "HideGun";
 
 	public static final String NBT_FireMode = "FireMode";
@@ -29,63 +32,111 @@ public class ItemGun extends Item{
 	public static final String NBT_Magazine_Name = "MagazineName";
 	public static final String NBT_Magazine_Number = "MagazineNumber";
 
+	//========================================================================
+	//登録
+	public ItemGun() {
+		this.setCreativeTab(CreativeTabs.tabCombat);
+		this.setUnlocalizedName("hidegun");
+		this.setHasSubtypes(true);
+	}
 
-	public ItemGun(GunData data) {
-		gundata = data;
-	}
-	/**銃かどうか*/
-	public static boolean isGun(ItemStack item){
-		if (item != null&& item.getItem() instanceof ItemGun){
-			return true;
-		}
-		return false;
-	}
-	/**クリエイティブタブの中にNBTを付与*/
+	/** クリエイティブタブの中にサブタイプを設定 */
 	@Override
 	public void getSubItems(Item itemIn, CreativeTabs tab, List subItems) {
-		ItemStack itemStack = new ItemStack(this, 1, 0);
-        subItems.add(setGunNBT(itemStack));
+		for(int meta:PackLoader.GUN_NAME_MAP.keySet()){
+			subItems.add(setGunNBT(new ItemStack(this, 1, meta).setStackDisplayName(PackLoader.GUN_DATA_MAP.get(PackLoader.GUN_NAME_MAP.get(meta)).getDataString(GunDataList.DISPLAY_NAME))));
+		}
 	}
 
-	/**どのような状態からでも有効なNBTを書き込む*/
-	public ItemStack setGunNBT(ItemStack item){
+	@Override
+	public int getItemStackLimit() {
+		return 1;
+	}
+	@Override
+	public String getUnlocalizedName(ItemStack item) {
+		return getUnlocalizedName()+getGunName(item);
+	}
+	/** どのような状態からでも有効なNBTを書き込む */
+	public static ItemStack setGunNBT(ItemStack item) {
+		if (!(item.getItem() instanceof ItemGun)) {
+			return item;
+		}
+		GunData data = getGunData(item);
 		NBTTagCompound value;
-		if(!item.hasTagCompound()){
+		if (!item.hasTagCompound()) {
 			value = new NBTTagCompound();
-		}else{
+		} else {
 			value = item.getTagCompound();
 		}
 		NBTTagCompound nbt = new NBTTagCompound();
 		nbt.setInteger(NBT_ShootDelay, 0);
-        nbt.setInteger(NBT_ReloadProgress, 0);
-        nbt.setString(NBT_FireMode, Arrays.asList(gundata.getDataStringArray(GunDataList.FIRE_MODE)).iterator().next().toString());
-        if(gundata.getDataStringArray(GunDataList.TYPES_BULLETS).length>0){
-        	nbt.setString(NBT_UseingBullet, Arrays.asList(gundata.getDataStringArray(GunDataList.TYPES_BULLETS)).iterator().next().toString());
-        }
-        nbt.setTag(NBT_Magazines,new NBTTagCompound());
+		nbt.setInteger(NBT_ReloadProgress, 0);
+		nbt.setString(NBT_FireMode,
+				Arrays.asList(data.getDataStringArray(GunDataList.FIRE_MODE)).iterator().next().toString());
+		if (data.getDataStringArray(GunDataList.TYPES_BULLETS).length > 0) {
+			nbt.setString(NBT_UseingBullet,
+					Arrays.asList(data.getDataStringArray(GunDataList.TYPES_BULLETS)).iterator().next().toString());
+		}
+		nbt.setTag(NBT_Magazines, new NBTTagCompound());
 
-        value.setTag(NBT_Name, nbt);
-        item.setTagCompound(value);
+		value.setTag(NBT_Name, nbt);
+		item.setTagCompound(value);
 		return item;
 	}
-	/**GunData取得*/
-	public GunData getGunData(){
-		return gundata;
+
+	@Override
+	public boolean onDroppedByPlayer(ItemStack item, EntityPlayer player) {
+		System.out.println("drop");
+		item = new ItemStack(this, 1, 0);
+		return super.onDroppedByPlayer(item, player);
 	}
-	/**次に発射される弾を取得*/
-	public static BulletData getNextBullet(ItemStack gun){
+
+	//=========================================================
+	//   更新 便利機能
+	/** アップデート 表示更新など */
+	@Override
+	public void addInformation(ItemStack stack, EntityPlayer playerIn, List tooltip, boolean advanced) {
+		NBTTagCompound nbt = stack.getTagCompound().getCompoundTag(NBT_Name);
+		tooltip.add(ChatFormatting.GRAY + "FireMode : " + nbt.getString(NBT_FireMode));
+	}
+	/** 銃かどうか */
+	public static boolean isGun(ItemStack item) {
+		if (item != null && item.getItem() instanceof ItemGun) {
+			return true;
+		}
+		return false;
+	}
+
+	/**スタックから銃の登録名を取得*/
+	public static String getGunName(ItemStack item){
+		return PackLoader.GUN_NAME_MAP.get(item.getMetadata());
+	}
+
+	/** GunData取得 */
+	public static GunData getGunData(ItemStack item) {
+		if (!(item.getItem() instanceof ItemGun)) {
+			return null;
+		}
+		return PackLoader.GUN_DATA_MAP.get(getGunName(item));
+	}
+
+	/** 次に発射される弾を取得 */
+	public static BulletData getNextBullet(ItemStack gun) {
 		return null;
 	}
-	/**弾を消費*/
-	public static void useBullet(ItemStack gun){
+
+	/** 弾を消費 */
+	public static void useBullet(ItemStack gun) {
 
 	}
-	/**インベントリにマガジンを排出*/
-	public static void exitMagazine(ItemStack gun,EntityLivingBase owner){
+
+	/** インベントリにマガジンを排出 */
+	public static void exitMagazine(ItemStack gun, EntityLivingBase owner) {
 		gun.getTagCompound().getCompoundTag(NBT_Magazines);
 	}
-	/**インベントリからマガジンをロード*/
-	public static void loadMagazine(ItemStack gun,EntityLivingBase owner){
+
+	/** インベントリからマガジンをロード */
+	public static void loadMagazine(ItemStack gun, EntityLivingBase owner) {
 
 	}
 }

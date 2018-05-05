@@ -10,7 +10,7 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
-import hideMod.LoadPack;
+import hideMod.PackLoader;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.data.IMetadataSerializer;
@@ -26,7 +26,7 @@ public class ResourceLoader implements IResourcePack{
     	//langファイルのダミーを作って渡す
     	if (resource.getResourcePath().equals("lang/en_US.lang")){
     		ArrayList<String> langData = new ArrayList<String>();
-    		for (GunData data:LoadPack.gunMap.values()){
+    		for (GunData data:PackLoader.GUN_DATA_MAP.values()){
     			langData.add("item."+data.getDataString(GunDataList.SHORT_NAME)+".name="+data.getDataString(GunDataList.DISPLAY_NAME));
     		}
     		return new ByteArrayInputStream(String.join("\n", langData).getBytes(Charset.forName("UTF-8")));

@@ -36,7 +36,7 @@ import types.BulletData.BulletDataList;
 import types.GunData.GunDataList;
 
 /**パックの読み取り*/
-public class LoadPack {
+public class PackLoader {
 	/**パックを置くディレクトリ*/
 	public static File HideDir;
 	/**パックを置くパス*/
@@ -48,11 +48,15 @@ public class LoadPack {
 	/**追加するクリエイティブタブのリスト*/
 	public static List<String> newCreativeTabs = new ArrayList<String>();
 
-	/**弾のリスト*/
-	public static HashMap<String,BulletData> bulletMap = new HashMap<String,BulletData>();
+	/**弾 ショートネーム - BulletData MAP*/
+	public static HashMap<String,BulletData> BULLET_DATA_MAP = new HashMap<String,BulletData>();
+	/**弾 サブタイプID - ショートネーム MAP*/
+	public static HashMap<Integer,String> BULLET_NAME_MAP = new HashMap<Integer,String>();
 
-	/**銃のリスト*/
-	public static HashMap<String,GunData> gunMap = new HashMap<String,GunData>();
+	/**銃 ショートネーム - BulletData MAP*/
+	public static HashMap<String, GunData> GUN_DATA_MAP = new HashMap<String,GunData>();
+	/**銃 サブタイプID - ショートネーム MAP*/
+	public static HashMap<Integer,String> GUN_NAME_MAP = new HashMap<Integer,String>();
 
 
 		//初期化
@@ -135,13 +139,13 @@ public class LoadPack {
 		// Gun認識
 		if (Pattern.compile("^(.*)guns/(.*).json").matcher(name).matches()) {
 			GunData newGun = new GunData(new String(data, Charset.forName("UTF-8")));
-			gunMap.put(newGun.getDataString(GunDataList.SHORT_NAME),newGun);
+			GUN_DATA_MAP.put(newGun.getDataString(GunDataList.SHORT_NAME),newGun);
 			System.out.println("gun : "+newGun.getDataString(GunDataList.SHORT_NAME));
 		}
 		// bullet認識
 		else if (Pattern.compile("^(.*)bullets/(.*).json").matcher(name).matches()) {
 			BulletData newBullet = new BulletData(new String(data, Charset.forName("UTF-8")));
-			bulletMap.put(newBullet.getDataString(BulletDataList.SHORT_NAME), newBullet);
+			BULLET_DATA_MAP.put(newBullet.getDataString(BulletDataList.SHORT_NAME), newBullet);
 			System.out.println("bullet");
 		}
 		// packInfo認識
@@ -175,27 +179,17 @@ public class LoadPack {
 	/**レジスタに書き込み*/
 	public static void Register() {
 		//アイテムをレジスタに
-		for(GunData data:gunMap.values()){
-			Item testitem = new ItemGun(data)
-	                .setCreativeTab(CreativeTabs.tabCombat)/*クリエイティブのタブ*/
-	                .setUnlocalizedName(data.getDataString(GunDataList.SHORT_NAME).toString())/*システム名の登録*/
-	                .setFull3D()
-	                .setMaxStackSize(1);/*スタックできる量。デフォルト64*/
-
-	    	GameRegistry.registerItem(testitem,"gun_"+ data.getDataString(GunDataList.SHORT_NAME).toString());
-
-	    	System.out.println(data.getDataString(GunDataList.SHORT_NAME).toString());
+		int gunMeta = 0;
+		for(String name:GUN_DATA_MAP.keySet()){
+			GUN_NAME_MAP.put(gunMeta, name);
+			gunMeta++;
+			System.out.println(name);
 		}
-		for(BulletData data:bulletMap.values()){
-			Item testitem = new ItemMagazine(data)
-	                .setCreativeTab(CreativeTabs.tabCombat)/*クリエイティブのタブ*/
-	                .setUnlocalizedName(data.getDataString(BulletDataList.SHORT_NAME).toString())/*システム名の登録*/
-	                .setFull3D()
-	                .setMaxStackSize(1);/*スタックできる量。デフォルト64*/
-
-	    	GameRegistry.registerItem(testitem,"bullet_"+data.getDataString(BulletDataList.SHORT_NAME).toString());
-
-	    	System.out.println(data.getDataString(BulletDataList.SHORT_NAME).toString());
+		int bulletMeta = 0;
+		for(String name:BULLET_DATA_MAP.keySet()){
+			BULLET_NAME_MAP.put(bulletMeta, name);
+			bulletMeta++;
+	    	System.out.println(name);
 		}
 	}
 }
