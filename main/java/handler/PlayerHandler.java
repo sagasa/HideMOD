@@ -2,6 +2,7 @@ package handler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import org.lwjgl.input.Keyboard;
@@ -14,6 +15,7 @@ import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 
 import item.ItemGun;
+import item.ItemMagazine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -34,9 +36,11 @@ import net.minecraftforge.fml.relauncher.Side;
 import newwork.PacketGuns;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
+import types.BulletData.BulletDataList;
 import types.GunData;
 import types.GunData.GunDataList;
 import types.GunFireMode;
+import types.LoadedMagazine;
 
 public class PlayerHandler {
 	// 変数はクライアント側のものだけ
@@ -56,7 +60,12 @@ public class PlayerHandler {
 	public static int HitMarkerTime = 0;
 	public static int HitMarkerTime_H = 0;
 
+	private static int reloadQueue = -1;
+
+	private static boolean fastTick = true;
+
 	// 銃に格納するデータ
+	public static LoadedMagazine[] loadedMagazines;
 	public static String UsingBulletName;
 	public static int ShootDelay = 0;
 	public static int ReloadProgress = -1;
@@ -89,39 +98,38 @@ public class PlayerHandler {
 
 		ItemStack item = player.getCurrentEquippedItem();
 		// アイテムの持ち替え検知
-		if (!ItemStack.areItemStacksEqual(item, lastItem)||player.inventory.currentItem!=lastCurrentItem) {
-			//銃から持ち替えたらな
-			if (ItemGun.isGun(lastItem)){
-				//変数をNBTに落とす
-				NBTTagCompound stack = lastItem.getTagCompound();
-				NBTTagCompound nbt = stack.getCompoundTag(ItemGun.NBT_Name);
-
-				nbt.setInteger(ItemGun.NBT_ShootDelay, ShootDelay);
-				nbt.setInteger(ItemGun.NBT_ReloadProgress, ReloadProgress);
-
-				stack.setTag(ItemGun.NBT_Name, nbt);
-				lastItem.setTagCompound(stack);
+		if (!ItemStack.areItemStacksEqual(item, lastItem) || player.inventory.currentItem != lastCurrentItem) {
+			// 銃から持ち替えたらな
+			if (ItemGun.isGun(lastItem)) {
+				// 変数をNBTに落とす
+				PacketHandler.INSTANCE.sendToServer(new PacketGuns((byte) lastCurrentItem));
 			}
-			//銃に持ち替えたなら
-			if (ItemGun.isGun(item)){
+			// 銃に持ち替えたなら
+			if (ItemGun.isGun(item)) {
 				recoilPower = 0;
-				//NBTが入ってるか確認 無ければ設定
-				if(!item.hasTagCompound()){
+				// NBTが入ってるか確認 無ければ設定
+				if (!item.hasTagCompound()) {
 					ItemGun.setGunNBT(item);
 				}
 
-				//変数にNBTから読み込み
+				loadedMagazines = ItemGun.getLoadedMagazines(item);
+
+				GunData gundata = ((ItemGun) item.getItem()).getGunData(item);
+				// 変数にNBTから読み込み
 				NBTTagCompound nbt = item.getTagCompound().getCompoundTag(ItemGun.NBT_Name);
 
 				UsingBulletName = nbt.getString(ItemGun.NBT_UseingBullet);
 				ShootDelay = nbt.getInteger(ItemGun.NBT_ShootDelay);
 				ReloadProgress = nbt.getInteger(ItemGun.NBT_ReloadProgress);
 
-				GunData data =((ItemGun)item.getItem()).getGunData(item);
+				GunData data = ((ItemGun) item.getItem()).getGunData(item);
 
-				//射撃モード読み込み
+				// 射撃モード読み込み
 				fireMode = GunFireMode.getFireMode(nbt.getString(ItemGun.NBT_FireMode));
-				//GunFireMode.getFireMode();
+				// GunFireMode.getFireMode();
+				for (LoadedMagazine magazine : loadedMagazines) {
+					System.out.println(magazine);
+				}
 			}
 		}
 		lastItem = item;
@@ -133,22 +141,21 @@ public class PlayerHandler {
 			if (leftMouseHeld) {
 				// 射撃処理
 				ReloadProgress = -1;
-				if (ShootDelay <= 0) {
+				if (ShootDelay <= 0&&!shooted) {
 					switch (fireMode) {
 					case BURST:
 
 						break;
 					case FULLAUTO:
-						gunShoot(player,gundata,null);
+						gunShoot(player, gundata, null);
 						break;
 					case MINIGUN:
 						break;
 					case SEMIAUTO:
-						// 既に撃った後でなければ
-						 if (!shooted){
-							 gunShoot(player,gundata,null);
-							 shooted = true;
-						 }
+						// 停止フラグ
+						gunShoot(player, gundata, null);
+						System.out.println("semi");
+						shooted = true;
 						break;
 					}
 				}
@@ -160,21 +167,24 @@ public class PlayerHandler {
 			if (pushKeys.contains(KeyBind.GUN_FIREMODE)) {
 				System.out.println("切り替え");
 			}
-			//リロード
+			// リロード
 			if (pushKeys.contains(KeyBind.GUN_RELOAD)) {
-				if(ReloadProgress==-1){
+				if (ReloadProgress == -1 && getNextReloadNum() > 0) {
 					ReloadProgress = gundata.getDataInt(GunDataList.RELOAD_TIME);
 				}
 			}
-			//リロード完了処理
-			if(ReloadProgress == 0){
-				PacketHandler.INSTANCE.sendToServer(new PacketGuns(UsingBulletName));
-				System.out.println(UsingBulletName);
+			// リロード完了処理
+			if (ReloadProgress == 0) {
+				// マガジンが破棄されない設定なら弾を抜く
+				reloadQueue = player.inventory.currentItem;
+				PacketHandler.INSTANCE.sendToServer(
+						new PacketGuns(UsingBulletName, (byte) player.inventory.currentItem, getNextReloadNum()));
+
 				ReloadProgress = -1;
-			}else if(ReloadProgress>0){
+			} else if (ReloadProgress > 0) {
 				ReloadProgress--;
 			}
-			if(recoilPower>0){
+			if (recoilPower > 0) {
 				recoilPower -= RecoilHandler.getRecoilPowerRemove(player, gundata);
 			}
 			if (ShootDelay > 0) {
@@ -192,25 +202,94 @@ public class PlayerHandler {
 			HitMarkerTime_H--;
 		}
 
-
-
 	}
 
+	/** 最初のスロットの空きを取得 */
+	private static int getNextReloadNum() {
+		for (LoadedMagazine magazine : loadedMagazines) {
+			// 入ってなければ要求
+			if (magazine == null) {
+				System.out.println(UsingBulletName);
+				return ItemMagazine.getBulletData(UsingBulletName).getDataInt(BulletDataList.MAGAZINE_SIZE);
+			}
+			int num = ItemMagazine.getBulletData(magazine.name).getDataInt(BulletDataList.MAGAZINE_SIZE) - magazine.num;
+			if (num > 0 && magazine.name.equals(UsingBulletName)) {
+				return num;
+			}
+		}
+		return 0;
+	}
+
+	/** マガジンを追加 */
+	private static void addMagazine(String name, int amount) {
+		for (int i = 0; i < loadedMagazines.length; i++) {
+			LoadedMagazine magazine = loadedMagazines[i];
+			// 入ってなければ追加
+			if (magazine == null) {
+				loadedMagazines[i] = new LoadedMagazine(name, amount);
+				System.out.println("ついか！！！！" + loadedMagazines[i]);
+				return;
+			}
+			int num = ItemMagazine.getBulletData(magazine.name).getDataInt(BulletDataList.MAGAZINE_SIZE) - magazine.num;
+			if (num > 0 && magazine.name.equals(UsingBulletName)) {
+				loadedMagazines[i] = new LoadedMagazine(name, amount + magazine.num);
+				return;
+			}
+		}
+	}
+
+	/** 弾を1つ消費する 消費した弾の登録名を返す */
+	private static String getNextBullet() {
+		for (int i = 0; i < loadedMagazines.length; i++) {
+			LoadedMagazine magazine = loadedMagazines[i];
+			// 1つ消費する
+			if (magazine != null && magazine.num > 0) {
+				String name = magazine.name;
+				magazine.num--;
+				if (magazine.num <= 0) {
+					magazine = null;
+				}
+				loadedMagazines[i] = magazine;
+				return name;
+			}
+		}
+		return null;
+	}
+
+	/** 射撃処理 */
 	private static void gunShoot(EntityPlayer player, GunData gun, BulletData bullet) {
-		PacketHandler.INSTANCE.sendToServer(new PacketGuns(gun, player.rotationYaw, player.rotationPitch));
-		ShootDelay = gun.getDataInt(GunDataList.RATE);
-		// リコイル
-		RecoilHandler.MakeRecoil(player, gun, recoilPower);
-		// 100を超えないように代入
-		recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun) > 100 ? 100
-				: recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun);
+		// 弾を確認
+		String bulletName = getNextBullet();
+		if (bulletName == null) {
+			// カチって音を出す…
+			shooted = true;
+		} else {
+			PacketHandler.INSTANCE.sendToServer(new PacketGuns(gun, player.rotationYaw, player.rotationPitch));
+			ShootDelay = gun.getDataInt(GunDataList.RATE);
+			// リコイル
+			RecoilHandler.MakeRecoil(player, gun, recoilPower);
+			// 100を超えないように代入
+			recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun) > 100 ? 100
+					: recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun);
 
-		// どっとを表示
-		// EntityDebug dot = new EntityDebug(player.worldObj, new
-		// Vec3(player.posX,player.posY, player.posZ));
-		// player.worldObj.spawnEntityInWorld(dot);
+			// どっとを表示
+			// EntityDebug dot = new EntityDebug(player.worldObj, new
+			// Vec3(player.posX,player.posY, player.posZ));
+			// player.worldObj.spawnEntityInWorld(dot);
+		}
 	}
 
+	/** リロード完了 マガジンを追加する */
+	public static void reloadEnd(int bulletNum, byte reloadQueueID) {
+		// キューが進んでいたなら停止
+		if (reloadQueue != reloadQueueID) {
+			return;
+		}
+		// リロードできたなら
+		if (bulletNum != 0) {
+			addMagazine(UsingBulletName, bulletNum);
+		}
+	}
 	/***/
 	private static void ServerTick(EntityPlayer player) {
 

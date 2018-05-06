@@ -1,5 +1,8 @@
 package handler;
 
+import java.nio.charset.Charset;
+
+import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
@@ -21,5 +24,15 @@ public class PacketHandler {
         INSTANCE.registerMessage(PacketGuns.class, PacketGuns.class, 0, Side.SERVER);
         INSTANCE.registerMessage(PacketGuns.class, PacketGuns.class, 1, Side.CLIENT);
         INSTANCE.registerMessage(PacketHit.class, PacketHit.class, 2, Side.CLIENT);
+    }
+    /**バッファに文字列を書き込む*/
+    public static void writeString(ByteBuf buf,String str){
+    	buf.writeInt(str.length());
+    	buf.writeBytes(str.getBytes());
+    }
+    /**バッファから文字列を読み込む*/
+    public static String readString(ByteBuf buf){
+    	int length = buf.readInt();
+    	return buf.readBytes(length).toString(Charset.forName("UTF-8"));
     }
 }

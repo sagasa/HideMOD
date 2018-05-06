@@ -18,6 +18,8 @@ import types.GunData.GunDataList;
 
 public class ItemMagazine extends Item{
 
+	public static final ItemMagazine INSTANCE = new ItemMagazine();
+
 	public static final String NBT_Name = "HideMagazine";
 
 	public static final String NBT_BULLETNUM = "BulletNum";
@@ -89,6 +91,12 @@ public class ItemMagazine extends Item{
 		return stack.getTagCompound().getCompoundTag(NBT_Name).getInteger(NBT_BULLETNUM);
 	}
 
+	/**残弾数書き込み*/
+	public static ItemStack setBulletNum(ItemStack stack,int num){
+		stack.getTagCompound().getCompoundTag(NBT_Name).setInteger(NBT_BULLETNUM,num);
+		return stack;
+	}
+
 	/**装弾数取得*/
 	public static int getMagazineSize(ItemStack stack){
 		return getBulletData(stack).getDataInt(BulletDataList.MAGAZINE_SIZE);
@@ -102,35 +110,32 @@ public class ItemMagazine extends Item{
 	}
 
 	/**リロードする弾を取得 アイテムを削除*/
-	public static int getReloadItem(EntityPlayer player,String bulletName){
-		int slot = 0;
-		int bulletNum = -1;
+	public static int ReloadItem(EntityPlayer player,String bulletName,int amount){
+		int bulletNum = amount;
 		for(int i = 0;i<36;i++){
 			ItemStack item = player.inventory.mainInventory[i];
 			if(item!=null&&isMagazine(item,bulletName)){
-				if(getMagazineSize(item)<=getBulletNum(item)){
-					slot = i;
-					bulletNum = getBulletNum(item);
-					break;
+				player.inventory.inventoryChanged = true;
+				bulletNum -= getBulletNum(item);
+
+				//端数を返す
+				if(bulletNum < 0){
+					ItemStack newMag = item.copy();
+					newMag.stackSize = 1;
+					player.inventory.addItemStackToInventory(setBulletNum(newMag, bulletNum*-1));
+					return amount;
 				}
-				if(bulletNum<getBulletNum(item)){
-					slot = i;
-					bulletNum = getBulletNum(item);
+				//アイテムを1つ削除
+				item.stackSize--;
+				if(item.stackSize == 0){
+					item = null;
 				}
+				player.inventory.mainInventory[i] = item;
 			}
 		}
-		if(bulletNum == -1){
-			return -1;
-		}
-		ItemStack item = player.inventory.mainInventory[slot];
-		if(item.stackSize>1){
-			item.stackSize--;
-			player.inventory.mainInventory[slot] = item;
-		}else{
-			player.inventory.mainInventory[slot] = null;
-		}
-		return bulletNum;
+		return amount - bulletNum;
 	}
+
 
 	/** BulletData取得 */
 	public static BulletData getBulletData(ItemStack item) {
@@ -138,6 +143,10 @@ public class ItemMagazine extends Item{
 			return null;
 		}
 		return PackLoader.BULLET_DATA_MAP.get(getBulletName(item));
+	}
+	/** BulletData取得 */
+	public static BulletData getBulletData(String name) {
+		return PackLoader.BULLET_DATA_MAP.get(name);
 	}
 	/**スタックから銃の登録名を取得*/
 	public static String getBulletName(ItemStack item){

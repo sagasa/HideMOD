@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 
+import handler.PlayerHandler;
+import types.LoadedMagazine;
 import hideMod.PackLoader;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -19,6 +21,8 @@ import types.GunData;
 import types.GunData.GunDataList;
 
 public class ItemGun extends Item {
+
+	public static final ItemGun INSTANCE = new ItemGun();
 
 	/** NBTのルート直下にこの名前でデータ保存用タグを保存 */
 	public static final String NBT_Name = "HideGun";
@@ -70,7 +74,7 @@ public class ItemGun extends Item {
 		}
 		NBTTagCompound nbt = new NBTTagCompound();
 		nbt.setInteger(NBT_ShootDelay, 0);
-		nbt.setInteger(NBT_ReloadProgress, 0);
+		nbt.setInteger(NBT_ReloadProgress, -1);
 		nbt.setString(NBT_FireMode,
 				Arrays.asList(data.getDataStringArray(GunDataList.FIRE_MODE)).iterator().next().toString());
 		if (data.getDataStringArray(GunDataList.TYPES_BULLETS).length > 0) {
@@ -120,23 +124,36 @@ public class ItemGun extends Item {
 		return PackLoader.GUN_DATA_MAP.get(getGunName(item));
 	}
 
-	/** 次に発射される弾を取得 */
-	public static BulletData getNextBullet(ItemStack gun) {
-		return null;
+	/** マガジンの内容を取得 */
+	public static LoadedMagazine[] getLoadedMagazines(ItemStack gun) {
+		LoadedMagazine[] loadedMagazines = new LoadedMagazine[getGunData(gun).getDataInt(GunDataList.MAGAZINE_NUMBER)];
+
+		NBTTagCompound magazines = gun.getTagCompound().getCompoundTag(NBT_Name).getCompoundTag(NBT_Magazines);
+
+		for (int i = 0; i < loadedMagazines.length; i++) {
+			if(magazines.hasKey(i+"")&&magazines.getCompoundTag(i+"").getInteger(NBT_Magazine_Number)>0){
+				NBTTagCompound magData = magazines.getCompoundTag(i+"");
+				loadedMagazines[i] = new LoadedMagazine(magData.getString(NBT_Magazine_Name), magData.getInteger(NBT_Magazine_Number));
+			}
+		}
+		return loadedMagazines;
 	}
-
-	/** 弾を消費 */
-	public static void useBullet(ItemStack gun) {
-
-	}
-
-	/** インベントリにマガジンを排出 */
-	public static void exitMagazine(ItemStack gun, EntityLivingBase owner) {
-		gun.getTagCompound().getCompoundTag(NBT_Magazines);
-	}
-
-	/** インベントリからマガジンをロード */
-	public static void loadMagazine(ItemStack gun, EntityLivingBase owner) {
-
+	/** マガジンの内容を書き込み */
+	public static ItemStack setLoadedMagazines(ItemStack gun,LoadedMagazine[] newMagazines) {
+		NBTTagCompound magazines = new NBTTagCompound();
+		for (int i = 0; i < newMagazines.length; i++) {
+			if(newMagazines[i]!=null){
+				NBTTagCompound magazine = new NBTTagCompound();
+				magazine.setInteger(NBT_Magazine_Number, newMagazines[i].num);
+				magazine.setString(NBT_Magazine_Name, newMagazines[i].name);
+				magazines.setTag(i+"", magazine);
+			}
+		}
+		NBTTagCompound newTag = gun.getTagCompound().getCompoundTag(NBT_Name);
+		newTag.setTag(NBT_Magazines, magazines);
+		NBTTagCompound value = new NBTTagCompound();
+		value.setTag(NBT_Name, newTag);
+		gun.setTagCompound(value);
+		return gun;
 	}
 }

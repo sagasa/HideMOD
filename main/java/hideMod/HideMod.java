@@ -90,8 +90,8 @@ public class HideMod {
     @EventHandler
     public void init(FMLInitializationEvent event) {
     	//アイテム登録処理
-    	GameRegistry.registerItem(new ItemGun(),"gun");
-    	GameRegistry.registerItem(new ItemMagazine(),"bullet");
+    	GameRegistry.registerItem(ItemGun.INSTANCE,"gun");
+    	GameRegistry.registerItem(ItemMagazine.INSTANCE,"bullet");
 
     	if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
     		RegistryRenders();
