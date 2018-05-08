@@ -1,10 +1,12 @@
 package item;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 
 import handler.PlayerHandler;
+import helper.NBTWrapper;
 import types.LoadedMagazine;
 import hideMod.PackLoader;
 import net.minecraft.creativetab.CreativeTabs;
@@ -19,23 +21,11 @@ import scala.actors.threadpool.Arrays;
 import types.BulletData;
 import types.GunData;
 import types.GunData.GunDataList;
+import types.GunFireMode;
 
 public class ItemGun extends Item {
 
 	public static final ItemGun INSTANCE = new ItemGun();
-
-	/** NBTのルート直下にこの名前でデータ保存用タグを保存 */
-	public static final String NBT_Name = "HideGun";
-
-	public static final String NBT_FireMode = "FireMode";
-	public static final String NBT_UseingBullet = "UseingBullet";
-	public static final String NBT_ShootDelay = "ShootDelay";
-	public static final String NBT_ReloadProgress = "ReloadProgress";
-	public static final String NBT_Magazines = "Magazines";
-
-	public static final String NBT_Magazine_Name = "MagazineName";
-	public static final String NBT_Magazine_Number = "MagazineNumber";
-
 	//========================================================================
 	//登録
 	public ItemGun() {
@@ -65,34 +55,19 @@ public class ItemGun extends Item {
 		if (!(item.getItem() instanceof ItemGun)) {
 			return item;
 		}
-		GunData data = getGunData(item);
-		NBTTagCompound value;
 		if (!item.hasTagCompound()) {
-			value = new NBTTagCompound();
-		} else {
-			value = item.getTagCompound();
+			item.setTagCompound(new NBTTagCompound());
 		}
-		NBTTagCompound nbt = new NBTTagCompound();
-		nbt.setInteger(NBT_ShootDelay, 0);
-		nbt.setInteger(NBT_ReloadProgress, -1);
-		nbt.setString(NBT_FireMode,
-				Arrays.asList(data.getDataStringArray(GunDataList.FIRE_MODE)).iterator().next().toString());
+		GunData data = getGunData(item);
+
+		NBTWrapper.setGunID(item, UUID.randomUUID().getLeastSignificantBits());
+		NBTWrapper.setGunShootDelay(item, 0);
+		NBTWrapper.setGunReloadProgress(item, -1);
+		NBTWrapper.setGunFireMode(item, GunFireMode.getFireMode(Arrays.asList(data.getDataStringArray(GunDataList.FIRE_MODE)).iterator().next().toString()));
 		if (data.getDataStringArray(GunDataList.TYPES_BULLETS).length > 0) {
-			nbt.setString(NBT_UseingBullet,
-					Arrays.asList(data.getDataStringArray(GunDataList.TYPES_BULLETS)).iterator().next().toString());
+			NBTWrapper.setGunUseingBullet(item, Arrays.asList(data.getDataStringArray(GunDataList.TYPES_BULLETS)).iterator().next().toString());
 		}
-		nbt.setTag(NBT_Magazines, new NBTTagCompound());
-
-		value.setTag(NBT_Name, nbt);
-		item.setTagCompound(value);
 		return item;
-	}
-
-	@Override
-	public boolean onDroppedByPlayer(ItemStack item, EntityPlayer player) {
-		System.out.println("drop");
-		item = new ItemStack(this, 1, 0);
-		return super.onDroppedByPlayer(item, player);
 	}
 
 	//=========================================================
@@ -100,8 +75,13 @@ public class ItemGun extends Item {
 	/** アップデート 表示更新など */
 	@Override
 	public void addInformation(ItemStack stack, EntityPlayer playerIn, List tooltip, boolean advanced) {
-		NBTTagCompound nbt = stack.getTagCompound().getCompoundTag(NBT_Name);
-		tooltip.add(ChatFormatting.GRAY + "FireMode : " + nbt.getString(NBT_FireMode));
+		tooltip.add(ChatFormatting.GRAY + "FireMode : " + NBTWrapper.getGunFireMode(stack));
+		for(LoadedMagazine magazine :NBTWrapper.getGunLoadedMagazines(stack)){
+			if(magazine != null){
+				tooltip.add(magazine.name+"x"+magazine.num);
+			}
+		}
+
 	}
 	/** 銃かどうか */
 	public static boolean isGun(ItemStack item) {
@@ -122,38 +102,5 @@ public class ItemGun extends Item {
 			return null;
 		}
 		return PackLoader.GUN_DATA_MAP.get(getGunName(item));
-	}
-
-	/** マガジンの内容を取得 */
-	public static LoadedMagazine[] getLoadedMagazines(ItemStack gun) {
-		LoadedMagazine[] loadedMagazines = new LoadedMagazine[getGunData(gun).getDataInt(GunDataList.MAGAZINE_NUMBER)];
-
-		NBTTagCompound magazines = gun.getTagCompound().getCompoundTag(NBT_Name).getCompoundTag(NBT_Magazines);
-
-		for (int i = 0; i < loadedMagazines.length; i++) {
-			if(magazines.hasKey(i+"")&&magazines.getCompoundTag(i+"").getInteger(NBT_Magazine_Number)>0){
-				NBTTagCompound magData = magazines.getCompoundTag(i+"");
-				loadedMagazines[i] = new LoadedMagazine(magData.getString(NBT_Magazine_Name), magData.getInteger(NBT_Magazine_Number));
-			}
-		}
-		return loadedMagazines;
-	}
-	/** マガジンの内容を書き込み */
-	public static ItemStack setLoadedMagazines(ItemStack gun,LoadedMagazine[] newMagazines) {
-		NBTTagCompound magazines = new NBTTagCompound();
-		for (int i = 0; i < newMagazines.length; i++) {
-			if(newMagazines[i]!=null){
-				NBTTagCompound magazine = new NBTTagCompound();
-				magazine.setInteger(NBT_Magazine_Number, newMagazines[i].num);
-				magazine.setString(NBT_Magazine_Name, newMagazines[i].name);
-				magazines.setTag(i+"", magazine);
-			}
-		}
-		NBTTagCompound newTag = gun.getTagCompound().getCompoundTag(NBT_Name);
-		newTag.setTag(NBT_Magazines, magazines);
-		NBTTagCompound value = new NBTTagCompound();
-		value.setTag(NBT_Name, newTag);
-		gun.setTagCompound(value);
-		return gun;
 	}
 }

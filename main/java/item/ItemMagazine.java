@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 
+import helper.NBTWrapper;
 import hideMod.PackLoader;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,9 +21,7 @@ public class ItemMagazine extends Item{
 
 	public static final ItemMagazine INSTANCE = new ItemMagazine();
 
-	public static final String NBT_Name = "HideMagazine";
 
-	public static final String NBT_BULLETNUM = "BulletNum";
 
 	//========================================================================
 	//登録
@@ -44,17 +43,10 @@ public class ItemMagazine extends Item{
 			return item;
 		}
 		BulletData data = getBulletData(item);
-		NBTTagCompound value;
 		if (!item.hasTagCompound()) {
-			value = new NBTTagCompound();
-		} else {
-			value = item.getTagCompound();
+			item.setTagCompound(new NBTTagCompound());
 		}
-		NBTTagCompound nbt = new NBTTagCompound();
-		nbt.setInteger(NBT_BULLETNUM, getBulletData(item).getDataInt(BulletDataList.MAGAZINE_SIZE));
-
-		value.setTag(NBT_Name, nbt);
-		item.setTagCompound(value);
+		NBTWrapper.setMagazineBulletNum(item, data.getDataInt(BulletDataList.MAGAZINE_SIZE));
 		return item;
 	}
 	@Override
@@ -88,12 +80,12 @@ public class ItemMagazine extends Item{
 
 	/**残弾数取得*/
 	public static int getBulletNum(ItemStack stack){
-		return stack.getTagCompound().getCompoundTag(NBT_Name).getInteger(NBT_BULLETNUM);
+		return NBTWrapper.getMagazineBulletNum(stack);
 	}
 
 	/**残弾数書き込み*/
 	public static ItemStack setBulletNum(ItemStack stack,int num){
-		stack.getTagCompound().getCompoundTag(NBT_Name).setInteger(NBT_BULLETNUM,num);
+		NBTWrapper.setMagazineBulletNum(stack, num);
 		return stack;
 	}
 
@@ -105,7 +97,6 @@ public class ItemMagazine extends Item{
 	/** アップデート 表示更新など */
 	@Override
 	public void addInformation(ItemStack stack, EntityPlayer playerIn, List tooltip, boolean advanced) {
-		NBTTagCompound nbt = stack.getTagCompound().getCompoundTag(NBT_Name);
 		tooltip.add(ChatFormatting.GRAY + "Ammo : " + getMagazineSize(stack)+"/"+getBulletNum(stack));
 	}
 
@@ -122,6 +113,12 @@ public class ItemMagazine extends Item{
 				if(bulletNum < 0){
 					ItemStack newMag = item.copy();
 					newMag.stackSize = 1;
+					//アイテムを1つ削除
+					item.stackSize--;
+					if(item.stackSize == 0){
+						item = null;
+					}
+					player.inventory.mainInventory[i] = item;
 					player.inventory.addItemStackToInventory(setBulletNum(newMag, bulletNum*-1));
 					return amount;
 				}

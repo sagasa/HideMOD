@@ -3,6 +3,8 @@ package handler;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.event.entity.item.ItemTossEvent;
+import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerEvent.StopTracking;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
@@ -22,6 +24,10 @@ public class MasterEventHandler {
 	@SubscribeEvent
 	public void onEvent(PlayerTickEvent event)	{
 		PlayerHandler.PlayerTick(event);
+	}
+	@SubscribeEvent
+	public void onEvent(ItemTossEvent event)	{
+		System.out.println(event.entityItem);
 	}
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedInEvent event)	{

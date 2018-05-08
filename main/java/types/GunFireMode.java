@@ -28,4 +28,8 @@ public enum GunFireMode{
 		}
 		return "semiauto";
 	}
+	@Override
+	public String toString() {
+		return getFireMode(this);
+	}
 }

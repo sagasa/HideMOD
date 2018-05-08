@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -11,6 +12,7 @@ import org.lwjgl.opengl.GL11;
 
 import entity.EntityBullet;
 import entity.EntityDebug;
+import helper.NBTWrapper;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 
@@ -43,7 +45,7 @@ import types.GunFireMode;
 import types.LoadedMagazine;
 
 public class PlayerHandler {
-	// 変数はクライアント側のものだけ
+	// クライアント側変数
 	private static boolean rightMouseHeld;
 	private static boolean leftMouseHeld;
 
@@ -70,6 +72,9 @@ public class PlayerHandler {
 	public static int ShootDelay = 0;
 	public static int ReloadProgress = -1;
 	public static GunFireMode fireMode;
+
+	//サーバー側変数
+
 
 	/** プレイヤーのTicl処理 */
 	public static void PlayerTick(PlayerTickEvent event) {
@@ -102,33 +107,27 @@ public class PlayerHandler {
 			// 銃から持ち替えたらな
 			if (ItemGun.isGun(lastItem)) {
 				// 変数をNBTに落とす
-				PacketHandler.INSTANCE.sendToServer(new PacketGuns((byte) lastCurrentItem));
+
 			}
 			// 銃に持ち替えたなら
 			if (ItemGun.isGun(item)) {
+				System.out.println();
 				recoilPower = 0;
 				// NBTが入ってるか確認 無ければ設定
 				if (!item.hasTagCompound()) {
 					ItemGun.setGunNBT(item);
 				}
+				//前に持っていたのが銃だった場合はIDで比較
+				if(!ItemGun.isGun(lastItem)||(ItemGun.isGun(lastItem)&&NBTWrapper.getGunID(item)!=NBTWrapper.getGunID(lastItem))){
+					GunData gundata = ((ItemGun) item.getItem()).getGunData(item);
+					// 変数にNBTから読み込み
+					UsingBulletName = NBTWrapper.getGunUseingBullet(item);
+					ShootDelay = NBTWrapper.getGunShootDelay(item);
+					ReloadProgress = NBTWrapper.getGunReloadProgress(item);
+					loadedMagazines = NBTWrapper.getGunLoadedMagazines(item);
 
-				loadedMagazines = ItemGun.getLoadedMagazines(item);
-
-				GunData gundata = ((ItemGun) item.getItem()).getGunData(item);
-				// 変数にNBTから読み込み
-				NBTTagCompound nbt = item.getTagCompound().getCompoundTag(ItemGun.NBT_Name);
-
-				UsingBulletName = nbt.getString(ItemGun.NBT_UseingBullet);
-				ShootDelay = nbt.getInteger(ItemGun.NBT_ShootDelay);
-				ReloadProgress = nbt.getInteger(ItemGun.NBT_ReloadProgress);
-
-				GunData data = ((ItemGun) item.getItem()).getGunData(item);
-
-				// 射撃モード読み込み
-				fireMode = GunFireMode.getFireMode(nbt.getString(ItemGun.NBT_FireMode));
-				// GunFireMode.getFireMode();
-				for (LoadedMagazine magazine : loadedMagazines) {
-					System.out.println(magazine);
+					// 射撃モード読み込み
+					fireMode = NBTWrapper.getGunFireMode(item);
 				}
 			}
 		}
@@ -154,7 +153,6 @@ public class PlayerHandler {
 					case SEMIAUTO:
 						// 停止フラグ
 						gunShoot(player, gundata, null);
-						System.out.println("semi");
 						shooted = true;
 						break;
 					}
@@ -209,7 +207,7 @@ public class PlayerHandler {
 		for (LoadedMagazine magazine : loadedMagazines) {
 			// 入ってなければ要求
 			if (magazine == null) {
-				System.out.println(UsingBulletName);
+				//System.out.println(UsingBulletName);
 				return ItemMagazine.getBulletData(UsingBulletName).getDataInt(BulletDataList.MAGAZINE_SIZE);
 			}
 			int num = ItemMagazine.getBulletData(magazine.name).getDataInt(BulletDataList.MAGAZINE_SIZE) - magazine.num;
@@ -227,7 +225,6 @@ public class PlayerHandler {
 			// 入ってなければ追加
 			if (magazine == null) {
 				loadedMagazines[i] = new LoadedMagazine(name, amount);
-				System.out.println("ついか！！！！" + loadedMagazines[i]);
 				return;
 			}
 			int num = ItemMagazine.getBulletData(magazine.name).getDataInt(BulletDataList.MAGAZINE_SIZE) - magazine.num;
