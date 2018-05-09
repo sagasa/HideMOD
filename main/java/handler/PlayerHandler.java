@@ -111,7 +111,6 @@ public class PlayerHandler {
 			}
 			// 銃に持ち替えたなら
 			if (ItemGun.isGun(item)) {
-				System.out.println();
 				recoilPower = 0;
 				// NBTが入ってるか確認 無ければ設定
 				if (!item.hasTagCompound()) {
@@ -163,7 +162,9 @@ public class PlayerHandler {
 			// 各機能へのキーインプット入力
 			// 銃のモード切替
 			if (pushKeys.contains(KeyBind.GUN_FIREMODE)) {
-				System.out.println("切り替え");
+
+				fireMode = ItemGun.getNextFireMode(gundata, fireMode);
+				System.out.println(fireMode);
 			}
 			// リロード
 			if (pushKeys.contains(KeyBind.GUN_RELOAD)) {

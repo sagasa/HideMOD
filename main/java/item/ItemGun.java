@@ -90,7 +90,15 @@ public class ItemGun extends Item {
 		}
 		return false;
 	}
-
+	/**次の射撃モードを取得*/
+	public static GunFireMode getNextFireMode(GunData data,GunFireMode now){
+		List<String> modes = Arrays.asList(data.getDataStringArray(GunDataList.FIRE_MODE));
+		int index = modes.indexOf(now.toString())+1;
+		if(index > modes.size()){
+			index = 0;
+		}
+		return GunFireMode.getFireMode(modes.get(index));
+	}
 	/**スタックから銃の登録名を取得*/
 	public static String getGunName(ItemStack item){
 		return PackLoader.GUN_NAME_MAP.get(item.getMetadata());

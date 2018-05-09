@@ -56,13 +56,6 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 	int bulletNum;
 	// モードパケット
 	GunFireMode fireMode;
-	//NBTアップデート
-	byte slot;
-	LoadedMagazine[] NBT_loadedMagazines;
-	String NBT_UsingBulletName;
-	int NBT_ShootDelay;
-	int NBT_ReloadProgress;
-	String NBT_fireMode;
 
 	public PacketGuns() {
 	}
@@ -90,6 +83,11 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 		this.bulletNum = bulletNum;
 		this.ReloadQueueID = queue;
 	}
+	/** 射撃パケット 視線とプレイヤーインスタンス弾の名前のセット */
+	public PacketGuns(GunFireMode mode) {
+		this.mode = GUN_MODE;
+		this.fireMode = mode;
+	}
 
 
 	@Override // ByteBufからデータを読み取る。
@@ -112,7 +110,7 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 			this.ReloadQueueID = buf.readByte();
 		}
 		if (mode == GUN_MODE) {
-
+			this.fireMode = GunFireMode.getFireMode(PacketHandler.readString(buf));
 		}
 	}
 
@@ -142,6 +140,9 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 		if (mode == GUN_RELOAD_REPLY) {
 			buf.writeInt(bulletNum);
 			buf.writeByte(ReloadQueueID);
+		}
+		if (mode == GUN_MODE) {
+			PacketHandler.writeString(buf, GunFireMode.getFireMode(fireMode));
 		}
 	}
 
@@ -181,6 +182,7 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 								}
 							}
 							NBTWrapper.setGunLoadedMagazines(item, magazines);
+							Player.inventory.inventoryChanged = false;
 							// 弾を発射
 							EntityBullet bullet = new EntityBullet(Player.worldObj, Player, m.gunData, m.Yaw, m.Pitch);
 							Player.worldObj.spawnEntityInWorld(bullet);
@@ -207,10 +209,13 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 								}
 							}
 							NBTWrapper.setGunLoadedMagazines(item, magazines);
-							//Player.inventory.mainInventory[Player.inventory.currentItem] = item;
+							Player.inventory.inventoryChanged = false;
 							// 返信
 							PacketHandler.INSTANCE.sendTo(new PacketGuns(num,m.ReloadQueueID), (EntityPlayerMP) Player);
 						}
+					}
+					if (m.mode == GUN_MODE) {
+
 					}
 				}
 			});
