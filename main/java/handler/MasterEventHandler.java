@@ -43,8 +43,8 @@ public class MasterEventHandler {
 	public void onEvent(MouseEvent event)	{
 		PlayerHandler.MouseEvent(event);
 	}
-	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
 	public void onEvent(RenderPlayerEvent.Pre event)	{
 		RenderHandler.RenderPlayerEvent(event);
 	}
@@ -57,8 +57,9 @@ public class MasterEventHandler {
 	//	System.out.println(event.target+"Stop");
 	}
 	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
 	public void onEvent(RenderGameOverlayEvent event)	{
 	//	System.out.println(event.target+"Stop");
-		RenderHandler.RenderTest();
+		RenderHandler.RenderTest(event);
 	}
 }

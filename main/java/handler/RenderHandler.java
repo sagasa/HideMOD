@@ -11,6 +11,8 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.client.event.RenderPlayerEvent.Pre;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.relauncher.Side;
@@ -22,8 +24,10 @@ public class RenderHandler {
 	/**ヒットマーク 色は描画時に*/
 	static final ResourceLocation HitMarker = new ResourceLocation("hidemod", "gui/hitMarker.png");
 
+	static Minecraft mc = FMLClientHandler.instance().getClient();
+
 	public static void RenderPlayerEvent(Pre event) {
-		GL11.glPushMatrix();
+		/*GL11.glPushMatrix();
 		GL11.glScalef(20f, 20f, 20f);
 		GL11.glTranslated(event.x, event.y, event.z);
 		GL11.glRotatef(0, 0F, 1F, 0F);
@@ -36,19 +40,19 @@ public class RenderHandler {
 		GL11.glDisable(GL11.GL_BLEND);
 		GL11.glColor4f(1F, 1F, 1F, 1F);
 		GL11.glPopMatrix();
-
+*/
 	}
-	public static void RenderTest(){
-		Minecraft mc = FMLClientHandler.instance().getClient();
-
-		mc.renderEngine.bindTexture(HitMarker);
-
+	public static void RenderTest(RenderGameOverlayEvent event){
 		ScaledResolution scaledresolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
 		//System.out.println(scaledresolution.getScaledWidth()+" "+scaledresolution.getScaledHeight()+" : "+mc.displayWidth+" "+mc.displayHeight);
 		int x = scaledresolution.getScaledWidth();
 		int y = scaledresolution.getScaledHeight();
 
-		writeHitMarker( x,  y);
+		if(event.isCancelable() && event.type == ElementType.CROSSHAIRS)
+		{
+			writeHitMarker(x, y);
+		}
+		//
 /*
 		RenderHelper.enableGUIStandardItemLighting();
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -62,6 +66,7 @@ public class RenderHandler {
 
 	/**プレイヤーハンドラを参照してヒットマーク描画*/
 	static void writeHitMarker(int x, int y){
+		mc.renderEngine.bindTexture(HitMarker);
 		GlStateManager.enableAlpha();
 		GlStateManager.enableBlend();
 		if(PlayerHandler.HitMarkerTime_H>0){

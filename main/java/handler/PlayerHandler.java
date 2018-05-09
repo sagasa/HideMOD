@@ -81,7 +81,10 @@ public class PlayerHandler {
 		if (event.phase == Phase.START) {
 			// サイドで処理を分ける
 			if (event.side == Side.CLIENT) {
-				CientTick(event.player);
+				//自分のキャラクターのみ
+				if(event.player.equals(Minecraft.getMinecraft().thePlayer)){
+					CientTick(event.player);
+				}
 			} else if (event.side == Side.SERVER) {
 				ServerTick(event.player);
 			}
@@ -128,7 +131,7 @@ public class PlayerHandler {
 					UsingBulletName = NBTWrapper.getGunUseingBullet(item);
 					ShootDelay = NBTWrapper.getGunShootDelay(item);
 					ReloadProgress = NBTWrapper.getGunReloadProgress(item);
-					System.out.println(NBTWrapper.getGunID(item));
+					//System.out.println(NBTWrapper.getGunID(item));
 					loadedMagazines = NBTWrapper.getGunLoadedMagazines(item);
 
 					// 射撃モード読み込み
