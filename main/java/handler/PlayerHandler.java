@@ -100,6 +100,10 @@ public class PlayerHandler {
 				pushKeys.add(bind);
 			}
 		}
+		if(fastTick){
+			fastTick = false;
+			return;
+		}
 
 		ItemStack item = player.getCurrentEquippedItem();
 		// アイテムの持ち替え検知
@@ -111,18 +115,20 @@ public class PlayerHandler {
 			}
 			// 銃に持ち替えたなら
 			if (ItemGun.isGun(item)) {
-				recoilPower = 0;
 				// NBTが入ってるか確認 無ければ設定
 				if (!item.hasTagCompound()) {
 					ItemGun.setGunNBT(item);
 				}
+				ItemGun.setUUID(item);
 				//前に持っていたのが銃だった場合はIDで比較
 				if(!ItemGun.isGun(lastItem)||(ItemGun.isGun(lastItem)&&NBTWrapper.getGunID(item)!=NBTWrapper.getGunID(lastItem))){
+					recoilPower = 0;
 					GunData gundata = ((ItemGun) item.getItem()).getGunData(item);
 					// 変数にNBTから読み込み
 					UsingBulletName = NBTWrapper.getGunUseingBullet(item);
 					ShootDelay = NBTWrapper.getGunShootDelay(item);
 					ReloadProgress = NBTWrapper.getGunReloadProgress(item);
+					System.out.println(NBTWrapper.getGunID(item));
 					loadedMagazines = NBTWrapper.getGunLoadedMagazines(item);
 
 					// 射撃モード読み込み
@@ -162,9 +168,8 @@ public class PlayerHandler {
 			// 各機能へのキーインプット入力
 			// 銃のモード切替
 			if (pushKeys.contains(KeyBind.GUN_FIREMODE)) {
-
 				fireMode = ItemGun.getNextFireMode(gundata, fireMode);
-				System.out.println(fireMode);
+				PacketHandler.INSTANCE.sendToServer(new PacketGuns(fireMode));
 			}
 			// リロード
 			if (pushKeys.contains(KeyBind.GUN_RELOAD)) {

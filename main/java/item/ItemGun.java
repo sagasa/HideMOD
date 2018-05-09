@@ -50,6 +50,12 @@ public class ItemGun extends Item {
 	public String getUnlocalizedName(ItemStack item) {
 		return getUnlocalizedName()+getGunName(item);
 	}
+
+	public static void setUUID(ItemStack item){
+		if(NBTWrapper.getGunID(item)==-1){
+			NBTWrapper.setGunID(item, UUID.randomUUID().getLeastSignificantBits());
+		}
+	}
 	/** どのような状態からでも有効なNBTを書き込む */
 	public static ItemStack setGunNBT(ItemStack item) {
 		if (!(item.getItem() instanceof ItemGun)) {
@@ -60,7 +66,7 @@ public class ItemGun extends Item {
 		}
 		GunData data = getGunData(item);
 
-		NBTWrapper.setGunID(item, UUID.randomUUID().getLeastSignificantBits());
+		NBTWrapper.setGunID(item, -1);
 		NBTWrapper.setGunShootDelay(item, 0);
 		NBTWrapper.setGunReloadProgress(item, -1);
 		NBTWrapper.setGunFireMode(item, GunFireMode.getFireMode(Arrays.asList(data.getDataStringArray(GunDataList.FIRE_MODE)).iterator().next().toString()));
@@ -94,7 +100,7 @@ public class ItemGun extends Item {
 	public static GunFireMode getNextFireMode(GunData data,GunFireMode now){
 		List<String> modes = Arrays.asList(data.getDataStringArray(GunDataList.FIRE_MODE));
 		int index = modes.indexOf(now.toString())+1;
-		if(index > modes.size()){
+		if(index > modes.size()-1){
 			index = 0;
 		}
 		return GunFireMode.getFireMode(modes.get(index));

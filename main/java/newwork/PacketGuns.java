@@ -215,7 +215,10 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 						}
 					}
 					if (m.mode == GUN_MODE) {
-
+						ItemStack item = Player.inventory.getCurrentItem();
+						if(ItemGun.isGun(item)){
+							NBTWrapper.setGunFireMode(item, m.fireMode);
+						}
 					}
 				}
 			});

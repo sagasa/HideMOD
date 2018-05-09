@@ -20,7 +20,7 @@ public enum GunFireMode{
 		case BURST:
 			return "burst";
 		case FULLAUTO:
-			return "semiauto";
+			return "fullauto";
 		case MINIGUN:
 			return "minigun";
 		case SEMIAUTO:
