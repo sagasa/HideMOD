@@ -1,5 +1,6 @@
 package entity;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -46,6 +47,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import newwork.PacketGuns;
 import newwork.PacketHit;
 import types.BulletData;
+import types.BulletData.BulletDataList;
 import types.GunData;
 import types.GunData.GunDataList;
 import types.HideDamage;
@@ -77,17 +79,19 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	List<Entity> AlreadyHit;
 	/**あと何体に当たれるか*/
 	int bulletPower;
+	/**飛距離*/
+	double FlyingDistance = 0;
+
 	/** init時点での速度 */
 	Vec3 Vec0;
 
 	boolean fastTick = true;
 
 
-	float DamageForPlayer = 1.5F;
-
-	public EntityBullet(World worldIn, EntityLivingBase shooter, GunData data, float yaw, float pitch) {
+	public EntityBullet(World worldIn, EntityLivingBase shooter, GunData gunData,BulletData bulletData, float yaw, float pitch) {
 		this(worldIn);
-		gunData = data;
+		this.gunData = gunData;
+		this.bulletData = bulletData;
 		Shooter = shooter;
 		Shooter_uuid = shooter.getUniqueID();
 		AlreadyHit = new ArrayList<Entity>();
@@ -159,9 +163,9 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 				}
 			}
 
-			float damage = DamageForPlayer;
 			DamageSource damagesource = new HideDamage(HideDamageCase.GUN_BULLET, Shooter).setDamageBypassesArmor();
 
+			//LivingEntityに対するあたり判定
 			//BulletPowerが残ってる間HITを取る
 			Iterator<HitEntity> HitEntitys = RayTracer.getHitEntity(this, worldObj, lvo, lvend).iterator();
 			//System.out.println(bulletPower);
@@ -172,6 +176,10 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 				if (!AlreadyHit.contains(e)){
 					//ダメージが与えられる対象なら
 					if (e instanceof EntityLivingBase&&((EntityLivingBase)e).deathTime==0&&!(e == Shooter)){
+						//ダメージを算出
+						FlyingDistance += lvo.distanceTo(hit.hitVec);
+						float damage = getFinalLivingDamage((EntityLivingBase) e, FlyingDistance);
+
 						boolean isHeadShot = false;
 						//ヘッドショットを判定するEntity
 						if (e instanceof EntityPlayer||e instanceof EntityZombie||e instanceof EntityPigZombie||e instanceof EntitySkeleton||e instanceof EntityVillager) {
@@ -182,6 +190,24 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 						}
 						e.attackEntityFrom(damagesource, damage);
 						e.hurtResistantTime = 0;
+
+						//リフレクションで改変が必要な変数にぶち抜く
+						try {
+							//名前を指定して取得
+							Field attackingPlayer = EntityLivingBase.class.getDeclaredField("attackingPlayer");
+							Field recentlyHit = EntityLivingBase.class.getDeclaredField("recentlyHit");
+							 //アクセス権限を与える
+							attackingPlayer.setAccessible(true);
+							recentlyHit.setAccessible(true);
+					        //攻撃時と同じ処理を組み込む
+							attackingPlayer.set(e, (EntityPlayer)Shooter);
+							recentlyHit.set(e, 100);
+						} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e1) {
+							e1.printStackTrace();
+						}
+
+
+
 						//パケット
 						if(Shooter instanceof EntityPlayerMP){
 							PacketHandler.INSTANCE.sendTo(new PacketHit(isHeadShot), (EntityPlayerMP) Shooter);
@@ -195,7 +221,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 				//爆破処理
 				setDead();
 			}
-
+			//距離計算
+			FlyingDistance += lvo.distanceTo(lvt);
 		} else {
 
 			// クライアントサイド
@@ -209,6 +236,36 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			this.setDead();
 		}
 		tick++;
+	}
+
+	/**EntityLivingに対するダメージ算出*/
+	private float getFinalLivingDamage(EntityLivingBase target,double distance){
+		float damage = 0;
+		//プレイヤーなら
+		if(target instanceof EntityPlayer){
+			damage = bulletData.getDataFloat(BulletDataList.HIT_DAMAGE_PLAYER);
+			//減衰開始からの距離を作成
+			float decayStart = bulletData.getDataFloat(BulletDataList.DECAY_DAMAGE_START_PLAYER);
+			float decayDistance = (float) (distance > decayStart? distance - decayStart : 0);
+
+			float decayAmount = decayDistance * bulletData.getDataFloat(BulletDataList.DECAY_DAMAGE_COE_PLAYER);
+			//最大変化量を超えていないか
+			float maxAmount = bulletData.getDataFloat(BulletDataList.DECAY_DAMAGE_MAX_PLAYER);
+			decayAmount = Math.abs(decayAmount) < maxAmount ? decayAmount : maxAmount;
+			damage += decayAmount;
+		}else{
+			damage = bulletData.getDataFloat(BulletDataList.HIT_DAMAGE_LIVING);
+			//減衰開始からの距離を作成
+			float decayStart = bulletData.getDataFloat(BulletDataList.DECAY_DAMAGE_START_LIVING);
+			float decayDistance = (float) (distance > decayStart? distance - decayStart : 0);
+
+			float decayAmount = decayDistance * bulletData.getDataFloat(BulletDataList.DECAY_DAMAGE_COE_LIVING);
+			//最大変化量を超えていないか
+			float maxAmount = bulletData.getDataFloat(BulletDataList.DECAY_DAMAGE_MAX_LIVING);
+			decayAmount = Math.abs(decayAmount) < maxAmount ? decayAmount : maxAmount;
+			damage += decayAmount;
+		}
+		return damage;
 	}
 
 	/** クライアントに必要な情報を送る */

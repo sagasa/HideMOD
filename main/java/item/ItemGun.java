@@ -1,5 +1,6 @@
 package item;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,7 +18,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
-import scala.actors.threadpool.Arrays;
 import types.BulletData;
 import types.GunData;
 import types.GunData.GunDataList;
@@ -82,6 +82,7 @@ public class ItemGun extends Item {
 	@Override
 	public void addInformation(ItemStack stack, EntityPlayer playerIn, List tooltip, boolean advanced) {
 		tooltip.add(ChatFormatting.GRAY + "FireMode : " + NBTWrapper.getGunFireMode(stack));
+		tooltip.add(ChatFormatting.GRAY + "UseBullet : " + NBTWrapper.getGunUseingBullet(stack));
 		for(LoadedMagazine magazine :NBTWrapper.getGunLoadedMagazines(stack)){
 			if(magazine != null){
 				tooltip.add(magazine.name+"x"+magazine.num);

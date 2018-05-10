@@ -6,7 +6,6 @@ public enum DataType{
 	Float,
 	Int,
 	Boolean,
-	StringArray,
-	GunFireMode
+	StringArray
 	;
 }

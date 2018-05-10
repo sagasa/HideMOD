@@ -13,6 +13,7 @@ import org.lwjgl.opengl.GL11;
 import entity.EntityBullet;
 import entity.EntityDebug;
 import helper.NBTWrapper;
+import hideMod.PackLoader;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 
@@ -154,13 +155,13 @@ public class PlayerHandler {
 
 						break;
 					case FULLAUTO:
-						gunShoot(player, gundata, null);
+						gunShoot(player, gundata);
 						break;
 					case MINIGUN:
 						break;
 					case SEMIAUTO:
 						// 停止フラグ
-						gunShoot(player, gundata, null);
+						gunShoot(player, gundata);
 						shooted = true;
 						break;
 					}
@@ -263,14 +264,14 @@ public class PlayerHandler {
 	}
 
 	/** 射撃処理 */
-	private static void gunShoot(EntityPlayer player, GunData gun, BulletData bullet) {
+	private static void gunShoot(EntityPlayer player, GunData gun) {
 		// 弾を確認
 		String bulletName = getNextBullet();
 		if (bulletName == null) {
 			// カチって音を出す…
 			shooted = true;
 		} else {
-			PacketHandler.INSTANCE.sendToServer(new PacketGuns(gun, player.rotationYaw, player.rotationPitch));
+			PacketHandler.INSTANCE.sendToServer(new PacketGuns(gun,PackLoader.BULLET_DATA_MAP.get(bulletName), player.rotationYaw, player.rotationPitch));
 			ShootDelay = gun.getDataInt(GunDataList.RATE);
 			// リコイル
 			RecoilHandler.MakeRecoil(player, gun, recoilPower);

@@ -61,11 +61,12 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 	}
 
 	/** 射撃パケット 視線とプレイヤーインスタンス弾の名前のセット */
-	public PacketGuns(GunData data, float yaw, float pitch) {
+	public PacketGuns(GunData data,BulletData bullet ,float yaw, float pitch) {
 		this.mode = GUN_SHOOT;
 		this.Yaw = yaw;
 		this.Pitch = pitch;
 		this.gunData = data;
+		this.bulletData = bullet;
 	}
 
 	/** リロードリクエスト 弾の登録名 カレントスロット 要求量 */
@@ -96,8 +97,8 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 		if (mode == GUN_SHOOT) {
 			this.Yaw = buf.readFloat();
 			this.Pitch = buf.readFloat();
-			byte length = buf.readByte();
-			this.gunData = PackLoader.GUN_DATA_MAP.get(buf.readBytes(length).toString(Charset.forName("UTF-8")));
+			this.gunData = PackLoader.GUN_DATA_MAP.get(PacketHandler.readString(buf));
+			this.bulletData = PackLoader.BULLET_DATA_MAP.get(PacketHandler.readString(buf));
 		}
 		if (mode == GUN_RELOAD_REQ) {
 			byte length = buf.readByte();
@@ -121,15 +122,8 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 			buf.writeFloat(Yaw);
 			buf.writeFloat(Pitch);
 			// 長さと一緒に文字列を送る
-			String gunDataName = gunData.getDataString(GunDataList.SHORT_NAME);
-			buf.writeByte(gunDataName.length());
-			buf.writeBytes(gunDataName.getBytes());
-			/*
-			 * String bulletDataName =
-			 * bulletData.getDataString(BulletDataList.SHORT_NAME);
-			 * buf.writeByte(bulletDataName.length());
-			 * buf.writeBytes(bulletDataName.getBytes());
-			 */
+			PacketHandler.writeString(buf, gunData.getDataString(GunDataList.SHORT_NAME));
+			PacketHandler.writeString(buf, bulletData.getDataString(BulletDataList.SHORT_NAME));
 		}
 		if (mode == GUN_RELOAD_REQ) {
 			buf.writeByte(bulletName.length());
@@ -184,7 +178,7 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 							NBTWrapper.setGunLoadedMagazines(item, magazines);
 							Player.inventory.inventoryChanged = false;
 							// 弾を発射
-							EntityBullet bullet = new EntityBullet(Player.worldObj, Player, m.gunData, m.Yaw, m.Pitch);
+							EntityBullet bullet = new EntityBullet(Player.worldObj, Player, m.gunData,m.bulletData, m.Yaw, m.Pitch);
 							Player.worldObj.spawnEntityInWorld(bullet);
 						}
 					}
