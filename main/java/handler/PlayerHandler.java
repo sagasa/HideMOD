@@ -179,6 +179,12 @@ public class PlayerHandler {
 					ReloadProgress = gundata.getDataInt(GunDataList.RELOAD_TIME);
 				}
 			}
+			// 弾変更
+			if (pushKeys.contains(KeyBind.GUN_USEBULLET)) {
+				UsingBulletName = ItemGun.getNextUseMagazine(gundata, UsingBulletName);
+				PacketHandler.INSTANCE.sendToServer(new PacketGuns(UsingBulletName));
+			}
+
 			// リロード完了処理
 			if (ReloadProgress == 0) {
 				// マガジンが破棄されない設定なら弾を抜く
@@ -251,10 +257,19 @@ public class PlayerHandler {
 			if (magazine != null && magazine.num > 0) {
 				String name = magazine.name;
 				magazine.num--;
+				boolean flag = false;
 				if (magazine.num <= 0) {
 					magazine = null;
+					flag = true;
 				}
 				loadedMagazines[i] = magazine;
+				//マガジン繰り上げ
+				if(flag&&loadedMagazines.length>1){
+					for (int j = 1; j < loadedMagazines.length; j++) {
+						loadedMagazines[j-1] = loadedMagazines[j];
+					}
+					loadedMagazines[loadedMagazines.length-1] = null;
+				}
 				return name;
 			}
 		}
@@ -279,10 +294,10 @@ public class PlayerHandler {
 				// 100を超えないように代入
 				recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun) > 100 ? 100
 						: recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun);
-			}else{
-				//存在しなかったなら破棄処理
-				PacketHandler.INSTANCE.sendToServer(
-						new PacketGuns(UsingBulletName, (byte) player.inventory.currentItem, 0));
+			} else {
+				// 存在しなかったなら破棄処理
+				PacketHandler.INSTANCE
+						.sendToServer(new PacketGuns(UsingBulletName, (byte) player.inventory.currentItem, 0));
 			}
 			// どっとを表示
 			// EntityDebug dot = new EntityDebug(player.worldObj, new
@@ -328,7 +343,7 @@ public class PlayerHandler {
 
 	/** クライアントサイドでのみ動作 */
 	enum KeyBind {
-		GUN_RELOAD(Keyboard.KEY_R), GUN_FIREMODE(Keyboard.KEY_F);
+		GUN_RELOAD(Keyboard.KEY_R), GUN_FIREMODE(Keyboard.KEY_F), GUN_USEBULLET(Keyboard.KEY_V);
 
 		HashMap<String, Integer> keyConfig = new HashMap<String, Integer>();
 

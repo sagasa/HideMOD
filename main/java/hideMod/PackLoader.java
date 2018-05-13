@@ -55,6 +55,11 @@ public class PackLoader {
 	/**銃 ショートネーム - BulletData MAP*/
 	public static HashMap<String, GunData> GUN_DATA_MAP = new HashMap<String,GunData>();
 
+	/**ドメイン 銃*/
+	public static final String DOMAIN_GUN = "_gun_";
+	/**ドメイン 弾*/
+	public static final String DOMAIN_MAGAZINE = "_magazine_";
+
 	//仮
 	private List<GunData> cashGunData;
 	private List<BulletData> cashBulletData;
@@ -124,10 +129,10 @@ public class PackLoader {
 		//このタイミングでレジスターに書き込む
 		if(cashPack != null){
 			for (GunData data : cashGunData) {
-				String registerName = cashPack.getDataString(PackDataList.PACK_ROOTNAME)+"_gun_"+data.getDataString(GunDataList.SHORT_NAME);
+				String registerName = cashPack.getDataString(PackDataList.PACK_ROOTNAME)+DOMAIN_GUN+data.getDataString(GunDataList.SHORT_NAME);
 				ItemGun gun = new ItemGun(data,registerName,cashPack.getDataString(PackDataList.PACK_ROOTNAME));
 				//ショートネームを登録名に書き換え
-				data.setData(GunDataList.SHORT_NAME, registerName);
+				data.setDomain(cashPack.getDataString(PackDataList.PACK_ROOTNAME));
 				GUN_DATA_MAP.put(registerName, data);
 				//レジスターに書き込む
 				GameRegistry.registerItem(gun,registerName);
@@ -136,7 +141,7 @@ public class PackLoader {
 		        }
 			}
 			for (BulletData data : cashBulletData) {
-				String registerName = cashPack.getDataString(PackDataList.PACK_ROOTNAME)+"_magazine_"+data.getDataString(BulletDataList.SHORT_NAME);
+				String registerName = cashPack.getDataString(PackDataList.PACK_ROOTNAME)+DOMAIN_MAGAZINE+data.getDataString(BulletDataList.SHORT_NAME);
 				ItemMagazine gun = new ItemMagazine(data,registerName,cashPack.getDataString(PackDataList.PACK_ROOTNAME));
 				//ショートネームを登録名に書き換え
 				data.setData(BulletDataList.SHORT_NAME, registerName);

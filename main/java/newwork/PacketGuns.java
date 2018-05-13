@@ -43,6 +43,7 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 	static final byte GUN_RELOAD_REQ = 1;
 	static final byte GUN_RELOAD_REPLY = 2;
 	static final byte GUN_MODE = 3;
+	static final byte GUN_BULLET = 4;
 	// 射撃パケット
 	float Yaw;
 	float Pitch;
@@ -89,7 +90,11 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 		this.mode = GUN_MODE;
 		this.fireMode = mode;
 	}
-
+	/**使用する弾の変更パケット*/
+	public PacketGuns(String bulletname){
+		this.mode = GUN_BULLET;
+		this.bulletName = bulletname;
+	}
 
 	@Override // ByteBufからデータを読み取る。
 	public void fromBytes(ByteBuf buf) {
@@ -101,8 +106,7 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 			this.bulletData = PackLoader.BULLET_DATA_MAP.get(PacketHandler.readString(buf));
 		}
 		if (mode == GUN_RELOAD_REQ) {
-			byte length = buf.readByte();
-			this.bulletName = buf.readBytes(length).toString(Charset.forName("UTF-8"));
+			this.bulletName = PacketHandler.readString(buf);
 			this.ReloadQueueID = buf.readByte();
 			this.bulletAmount = buf.readInt();
 		}
@@ -112,6 +116,9 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 		}
 		if (mode == GUN_MODE) {
 			this.fireMode = GunFireMode.getFireMode(PacketHandler.readString(buf));
+		}
+		if (mode == GUN_BULLET) {
+			this.bulletName = PacketHandler.readString(buf);
 		}
 	}
 
@@ -126,8 +133,7 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 			PacketHandler.writeString(buf, bulletData.getDataString(BulletDataList.SHORT_NAME));
 		}
 		if (mode == GUN_RELOAD_REQ) {
-			buf.writeByte(bulletName.length());
-			buf.writeBytes(bulletName.getBytes());
+			PacketHandler.writeString(buf, bulletName);
 			buf.writeByte(ReloadQueueID);
 			buf.writeInt(bulletAmount);
 		}
@@ -137,6 +143,9 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 		}
 		if (mode == GUN_MODE) {
 			PacketHandler.writeString(buf, GunFireMode.getFireMode(fireMode));
+		}
+		if (mode == GUN_BULLET) {
+			PacketHandler.writeString(buf, bulletName);
 		}
 	}
 
@@ -168,10 +177,19 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 								if (magazine != null && magazine.num > 0) {
 									String name = magazine.name;
 									magazine.num--;
+									boolean flag = false;
 									if (magazine.num <= 0) {
 										magazine = null;
+										flag = true;
 									}
 									magazines[i] = magazine;
+									//マガジン繰り上げ
+									if(flag&&magazines.length>1){
+										for (int j = 1; j < magazines.length; j++) {
+											magazines[j-1] = magazines[j];
+										}
+										magazines[magazines.length-1] = null;
+									}
 									break;
 								}
 							}
@@ -218,6 +236,12 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 						ItemStack item = Player.inventory.getCurrentItem();
 						if(ItemGun.isGun(item)){
 							NBTWrapper.setGunFireMode(item, m.fireMode);
+						}
+					}
+					if (m.mode == GUN_BULLET) {
+						ItemStack item = Player.inventory.getCurrentItem();
+						if(ItemGun.isGun(item)){
+							NBTWrapper.setGunUseingBullet(item, m.bulletName);
 						}
 					}
 				}

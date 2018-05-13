@@ -1,5 +1,8 @@
 package types.guns;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -7,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 import helper.JsonWrapper;
+import hideMod.PackLoader;
 import types.base.DataBase;
 import types.base.DataType;
 import types.base.EnumDataList;
@@ -367,6 +371,16 @@ public class GunData extends DataBase {
 				}
 			}
 		}
+	}
+
+	/**登録後アイテム関連の名前にドメインを追加*/
+	public void setDomain(String domain){
+		this.setData(GunDataList.SHORT_NAME, domain+PackLoader.DOMAIN_GUN+this.getDataString(GunDataList.SHORT_NAME));
+		String[] names = this.getDataStringArray(GunDataList.TYPES_BULLETS);
+		for (int i = 0; i < names.length; i++) {
+			names[i] = domain+PackLoader.DOMAIN_MAGAZINE+names[i];
+		}
+		this.setData(GunDataList.TYPES_BULLETS, names);
 	}
 
 	static final String headName = "gun_";

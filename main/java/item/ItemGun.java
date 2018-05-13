@@ -61,9 +61,9 @@ public class ItemGun extends Item {
 	public static ItemStack makeGun(String name) {
 		if (PackLoader.GUN_DATA_MAP.containsKey(name)) {
 			ItemStack stack = new ItemStack(INSTANCE_MAP.get(name));
-			stack.setTagCompound(new NBTTagCompound());
+			stack = checkGunNBT(stack);
 			NBTWrapper.setGunName(stack, name);
-			return checkGunNBT(stack);
+			return stack;
 		}
 		return null;
 	}
@@ -87,7 +87,6 @@ public class ItemGun extends Item {
 		// タグがなければ書き込む
 		if (!item.hasTagCompound()) {
 			item.setTagCompound(new NBTTagCompound());
-			ItemGun instance = (ItemGun) item.getItem();
 			GunData data = getGunData(item);
 
 			NBTWrapper.setGunID(item, -1);
@@ -95,8 +94,7 @@ public class ItemGun extends Item {
 			NBTWrapper.setGunReloadProgress(item, -1);
 			NBTWrapper.setGunFireMode(item, GunFireMode.getFireMode(
 					Arrays.asList(data.getDataStringArray(GunDataList.FIRE_MODE)).iterator().next().toString()));
-			NBTWrapper.setGunUseingBullet(item, instance.Domain + "_magazine_"
-					+ Arrays.asList(data.getDataStringArray(GunDataList.TYPES_BULLETS)).iterator().next().toString());
+			NBTWrapper.setGunUseingBullet(item, Arrays.asList(data.getDataStringArray(GunDataList.TYPES_BULLETS)).iterator().next().toString());
 		}
 		return item;
 	}
@@ -127,12 +125,13 @@ public class ItemGun extends Item {
 	@Override
 	public void addInformation(ItemStack stack, EntityPlayer playerIn, List tooltip, boolean advanced) {
 		tooltip.add(ChatFormatting.GRAY + "FireMode : " + NBTWrapper.getGunFireMode(stack));
-		tooltip.add(ChatFormatting.GRAY + "UseBullet : " + ItemMagazine
-				.getBulletData(NBTWrapper.getGunUseingBullet(stack)).getDataString(BulletDataList.DISPLAY_NAME));
+		tooltip.add(ChatFormatting.GRAY + "UseBullet : " + ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(stack)).getDataString(BulletDataList.DISPLAY_NAME));
 		for (LoadedMagazine magazine : NBTWrapper.getGunLoadedMagazines(stack)) {
 			if (magazine != null) {
 				tooltip.add(ItemMagazine.getBulletData(magazine.name).getDataString(BulletDataList.DISPLAY_NAME) + "x"
 						+ magazine.num);
+			}else{
+				tooltip.add("Brank");
 			}
 		}
 
@@ -154,6 +153,20 @@ public class ItemGun extends Item {
 			index = 0;
 		}
 		return GunFireMode.getFireMode(modes.get(index));
+	}
+	/** 次の使用する弾を取得 */
+	public static String getNextUseMagazine(GunData data, String now) {
+		List<String> modes = Arrays.asList(data.getDataStringArray(GunDataList.TYPES_BULLETS));
+		int index = modes.indexOf(now.toString()) + 1;
+		if (index > modes.size() - 1) {
+			System.out.println(index);
+			index = 0;
+		}
+		System.out.println(modes+" "+modes.get(index));
+		if(!ItemMagazine.isMagazineExist(modes.get(index))){
+			return now;
+		}
+		return modes.get(index);
 	}
 
 	/** スタックから銃の登録名を取得 */
