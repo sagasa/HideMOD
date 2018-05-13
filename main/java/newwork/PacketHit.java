@@ -12,8 +12,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import types.BulletData;
-import types.GunData;
-import types.GunData.GunDataList;
+import types.guns.GunData;
+import types.guns.GunData.GunDataList;
 
 /** ヒットマーク用パケット */
 public class PacketHit implements IMessage, IMessageHandler<PacketHit, IMessage> {

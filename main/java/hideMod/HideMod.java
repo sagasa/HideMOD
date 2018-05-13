@@ -11,7 +11,9 @@ import handler.PacketHandler;
 import handler.PlayerHandler;
 import item.ItemGun;
 import item.ItemMagazine;
+import model.HideModelLoader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.model.ModelBakery;
@@ -19,7 +21,10 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -33,8 +38,8 @@ import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import render.RenderBullet;
-import render.RenderDebugEntity;
+import entity.render.RenderBullet;
+import entity.render.RenderDebugEntity;
 import types.BulletData;
 import types.ResourceLoader;
 
@@ -85,24 +90,42 @@ public class HideMod {
     	//パックをロード
     	PackLoader.load(event);
 
+        GameRegistry.registerItem(ItemGun.INSTANCE,"gun");
+    	GameRegistry.registerItem(ItemMagazine.INSTANCE,"bullet");
+        //テクスチャ・モデル指定JSONファイル名の登録。
+        if (event.getSide().isClient()) {
+            //1IDで複数モデルを登録するなら、上のメソッドで登録した登録名を指定する。
+        	//ModelLoader.setCustomModelResourceLocation(ItemGun.INSTANCE, 0, new ModelResourceLocation(MOD_ID + ":" + "gun", "inventory"));
+        	if(FMLCommonHandler.instance().getSide().isClient()) {
+        		RegistryRenders();
+        		ModelLoader.setCustomMeshDefinition(ItemGun.INSTANCE, new ItemMeshDefinition(){
+                    public ModelResourceLocation getModelLocation(ItemStack stack){
+                        return new ModelResourceLocation(new ResourceLocation(MOD_ID, "gun"), "inventory");
+                    }
+                });
+        		//ModelLoaderの登録。
+                ModelLoaderRegistry.registerLoader(new HideModelLoader());
+        	}
+        }
+
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-    	//アイテム登録処理
-    	GameRegistry.registerItem(ItemGun.INSTANCE,"gun");
-    	GameRegistry.registerItem(ItemMagazine.INSTANCE,"bullet");
-
-    	if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+    	if(FMLCommonHandler.instance().getSide().isClient()) {
     		RegistryRenders();
     	}
-    	PackLoader.Register();
+
+
+
     }
     @SideOnly(Side.CLIENT)
     void RegistryRenders(){
     //	Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta, location);
     	RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new RenderBullet(Minecraft.getMinecraft().getRenderManager()));
     	RenderingRegistry.registerEntityRenderingHandler(EntityDebug.class, new RenderDebugEntity(Minecraft.getMinecraft().getRenderManager()));
+
+
     }
 
     /**ログ出力 試験用*/

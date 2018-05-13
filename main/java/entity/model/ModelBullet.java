@@ -1,4 +1,4 @@
-package render;
+package entity.model;
 
 import org.lwjgl.opengl.GL11;
 

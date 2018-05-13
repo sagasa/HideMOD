@@ -14,8 +14,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
 import types.BulletData.BulletDataList;
-import types.GunData;
-import types.GunData.GunDataList;
+import types.guns.GunData;
+import types.guns.GunData.GunDataList;
 
 public class ItemMagazine extends Item{
 
@@ -28,14 +28,22 @@ public class ItemMagazine extends Item{
 	public ItemMagazine() {
 		this.setCreativeTab(CreativeTabs.tabCombat);
 		this.setUnlocalizedName("hidegun");
-		this.setHasSubtypes(true);
 	}
 	/** クリエイティブタブの中にサブタイプを設定 */
 	@Override
 	public void getSubItems(Item itemIn, CreativeTabs tab, List subItems) {
-		for(int meta:PackLoader.BULLET_NAME_MAP.keySet()){
-			subItems.add(setBulletNBT(new ItemStack(this, 1, meta).setStackDisplayName(PackLoader.BULLET_DATA_MAP.get(PackLoader.BULLET_NAME_MAP.get(meta)).getDataString(BulletDataList.DISPLAY_NAME))));
+		for(String name:PackLoader.BULLET_DATA_MAP.keySet()){
+			subItems.add(makeMagazine(name));
 		}
+	}
+	public static ItemStack makeMagazine(String name) {
+		if(PackLoader.BULLET_DATA_MAP.containsKey(name)){
+			ItemStack stack = new ItemStack(INSTANCE);
+			stack.setTagCompound(new NBTTagCompound());
+			NBTWrapper.setMagazineName(stack, name);
+			return setBulletNBT(stack);
+		}
+		return null;
 	}
 	/** どのような状態からでも有効なNBTを書き込む */
 	public static ItemStack setBulletNBT(ItemStack item) {
@@ -48,6 +56,11 @@ public class ItemMagazine extends Item{
 		}
 		NBTWrapper.setMagazineBulletNum(item, data.getDataInt(BulletDataList.MAGAZINE_SIZE));
 		return item;
+	}
+
+	@Override
+	public String getItemStackDisplayName(ItemStack stack) {
+		return getBulletData(stack).getDataString(GunDataList.DISPLAY_NAME);
 	}
 	@Override
 	public int getItemStackLimit(ItemStack stack) {
@@ -72,7 +85,7 @@ public class ItemMagazine extends Item{
 		return false;
 	}
 	public static boolean isMagazine(ItemStack item,String str){
-		if(item.getItem() instanceof ItemMagazine&& PackLoader.BULLET_NAME_MAP.get(item.getMetadata()).equals(str)){
+		if(item!=null&&item.getItem() instanceof ItemMagazine){
 			return true;
 		}
 		return false;
@@ -147,6 +160,6 @@ public class ItemMagazine extends Item{
 	}
 	/**スタックから銃の登録名を取得*/
 	public static String getBulletName(ItemStack item){
-		return PackLoader.BULLET_NAME_MAP.get(item.getMetadata());
+		return NBTWrapper.getMagazineName(item);
 	}
 }

@@ -3,8 +3,8 @@ package handler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import types.GunData;
-import types.GunData.GunDataList;
+import types.guns.GunData;
+import types.guns.GunData.GunDataList;
 
 @SideOnly(Side.CLIENT)
 public class RecoilHandler {

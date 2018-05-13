@@ -1,8 +1,9 @@
-package render;
+package entity.render;
 
 import org.lwjgl.opengl.GL11;
 
 import entity.EntityBullet;
+import entity.model.ModelBullet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.entity.Render;
@@ -10,11 +11,9 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 
-import render.ModelBullet;
-
 public class RenderBullet extends Render {
 
-	public static final ResourceLocation texture = new ResourceLocation("hidemod", "defaultBullet.png");
+	public static final ResourceLocation texture = new ResourceLocation("hidemod", "skins/defaultBullet.png");
 
 	public RenderBullet(RenderManager renderManager)
 	{
@@ -44,6 +43,6 @@ public class RenderBullet extends Render {
 
 	@Override
 	protected ResourceLocation getEntityTexture(Entity entity) {
-		return new ResourceLocation("hidemod","skins/defaultBullet.png");
+		return texture;
 	}
 }

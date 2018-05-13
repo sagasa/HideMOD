@@ -1,4 +1,4 @@
-package types;
+package types.guns;
 
 /**装填済みのマガジン管理用*/
 public class LoadedMagazine{

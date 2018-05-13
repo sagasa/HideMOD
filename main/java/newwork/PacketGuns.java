@@ -30,10 +30,10 @@ import net.minecraftforge.fml.relauncher.Side;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
 import types.BulletData.BulletDataList;
-import types.GunData;
-import types.GunData.GunDataList;
-import types.GunFireMode;
-import types.LoadedMagazine;
+import types.guns.GunData;
+import types.guns.GunFireMode;
+import types.guns.LoadedMagazine;
+import types.guns.GunData.GunDataList;
 
 /** 送受信両用 */
 public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessage> {

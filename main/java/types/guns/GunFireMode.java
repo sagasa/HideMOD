@@ -1,4 +1,4 @@
-package types;
+package types.guns;
 
 public enum GunFireMode{
 	SEMIAUTO, FULLAUTO, MINIGUN, BURST;

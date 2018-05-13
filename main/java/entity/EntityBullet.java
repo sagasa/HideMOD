@@ -1,6 +1,8 @@
 package entity;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -48,10 +50,10 @@ import newwork.PacketGuns;
 import newwork.PacketHit;
 import types.BulletData;
 import types.BulletData.BulletDataList;
-import types.GunData;
-import types.GunData.GunDataList;
 import types.HideDamage;
 import types.HideDamage.HideDamageCase;
+import types.guns.GunData;
+import types.guns.GunData.GunDataList;
 
 /** 銃弾・砲弾・爆弾など投擲系以外の全てこのクラスで追加 */
 public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
@@ -196,13 +198,15 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 							//名前を指定して取得
 							Field attackingPlayer = EntityLivingBase.class.getDeclaredField("attackingPlayer");
 							Field recentlyHit = EntityLivingBase.class.getDeclaredField("recentlyHit");
+							Method recentlySetRevenge = EntityLivingBase.class.getMethod("setRevengeTarget", EntityLivingBase.class);
 							 //アクセス権限を与える
 							attackingPlayer.setAccessible(true);
 							recentlyHit.setAccessible(true);
 					        //攻撃時と同じ処理を組み込む
 							attackingPlayer.set(e, (EntityPlayer)Shooter);
 							recentlyHit.set(e, 100);
-						} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e1) {
+							recentlySetRevenge.invoke(e, Shooter);
+						} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e1) {
 							e1.printStackTrace();
 						}
 

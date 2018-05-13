@@ -30,10 +30,10 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import types.BulletData;
 import types.ContentsPack;
-import types.GunData;
 import types.ImageData;
 import types.BulletData.BulletDataList;
-import types.GunData.GunDataList;
+import types.guns.GunData;
+import types.guns.GunData.GunDataList;
 
 /**パックの読み取り*/
 public class PackLoader {
@@ -50,13 +50,9 @@ public class PackLoader {
 
 	/**弾 ショートネーム - BulletData MAP*/
 	public static HashMap<String,BulletData> BULLET_DATA_MAP = new HashMap<String,BulletData>();
-	/**弾 サブタイプID - ショートネーム MAP*/
-	public static HashMap<Integer,String> BULLET_NAME_MAP = new HashMap<Integer,String>();
 
 	/**銃 ショートネーム - BulletData MAP*/
 	public static HashMap<String, GunData> GUN_DATA_MAP = new HashMap<String,GunData>();
-	/**銃 サブタイプID - ショートネーム MAP*/
-	public static HashMap<Integer,String> GUN_NAME_MAP = new HashMap<Integer,String>();
 
 
 		//初期化
@@ -174,22 +170,5 @@ public class PackLoader {
 			System.out.println("sounds");
 		}
 
-	}
-
-	/**レジスタに書き込み*/
-	public static void Register() {
-		//アイテムをレジスタに
-		int gunMeta = 0;
-		for(String name:GUN_DATA_MAP.keySet()){
-			GUN_NAME_MAP.put(gunMeta, name);
-			gunMeta++;
-			System.out.println(name);
-		}
-		int bulletMeta = 0;
-		for(String name:BULLET_DATA_MAP.keySet()){
-			BULLET_NAME_MAP.put(bulletMeta, name);
-			bulletMeta++;
-	    	System.out.println(name);
-		}
 	}
 }

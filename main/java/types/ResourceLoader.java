@@ -15,7 +15,8 @@ import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.data.IMetadataSerializer;
 import net.minecraft.util.ResourceLocation;
-import types.GunData.GunDataList;
+import types.guns.GunData;
+import types.guns.GunData.GunDataList;
 
 /**デフォルトリソースパックに割り込んでリソースを押し込む*/
 public class ResourceLoader implements IResourcePack{

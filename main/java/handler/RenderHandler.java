@@ -3,6 +3,7 @@ package handler;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import item.model.GunModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
@@ -13,6 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
+import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent.Pre;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.relauncher.Side;
@@ -23,6 +25,8 @@ public class RenderHandler {
 
 	/**ヒットマーク 色は描画時に*/
 	static final ResourceLocation HitMarker = new ResourceLocation("hidemod", "gui/hitMarker.png");
+
+	static GunModel model = new GunModel();
 
 	static Minecraft mc = FMLClientHandler.instance().getClient();
 
@@ -42,7 +46,7 @@ public class RenderHandler {
 		GL11.glPopMatrix();
 */
 	}
-	public static void RenderTest(RenderGameOverlayEvent event){
+	public static void writeGameOverlay(RenderGameOverlayEvent event){
 		ScaledResolution scaledresolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
 		//System.out.println(scaledresolution.getScaledWidth()+" "+scaledresolution.getScaledHeight()+" : "+mc.displayWidth+" "+mc.displayHeight);
 		int x = scaledresolution.getScaledWidth();
@@ -52,6 +56,7 @@ public class RenderHandler {
 		{
 			writeHitMarker(x, y);
 		}
+
 		//
 /*
 		RenderHelper.enableGUIStandardItemLighting();
@@ -110,4 +115,14 @@ public class RenderHandler {
 			GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
 			GlStateManager.disableAlpha();
 			GlStateManager.disableBlend(); */
+	public static void writeHand(RenderHandEvent event) {
+		int x = 0;
+		int y = 0;
+
+		mc.renderEngine.bindTexture(HitMarker);
+	//	GlStateManager.color(1f, 1f, 1f,1);
+	//	GlStateManager.translate(0, 1, 1);
+	//	GlStateManager.scale(0.1, 0.1, 0.1);
+		model.render();
+	}
 }

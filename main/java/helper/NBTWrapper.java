@@ -3,9 +3,9 @@ package helper;
 import item.ItemGun;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import types.GunFireMode;
-import types.LoadedMagazine;
-import types.GunData.GunDataList;
+import types.guns.GunFireMode;
+import types.guns.LoadedMagazine;
+import types.guns.GunData.GunDataList;
 
 /**NBTの読み書きを集約*/
 public class NBTWrapper {
@@ -20,6 +20,7 @@ public class NBTWrapper {
 	private static final String GUN_NBT_ReloadProgress = "ReloadProgress";
 	private static final String GUN_NBT_Magazines = "Magazines";
 	private static final String GUN_NBT_ID = "ID";
+	private static final String GUN_NBT_U_Name = "Name";
 
 	private static final String GUN_NBT_Magazine_Name = "MagazineName";
 	private static final String GUN_NBT_Magazine_Number = "MagazineNumber";
@@ -102,6 +103,21 @@ public class NBTWrapper {
 	}
 
 	/**指定のタグのみを読み取る*/
+	public static String getGunName(ItemStack gun) {
+		NBTTagCompound rootTag = gun.getTagCompound();
+		NBTTagCompound gunTag = rootTag.getCompoundTag(GUN_NBT_Name);
+		return gunTag.getString(GUN_NBT_U_Name);
+	}
+	/**指定のタグのみを書き換え*/
+	public static void setGunName(ItemStack gun ,String name) {
+		NBTTagCompound rootTag = gun.getTagCompound();
+		NBTTagCompound gunTag = rootTag.getCompoundTag(GUN_NBT_Name);
+		gunTag.setString(GUN_NBT_U_Name,name);
+		rootTag.setTag(GUN_NBT_Name, gunTag);
+		gun.setTagCompound(rootTag);
+	}
+
+	/**指定のタグのみを読み取る*/
 	public static GunFireMode getGunFireMode(ItemStack gun) {
 		NBTTagCompound rootTag = gun.getTagCompound();
 		NBTTagCompound gunTag = rootTag.getCompoundTag(GUN_NBT_Name);
@@ -134,7 +150,9 @@ public class NBTWrapper {
 	//  弾のNBTtag
 	//================================
 	private static final String MAGAZINE_NBT_Name = "HideMagazine";
+
 	private static final String MAGAZINE_NBT_BULLETNUM = "BulletNum";
+	private static final String MAGAZINE_NBT_U_Name = "Name";
 
 	/**指定のタグのみを読み取る*/
 	public static int getMagazineBulletNum(ItemStack magazine) {
@@ -149,5 +167,20 @@ public class NBTWrapper {
 		gunTag.setInteger(MAGAZINE_NBT_BULLETNUM,value);
 		rootTag.setTag(MAGAZINE_NBT_Name, gunTag);
 		magazine.setTagCompound(rootTag);
+	}
+
+	/**指定のタグのみを読み取る*/
+	public static String getMagazineName(ItemStack gun) {
+		NBTTagCompound rootTag = gun.getTagCompound();
+		NBTTagCompound gunTag = rootTag.getCompoundTag(MAGAZINE_NBT_Name);
+		return gunTag.getString(MAGAZINE_NBT_U_Name);
+	}
+	/**指定のタグのみを書き換え*/
+	public static void setMagazineName(ItemStack gun ,String name) {
+		NBTTagCompound rootTag = gun.getTagCompound();
+		NBTTagCompound gunTag = rootTag.getCompoundTag(MAGAZINE_NBT_Name);
+		gunTag.setString(MAGAZINE_NBT_U_Name,name);
+		rootTag.setTag(MAGAZINE_NBT_Name, gunTag);
+		gun.setTagCompound(rootTag);
 	}
 }

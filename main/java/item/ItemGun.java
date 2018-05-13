@@ -8,8 +8,12 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 
 import handler.PlayerHandler;
 import helper.NBTWrapper;
-import types.LoadedMagazine;
+import types.guns.GunData;
+import types.guns.GunFireMode;
+import types.guns.LoadedMagazine;
+import types.guns.GunData.GunDataList;
 import hideMod.PackLoader;
+import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -17,11 +21,10 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.LanguageRegistry;
 import types.BulletData;
-import types.GunData;
-import types.GunData.GunDataList;
-import types.GunFireMode;
 
 public class ItemGun extends Item {
 
@@ -31,15 +34,30 @@ public class ItemGun extends Item {
 	public ItemGun() {
 		this.setCreativeTab(CreativeTabs.tabCombat);
 		this.setUnlocalizedName("hidegun");
-		this.setHasSubtypes(true);
 	}
 
 	/** クリエイティブタブの中にサブタイプを設定 */
 	@Override
 	public void getSubItems(Item itemIn, CreativeTabs tab, List subItems) {
-		for(int meta:PackLoader.GUN_NAME_MAP.keySet()){
-			subItems.add(setGunNBT(new ItemStack(this, 1, meta).setStackDisplayName(PackLoader.GUN_DATA_MAP.get(PackLoader.GUN_NAME_MAP.get(meta)).getDataString(GunDataList.DISPLAY_NAME))));
+		for(String name:PackLoader.GUN_DATA_MAP.keySet()){
+			subItems.add(makeGun(name));
 		}
+	}
+
+	/**アイテムスタックを作成*/
+	public static ItemStack makeGun(String name){
+		if(PackLoader.GUN_DATA_MAP.containsKey(name)){
+			ItemStack stack = new ItemStack(INSTANCE);
+			stack.setTagCompound(new NBTTagCompound());
+			NBTWrapper.setGunName(stack, name);
+			return setGunNBT(stack);
+		}
+		return null;
+	}
+
+	@Override
+	public String getItemStackDisplayName(ItemStack stack) {
+		return getGunData(stack).getDataString(GunDataList.DISPLAY_NAME);
 	}
 
 	@Override
@@ -76,6 +94,15 @@ public class ItemGun extends Item {
 		return item;
 	}
 
+
+
+	//TODO 銃剣のオプション次第
+	@Override
+	public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entity) {
+
+		return true;
+	}
+
 	//=========================================================
 	//   更新 便利機能
 	/** アップデート 表示更新など */
@@ -108,7 +135,7 @@ public class ItemGun extends Item {
 	}
 	/**スタックから銃の登録名を取得*/
 	public static String getGunName(ItemStack item){
-		return PackLoader.GUN_NAME_MAP.get(item.getMetadata());
+		return NBTWrapper.getGunName(item);
 	}
 
 	/** GunData取得 */

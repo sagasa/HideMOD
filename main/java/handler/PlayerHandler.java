@@ -40,10 +40,10 @@ import newwork.PacketGuns;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
 import types.BulletData.BulletDataList;
-import types.GunData;
-import types.GunData.GunDataList;
-import types.GunFireMode;
-import types.LoadedMagazine;
+import types.guns.GunData;
+import types.guns.GunFireMode;
+import types.guns.LoadedMagazine;
+import types.guns.GunData.GunDataList;
 
 public class PlayerHandler {
 	// クライアント側変数
