@@ -26,10 +26,12 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import types.BulletData;
 import types.ContentsPack;
+import types.ContentsPack.PackDataList;
 import types.ImageData;
 import types.BulletData.BulletDataList;
 import types.guns.GunData;
@@ -42,7 +44,6 @@ public class PackLoader {
 	/**パックを置くパス*/
 	public static String HidePath;
 
-
 	/**コンテンツパックのリスト*/
 	public static List<ContentsPack> contentsPackList = new ArrayList<ContentsPack>();
 	/**追加するクリエイティブタブのリスト*/
@@ -54,11 +55,10 @@ public class PackLoader {
 	/**銃 ショートネーム - BulletData MAP*/
 	public static HashMap<String, GunData> GUN_DATA_MAP = new HashMap<String,GunData>();
 
-
-		//初期化
-		/*List <types.BulletData> BulletList;
-		BulletData bulletData = new BulletData();
-		*/
+	//仮
+	private List<GunData> cashGunData;
+	private List<BulletData> cashBulletData;
+	private ContentsPack cashPack;
 
 	/**パックから読み込む*/
 	public static void load(FMLPreInitializationEvent event) {
@@ -82,22 +82,22 @@ public class PackLoader {
 				//Add the directory to the content pack list
 				HideMod.log("Loading content pack : " + file.getName()+"...");
 				try {
-					zipRead(file);
+					PackLoader reader = new PackLoader();
+					reader.PackRead(file);
 				} catch (IOException e) {
 					HideMod.log("error : IOException");
 				}
-				HideMod.log("Load Successful!");
 			}
 		}
 	}
 
 	/** ZIPからデータを読み込む 中身の分岐は別 */
-	static void zipRead(File file) throws IOException {
+	private void PackRead(File file) throws IOException {
+		cashGunData = new ArrayList<GunData>();
+		cashBulletData = new ArrayList<BulletData>();
 		// 読み込むファイル
 		FileInputStream in = new FileInputStream(file);
 
-		// 以下、zipを展開して、中身を確認する
-		// TODO 将来的にlangで切り替え可能に…したいなぁ
 		ZipInputStream zipIn = new ZipInputStream(in, Charset.forName("Shift_JIS"));
 		ZipEntry entry = null;
 		while ((entry = zipIn.getNextEntry()) != null) {
@@ -112,42 +112,66 @@ public class PackLoader {
 				while (0 < (size = zipIn.read(buffer))) {
 					data = ArrayEditor.ByteArrayCombining(data, Arrays.copyOf(buffer, size));
 					buffer = new byte[1024];
-
 				}
 				// パックラッパーに送る
 				PackWrapper(data, entry.getName());
-
-				// String zipString = new String(data);
-				// System.out.println(zipString+" "+entry.getName()+"
-				// "+entry.getSize());
 			}
 			zipIn.closeEntry();
 		}
 		zipIn.close();
 		in.close();
+
+		//このタイミングでレジスターに書き込む
+		if(cashPack != null){
+			for (GunData data : cashGunData) {
+				String registerName = cashPack.getDataString(PackDataList.PACK_ROOTNAME)+"_gun_"+data.getDataString(GunDataList.SHORT_NAME);
+				ItemGun gun = new ItemGun(data,registerName,cashPack.getDataString(PackDataList.PACK_ROOTNAME));
+				//ショートネームを登録名に書き換え
+				data.setData(GunDataList.SHORT_NAME, registerName);
+				GUN_DATA_MAP.put(registerName, data);
+				//レジスターに書き込む
+				GameRegistry.registerItem(gun,registerName);
+		        if (FMLCommonHandler.instance().getSide().isClient()) {
+		        	ModelLoader.setCustomModelResourceLocation(gun, 0, new ModelResourceLocation(HideMod.MOD_ID + ":" + registerName, "inventory"));
+		        }
+			}
+			for (BulletData data : cashBulletData) {
+				String registerName = cashPack.getDataString(PackDataList.PACK_ROOTNAME)+"_magazine_"+data.getDataString(BulletDataList.SHORT_NAME);
+				ItemMagazine gun = new ItemMagazine(data,registerName,cashPack.getDataString(PackDataList.PACK_ROOTNAME));
+				//ショートネームを登録名に書き換え
+				data.setData(BulletDataList.SHORT_NAME, registerName);
+				BULLET_DATA_MAP.put(registerName, data);
+				//レジスターに書き込む
+				GameRegistry.registerItem(gun,registerName);
+		        if (FMLCommonHandler.instance().getSide().isClient()) {
+		        	ModelLoader.setCustomModelResourceLocation(gun, 0, new ModelResourceLocation(HideMod.MOD_ID + ":" + registerName, "inventory"));
+		        }
+			}
+			contentsPackList.add(cashPack);
+			HideMod.log("Load Successful!");
+		}else{
+			HideMod.log("error : Missing PackInfo");
+		}
 	}
 
 	/** byte配列とNameからパックの要素の当てはめる
 	 * @throws IOException */
-	static void PackWrapper(byte[] data, String name) throws IOException {
+	private void PackWrapper(byte[] data, String name) throws IOException {
 		// JsonObject newData = gson.fromJson(new String(Arrays.copyOf(data,
 		// data.length)), JsonObject.class);
 		// Gun認識
 		if (Pattern.compile("^(.*)guns/(.*).json").matcher(name).matches()) {
 			GunData newGun = new GunData(new String(data, Charset.forName("UTF-8")));
-			GUN_DATA_MAP.put(newGun.getDataString(GunDataList.SHORT_NAME),newGun);
-			System.out.println("gun : "+newGun.getDataString(GunDataList.SHORT_NAME));
+			cashGunData.add(newGun);
 		}
 		// bullet認識
 		else if (Pattern.compile("^(.*)bullets/(.*).json").matcher(name).matches()) {
 			BulletData newBullet = new BulletData(new String(data, Charset.forName("UTF-8")));
-			BULLET_DATA_MAP.put(newBullet.getDataString(BulletDataList.SHORT_NAME), newBullet);
-			System.out.println("bullet");
+			cashBulletData.add(newBullet);
 		}
 		// packInfo認識
 		else if (Pattern.compile("^(.*)pack.json").matcher(name).matches()) {
-			System.out.println("pack :" + new String(data, Charset.forName("UTF-8")));
-			contentsPackList.add(new ContentsPack(new String(data, Charset.forName("UTF-8"))));
+			cashPack = new ContentsPack(new String(data, Charset.forName("UTF-8")));
 		}
 
 		// Resources認識

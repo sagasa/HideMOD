@@ -74,16 +74,15 @@ public class PlayerHandler {
 	public static int ReloadProgress = -1;
 	public static GunFireMode fireMode;
 
-	//サーバー側変数
-
+	// サーバー側変数
 
 	/** プレイヤーのTicl処理 */
 	public static void PlayerTick(PlayerTickEvent event) {
 		if (event.phase == Phase.START) {
 			// サイドで処理を分ける
 			if (event.side == Side.CLIENT) {
-				//自分のキャラクターのみ
-				if(event.player.equals(Minecraft.getMinecraft().thePlayer)){
+				// 自分のキャラクターのみ
+				if (event.player.equals(Minecraft.getMinecraft().thePlayer)) {
 					CientTick(event.player);
 				}
 			} else if (event.side == Side.SERVER) {
@@ -104,7 +103,7 @@ public class PlayerHandler {
 				pushKeys.add(bind);
 			}
 		}
-		if(fastTick){
+		if (fastTick) {
 			fastTick = false;
 			return;
 		}
@@ -120,19 +119,18 @@ public class PlayerHandler {
 			// 銃に持ち替えたなら
 			if (ItemGun.isGun(item)) {
 				// NBTが入ってるか確認 無ければ設定
-				if (!item.hasTagCompound()) {
-					ItemGun.setGunNBT(item);
-				}
+				ItemGun.checkGunNBT(item);
 				ItemGun.setUUID(item);
-				//前に持っていたのが銃だった場合はIDで比較
-				if(!ItemGun.isGun(lastItem)||(ItemGun.isGun(lastItem)&&NBTWrapper.getGunID(item)!=NBTWrapper.getGunID(lastItem))){
+				// 前に持っていたのが銃だった場合はIDで比較
+				if (!ItemGun.isGun(lastItem)
+						|| (ItemGun.isGun(lastItem) && NBTWrapper.getGunID(item) != NBTWrapper.getGunID(lastItem))) {
 					recoilPower = 0;
 					GunData gundata = ((ItemGun) item.getItem()).getGunData(item);
 					// 変数にNBTから読み込み
 					UsingBulletName = NBTWrapper.getGunUseingBullet(item);
 					ShootDelay = NBTWrapper.getGunShootDelay(item);
 					ReloadProgress = NBTWrapper.getGunReloadProgress(item);
-					//System.out.println(NBTWrapper.getGunID(item));
+					// System.out.println(NBTWrapper.getGunID(item));
 					loadedMagazines = NBTWrapper.getGunLoadedMagazines(item);
 
 					// 射撃モード読み込み
@@ -149,7 +147,7 @@ public class PlayerHandler {
 			if (leftMouseHeld) {
 				// 射撃処理
 				ReloadProgress = -1;
-				if (ShootDelay <= 0&&!shooted) {
+				if (ShootDelay <= 0 && !shooted) {
 					switch (fireMode) {
 					case BURST:
 
@@ -217,7 +215,7 @@ public class PlayerHandler {
 		for (LoadedMagazine magazine : loadedMagazines) {
 			// 入ってなければ要求
 			if (magazine == null) {
-				//System.out.println(UsingBulletName);
+				// System.out.println(UsingBulletName);
 				return ItemMagazine.getBulletData(UsingBulletName).getDataInt(BulletDataList.MAGAZINE_SIZE);
 			}
 			int num = ItemMagazine.getBulletData(magazine.name).getDataInt(BulletDataList.MAGAZINE_SIZE) - magazine.num;
@@ -271,14 +269,21 @@ public class PlayerHandler {
 			// カチって音を出す…
 			shooted = true;
 		} else {
-			PacketHandler.INSTANCE.sendToServer(new PacketGuns(gun,PackLoader.BULLET_DATA_MAP.get(bulletName), player.rotationYaw, player.rotationPitch));
-			ShootDelay = gun.getDataInt(GunDataList.RATE);
-			// リコイル
-			RecoilHandler.MakeRecoil(player, gun, recoilPower);
-			// 100を超えないように代入
-			recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun) > 100 ? 100
-					: recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun);
-
+			// 存在する弾かどうか
+			if (ItemMagazine.isMagazineExist(bulletName)) {
+				PacketHandler.INSTANCE.sendToServer(new PacketGuns(gun, PackLoader.BULLET_DATA_MAP.get(bulletName),
+						player.rotationYaw, player.rotationPitch));
+				ShootDelay = gun.getDataInt(GunDataList.RATE);
+				// リコイル
+				RecoilHandler.MakeRecoil(player, gun, recoilPower);
+				// 100を超えないように代入
+				recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun) > 100 ? 100
+						: recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun);
+			}else{
+				//存在しなかったなら破棄処理
+				PacketHandler.INSTANCE.sendToServer(
+						new PacketGuns(UsingBulletName, (byte) player.inventory.currentItem, 0));
+			}
 			// どっとを表示
 			// EntityDebug dot = new EntityDebug(player.worldObj, new
 			// Vec3(player.posX,player.posY, player.posZ));
@@ -297,6 +302,7 @@ public class PlayerHandler {
 			addMagazine(UsingBulletName, bulletNum);
 		}
 	}
+
 	/***/
 	private static void ServerTick(EntityPlayer player) {
 

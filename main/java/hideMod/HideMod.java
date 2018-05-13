@@ -89,29 +89,11 @@ public class HideMod {
 
     	//パックをロード
     	PackLoader.load(event);
-
-        GameRegistry.registerItem(ItemGun.INSTANCE,"gun");
-    	GameRegistry.registerItem(ItemMagazine.INSTANCE,"bullet");
-        //テクスチャ・モデル指定JSONファイル名の登録。
-        if (event.getSide().isClient()) {
-            //1IDで複数モデルを登録するなら、上のメソッドで登録した登録名を指定する。
-        	//ModelLoader.setCustomModelResourceLocation(ItemGun.INSTANCE, 0, new ModelResourceLocation(MOD_ID + ":" + "gun", "inventory"));
-        	if(FMLCommonHandler.instance().getSide().isClient()) {
-        		RegistryRenders();
-        		ModelLoader.setCustomMeshDefinition(ItemGun.INSTANCE, new ItemMeshDefinition(){
-                    public ModelResourceLocation getModelLocation(ItemStack stack){
-                        return new ModelResourceLocation(new ResourceLocation(MOD_ID, "gun"), "inventory");
-                    }
-                });
-        		//ModelLoaderの登録。
-                ModelLoaderRegistry.registerLoader(new HideModelLoader());
-        	}
-        }
-
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
+    	//エンティティのレンダー登録
     	if(FMLCommonHandler.instance().getSide().isClient()) {
     		RegistryRenders();
     	}

@@ -186,6 +186,12 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 						int num = ItemMagazine.ReloadItem(Player, m.bulletName,m.bulletAmount);
 						int amount = num;
 						ItemStack item = Player.inventory.getCurrentItem();
+						//リクエストされた弾が存在しないならNBTのマガジンをチェック
+						if(!ItemMagazine.isMagazineExist(m.bulletName)){
+							ItemGun.checkGunMagazines(item);
+							return;
+						}
+						//NBT書き換え
 						if(ItemGun.isGun(item)){
 							// MBT書き換え
 							LoadedMagazine[] magazines = NBTWrapper.getGunLoadedMagazines(item);

@@ -1,7 +1,7 @@
 {
     "parent": "builtin/generated",
     "textures": {
-        "layer0": "hidemod:items/50Cal"
+        "layer0": "hidemod:items/kar98kSniper_Birch"
     },
     "display": {
     "thirdperson": {

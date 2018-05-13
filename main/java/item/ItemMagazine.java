@@ -1,6 +1,8 @@
 package item;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 
@@ -19,26 +21,31 @@ import types.guns.GunData.GunDataList;
 
 public class ItemMagazine extends Item{
 
-	public static final ItemMagazine INSTANCE = new ItemMagazine();
+	private static Map<String ,ItemMagazine> INSTANCE_MAP = new HashMap<String,ItemMagazine>();
 
-
-
+	public String RegisterName;
+	public BulletData BulletData;
+	public String Domain;
 	//========================================================================
 	//登録
-	public ItemMagazine() {
+	public ItemMagazine(BulletData data, String name,String domain) {
 		this.setCreativeTab(CreativeTabs.tabCombat);
-		this.setUnlocalizedName("hidegun");
+		this.setUnlocalizedName(name);
+		this.setMaxStackSize(data.getDataInt(BulletDataList.STACK_SIZE));
+		this.RegisterName = name;
+		this.BulletData = data;
+		this.Domain = domain;
+		INSTANCE_MAP.put(name,this);
 	}
 	/** クリエイティブタブの中にサブタイプを設定 */
 	@Override
 	public void getSubItems(Item itemIn, CreativeTabs tab, List subItems) {
-		for(String name:PackLoader.BULLET_DATA_MAP.keySet()){
-			subItems.add(makeMagazine(name));
-		}
+			subItems.add(makeMagazine(RegisterName));
 	}
+
 	public static ItemStack makeMagazine(String name) {
 		if(PackLoader.BULLET_DATA_MAP.containsKey(name)){
-			ItemStack stack = new ItemStack(INSTANCE);
+			ItemStack stack = new ItemStack(INSTANCE_MAP.get(name));
 			stack.setTagCompound(new NBTTagCompound());
 			NBTWrapper.setMagazineName(stack, name);
 			return setBulletNBT(stack);
@@ -62,10 +69,6 @@ public class ItemMagazine extends Item{
 	public String getItemStackDisplayName(ItemStack stack) {
 		return getBulletData(stack).getDataString(GunDataList.DISPLAY_NAME);
 	}
-	@Override
-	public int getItemStackLimit(ItemStack stack) {
-		return getBulletData(stack).getDataInt(BulletDataList.STACK_SIZE);
-	}
 	//=========================================================
 	//   更新 便利機能
 	@Override
@@ -85,7 +88,7 @@ public class ItemMagazine extends Item{
 		return false;
 	}
 	public static boolean isMagazine(ItemStack item,String str){
-		if(item!=null&&item.getItem() instanceof ItemMagazine){
+		if(item!=null&&item.getItem() instanceof ItemMagazine&&((ItemMagazine)item.getItem()).RegisterName.equals(str)){
 			return true;
 		}
 		return false;
@@ -146,20 +149,23 @@ public class ItemMagazine extends Item{
 		return amount - bulletNum;
 	}
 
-
+	/** BulletData取得 */
+	public static BulletData getBulletData(String name) {
+		return PackLoader.BULLET_DATA_MAP.get(name);
+	}
 	/** BulletData取得 */
 	public static BulletData getBulletData(ItemStack item) {
 		if (!(item.getItem() instanceof ItemMagazine)) {
 			return null;
 		}
-		return PackLoader.BULLET_DATA_MAP.get(getBulletName(item));
+		return ((ItemMagazine)item.getItem()).BulletData;
 	}
-	/** BulletData取得 */
-	public static BulletData getBulletData(String name) {
-		return PackLoader.BULLET_DATA_MAP.get(name);
-	}
-	/**スタックから銃の登録名を取得*/
+	/**スタックから弾の登録名を取得*/
 	public static String getBulletName(ItemStack item){
-		return NBTWrapper.getMagazineName(item);
+		return ((ItemMagazine)item.getItem()).RegisterName;
+	}
+	/** その名前の弾は存在するか*/
+	public static boolean isMagazineExist(String name){
+		return PackLoader.BULLET_DATA_MAP.containsKey(name);
 	}
 }
