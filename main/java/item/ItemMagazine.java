@@ -144,6 +144,10 @@ public class ItemMagazine extends Item{
 					item = null;
 				}
 				player.inventory.mainInventory[i] = item;
+				//破棄しない設定なら空のマガジンを追加
+				if(ItemMagazine.getBulletData(bulletName).getDataBoolean(BulletDataList.MAGAZINE_BREAK)){
+					player.inventory.addItemStackToInventory(NBTWrapper.setMagazineBulletNum(makeMagazine(bulletName), 0));
+				}
 			}
 		}
 		return amount - bulletNum;

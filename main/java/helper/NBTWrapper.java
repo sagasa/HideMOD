@@ -40,7 +40,7 @@ public class NBTWrapper {
 		return loadedMagazines;
 	}
 	/** マガジンの内容を書き込み */
-	public static void setGunLoadedMagazines(ItemStack gun,LoadedMagazine[] newMagazines) {
+	public static ItemStack setGunLoadedMagazines(ItemStack gun,LoadedMagazine[] newMagazines) {
 		NBTTagCompound rootTag = gun.getTagCompound();
 		NBTTagCompound gunTag = rootTag.getCompoundTag(GUN_NBT_Name);
 		NBTTagCompound magazines = new NBTTagCompound();
@@ -55,6 +55,7 @@ public class NBTWrapper {
 		gunTag.setTag(GUN_NBT_Magazines, magazines);
 		rootTag.setTag(GUN_NBT_Name, gunTag);
 		gun.setTagCompound(rootTag);
+		return gun;
 	}
 
 	/**指定のタグのみを読み取る*/
@@ -64,12 +65,13 @@ public class NBTWrapper {
 		return gunTag.getInteger(GUN_NBT_ReloadProgress);
 	}
 	/**指定のタグのみを書き換え*/
-	public static void setGunReloadProgress(ItemStack gun ,int value) {
+	public static ItemStack setGunReloadProgress(ItemStack gun ,int value) {
 		NBTTagCompound rootTag = gun.getTagCompound();
 		NBTTagCompound gunTag = rootTag.getCompoundTag(GUN_NBT_Name);
 		gunTag.setInteger(GUN_NBT_ReloadProgress,value);
 		rootTag.setTag(GUN_NBT_Name, gunTag);
 		gun.setTagCompound(rootTag);
+		return gun;
 	}
 
 	/**指定のタグのみを読み取る*/
@@ -79,12 +81,13 @@ public class NBTWrapper {
 		return gunTag.getInteger(GUN_NBT_ShootDelay);
 	}
 	/**指定のタグのみを書き換え*/
-	public static void setGunShootDelay(ItemStack gun ,int value) {
+	public static ItemStack setGunShootDelay(ItemStack gun ,int value) {
 		NBTTagCompound rootTag = gun.getTagCompound();
 		NBTTagCompound gunTag = rootTag.getCompoundTag(GUN_NBT_Name);
 		gunTag.setInteger(GUN_NBT_ShootDelay,value);
 		rootTag.setTag(GUN_NBT_Name, gunTag);
 		gun.setTagCompound(rootTag);
+		return gun;
 	}
 
 	/**指定のタグのみを読み取る*/
@@ -94,12 +97,13 @@ public class NBTWrapper {
 		return gunTag.getString(GUN_NBT_UseingBullet);
 	}
 	/**指定のタグのみを書き換え*/
-	public static void setGunUseingBullet(ItemStack gun ,String name) {
+	public static ItemStack setGunUseingBullet(ItemStack gun ,String name) {
 		NBTTagCompound rootTag = gun.getTagCompound();
 		NBTTagCompound gunTag = rootTag.getCompoundTag(GUN_NBT_Name);
 		gunTag.setString(GUN_NBT_UseingBullet,name);
 		rootTag.setTag(GUN_NBT_Name, gunTag);
 		gun.setTagCompound(rootTag);
+		return gun;
 	}
 
 	/**指定のタグのみを読み取る*/
@@ -109,12 +113,13 @@ public class NBTWrapper {
 		return gunTag.getString(GUN_NBT_U_Name);
 	}
 	/**指定のタグのみを書き換え*/
-	public static void setGunName(ItemStack gun ,String name) {
+	public static ItemStack setGunName(ItemStack gun ,String name) {
 		NBTTagCompound rootTag = gun.getTagCompound();
 		NBTTagCompound gunTag = rootTag.getCompoundTag(GUN_NBT_Name);
 		gunTag.setString(GUN_NBT_U_Name,name);
 		rootTag.setTag(GUN_NBT_Name, gunTag);
 		gun.setTagCompound(rootTag);
+		return gun;
 	}
 
 	/**指定のタグのみを読み取る*/
@@ -124,12 +129,13 @@ public class NBTWrapper {
 		return GunFireMode.getFireMode(gunTag.getString(GUN_NBT_FireMode));
 	}
 	/**指定のタグのみを書き換え*/
-	public static void setGunFireMode(ItemStack gun ,GunFireMode mode) {
+	public static ItemStack setGunFireMode(ItemStack gun ,GunFireMode mode) {
 		NBTTagCompound rootTag = gun.getTagCompound();
 		NBTTagCompound gunTag = rootTag.getCompoundTag(GUN_NBT_Name);
 		gunTag.setString(GUN_NBT_FireMode,GunFireMode.getFireMode(mode));
 		rootTag.setTag(GUN_NBT_Name, gunTag);
 		gun.setTagCompound(rootTag);
+		return gun;
 	}
 
 	/**指定のタグのみを読み取る*/
@@ -139,12 +145,13 @@ public class NBTWrapper {
 		return gunTag.getLong(GUN_NBT_ID);
 	}
 	/**指定のタグのみを書き換え*/
-	public static void setGunID(ItemStack gun ,long value) {
+	public static ItemStack setGunID(ItemStack gun ,long value) {
 		NBTTagCompound rootTag = gun.getTagCompound();
 		NBTTagCompound gunTag = rootTag.getCompoundTag(GUN_NBT_Name);
 		gunTag.setLong(GUN_NBT_ID,value);
 		rootTag.setTag(GUN_NBT_Name, gunTag);
 		gun.setTagCompound(rootTag);
+		return gun;
 	}
 	//================================
 	//  弾のNBTtag
@@ -161,12 +168,13 @@ public class NBTWrapper {
 		return gunTag.getInteger(MAGAZINE_NBT_BULLETNUM);
 	}
 	/**指定のタグのみを書き換え*/
-	public static void setMagazineBulletNum(ItemStack magazine ,int value) {
+	public static ItemStack setMagazineBulletNum(ItemStack magazine ,int value) {
 		NBTTagCompound rootTag = magazine.getTagCompound();
 		NBTTagCompound gunTag = rootTag.getCompoundTag(MAGAZINE_NBT_Name);
 		gunTag.setInteger(MAGAZINE_NBT_BULLETNUM,value);
 		rootTag.setTag(MAGAZINE_NBT_Name, gunTag);
 		magazine.setTagCompound(rootTag);
+		return magazine;
 	}
 
 	/**指定のタグのみを読み取る*/
@@ -176,11 +184,12 @@ public class NBTWrapper {
 		return gunTag.getString(MAGAZINE_NBT_U_Name);
 	}
 	/**指定のタグのみを書き換え*/
-	public static void setMagazineName(ItemStack gun ,String name) {
-		NBTTagCompound rootTag = gun.getTagCompound();
+	public static ItemStack setMagazineName(ItemStack magazine ,String name) {
+		NBTTagCompound rootTag = magazine.getTagCompound();
 		NBTTagCompound gunTag = rootTag.getCompoundTag(MAGAZINE_NBT_Name);
 		gunTag.setString(MAGAZINE_NBT_U_Name,name);
 		rootTag.setTag(MAGAZINE_NBT_Name, gunTag);
-		gun.setTagCompound(rootTag);
+		magazine.setTagCompound(rootTag);
+		return magazine;
 	}
 }
