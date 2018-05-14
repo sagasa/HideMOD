@@ -93,7 +93,7 @@ public class RenderHandler {
 
 	/**自分の持ってる銃の描画 アニメーションとパーツの稼働はこのメゾットのみ*/
 	public static void RenderHand(RenderHandEvent event) {
-		model.render(RenderTick,Minecraft.getMinecraft().thePlayer);
+		//model.render(RenderTick,Minecraft.getMinecraft().thePlayer);
 	}
 
 }
