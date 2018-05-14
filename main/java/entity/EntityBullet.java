@@ -228,7 +228,6 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			//距離計算
 			FlyingDistance += lvo.distanceTo(lvt);
 		} else {
-
 			// クライアントサイド
 			 //this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE,posX,posY,posZ,0,0,0,new int[0]);
 			// this.posX, this.posY, this.posZ, 1, 1, 1, new int[0]);
@@ -241,7 +240,6 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		}
 		tick++;
 	}
-
 	/**EntityLivingに対するダメージ算出*/
 	private float getFinalLivingDamage(EntityLivingBase target,double distance){
 		float damage = 0;

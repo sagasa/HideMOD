@@ -20,6 +20,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import item.ItemGun;
 import item.ItemMagazine;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -83,7 +84,7 @@ public class PlayerHandler {
 			if (event.side == Side.CLIENT) {
 				// 自分のキャラクターのみ
 				if (event.player.equals(Minecraft.getMinecraft().thePlayer)) {
-					CientTick(event.player);
+					CientTick(Minecraft.getMinecraft().thePlayer);
 				}
 			} else if (event.side == Side.SERVER) {
 				ServerTick(event.player);
@@ -93,7 +94,7 @@ public class PlayerHandler {
 	}
 
 	/** サウンド処理 描画処理 入力処理 */
-	private static void CientTick(EntityPlayer player) {
+	private static void CientTick(EntityPlayerSP player) {
 		// キー入力の取得 押された変化を取得
 		ArrayList<KeyBind> pushKeys = new ArrayList<KeyBind>();
 		oldKeys.putAll(newKeys);
@@ -142,6 +143,8 @@ public class PlayerHandler {
 		lastCurrentItem = player.inventory.currentItem;
 		// 持っているアイテムがHideModの銃なら
 		if (ItemGun.isGun(item)) {
+			//手の向きを調整
+
 			// gunData取得
 			GunData gundata = ((ItemGun) item.getItem()).getGunData(item);
 			if (leftMouseHeld) {

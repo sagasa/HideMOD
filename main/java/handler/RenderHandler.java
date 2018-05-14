@@ -15,6 +15,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.client.event.RenderHandEvent;
+import net.minecraftforge.client.event.RenderLivingEvent.Post;
 import net.minecraftforge.client.event.RenderPlayerEvent.Pre;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.relauncher.Side;
@@ -26,26 +27,18 @@ public class RenderHandler {
 	/**ヒットマーク 色は描画時に*/
 	static final ResourceLocation HitMarker = new ResourceLocation("hidemod", "gui/hitMarker.png");
 
+	/**float型のより詳細なTick*/
+	static float RenderTick;
+
 	static GunModel model = new GunModel();
 
 	static Minecraft mc = FMLClientHandler.instance().getClient();
 
-	public static void RenderPlayerEvent(Pre event) {
-		/*GL11.glPushMatrix();
-		GL11.glScalef(20f, 20f, 20f);
-		GL11.glTranslated(event.x, event.y, event.z);
-		GL11.glRotatef(0, 0F, 1F, 0F);
-		GL11.glDisable(GL11.GL_TEXTURE_2D);
-		GL11.glEnable(GL11.GL_BLEND);
-		//GL11.glDisable(GL11.GL_DEPTH_TEST);
-		GL11.glColor4f(0F, 0F, 1F, 0.3F);
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		GL11.glDisable(GL11.GL_BLEND);
-		GL11.glColor4f(1F, 1F, 1F, 1F);
-		GL11.glPopMatrix();
-*/
+	public static void setRenderTick(float renderTickTime) {
+		RenderTick = renderTickTime;
 	}
+
+	/**オーバーレイGUI*/
 	public static void writeGameOverlay(RenderGameOverlayEvent event){
 		ScaledResolution scaledresolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
 		//System.out.println(scaledresolution.getScaledWidth()+" "+scaledresolution.getScaledHeight()+" : "+mc.displayWidth+" "+mc.displayHeight);
@@ -92,37 +85,15 @@ public class RenderHandler {
 		GlStateManager.disableAlpha();
 		GlStateManager.disableBlend();
 	}
-	/*
-	 mc.renderEngine.bindTexture(hitMarker);
 
-			GlStateManager.enableAlpha();
-			GlStateManager.enableBlend();
-			GlStateManager.color(1.0f, 1.0f, 1.0f, Math.max(((float)FlansModClient.hitMarkerTime - 10.0f + partialTicks) / 10.0f, 0.0f));
+	/**自分以外の持ってる銃の描画*/
+	public static void RenderEntityEvent(Post event) {
 
-
-			ItemStack currentStack = mc.thePlayer.inventory.getCurrentItem();
-			PlayerData data = PlayerHandler.getPlayerData(mc.thePlayer, Side.CLIENT);
-			double zLevel = 0D;
-
-			tessellator.getWorldRenderer().startDrawingQuads();
-			tessellator.getWorldRenderer().addVertexWithUV(i / 2 - 4d, j / 2 + 5d, zLevel, 0D / 16D, 9D / 16D);
-			tessellator.getWorldRenderer().addVertexWithUV(i / 2 + 5d, j / 2 + 5d, zLevel, 9D / 16D, 9D / 16D);
-			tessellator.getWorldRenderer().addVertexWithUV(i / 2 + 5d, j / 2 - 4d, zLevel, 9D / 16D, 0D / 16D);
-			tessellator.getWorldRenderer().addVertexWithUV(i / 2 - 4d, j / 2 - 4d, zLevel, 0D / 16D, 0D / 16D);
-			tessellator.draw();
-
-
-			GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
-			GlStateManager.disableAlpha();
-			GlStateManager.disableBlend(); */
-	public static void writeHand(RenderHandEvent event) {
-		int x = 0;
-		int y = 0;
-
-		mc.renderEngine.bindTexture(HitMarker);
-	//	GlStateManager.color(1f, 1f, 1f,1);
-	//	GlStateManager.translate(0, 1, 1);
-	//	GlStateManager.scale(0.1, 0.1, 0.1);
-		model.render();
 	}
+
+	/**自分の持ってる銃の描画 アニメーションとパーツの稼働はこのメゾットのみ*/
+	public static void RenderHand(RenderHandEvent event) {
+		model.render(RenderTick,Minecraft.getMinecraft().thePlayer);
+	}
+
 }

@@ -7,8 +7,11 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import hideMod.PackLoader;
 import net.minecraft.client.resources.IResourcePack;
@@ -23,33 +26,42 @@ public class ResourceLoader implements IResourcePack{
 
     @Override
     public InputStream getInputStream(ResourceLocation resource) throws IOException {
-        //参照されたリソースに対し、InputStreamを返す。
-    	//langファイルのダミーを作って渡す
-    	if (resource.getResourcePath().equals("lang/en_US.lang")){
-    		ArrayList<String> langData = new ArrayList<String>();
-    		for (GunData data:PackLoader.GUN_DATA_MAP.values()){
-    			langData.add("item."+data.getDataString(GunDataList.SHORT_NAME)+".name="+data.getDataString(GunDataList.DISPLAY_NAME));
+    	//参照されたリソースが存在するかの指定。
+    	Pattern itemModel = Pattern.compile("^models\\/item\\/");
+    	Pattern json = Pattern.compile("\\.json$");
+    	if (resource.getResourcePath().startsWith("models/item/")) {
+    		String registerName = json.matcher(itemModel.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
+    		//銃なら
+    		if(PackLoader.GUN_DATA_MAP.containsKey(registerName)){
+    			return makeGunModel(PackLoader.GUN_DATA_MAP.get(registerName).getDataString(GunDataList.ICON), true);
     		}
-    		return new ByteArrayInputStream(String.join("\n", langData).getBytes(Charset.forName("UTF-8")));
-    	}
-    /*	//銃のテクスチャ
-    	if (resource.getResourcePath().startsWith("gun_",12)) {
-    		return ClassLoader.getSystemResourceAsStream("assets/hidemod/models/item/gunItem.json");
-		}*/
+		}
 		return null;
+    }
+
+    /**Jsonの内容！！！*/
+    private InputStream makeGunModel(String texture,boolean hasModel){
+    	String data;
+    	if(hasModel){
+    		data = "{\"parent\":\"builtin/generated\",\"textures\":{\"layer0\":\"hidemod:items/"+texture+"\"},\"display\":{\"thirdperson\":{\"rotation\":[0,90,-35],\"translation\":[0,1.25,-3.5],\"scale\":[0,0,0]},\"firstperson\":{\"rotation\":[0,-135,25],\"translation\":[0,4,2],\"scale\":[0,0,0]}}}";
+    	}else{
+    		data = "{\"parent\":\"builtin/generated\",\"textures\":{\"layer0\":\"hidemod:items/"+texture+"\"},\"display\":{\"thirdperson\":{\"rotation\":[0,90,-35],\"translation\":[0,1.25,-3.5],\"scale\":[0.85,0.85,0.85]},\"firstperson\":{\"rotation\":[0,-135,25],\"translation\":[0,4,2],\"scale\":[1.7,1.7,1.7]}}}";
+    	}
+    	return new ByteArrayInputStream(data.getBytes());
     }
 
     @Override
     public boolean resourceExists(ResourceLocation resource) {
         //参照されたリソースが存在するかの指定。
-    	//langを渡す
-    	System.out.println("ResourceLIST : " + resource.getResourceDomain() + " / "+resource.getResourcePath());
-    	if (resource.getResourcePath().equals("lang/en_US.lang")){
-    		return true;
-    	}
-   /* 	if (resource.getResourcePath().startsWith("gun_",12)) {
-    		return true;
-		}*/
+    	Pattern itemModel = Pattern.compile("^models\\/item\\/");
+    	Pattern json = Pattern.compile("\\.json$");
+    	if (resource.getResourcePath().startsWith("models/item/")) {
+    		String registerName = json.matcher(itemModel.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
+    		//銃なら
+    		if(PackLoader.GUN_DATA_MAP.containsKey(registerName)){
+    			return true;
+    		}
+		}
         return false;
     }
 
