@@ -55,6 +55,9 @@ public class PackLoader {
 	/**銃 ショートネーム - BulletData MAP*/
 	public static HashMap<String, GunData> GUN_DATA_MAP = new HashMap<String,GunData>();
 
+	/**アイコン 登録名 - byte[] MAP*/
+	public static HashMap<String, byte[]> ICON_MAP = new HashMap<String,byte[]>();
+
 	/**ドメイン 銃*/
 	public static final String DOMAIN_GUN = "_gun_";
 	/**ドメイン 弾*/
@@ -181,21 +184,24 @@ public class PackLoader {
 
 		// Resources認識
 		// Icon
-		if (Pattern.compile("^(.*)resources/icon/(.*).png").matcher(name).matches()) {
-			String n = Pattern.compile(".png$").matcher(Pattern.compile("^(.*)resources/icon/").matcher(name).replaceAll("")).replaceAll("");
-			ImageData newImage = new ImageData(data,n);
- 			System.out.println("icon");
+		if (Pattern.compile("^(.*)icon/(.*).png").matcher(name).matches()) {
+			String n = Pattern.compile(".png$").matcher(Pattern.compile("^(.*)icon/").matcher(name).replaceAll("")).replaceAll("");
+			if(ICON_MAP.containsKey(n)){
+				HideMod.log("error : Resource is Already exists Name:"+n);
+			}else{
+				ICON_MAP.put(n, data);
+			}
 		}
 		//model
-		if (Pattern.compile("^(.*)resources/model/(.*).json").matcher(name).matches()) {
+		if (Pattern.compile("^(.*)model/(.*).json").matcher(name).matches()) {
 			System.out.println("model");
 		}
 		//texture
-		if (Pattern.compile("^(.*)resources/texture/(.*).png").matcher(name).matches()) {
+		if (Pattern.compile("^(.*)texture/(.*).png").matcher(name).matches()) {
 			System.out.println("texture");
 		}
 		//sounds
-		if (Pattern.compile("^(.*)resources/sounds/(.*).ogg").matcher(name).matches()) {
+		if (Pattern.compile("^(.*)sounds/(.*).ogg").matcher(name).matches()) {
 			System.out.println("sounds");
 		}
 

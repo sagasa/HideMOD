@@ -26,16 +26,24 @@ public class ResourceLoader implements IResourcePack{
 
     @Override
     public InputStream getInputStream(ResourceLocation resource) throws IOException {
-    	//参照されたリソースが存在するかの指定。
+    	//参照されたリソースを渡す
     	Pattern itemModel = Pattern.compile("^models\\/item\\/");
     	Pattern json = Pattern.compile("\\.json$");
-    	if (resource.getResourcePath().startsWith("models/item/")) {
+    	Pattern itemTexture = Pattern.compile("^textures\\/items\\/");
+    	Pattern png = Pattern.compile("\\.png$");
+    	if (itemModel.matcher(resource.getResourcePath()).find()) {
     		String registerName = json.matcher(itemModel.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
     		//銃なら
     		if(PackLoader.GUN_DATA_MAP.containsKey(registerName)){
     			return makeGunModel(PackLoader.GUN_DATA_MAP.get(registerName).getDataString(GunDataList.ICON), true);
     		}
 		}
+    	if (itemTexture.matcher(resource.getResourcePath()).find()) {
+    		String iconName = png.matcher(itemTexture.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
+    		if(PackLoader.ICON_MAP.containsKey(iconName)){
+    			return new ByteArrayInputStream(PackLoader.ICON_MAP.get(iconName));
+    		}
+    	}
 		return null;
     }
 
@@ -52,16 +60,25 @@ public class ResourceLoader implements IResourcePack{
 
     @Override
     public boolean resourceExists(ResourceLocation resource) {
+    	//System.out.println("ReceiveRequest : "+resource.getResourcePath());
         //参照されたリソースが存在するかの指定。
     	Pattern itemModel = Pattern.compile("^models\\/item\\/");
     	Pattern json = Pattern.compile("\\.json$");
-    	if (resource.getResourcePath().startsWith("models/item/")) {
+    	Pattern itemTexture = Pattern.compile("^textures\\/items\\/");
+    	Pattern png = Pattern.compile("\\.png$");
+    	if (itemModel.matcher(resource.getResourcePath()).find()) {
     		String registerName = json.matcher(itemModel.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
     		//銃なら
     		if(PackLoader.GUN_DATA_MAP.containsKey(registerName)){
     			return true;
     		}
 		}
+    	if (itemTexture.matcher(resource.getResourcePath()).find()) {
+    		String iconName = png.matcher(itemTexture.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
+    		if(PackLoader.ICON_MAP.containsKey(iconName)){
+    			return true;
+    		}
+    	}
         return false;
     }
 

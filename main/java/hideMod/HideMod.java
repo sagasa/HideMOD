@@ -111,8 +111,8 @@ public class HideMod {
     }
 
     /**ログ出力 試験用*/
-    public static void log(String String){
-    	System.out.println("[HideMod] " + String);
+    public static void log(Object String){
+    	System.out.println("[HideMod] " + String.toString());
 
     }
 }
