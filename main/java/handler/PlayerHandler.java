@@ -113,9 +113,13 @@ public class PlayerHandler {
 		// アイテムの持ち替え検知
 		if (!ItemStack.areItemStacksEqual(item, lastItem) || player.inventory.currentItem != lastCurrentItem) {
 			// 銃から持ち替えたらな
-			if (ItemGun.isGun(lastItem)) {
-				// 変数をNBTに落とす
-
+			if (ItemGun.isGun(lastItem)&&!ItemGun.isGun(item)) {
+				// 変数をクリア
+				UsingBulletName = null;
+				ShootDelay = 0;
+				ReloadProgress = -1;
+				loadedMagazines = null;
+				fireMode = null;
 			}
 			// 銃に持ち替えたなら
 			if (ItemGun.isGun(item)) {

@@ -42,7 +42,11 @@ public class ItemMagazine extends Item{
 	public void getSubItems(Item itemIn, CreativeTabs tab, List subItems) {
 			subItems.add(makeMagazine(RegisterName));
 	}
-
+	/**アイテムスタックを作成 残弾指定*/
+	public static ItemStack makeMagazine(String name,int ammoNum) {
+		return NBTWrapper.setMagazineBulletNum(makeMagazine(name), ammoNum);
+	}
+	/**アイテムスタックを作成*/
 	public static ItemStack makeMagazine(String name) {
 		if(PackLoader.BULLET_DATA_MAP.containsKey(name)){
 			ItemStack stack = new ItemStack(INSTANCE_MAP.get(name));
@@ -146,7 +150,7 @@ public class ItemMagazine extends Item{
 				player.inventory.mainInventory[i] = item;
 				//破棄しない設定なら空のマガジンを追加
 				if(ItemMagazine.getBulletData(bulletName).getDataBoolean(BulletDataList.MAGAZINE_BREAK)){
-					player.inventory.addItemStackToInventory(NBTWrapper.setMagazineBulletNum(makeMagazine(bulletName), 0));
+					player.inventory.addItemStackToInventory(makeMagazine(bulletName,0));
 				}
 			}
 		}

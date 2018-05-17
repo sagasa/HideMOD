@@ -28,6 +28,14 @@ public class GunModel{
 		GunRender = new HideRender(GunModel, 64, 64, new ResourceLocation("hidemod", "dummy.png"));
 	}
 
+	/**モデル内容
+	 * 本体
+	 * マガジン
+	 * スライド
+	 * バレル
+	 * 弾
+	 * */
+
 	public void render(float partialTicks,EntityPlayerSP player){
 		GlStateManager.pushMatrix();
 		GlStateManager.disableCull();
