@@ -222,7 +222,16 @@ public class PlayerHandler {
 		}
 
 	}
-
+	/**ロードできる弾の総量取得*/
+	public static int getCanLoadMagazineNum(EntityPlayer player){
+		int num = 0;
+		for(ItemStack item : player.inventory.mainInventory){
+			if(ItemMagazine.isMagazine(item, UsingBulletName)){
+				num += item.stackSize * ItemMagazine.getBulletNum(item);
+			}
+		}
+		return num;
+	}
 	/** 最初のスロットの空きを取得 */
 	private static int getNextReloadNum() {
 		for (LoadedMagazine magazine : loadedMagazines) {
