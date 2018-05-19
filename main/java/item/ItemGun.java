@@ -131,7 +131,7 @@ public class ItemGun extends Item {
 				tooltip.add(ItemMagazine.getBulletData(magazine.name).getDataString(BulletDataList.DISPLAY_NAME) + "x"
 						+ magazine.num);
 			}else{
-				tooltip.add("Brank");
+				tooltip.add("empty");
 			}
 		}
 

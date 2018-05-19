@@ -77,7 +77,7 @@ public class PlayerHandler {
 
 	// サーバー側変数
 
-	/** プレイヤーのTicl処理 */
+	/** プレイヤーのTick処理 */
 	public static void PlayerTick(PlayerTickEvent event) {
 		if (event.phase == Phase.START) {
 			// サイドで処理を分ける

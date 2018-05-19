@@ -110,9 +110,9 @@ public class RenderHandler {
 				//射撃モードを描画
 				mc.fontRendererObj.drawString(PlayerHandler.fireMode.toString().toUpperCase(), x+40, y+39, 0xFFFFFF);
 				//残弾
-				float fontSize = 2;
+				float fontSize = 1.8f;
 				GlStateManager.scale(fontSize, fontSize, fontSize);
-				mc.fontRendererObj.drawString(LoadedMagazine.getLoadedNum(PlayerHandler.loadedMagazines)+"/"+PlayerHandler.getCanLoadMagazineNum(Minecraft.getMinecraft().thePlayer), (x+5)/fontSize, (y+20)/fontSize, 0xFFFFFF, false);
+				mc.fontRendererObj.drawString(LoadedMagazine.getLoadedNum(PlayerHandler.loadedMagazines)+"/"+PlayerHandler.getCanLoadMagazineNum(Minecraft.getMinecraft().thePlayer), (x+5)/fontSize, (y+21)/fontSize, 0xFFFFFF, false);
 				GlStateManager.scale(1/fontSize, 1/fontSize, 1/fontSize);
 				//使用する弾
 				mc.fontRendererObj.drawString(ItemMagazine.getBulletData(PlayerHandler.UsingBulletName).getDataString(BulletDataList.DISPLAY_NAME), x+40, y+50, 0xFFFFFF);
