@@ -8,6 +8,7 @@ import handler.PacketHandler;
 import handler.PlayerHandler;
 import helper.NBTWrapper;
 import helper.ParseByteArray;
+import hideMod.HideMod;
 import hideMod.PackLoader;
 import io.netty.buffer.ByteBuf;
 import item.ItemGun;
@@ -194,6 +195,7 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 								}
 							}
 							NBTWrapper.setGunLoadedMagazines(item, magazines);
+							NBTWrapper.setGunShootDelay(item, ItemGun.getGunData(item).getDataInt(GunDataList.RATE));
 							Player.inventory.inventoryChanged = false;
 							// 弾を発射
 							EntityBullet bullet = new EntityBullet(Player.worldObj, Player, m.gunData,m.bulletData, m.Yaw, m.Pitch);

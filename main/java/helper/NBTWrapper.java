@@ -59,13 +59,13 @@ public class NBTWrapper {
 	}
 
 	/**指定のタグのみを読み取る*/
-	public static int getGunReloadProgress(ItemStack gun) {
+/*	public static int getGunReloadProgress(ItemStack gun) {
 		NBTTagCompound rootTag = gun.getTagCompound();
 		NBTTagCompound gunTag = rootTag.getCompoundTag(GUN_NBT_Name);
 		return gunTag.getInteger(GUN_NBT_ReloadProgress);
 	}
 	/**指定のタグのみを書き換え*/
-	public static ItemStack setGunReloadProgress(ItemStack gun ,int value) {
+/*	public static ItemStack setGunReloadProgress(ItemStack gun ,int value) {
 		NBTTagCompound rootTag = gun.getTagCompound();
 		NBTTagCompound gunTag = rootTag.getCompoundTag(GUN_NBT_Name);
 		gunTag.setInteger(GUN_NBT_ReloadProgress,value);

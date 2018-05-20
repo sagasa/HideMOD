@@ -91,7 +91,6 @@ public class ItemGun extends Item {
 
 			NBTWrapper.setGunID(item, -1);
 			NBTWrapper.setGunShootDelay(item, 0);
-			NBTWrapper.setGunReloadProgress(item, -1);
 			NBTWrapper.setGunFireMode(item, GunFireMode.getFireMode(
 					Arrays.asList(data.getDataStringArray(GunDataList.FIRE_MODE)).iterator().next().toString()));
 			NBTWrapper.setGunUseingBullet(item, Arrays.asList(data.getDataStringArray(GunDataList.TYPES_BULLETS)).iterator().next().toString());
@@ -134,7 +133,6 @@ public class ItemGun extends Item {
 				tooltip.add("empty");
 			}
 		}
-
 	}
 
 	/** 銃かどうか */
@@ -159,10 +157,10 @@ public class ItemGun extends Item {
 		List<String> modes = Arrays.asList(data.getDataStringArray(GunDataList.TYPES_BULLETS));
 		int index = modes.indexOf(now.toString()) + 1;
 		if (index > modes.size() - 1) {
-			System.out.println(index);
+		//	System.out.println(index);
 			index = 0;
 		}
-		System.out.println(modes+" "+modes.get(index));
+		//System.out.println(modes+" "+modes.get(index));
 		if(!ItemMagazine.isMagazineExist(modes.get(index))){
 			return now;
 		}

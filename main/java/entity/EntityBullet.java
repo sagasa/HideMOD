@@ -20,6 +20,7 @@ import net.minecraft.block.BlockBush;
 import net.minecraft.block.BlockReed;
 import net.minecraft.block.BlockSign;
 import net.minecraft.block.BlockVine;
+import net.minecraft.entity.DataWatcher;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -89,9 +90,15 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 	boolean fastTick = true;
 
+	int deathNaxtTick = 0;
+
+	/**データウォッチャーID DeathNextTick*/
+	private static final int DATAWATCHER_DEATHNEXTTICK = 5;
 
 	public EntityBullet(World worldIn, EntityLivingBase shooter, GunData gunData,BulletData bulletData, float yaw, float pitch) {
 		this(worldIn);
+		DataWatcher dw = getDataWatcher();
+		dw.addObject(DATAWATCHER_DEATHNEXTTICK, deathNaxtTick);
 		this.gunData = gunData;
 		this.bulletData = bulletData;
 		Shooter = shooter;
@@ -125,6 +132,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		Vec0 = new Vec3(motionX, motionY, motionZ);
 	}
 
+
 	@Override
 	public void onUpdate() {
 		// 初期化
@@ -133,6 +141,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			this.motionY = Vec0.yCoord;
 			this.motionZ = Vec0.zCoord;
 		}
+
 		this.lastTickPosX = this.posX;
 		this.lastTickPosY = this.posY;
 		this.lastTickPosZ = this.posZ;
@@ -144,6 +153,12 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 		if (!this.worldObj.isRemote) {
 			// サーバーサイド
+			//フラグ回収
+			if(deathNaxtTick==1){
+				setDead();
+				return;
+			}
+
 			/**ブロック衝突のフラグ*/
 			boolean isHittoBlock = false;
 
@@ -221,24 +236,33 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 					}
 				}
 			}
-			if(bulletPower == 0||isHittoBlock){
+			//削除系
+			if(bulletPower == 0||isHittoBlock||life < tick){
 				//爆破処理
-				setDead();
+				deathNaxtTick = 1;
 			}
 			//距離計算
 			FlyingDistance += lvo.distanceTo(lvt);
+			//データ同期
+			DataWatcher dw = getDataWatcher();
+			dw.updateObject(DATAWATCHER_DEATHNEXTTICK, deathNaxtTick);
 		} else {
 			// クライアントサイド
+			//データ同期
+			DataWatcher dw = getDataWatcher();
+			if(dw.getWatchableObjectByte(DATAWATCHER_DEATHNEXTTICK)==1){
+				System.out.println("DEATH");
+			}
 			 //this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE,posX,posY,posZ,0,0,0,new int[0]);
 			// this.posX, this.posY, this.posZ, 1, 1, 1, new int[0]);
 		}
 	//	System.out.println(Shooter);
 		// System.out.println(posX+" "+posY+" "+posZ+"
 		// "+worldObj.getWorldTime());
-		if (life < tick) {
-			this.setDead();
-		}
 		tick++;
+		if(life < tick){
+			setDead();
+		}
 	}
 	/**EntityLivingに対するダメージ算出*/
 	private float getFinalLivingDamage(EntityLivingBase target,double distance){

@@ -58,6 +58,9 @@ public class PackLoader {
 	/**アイコン 登録名 - byte[] MAP*/
 	public static HashMap<String, byte[]> ICON_MAP = new HashMap<String,byte[]>();
 
+	/**サウンド 登録名 - byte[] MAP*/
+	public static HashMap<String, byte[]> SOUND_MAP = new HashMap<String,byte[]>();
+
 	/**ドメイン 銃*/
 	public static final String DOMAIN_GUN = "_gun_";
 	/**ドメイン 弾*/
@@ -203,6 +206,12 @@ public class PackLoader {
 		//sounds
 		if (Pattern.compile("^(.*)sounds/(.*).ogg").matcher(name).matches()) {
 			System.out.println("sounds");
+			String n = Pattern.compile(".ogg$").matcher(Pattern.compile("^(.*)sounds/").matcher(name).replaceAll("")).replaceAll("");
+			if(SOUND_MAP.containsKey(n)){
+				HideMod.log("error : Resource is Already exists Name:"+n);
+			}else{
+				SOUND_MAP.put(n, data);
+			}
 		}
 
 	}

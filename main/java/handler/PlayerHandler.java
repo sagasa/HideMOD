@@ -13,6 +13,7 @@ import org.lwjgl.opengl.GL11;
 import entity.EntityBullet;
 import entity.EntityDebug;
 import helper.NBTWrapper;
+import hideMod.HideMod;
 import hideMod.PackLoader;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
@@ -37,6 +38,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import newwork.PacketGuns;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
@@ -84,7 +86,7 @@ public class PlayerHandler {
 			if (event.side == Side.CLIENT) {
 				// 自分のキャラクターのみ
 				if (event.player.equals(Minecraft.getMinecraft().thePlayer)) {
-					CientTick(Minecraft.getMinecraft().thePlayer);
+					ClientTick(Minecraft.getMinecraft().thePlayer);
 				}
 			} else if (event.side == Side.SERVER) {
 				ServerTick(event.player);
@@ -94,7 +96,8 @@ public class PlayerHandler {
 	}
 
 	/** サウンド処理 描画処理 入力処理 */
-	private static void CientTick(EntityPlayerSP player) {
+	@SideOnly(Side.CLIENT)
+	private static void ClientTick(EntityPlayerSP player) {
 		// キー入力の取得 押された変化を取得
 		ArrayList<KeyBind> pushKeys = new ArrayList<KeyBind>();
 		oldKeys.putAll(newKeys);
@@ -134,7 +137,8 @@ public class PlayerHandler {
 					// 変数にNBTから読み込み
 					UsingBulletName = NBTWrapper.getGunUseingBullet(item);
 					ShootDelay = NBTWrapper.getGunShootDelay(item);
-					ReloadProgress = NBTWrapper.getGunReloadProgress(item);
+					//ReloadProgress = NBTWrapper.getGunReloadProgress(item);
+					ReloadProgress = -1;
 					// System.out.println(NBTWrapper.getGunID(item));
 					loadedMagazines = NBTWrapper.getGunLoadedMagazines(item);
 
@@ -302,6 +306,8 @@ public class PlayerHandler {
 		} else {
 			// 存在する弾かどうか
 			if (ItemMagazine.isMagazineExist(bulletName)) {
+				player.worldObj.playSound(player.posX, player.posY, player.posZ, HideMod.MOD_ID+":BARShoot", 10, 1, true);
+				//player.worldObj.playSound(0, 5, 0, HideMod.MOD_ID+":BARShoot", 10, 1, false);
 				PacketHandler.INSTANCE.sendToServer(new PacketGuns(gun, PackLoader.BULLET_DATA_MAP.get(bulletName),
 						player.rotationYaw, player.rotationPitch));
 				ShootDelay = gun.getDataInt(GunDataList.RATE);
@@ -334,9 +340,17 @@ public class PlayerHandler {
 		}
 	}
 
-	/***/
+	/**サーバーTick処理 プログレスを進める*/
 	private static void ServerTick(EntityPlayer player) {
-
+		ItemStack item = player.getCurrentEquippedItem();
+		// アイテムの持ち替え検知
+		if(ItemGun.isGun(item)){
+			int deilay = NBTWrapper.getGunShootDelay(item);
+			if(deilay>0){
+				deilay--;
+				NBTWrapper.setGunShootDelay(item, deilay);
+			}
+		}
 	}
 
 	/** マウスイベント */

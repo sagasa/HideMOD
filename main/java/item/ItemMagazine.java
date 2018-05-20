@@ -9,6 +9,7 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 import helper.NBTWrapper;
 import hideMod.PackLoader;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.DataWatcher;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -117,7 +118,7 @@ public class ItemMagazine extends Item{
 	/** アップデート 表示更新など */
 	@Override
 	public void addInformation(ItemStack stack, EntityPlayer playerIn, List tooltip, boolean advanced) {
-		tooltip.add(ChatFormatting.GRAY + "Ammo : " + getMagazineSize(stack)+"/"+getBulletNum(stack));
+		tooltip.add(ChatFormatting.GRAY + "Ammo : " + getBulletNum(stack)+"/"+getMagazineSize(stack));
 	}
 
 	/**リロードする弾を取得 アイテムを削除*/
@@ -149,7 +150,7 @@ public class ItemMagazine extends Item{
 				}
 				player.inventory.mainInventory[i] = item;
 				//破棄しない設定なら空のマガジンを追加
-				if(ItemMagazine.getBulletData(bulletName).getDataBoolean(BulletDataList.MAGAZINE_BREAK)){
+				if(!ItemMagazine.getBulletData(bulletName).getDataBoolean(BulletDataList.MAGAZINE_BREAK)){
 					player.inventory.addItemStackToInventory(makeMagazine(bulletName,0));
 				}
 			}
