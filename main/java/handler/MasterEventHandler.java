@@ -67,7 +67,7 @@ public class MasterEventHandler {
 	//======アップデート=========
 	@SubscribeEvent
 	public void onEvent(TickEvent.ServerTickEvent event){
-		SoundHandler.ServerUpdate();
+		
 	}
 	@SubscribeEvent
 	public void onEvent(TickEvent.ClientTickEvent event){

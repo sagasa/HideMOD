@@ -16,8 +16,9 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 	private float Vol;
 	private float Pitch;
 	private int Delay;
+	private int EntityID;
 	
-	public PacketPlaySound(String soundName, double x, double y, double z, float vol, float pitch, int delay) {
+	public PacketPlaySound(String soundName, double x, double y, double z, float vol, float pitch, int delay,int entityID) {
 		Name = soundName;
 		X = x;
 		Y = y;
@@ -25,6 +26,7 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 		Vol = vol;
 		Pitch = pitch;
 		Delay = delay;
+		EntityID = entityID;
 	}
 	@Override
 	public void fromBytes(ByteBuf buf) {
@@ -35,6 +37,7 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 		Vol = buf.readFloat();
 		Pitch = buf.readFloat();
 		Delay = buf.readInt();
+		EntityID = buf.readInt();
 	}
 
 	@Override
@@ -46,10 +49,11 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 		buf.writeFloat(Vol);
 		buf.writeFloat(Pitch);
 		buf.writeInt(Delay);
+		buf.writeInt(EntityID);
 	}
 	@Override
 	public IMessage onMessage(PacketPlaySound m, MessageContext ctx) {
-		SoundHandler.addSoundTask(m.Name, m.X, m.Y, m.Z, m.Vol, m.Pitch, m.Delay);
+		SoundHandler.addSoundTask(m.Name, m.X, m.Y, m.Z, m.Vol, m.Pitch, m.Delay,m.EntityID);
 		return null;
 	}
 }
