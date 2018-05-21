@@ -64,6 +64,15 @@ public class MasterEventHandler {
 			event.setCanceled(true);
 		}
 	}
+	//======アップデート=========
+	@SubscribeEvent
+	public void onEvent(TickEvent.ServerTickEvent event){
+		SoundHandler.ServerUpdate();
+	}
+	@SubscribeEvent
+	public void onEvent(TickEvent.ClientTickEvent event){
+		SoundHandler.ClientUpdate();
+	}
 	//======レンダー関連========
 
 	//partialTicks取得

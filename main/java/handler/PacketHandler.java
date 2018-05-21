@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 import newwork.PacketGuns;
 import newwork.PacketHit;
+import newwork.PacketPlaySound;
 
 public class PacketHandler {
 
@@ -26,6 +27,7 @@ public class PacketHandler {
         INSTANCE.registerMessage(PacketGuns.class, PacketGuns.class, 0, Side.SERVER);
         INSTANCE.registerMessage(PacketGuns.class, PacketGuns.class, 1, Side.CLIENT);
         INSTANCE.registerMessage(PacketHit.class, PacketHit.class, 2, Side.CLIENT);
+        INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 3, Side.CLIENT);
     }
     /**バッファに文字列を書き込む*/
     public static void writeString(ByteBuf buf,String str){
