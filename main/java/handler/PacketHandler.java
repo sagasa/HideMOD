@@ -28,6 +28,7 @@ public class PacketHandler {
         INSTANCE.registerMessage(PacketGuns.class, PacketGuns.class, 1, Side.CLIENT);
         INSTANCE.registerMessage(PacketHit.class, PacketHit.class, 2, Side.CLIENT);
         INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 3, Side.CLIENT);
+        INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 4, Side.SERVER);
     }
     /**バッファに文字列を書き込む*/
     public static void writeString(ByteBuf buf,String str){

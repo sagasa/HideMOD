@@ -39,11 +39,11 @@ public class ResourceLoader implements IResourcePack{
     		String registerName = json.matcher(itemModel.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
     		//銃なら
     		if(PackLoader.GUN_DATA_MAP.containsKey(registerName)){
-    			return makeItemModel(PackLoader.GUN_DATA_MAP.get(registerName).getDataString(GunDataList.ICON), true);
+    			return makeItemModel(PackLoader.GUN_DATA_MAP.get(registerName).getItemInfo().iconName, true);
     		}
     		//弾なら
     		if(PackLoader.BULLET_DATA_MAP.containsKey(registerName)){
-    			return makeItemModel(PackLoader.BULLET_DATA_MAP.get(registerName).getDataString(BulletDataList.ICON), true);
+    			return makeItemModel(PackLoader.BULLET_DATA_MAP.get(registerName).getItemInfo().iconName, true);
     		}
 		}
     	Pattern itemTexture = Pattern.compile("^textures\\/items\\/");

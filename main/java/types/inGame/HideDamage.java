@@ -1,4 +1,4 @@
-package types;
+package types.inGame;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.DamageSource;

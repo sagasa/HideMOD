@@ -6,6 +6,5 @@ public enum DataType{
 	Float,
 	Int,
 	Boolean,
-	StringArray
-	;
+	Object;
 }

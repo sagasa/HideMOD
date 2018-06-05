@@ -19,7 +19,6 @@ public class RenderBullet extends Render {
 	{
 		super(renderManager);
 		System.out.println(renderManager);
-		shadowSize = 0.5F;
 	}
 
 	public void render(EntityBullet bullet, double d, double d1, double d2, float f, float f1)

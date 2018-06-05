@@ -22,6 +22,7 @@ import com.google.gson.reflect.TypeToken;
 import helper.ArrayEditor;
 import item.ItemGun;
 import item.ItemMagazine;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -31,7 +32,6 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import types.BulletData;
 import types.ContentsPack;
-import types.ContentsPack.PackDataList;
 import types.ImageData;
 import types.BulletData.BulletDataList;
 import types.guns.GunData;
@@ -72,9 +72,9 @@ public class PackLoader {
 	private ContentsPack cashPack;
 
 	/**パックから読み込む*/
-	public static void load(FMLPreInitializationEvent event) {
+	public static void load() {
 		//パックのディレクトリを参照
-		HideDir = new File(event.getModConfigurationDirectory().getParentFile(), "/Hide/");
+		HideDir = new File(Minecraft.getMinecraft().mcDataDir, "/Hide/");
 		//パスにする
 		HidePath = HideDir.getAbsolutePath()+"/";
 
@@ -135,22 +135,36 @@ public class PackLoader {
 		//このタイミングでレジスターに書き込む
 		if(cashPack != null){
 			for (GunData data : cashGunData) {
-				String registerName = cashPack.getDataString(PackDataList.PACK_ROOTNAME)+DOMAIN_GUN+data.getDataString(GunDataList.SHORT_NAME);
-				ItemGun gun = new ItemGun(data,registerName,cashPack.getDataString(PackDataList.PACK_ROOTNAME));
 				//ショートネームを登録名に書き換え
-				data.setDomain(cashPack.getDataString(PackDataList.PACK_ROOTNAME));
-				GUN_DATA_MAP.put(registerName, data);
+				data.setDomain(cashPack.PACK_ROOTNAME);
+				ItemGun gun = new ItemGun(data,data.getItemInfo().shortName);
+				//重複しないかどうか
+				if(GUN_DATA_MAP.containsKey(data.getItemInfo().shortName)){
+					HideMod.log("Item has already been added :"+data.getItemInfo().shortName);
+					continue;
+				}
+				//データが破損していないか
+				if(!ItemGun.isNormalData(data)){
+					HideMod.log("GunData is damaged :"+data.getItemInfo().shortName);
+					continue;
+				}
+				GUN_DATA_MAP.put(data.getItemInfo().shortName, data);
 				//レジスターに書き込む
-				GameRegistry.registerItem(gun,registerName);
+				GameRegistry.registerItem(gun,data.getItemInfo().shortName);
 		        if (FMLCommonHandler.instance().getSide().isClient()) {
-		        	ModelLoader.setCustomModelResourceLocation(gun, 0, new ModelResourceLocation(HideMod.MOD_ID + ":" + registerName, "inventory"));
+		        	ModelLoader.setCustomModelResourceLocation(gun, 0, new ModelResourceLocation(HideMod.MOD_ID + ":" + data.getItemInfo().shortName, "inventory"));
 		        }
 			}
 			for (BulletData data : cashBulletData) {
-				String registerName = cashPack.getDataString(PackDataList.PACK_ROOTNAME)+DOMAIN_MAGAZINE+data.getDataString(BulletDataList.SHORT_NAME);
-				ItemMagazine gun = new ItemMagazine(data,registerName,cashPack.getDataString(PackDataList.PACK_ROOTNAME));
+				String registerName = cashPack.PACK_ROOTNAME+DOMAIN_MAGAZINE+data.getItemInfo().shortName;
+				ItemMagazine gun = new ItemMagazine(data,registerName);
 				//ショートネームを登録名に書き換え
-				data.setData(BulletDataList.SHORT_NAME, registerName);
+				data.setDomain(cashPack.PACK_ROOTNAME);
+				//重複しないかどうか
+				if(BULLET_DATA_MAP.containsKey(data.getItemInfo().shortName)){
+					HideMod.log("Item has already been added :"+data.getItemInfo().shortName);
+					continue;
+				}
 				BULLET_DATA_MAP.put(registerName, data);
 				//レジスターに書き込む
 				GameRegistry.registerItem(gun,registerName);

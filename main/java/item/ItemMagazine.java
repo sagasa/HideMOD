@@ -26,16 +26,14 @@ public class ItemMagazine extends Item{
 
 	public String RegisterName;
 	public BulletData BulletData;
-	public String Domain;
 	//========================================================================
 	//登録
-	public ItemMagazine(BulletData data, String name,String domain) {
+	public ItemMagazine(BulletData data, String name) {
 		this.setCreativeTab(CreativeTabs.tabCombat);
 		this.setUnlocalizedName(name);
 		this.setMaxStackSize(data.getDataInt(BulletDataList.STACK_SIZE));
 		this.RegisterName = name;
 		this.BulletData = data;
-		this.Domain = domain;
 		INSTANCE_MAP.put(name,this);
 	}
 	/** クリエイティブタブの中にサブタイプを設定 */
@@ -72,7 +70,7 @@ public class ItemMagazine extends Item{
 
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
-		return getBulletData(stack).getDataString(GunDataList.DISPLAY_NAME);
+		return getBulletData(stack).getItemInfo().displayName;
 	}
 	//=========================================================
 	//   更新 便利機能

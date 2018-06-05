@@ -115,7 +115,7 @@ public class RenderHandler {
 				mc.fontRendererObj.drawString(LoadedMagazine.getLoadedNum(PlayerHandler.loadedMagazines)+"/"+PlayerHandler.getCanLoadMagazineNum(Minecraft.getMinecraft().thePlayer), (x+5)/fontSize, (y+21)/fontSize, 0xFFFFFF, false);
 				GlStateManager.scale(1/fontSize, 1/fontSize, 1/fontSize);
 				//使用する弾
-				mc.fontRendererObj.drawString(ItemMagazine.getBulletData(PlayerHandler.UsingBulletName).getDataString(BulletDataList.DISPLAY_NAME), x+40, y+50, 0xFFFFFF);
+				mc.fontRendererObj.drawString(ItemMagazine.getBulletData(PlayerHandler.UsingBulletName).getItemInfo().displayName, x+40, y+50, 0xFFFFFF);
 
 				GlStateManager.disableBlend();
 			}
@@ -128,9 +128,9 @@ public class RenderHandler {
 		GlStateManager.enableAlpha();
 		GlStateManager.enableBlend();
 		if(PlayerHandler.HitMarkerTime_H>0){
-			GlStateManager.color(1f, 0.0f, 0.0f,Math.max(PlayerHandler.HitMarkerTime/10, 0f));
+			GlStateManager.color(1f, 0.0f, 0.0f,(float) Math.max(Math.min(0.4, PlayerHandler.HitMarkerTime/10), 0f));
 		}else{
-			GlStateManager.color(1f, 1f, 1f,Math.max(PlayerHandler.HitMarkerTime/10, 0f));
+			GlStateManager.color(1f, 1f, 1f,(float) Math.max(Math.min(0.4, PlayerHandler.HitMarkerTime/10), 0f));
 		}
 
 		Tessellator tessellator = Tessellator.getInstance();

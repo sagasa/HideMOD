@@ -37,17 +37,15 @@ public class ItemGun extends Item {
 
 	public String RegisterName;
 	public GunData GunData;
-	public String Domain;
 
 	// ========================================================================
 	// 登録
-	public ItemGun(GunData data, String name, String domain) {
+	public ItemGun(GunData data, String name) {
 		this.setCreativeTab(CreativeTabs.tabCombat);
 		this.setUnlocalizedName(name);
 		this.setMaxStackSize(1);
 		this.RegisterName = name;
 		this.GunData = data;
-		this.Domain = domain;
 		INSTANCE_MAP.put(name, this);
 	}
 
@@ -70,7 +68,7 @@ public class ItemGun extends Item {
 
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
-		return getGunData(stack).getDataString(GunDataList.DISPLAY_NAME);
+		return getGunData(stack).getItemInfo().displayName;
 	}
 
 	public static void setUUID(ItemStack item) {
@@ -92,10 +90,18 @@ public class ItemGun extends Item {
 			NBTWrapper.setGunID(item, -1);
 			NBTWrapper.setGunShootDelay(item, 0);
 			NBTWrapper.setGunFireMode(item, GunFireMode.getFireMode(
-					Arrays.asList(data.getDataStringArray(GunDataList.FIRE_MODE)).iterator().next().toString()));
-			NBTWrapper.setGunUseingBullet(item, Arrays.asList(data.getDataStringArray(GunDataList.TYPES_BULLETS)).iterator().next().toString());
+					Arrays.asList((String[])data.getDataObject(GunDataList.FIREMODE)).iterator().next().toString()));
+			NBTWrapper.setGunUseingBullet(item, Arrays.asList((String[])data.getDataObject(GunDataList.BULLET_USE)).iterator().next().toString());
 		}
 		return item;
+	}
+	/**データ破損チェック*/
+	public static boolean isNormalData(GunData data){
+		//弾が登録されているか
+		if(((String[])data.getDataObject(GunDataList.BULLET_USE)).length==0){
+			return false;
+		}
+		return true;
 	}
 
 	/** どのような状態からでも有効なNBTを書き込む */
@@ -124,10 +130,10 @@ public class ItemGun extends Item {
 	@Override
 	public void addInformation(ItemStack stack, EntityPlayer playerIn, List tooltip, boolean advanced) {
 		tooltip.add(ChatFormatting.GRAY + "FireMode : " + NBTWrapper.getGunFireMode(stack));
-		tooltip.add(ChatFormatting.GRAY + "UseBullet : " + ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(stack)).getDataString(BulletDataList.DISPLAY_NAME));
+		tooltip.add(ChatFormatting.GRAY + "UseBullet : " + ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(stack)).getItemInfo().displayName);
 		for (LoadedMagazine magazine : NBTWrapper.getGunLoadedMagazines(stack)) {
 			if (magazine != null) {
-				tooltip.add(ItemMagazine.getBulletData(magazine.name).getDataString(BulletDataList.DISPLAY_NAME) + "x"
+				tooltip.add(ItemMagazine.getBulletData(magazine.name).getItemInfo().displayName + "x"
 						+ magazine.num);
 			}else{
 				tooltip.add("empty");
@@ -145,7 +151,7 @@ public class ItemGun extends Item {
 
 	/** 次の射撃モードを取得 */
 	public static GunFireMode getNextFireMode(GunData data, GunFireMode now) {
-		List<String> modes = Arrays.asList(data.getDataStringArray(GunDataList.FIRE_MODE));
+		List<String> modes = Arrays.asList((String[])data.getDataObject(GunDataList.FIREMODE));
 		int index = modes.indexOf(now.toString()) + 1;
 		if (index > modes.size() - 1) {
 			index = 0;
@@ -154,7 +160,7 @@ public class ItemGun extends Item {
 	}
 	/** 次の使用する弾を取得 */
 	public static String getNextUseMagazine(GunData data, String now) {
-		List<String> modes = Arrays.asList(data.getDataStringArray(GunDataList.TYPES_BULLETS));
+		List<String> modes = Arrays.asList((String[])data.getDataObject(GunDataList.BULLET_USE));
 		int index = modes.indexOf(now.toString()) + 1;
 		if (index > modes.size() - 1) {
 		//	System.out.println(index);
@@ -172,6 +178,10 @@ public class ItemGun extends Item {
 		return ((ItemGun) item.getItem()).RegisterName;
 	}
 
+	/** GunData取得 */
+	public static GunData getGunData(String name) {
+		return PackLoader.GUN_DATA_MAP.get(name);
+	}
 	/** GunData取得 */
 	public static GunData getGunData(ItemStack item) {
 		if (!(item.getItem() instanceof ItemGun)) {

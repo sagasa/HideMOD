@@ -21,8 +21,11 @@ import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import item.ItemGun;
 import item.ItemMagazine;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.ISound;
+import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentText;
@@ -68,6 +71,8 @@ public class PlayerHandler {
 
 	private static int reloadQueue = -1;
 
+	public static boolean isADS = false;
+
 	private static boolean fastTick = true;
 
 	// 銃に格納するデータ
@@ -98,6 +103,10 @@ public class PlayerHandler {
 	/** サウンド処理 描画処理 入力処理 */
 	@SideOnly(Side.CLIENT)
 	private static void ClientTick(EntityPlayerSP player) {
+		//死んでたらマウスを離す
+		if(player.isDead){
+			rightMouseHeld = leftMouseHeld = false;
+		}
 		// キー入力の取得 押された変化を取得
 		ArrayList<KeyBind> pushKeys = new ArrayList<KeyBind>();
 		oldKeys.putAll(newKeys);
@@ -110,6 +119,11 @@ public class PlayerHandler {
 		if (fastTick) {
 			fastTick = false;
 			return;
+		}
+
+		//デバッグ用
+		if(pushKeys.contains(KeyBind.DEBUG)){
+			//System.out.println(Item.itemRegistry);
 		}
 
 		ItemStack item = player.getCurrentEquippedItem();
@@ -157,7 +171,7 @@ public class PlayerHandler {
 			GunData gundata = ((ItemGun) item.getItem()).getGunData(item);
 			if (leftMouseHeld) {
 				// 射撃処理
-				ReloadProgress = -1;
+				//ReloadProgress = -1;
 				if (ShootDelay <= 0 && !shooted) {
 					switch (fireMode) {
 					case BURST:
@@ -187,7 +201,7 @@ public class PlayerHandler {
 			// リロード
 			if (pushKeys.contains(KeyBind.GUN_RELOAD)) {
 				if (ReloadProgress == -1 && getNextReloadNum() > 0) {
-					ReloadProgress = gundata.getDataInt(GunDataList.RELOAD_TIME);
+					ReloadProgress = gundata.getDataInt(GunDataList.RELOAD_TICK);
 				}
 			}
 			// 弾変更
@@ -306,11 +320,11 @@ public class PlayerHandler {
 		} else {
 			// 存在する弾かどうか
 			if (ItemMagazine.isMagazineExist(bulletName)) {
-				player.worldObj.playSound(player.posX, player.posY, player.posZ, HideMod.MOD_ID+":BARShoot", 10, 1, true);
+				//player.worldObj.playSound(player.posX, player.posY, player.posZ, HideMod.MOD_ID+":BARShoot", 10, 1, true);
 				//player.worldObj.playSound(0, 5, 0, HideMod.MOD_ID+":BARShoot", 10, 1, false);
 				PacketHandler.INSTANCE.sendToServer(new PacketGuns(gun, PackLoader.BULLET_DATA_MAP.get(bulletName),
 						player.rotationYaw, player.rotationPitch));
-				ShootDelay = gun.getDataInt(GunDataList.RATE);
+				ShootDelay = gun.getDataInt(GunDataList.RATE_TICK);
 				// リコイル
 				RecoilHandler.MakeRecoil(player, gun, recoilPower);
 				// 100を超えないように代入
@@ -327,6 +341,7 @@ public class PlayerHandler {
 			// player.worldObj.spawnEntityInWorld(dot);
 		}
 	}
+
 
 	/** リロード完了 マガジンを追加する */
 	public static void reloadEnd(int bulletNum, byte reloadQueueID) {
@@ -373,7 +388,7 @@ public class PlayerHandler {
 
 	/** クライアントサイドでのみ動作 */
 	enum KeyBind {
-		GUN_RELOAD(Keyboard.KEY_R), GUN_FIREMODE(Keyboard.KEY_F), GUN_USEBULLET(Keyboard.KEY_V);
+		GUN_RELOAD(Keyboard.KEY_R), GUN_FIREMODE(Keyboard.KEY_F), GUN_USEBULLET(Keyboard.KEY_V),DEBUG(Keyboard.KEY_G);
 
 		HashMap<String, Integer> keyConfig = new HashMap<String, Integer>();
 

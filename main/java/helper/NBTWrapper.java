@@ -27,7 +27,7 @@ public class NBTWrapper {
 
 	/** マガジンの内容を取得 */
 	public static LoadedMagazine[] getGunLoadedMagazines(ItemStack gun) {
-		LoadedMagazine[] loadedMagazines = new LoadedMagazine[ItemGun.getGunData(gun).getDataInt(GunDataList.MAGAZINE_NUMBER)];
+		LoadedMagazine[] loadedMagazines = new LoadedMagazine[ItemGun.getGunData(gun).getDataInt(GunDataList.LOAD_NUM)];
 
 		NBTTagCompound magazines = gun.getTagCompound().getCompoundTag(GUN_NBT_Name).getCompoundTag(GUN_NBT_Magazines);
 

@@ -1,120 +1,126 @@
 package types;
 
+import java.util.HashMap;
+
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
-import helper.JsonWrapper;
+import hideMod.PackLoader;
 import types.base.DataBase;
 import types.base.DataType;
 import types.base.EnumDataList;
+import types.guns.GunData.GunDataList;
 
 public class BulletData extends DataBase{
 
 	/**弾のデータ 初期値も同時に代入*/
 	public enum BulletDataList implements EnumDataList{
-		/** 登録名 : String型 全部小文字 **/
-		SHORT_NAME("ShortName","name",DataType.String),
-		/** 表示名 : String型 **/
-		DISPLAY_NAME("DisplayName","name",DataType.String),
-		/** アイテムのアイコン : String型 **/
-		ICON("Icon","sanple",DataType.String),
+		/** アイテムの名前 : ItemInfo型 */
+		ITEM_INFO(null, null, new ItemInfo("sample", "Sample", "sample"), DataType.Object),
 
 		/** 装弾数 : int型 **/
-		MAGAZINE_SIZE("MagazineSize",10,DataType.Int,1),
+		MAGAZINE_SIZE(1f,null,10,DataType.Int,1),
 
 		/** スタックサイズ : int型 **/
-		STACK_SIZE("StackSize",4,DataType.Int,1),
+		STACK_SIZE(1f,null,4,DataType.Int,1),
 
 		/**弾の寿命 (tick) : int型**/
-		BULLET_LIFE("bulletLife",600,DataType.Int,1),
+		BULLET_LIFE(1f,null,600,DataType.Int,1),
+
+		/**弾の貫通力 : int型**/
+		BULLET_POWER(-1f,null,1,DataType.Int,1),
 
 		/**リロード時にマガジンが破棄されるか : boolean型**/
-		MAGAZINE_BREAK("BreakOnReload",true,DataType.Boolean),
+		MAGAZINE_BREAK(null,null,true,DataType.Boolean),
 
 		/**直撃の対人ダメージ : float型**/
-		HIT_DAMAGE_PLAYER("playerDamage",0F,DataType.Float,2),
+		HIT_DAMAGE_PLAYER(null,null,0F,DataType.Float,2),
 		/**直撃の対MOBダメージ : float型**/
-		HIT_DAMAGE_LIVING("livingDamage",0F,DataType.Float,2),
+		HIT_DAMAGE_LIVING(null,null,0F,DataType.Float,2),
 		/**直撃の対地上兵器ダメージ : int型**/
-		HIT_DAMAGE_TANK("tankDamage",0,DataType.Int,2),
+		HIT_DAMAGE_TANK(null,null,0,DataType.Int,2),
 		/**直撃の対航空機ダメージ : int型**/
-		HIT_DAMAGE_AIR("aircraftDamage",0,DataType.Int,2),
+		HIT_DAMAGE_AIR(null,null,0,DataType.Int,2),
 
 		/**直撃の対人ノックバック : ノックバック距離(m)=ノックバック : float型**/
-		HIT_KNOCKBACK_PLAYER("playerKnockback",0F,DataType.Float,3),
+		HIT_KNOCKBACK_PLAYER(null,null,0F,DataType.Float,3),
 		/**直撃の対MOBノックバック : ノックバック距離(m)=ノックバック : float型**/
-		HIT_KNOCKBACK_LIVING("livingKnockback",0F,DataType.Float,3),
+		HIT_KNOCKBACK_LIVING(null,null,0F,DataType.Float,3),
 		/**直撃の対地上兵器ノックバック : ノックバック距離(m)=ノックバック/重量 : float型**/
-		HIT_KNOCKBACK_TANK("tankKnockback",0F,DataType.Float,3),
+		HIT_KNOCKBACK_TANK(null,null,0F,DataType.Float,3),
 		/**直撃の対航空機ノックバック : ノックバック距離(m)=ノックバック/重量 : float型**/
-		HIT_KNOCKBACK_AIR("aircraftKnockback",0F,DataType.Float,3),
+		HIT_KNOCKBACK_AIR(null,null,0F,DataType.Float,3),
 
 		/**爆風範囲 :int型**/
-		EXP_RANGE("explosionRange",0,DataType.Int,4),
+		EXP_RANGE(0f,null,0,DataType.Int,4),
 
 		/**爆風の対人ダメージ底値 : 爆風ダメージ=底値-距離(m)*係数 : float型**/
-		EXP_DAMAGE_BASE_PLAYER("playerExplosionDamageBase",0F,DataType.Float,4),
+		EXP_DAMAGE_BASE_PLAYER(null,null,0F,DataType.Float,4),
 		/**爆風の対人ダメージ係数 : 爆風ダメージ=底値-距離(m)*係数 : float型**/
-		EXP_DAMAGE_COE_PLAYER("playerExplosionDamageCoe",0F,DataType.Float,4),
+		EXP_DAMAGE_COE_PLAYER(null,null,0F,DataType.Float,4),
 		/**爆風のMOBダメージ底値 : 爆風ダメージ=底値-距離(m)*係数 : float型**/
-		EXP_DAMAGE_BASE_LIVING("livingExplosionDamageBase",0F,DataType.Float,4),
+		EXP_DAMAGE_BASE_LIVING(null,null,0F,DataType.Float,4),
 		/**爆風のMOBダメージ係数 : 爆風ダメージ=底値-距離(m)*係数 : float型**/
-		EXP_DAMAGE_COE_LIVING("livingExplosionDamageCoe",0,DataType.Float,4),
+		EXP_DAMAGE_COE_LIVING(null,null,0,DataType.Float,4),
 		/**爆風の対地上兵器ダメージ底値 : 爆風ダメージ=底値-距離(m)*係数 : int型**/
-		EXP_DAMAGE_BASE_TANK("tankExplosionDamageBase",0,DataType.Int,4),
+		EXP_DAMAGE_BASE_TANK(null,null,0,DataType.Int,4),
 		/**爆風の対地上兵器ダメージ係数:爆風ダメージ=底値-距離(m)*係数 : int型**/
-		EXP_DAMAGE_COE_TANK("tankExplosionDamageCoe",0,DataType.Int,4),
+		EXP_DAMAGE_COE_TANK(null,null,0,DataType.Int,4),
 		/**爆風の対航空機ダメージ底値 : 爆風ダメージ=底値-距離(m)*係数 : int型**/
-		EXP_DAMAGE_BASE_AIR("aircraftExplosionDamageBase",0,DataType.Int,4),
+		EXP_DAMAGE_BASE_AIR(null,null,0,DataType.Int,4),
 		/**爆風の対航空機ダメージ係数 : 爆風ダメージ=底値-距離(m)*係数 : int型**/
-		EXP_DAMAGE_COE_AIR("aircraftExplosionDamageCoe",0,DataType.Int,4),
+		EXP_DAMAGE_COE_AIR(null,null,0,DataType.Int,4),
 
 		/**爆風の対人ノックバック底値 : ノックバック距離(m)=底値-距離(m)*係数 : float型**/
-		EXP_KNOCKACK_BASE_PLAYER("playerExplosionKnockbackBase",0F,DataType.Float,5),
+		EXP_KNOCKACK_BASE_PLAYER(null,null,0F,DataType.Float,5),
 		/**爆風の対人ノックバック係数 : ノックバック距離(m)=底値-距離(m)*係数 : float型**/
-		EXP_KNOCKACK_COE_PLAYER("playerExplosionKnockbackCoe",0F,DataType.Float,5),
+		EXP_KNOCKACK_COE_PLAYER(null,null,0F,DataType.Float,5),
 		/**爆風のMOBノックバック底値 : ノックバック距離(m)=底値-距離(m)*係数 : float型**/
-		EXP_KNOCKACK_BASE_LIVING("livingExplosionKnockbackBase",0F,DataType.Float,5),
+		EXP_KNOCKACK_BASE_LIVING(null,null,0F,DataType.Float,5),
 		/**爆風のMOBノックバック係数 : ノックバック距離(m)=底値-距離(m)*係数 : float型**/
-		EXP_KNOCKACK_COE_LIVING("livingExplosionKnockbackCoe",0F,DataType.Float,5),
+		EXP_KNOCKACK_COE_LIVING(null,null,0F,DataType.Float,5),
 		/**爆風の対地上兵器ノックバック底値 : ノックバック距離(m)=(底値-距離(m)*係数)/重量 : float型**/
-		EXP_KNOCKACK_BASE_TANK("tankExplosionKnockbackBase",0F,DataType.Float,5),
+		EXP_KNOCKACK_BASE_TANK(null,null,0F,DataType.Float,5),
 		/**爆風の対地上兵器ノックバック係数 : ノックバック距離(m)=(底値-距離(m)*係数)/重量 : float型**/
-		EXP_KNOCKACK_COE_TANK("tankExplosionKnockbackCoe",0F,DataType.Float,5),
+		EXP_KNOCKACK_COE_TANK(null,null,0F,DataType.Float,5),
 		/**爆風の対航空機ノックバック底値 : ノックバック距離(m)=(底値-距離(m)*係数)/重量 : float型**/
-		EXP_KNOCKACK_BASE_AIR("aircraftExplosionKnockbackBase",0F,DataType.Float,5),
+		EXP_KNOCKACK_BASE_AIR(null,null,0F,DataType.Float,5),
 		/**爆風の対航空機ノックバック係数 : ノックバック距離(m)=(底値-距離(m)*係数)/重量 : float型**/
-		EXP_KNOCKACK_COE_AIR("aircraftExplosionKnockbackCoe",0F,DataType.Float,5),
+		EXP_KNOCKACK_COE_AIR(null,null,0F,DataType.Float,5),
 
 		/**対人ダメージの減衰開始距離 : 減衰量=減衰開始から距離(m)*係数 : float**/
-		DECAY_DAMAGE_START_PLAYER("DecayPlayerDamageStart",0F,DataType.Float,10),
+		DECAY_DAMAGE_START_PLAYER(null,null,0F,DataType.Float,10),
 		/**対人ダメージの減衰率 : 減衰量=減衰開始から距離(m)*係数 : float**/
-		DECAY_DAMAGE_COE_PLAYER("DecayPlayerDamageCoe",0F,DataType.Float,10),
+		DECAY_DAMAGE_COE_PLAYER(null,null,0F,DataType.Float,10),
 		/**対人ダメージの最大減衰幅 : 減衰量=減衰開始から距離(m)*係数 : float**/
-		DECAY_DAMAGE_MAX_PLAYER("DecayPlayerDamageMax",0F,DataType.Float,10),
+		DECAY_DAMAGE_MAX_PLAYER(null,null,0F,DataType.Float,10),
 
 		/**対MOBダメージの減衰開始距離 : 減衰量=減衰開始から距離(m)*係数 : float**/
-		DECAY_DAMAGE_START_LIVING("DecayLivingDamageStart",0F,DataType.Float,10),
+		DECAY_DAMAGE_START_LIVING(null,null,0F,DataType.Float,10),
 		/**対MOBダメージの減衰率 : 減衰量=減衰開始から距離(m)*係数 : float**/
-		DECAY_DAMAGE_COE_LIVING("DecayLivingDamageCoe",0F,DataType.Float,10),
+		DECAY_DAMAGE_COE_LIVING(null,null,0F,DataType.Float,10),
 		/**対MOBダメージの最大減衰幅 : 減衰量=減衰開始から距離(m)*係数 : float**/
-		DECAY_DAMAGE_MAX_LIVING("DecayLivingDamageMax",0F,DataType.Float,10),
+		DECAY_DAMAGE_MAX_LIVING(null,null,0F,DataType.Float,10),
+
+		/** 着弾音 : Sound型 **/
+		SOUND_HIT_GROUND(null,null, new Sound("sample", 8), DataType.Object, 21),
+
+		/** エンティティ着弾音を使用するか : boolean型 **/
+		SOUND_HIT_ENTITY(null,null, new Sound("sample", 8), DataType.Object, 21),
+
+		/** 通過音を使用するか : boolean型 **/
+		SOUND_PASSING_USE(null,null, new Sound("sample", 8), DataType.Object, 21),
 
 		/**弾道落下を使用するか : boolean型**/
-		GRAVITY_USE("useGravity",false,DataType.Boolean),
+		GRAVITY_USE(null,null,false,DataType.Boolean),
 
 		/**透過する・ブロック : String[]型*/
-		THROUGH_BLOCK("throughBlock", new String[] {},DataType.StringArray),
+		THROUGH_BLOCK(null,null, new String[] {},DataType.Object),
 		/**透過するエンティティ : String[]型*/
-		THROUGH_ENTITY("throughEntity", new String[] {},DataType.StringArray),
+		THROUGH_ENTITY(null,null, new String[] {},DataType.Object),
 
-		/**エンティティを貫通するか : boolean型**/
-		BULLET_BOWERED("BulletPowered",false,DataType.Boolean),
 		/** 使用できるアタッチメントのType 複数設定可能 : String配列型 **/
-		TYPES_ATTACHMENTS("AttachmentNames", new String[] {},DataType.StringArray),
+		TYPES_ATTACHMENTS(null,null, new String[] {},DataType.Object),
 		;
 
 		/*
@@ -134,36 +140,33 @@ public class BulletData extends DataBase{
 		public static final int BULLET_EXP_DAMAGE = 4;
 		public static final int BULLET_EXP_KNOCKBACK = 5;
 
-		/**登録名*/
-		private String name;
-		/**初期値*/
-		private Object defaultValue;
-		/**カテゴリID : デフォルト=-1*/
-		private int cate;
-		/**Type*/
-		private DataType types;
-
-		/**コンストラクタ 表示名+データ+Type カテゴリはデフォルト*/
-		BulletDataList(String name, Object obj ,DataType types) {
-			this.name = name;
-			this.defaultValue = obj;
-			this.cate = -1;
-			this.types = types;
+		/** カテゴリなし */
+		private BulletDataList(Float min, Float max, Object defaultValue, DataType type) {
+			this(min, max, defaultValue, type, -1);
 		}
 
-		/**コンストラクタ 表示名+データ+Type+カテゴリ*/
-		BulletDataList(String name, Object obj,DataType types ,int cate) {
-			this(name, obj, types);
-			this.cate = cate;
-
+		/** カテゴリ付き */
+		private BulletDataList(Float min, Float max, Object defaultValue, DataType type, int cate) {
+			Max = max;
+			Min = min;
+			Default = defaultValue;
+			Type = type;
+			Cate = cate;
 		}
+
+		Float Max;
+		Float Min;
+		Object Default;
+		DataType Type;
+		int Cate;
+
 		/**登録名を返す*/
 		public String getName() {
-			return name;
+			return this.toString();
 		}
 		/**型を返す*/
 		public DataType getType() {
-			return types;
+			return Type;
 		}
 		/**データを返す*/
 		public Object getData(BulletData d) {
@@ -175,11 +178,11 @@ public class BulletData extends DataBase{
 		}
 		/**初期値を返す*/
 		public Object getDefaultValue() {
-			return defaultValue;
+			return Default;
 		}
 		/**カテゴリを返す*/
 		public int getCate() {
-			return cate;
+			return Cate;
 		}
 		/**データを設定する nullは上書きしない*/
 		public void setData(BulletData d,Object obj) {
@@ -190,72 +193,37 @@ public class BulletData extends DataBase{
 
 		@Override
 		public Float getMin() {
-			return null;
+			return Min;
 		}
 
 		@Override
 		public Float getMax() {
-			return null;
+			return Max;
 		}
 	}
+	public ItemInfo getItemInfo(){
+		return (ItemInfo) this.getDataObject(GunDataList.ITEM_INFO);
+	}
+
 	/** 初期値*/
 	public BulletData() {
-		this(null);
+		for (BulletDataList data : BulletDataList.values()) {
+			Data.put(data.getName(), data.getDefaultValue());
+		}
 	}
 
 	static final String headName = "bullet_";
 	/** JsonStringからデータを読み込む */
 	public BulletData(String json) {
-		// 初期値を忘れずに
+		this();
 		Gson gson = new Gson();
-		JsonWrapper w = new JsonWrapper(gson.fromJson(json, JsonObject.class));
-		//マップに格納
-		for (BulletDataList d:BulletDataList.values()){
-			//System.out.println(d.getName()+"  "+d.getDefaultValue() + "  "+ w.getString("gun_"+d.getName(), d.getDefaultValue().toString()));
-			switch (d.types){
-			case Boolean:
-				Data.put(d.toString(), w.getBoolean(headName+d.toString(),new Boolean (d.getDefaultValue().toString())));
-			break;
-			case String:
-				Data.put(d.toString(), w.getString(headName+d.toString(),d.getDefaultValue().toString()));
-			break;
-			case Int:
-				Data.put(d.toString(), w.getInt(headName+d.toString(), new Integer (d.getDefaultValue().toString())));
-			break;
-			case Float:
-				Data.put(d.toString(), w.getFloat(headName+d.toString(), new Float (d.getDefaultValue().toString())));
-			break;
-			case StringArray:
-				Data.put(d.toString(), w.getStringArray(headName+d.toString(), (String[]) d.getDefaultValue()));
-			break;
-			}
-		}
+		Data.putAll(gson.fromJson(json, new TypeToken<HashMap<String, Object>>() {
+		}.getType()));
 	}
-	/**JsonObjectを作成*/
-	public String MakeJsonData(){
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		JsonObject JsonData = new JsonObject();
-		for (BulletDataList d:BulletDataList.values()){
-			switch (d.types){
-			case Boolean:
-				JsonData.addProperty(headName+d.toString(),this.getDataBoolean(d));
-			break;
-			case String:
-				JsonData.addProperty(headName+d.toString(),this.getDataString(d));
-			break;
-			case Int:
-				JsonData.addProperty(headName+d.toString(), this.getDataInt(d));
-			break;
-			case Float:
-				JsonData.addProperty(headName+d.toString(), this.getDataFloat(d));
-			break;
-			case StringArray:
-				JsonElement element =
-			     gson.toJsonTree(this.getDataStringArray(d) , new TypeToken<String[]>() {}.getType());
-				JsonData.add(headName+d.toString(), element.getAsJsonArray());
-			break;
-			}
-		}
-		return gson.toJson(JsonData);
+
+	/**使用マガジンやアタッチメントなどの名前を更新*/
+	public void setDomain(String Domain) {
+		ItemInfo item = getItemInfo();
+		item.shortName = item.shortName+PackLoader.DOMAIN_MAGAZINE+Domain;
 	}
 }

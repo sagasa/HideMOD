@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import entity.EntityBullet;
 import handler.PacketHandler;
 import handler.PlayerHandler;
+import handler.SoundHandler;
 import helper.NBTWrapper;
 import helper.ParseByteArray;
 import hideMod.HideMod;
@@ -31,6 +32,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
 import types.BulletData.BulletDataList;
+import types.Sound;
 import types.guns.GunData;
 import types.guns.GunFireMode;
 import types.guns.LoadedMagazine;
@@ -130,8 +132,8 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 			buf.writeFloat(Yaw);
 			buf.writeFloat(Pitch);
 			// 長さと一緒に文字列を送る
-			PacketHandler.writeString(buf, gunData.getDataString(GunDataList.SHORT_NAME));
-			PacketHandler.writeString(buf, bulletData.getDataString(BulletDataList.SHORT_NAME));
+			PacketHandler.writeString(buf, gunData.getItemInfo().shortName);
+			PacketHandler.writeString(buf, bulletData.getItemInfo().shortName);
 		}
 		if (mode == GUN_RELOAD_REQ) {
 			PacketHandler.writeString(buf, bulletName);
@@ -195,11 +197,13 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 								}
 							}
 							NBTWrapper.setGunLoadedMagazines(item, magazines);
-							NBTWrapper.setGunShootDelay(item, ItemGun.getGunData(item).getDataInt(GunDataList.RATE));
+							NBTWrapper.setGunShootDelay(item, ItemGun.getGunData(item).getDataInt(GunDataList.RATE_TICK));
 							Player.inventory.inventoryChanged = false;
 							// 弾を発射
 							EntityBullet bullet = new EntityBullet(Player.worldObj, Player, m.gunData,m.bulletData, m.Yaw, m.Pitch);
 							Player.worldObj.spawnEntityInWorld(bullet);
+
+							SoundHandler.broadcastSound(Player.worldObj, Player.posX, Player.posY, Player.posZ,(Sound) m.gunData.getDataObject(GunDataList.SOUND_SHOOT));
 						}
 					}
 					if (m.mode == GUN_RELOAD_REQ) {
