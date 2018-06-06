@@ -1,6 +1,7 @@
 package types.guns;
 
 import helper.JsonWrapper;
+import hideMod.HideMod;
 import hideMod.PackLoader;
 import types.ItemInfo;
 import types.Sound;
@@ -151,6 +152,15 @@ public class GunData extends DataBase {
 		String[] bullets = (String[]) getDataObject(GunDataList.BULLET_USE);
 		for (int i = 0; i < bullets.length; i++) {
 			bullets[i] = bullets[i]+PackLoader.DOMAIN_MAGAZINE+Domain;
+		}
+		//音のドメインがなければ定義
+		Sound shoot = (Sound) getDataObject(GunDataList.SOUND_SHOOT);
+		if(!shoot.name.contains(":")){
+			shoot.name=HideMod.MOD_ID+":"+shoot.name;
+		}
+		Sound reload = (Sound) getDataObject(GunDataList.SOUND_RELOAD);
+		if(!reload.name.contains(":")){
+			reload.name=HideMod.MOD_ID+":"+shoot.name;
 		}
 	}
 }
