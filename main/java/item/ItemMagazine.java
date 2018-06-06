@@ -39,6 +39,7 @@ public class ItemMagazine extends Item{
 	/** クリエイティブタブの中にサブタイプを設定 */
 	@Override
 	public void getSubItems(Item itemIn, CreativeTabs tab, List subItems) {
+		System.out.println(makeMagazine(RegisterName));
 			subItems.add(makeMagazine(RegisterName));
 	}
 	/**アイテムスタックを作成 残弾指定*/

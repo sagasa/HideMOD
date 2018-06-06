@@ -156,20 +156,19 @@ public class PackLoader {
 		        }
 			}
 			for (BulletData data : cashBulletData) {
-				String registerName = cashPack.PACK_ROOTNAME+DOMAIN_MAGAZINE+data.getItemInfo().shortName;
-				ItemMagazine gun = new ItemMagazine(data,registerName);
 				//ショートネームを登録名に書き換え
 				data.setDomain(cashPack.PACK_ROOTNAME);
+				ItemMagazine gun = new ItemMagazine(data,data.getItemInfo().shortName);
 				//重複しないかどうか
 				if(BULLET_DATA_MAP.containsKey(data.getItemInfo().shortName)){
 					HideMod.log("Item has already been added :"+data.getItemInfo().shortName);
 					continue;
 				}
-				BULLET_DATA_MAP.put(registerName, data);
+				BULLET_DATA_MAP.put(data.getItemInfo().shortName, data);
 				//レジスターに書き込む
-				GameRegistry.registerItem(gun,registerName);
+				GameRegistry.registerItem(gun,data.getItemInfo().shortName);
 		        if (FMLCommonHandler.instance().getSide().isClient()) {
-		        	ModelLoader.setCustomModelResourceLocation(gun, 0, new ModelResourceLocation(HideMod.MOD_ID + ":" + registerName, "inventory"));
+		        	ModelLoader.setCustomModelResourceLocation(gun, 0, new ModelResourceLocation(HideMod.MOD_ID + ":" + data.getItemInfo().shortName, "inventory"));
 		        }
 			}
 			contentsPackList.add(cashPack);

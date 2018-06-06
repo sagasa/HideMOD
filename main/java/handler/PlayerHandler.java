@@ -58,7 +58,6 @@ public class PlayerHandler {
 
 	private static int fireNum = 0;
 	private static boolean shooted = false;
-	private static int recoilPower = 0;
 
 	private static ItemStack lastItem;
 	private static int lastCurrentItem;
@@ -146,7 +145,7 @@ public class PlayerHandler {
 				// 前に持っていたのが銃だった場合はIDで比較
 				if (!ItemGun.isGun(lastItem)
 						|| (ItemGun.isGun(lastItem) && NBTWrapper.getGunID(item) != NBTWrapper.getGunID(lastItem))) {
-					recoilPower = 0;
+
 					GunData gundata = ((ItemGun) item.getItem()).getGunData(item);
 					// 変数にNBTから読み込み
 					UsingBulletName = NBTWrapper.getGunUseingBullet(item);
@@ -169,6 +168,8 @@ public class PlayerHandler {
 
 			// gunData取得
 			GunData gundata = ((ItemGun) item.getItem()).getGunData(item);
+			//リコイルを適応
+			RecoilHandler.updateRecoil(gundata);
 			if (leftMouseHeld) {
 				// 射撃処理
 				//ReloadProgress = -1;
@@ -220,9 +221,6 @@ public class PlayerHandler {
 				ReloadProgress = -1;
 			} else if (ReloadProgress > 0) {
 				ReloadProgress--;
-			}
-			if (recoilPower > 0) {
-				recoilPower -= RecoilHandler.getRecoilPowerRemove(player, gundata);
 			}
 			if (ShootDelay > 0) {
 				ShootDelay--;
@@ -326,10 +324,10 @@ public class PlayerHandler {
 						player.rotationYaw, player.rotationPitch));
 				ShootDelay = gun.getDataInt(GunDataList.RATE_TICK);
 				// リコイル
-				RecoilHandler.MakeRecoil(player, gun, recoilPower);
+				RecoilHandler.addRecoil(gun);
 				// 100を超えないように代入
-				recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun) > 100 ? 100
-						: recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun);
+		//		recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun) > 100 ? 100
+		//				: recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun);
 			} else {
 				// 存在しなかったなら破棄処理
 				PacketHandler.INSTANCE

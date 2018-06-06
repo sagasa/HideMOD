@@ -114,7 +114,7 @@ public class MasterEventHandler {
 	public void onEvent(RenderGameOverlayEvent event) {
 		// System.out.println(event.target+"Stop");
 		RenderHandler.writeGameOverlay(event);
-		System.out.println(event.type);
+	//	System.out.println(event.type);
 	}
 
 	// 額縁描画

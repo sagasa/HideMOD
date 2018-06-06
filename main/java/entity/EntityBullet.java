@@ -200,7 +200,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			posX = dw.getWatchableObjectFloat(DATAWATCHER_POSX);
 			posY = dw.getWatchableObjectFloat(DATAWATCHER_POSY);
 			posZ = dw.getWatchableObjectFloat(DATAWATCHER_POSZ);
-			System.out.println(((hitState&MASK_HITBLOCK)==MASK_HITBLOCK) +" "+hitState);
+			//System.out.println(((hitState&MASK_HITBLOCK)==MASK_HITBLOCK) +" "+hitState);
 			//地面への着弾音
 			if((hitState&MASK_HITBLOCK)==MASK_HITBLOCK){
 				SoundHandler.playSound(posX, posY, posZ, (Sound) bulletData.getDataObject(BulletDataList.SOUND_HIT_GROUND));
@@ -314,14 +314,13 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			deathNaxtTick = MASK_HIT;
 			if(isHittoBlock){
 				deathNaxtTick = (byte) (deathNaxtTick | MASK_HITBLOCK);
-				System.out.println(MASK_HITBLOCK+" "+(deathNaxtTick | MASK_HITBLOCK));
 			}
 			DataWatcher dw = getDataWatcher();
 			dw.updateObject(DATAWATCHER_END, deathNaxtTick);
 			dw.updateObject(DATAWATCHER_POSX, (float) endPos.xCoord);
 			dw.updateObject(DATAWATCHER_POSY, (float) endPos.yCoord);
 			dw.updateObject(DATAWATCHER_POSZ, (float) endPos.zCoord);
-			System.out.println(endPos.xCoord + " " + endPos.yCoord + " " + endPos.zCoord+" "+worldObj.getWorldTime());
+		//	System.out.println(endPos.xCoord + " " + endPos.yCoord + " " + endPos.zCoord+" "+worldObj.getWorldTime());
 		}
 		// 距離計算
 		FlyingDistance += lvo.distanceTo(lvt);

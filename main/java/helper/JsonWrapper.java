@@ -1,82 +1,51 @@
 package helper;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.google.gson.JsonArray;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
-/**ここにJsonWrapper()でJsonオブジェクトを渡してからget()で取得する nullはデフォルトを返す*/
+import types.ItemInfo;
+import types.Sound;
+import types.base.EnumDataList;
+import types.guns.GunRecoil;
+
+/**ここにJsonWrapper()でJsonを渡してからget()で取得する nullはデフォルトを返す*/
 public class JsonWrapper {
 	private JsonObject _obj;
+	Gson gson = new Gson();
 
-	public JsonWrapper(JsonObject obj) {
-		_obj = obj;
-	}
-
-	/**keyで取得したString型を返す nullならデフォルトを返す */
-	public String getString(String key, String defaultValue) {
-		if(_obj==null){
-			return defaultValue;
-		}
-		JsonElement o = _obj.get(key);
-		if(o == null){
-			return defaultValue;
-		}
-		return o.getAsString();
+	public JsonWrapper(String json) {
+		_obj = gson.fromJson(json, JsonObject.class);
 	}
 
-	/**keyで取得したFloat型を返す nullならデフォルトを返す */
-	public Float getFloat(String key, Float defaultValue) {
+	/**keyで取得して型変換して返す */
+	public Object getObject(EnumDataList key) {
 		if(_obj==null){
-			return defaultValue;
+			return key.getDefaultValue();
 		}
-		JsonElement o = _obj.get(key);
+		JsonElement o = _obj.get(key.getName());
 		if(o == null){
-			return defaultValue;
-		}
-		return o.getAsFloat();
-	}
-
-	/**keyで取得したInteger型を返す nullならデフォルトを返す */
-	public Integer getInt(String key, Integer defaultValue) {
-		if(_obj==null){
-			return defaultValue;
-		}
-		JsonElement o = _obj.get(key);
-		if(o == null){
-			return defaultValue;
-		}
-		return o.getAsInt();
-	}
-	
-	/**keyで取得したboolean型を返す nullならデフォルトを返す */
-	public Boolean getBoolean(String key, Boolean defaultValue) {
-		if(_obj==null){
-			return defaultValue;
-		}
-		JsonElement o = _obj.get(key);
-		if(o == null){
-			return defaultValue;
-		}
-		return o.getAsBoolean();
-	}
-	
-	/**keyで取得したString[]型を返す nullならデフォルトを返す 内容がなければ空リストを返す */
-	public String[] getStringArray(String key, String[] defaultValue) {
-		if(_obj==null){
-			return defaultValue;
-		}
-		JsonElement o = _obj.get(key);
-		if(o == null){
-			return defaultValue;
+			return key.getDefaultValue();
 		};
-		JsonArray array = o.getAsJsonArray();
-		List<String> result = new ArrayList<String>();
-		for (int i = 0; i < array.size(); i++) {
-			result.add(array.get(i).getAsString());
+		switch (key.getType()) {
+		case Boolean:
+			return o.getAsBoolean();
+		case Float:
+			return o.getAsFloat();
+		case GunRecoil:
+			return gson.fromJson(o, GunRecoil.class);
+		case Int:
+			return o.getAsInt();
+		case ItemInfo:
+			return gson.fromJson(o, ItemInfo.class);
+		case Sound:
+			return gson.fromJson(o, Sound.class);
+		case String:
+			return o.getAsString();
+		case StringArray:
+			return gson.fromJson(o,new TypeToken<String[]>() {}.getType());
 		}
-		return result.toArray(new String[]{});
+		return key.getDefaultValue();
 	}
 }
