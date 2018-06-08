@@ -89,8 +89,8 @@ public class HideMod {
     	PacketHandler.init();
 
     	//パックをロード
-    	PackLoader.load();
-    	System.out.println("HomePath"+Minecraft.getMinecraft().mcDataDir.getAbsolutePath());
+    	PackLoader.load(event);
+    	//System.out.println("HomePath"+Minecraft.getMinecraft().mcDataDir.getAbsolutePath());
     }
 
     @EventHandler

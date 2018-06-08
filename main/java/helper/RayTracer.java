@@ -106,6 +106,7 @@ public class RayTracer {
 		Collections.sort(allInterceptEntity);
 		return allInterceptEntity;
 	}
+
 	/**エンティティがベクトルを中線とした範囲の中にいるかどうか*/
 	public boolean isInRange(Entity e, Vec3 lv0,Vec3 lvt,float range){
 

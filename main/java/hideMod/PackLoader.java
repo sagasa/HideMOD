@@ -71,10 +71,12 @@ public class PackLoader {
 	private List<BulletData> cashBulletData;
 	private ContentsPack cashPack;
 
-	/**パックから読み込む*/
-	public static void load() {
+	/**パックから読み込む
+	 * @param event */
+	public static void load(FMLPreInitializationEvent event) {
 		//パックのディレクトリを参照
-		HideDir = new File(Minecraft.getMinecraft().mcDataDir, "/Hide/");
+		HideDir = new File(event.getModConfigurationDirectory().getParentFile(), "/Hide/");
+		//new File(Minecraft.getMinecraft().mcDataDir, "/Hide/");
 		//パスにする
 		HidePath = HideDir.getAbsolutePath()+"/";
 
