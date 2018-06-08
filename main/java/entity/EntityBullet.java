@@ -272,27 +272,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 							damage *= 2;
 						}
 					}
-					e.attackEntityFrom(damagesource, damage);
-					e.hurtResistantTime = 0;
-
-					// リフレクションで改変が必要な変数にぶち抜く
-					try {
-						// 名前を指定して取得
-						Field attackingPlayer = EntityLivingBase.class.getDeclaredField("attackingPlayer");
-						Field recentlyHit = EntityLivingBase.class.getDeclaredField("recentlyHit");
-						Method recentlySetRevenge = EntityLivingBase.class.getMethod("setRevengeTarget",
-								EntityLivingBase.class);
-						// アクセス権限を与える
-						attackingPlayer.setAccessible(true);
-						recentlyHit.setAccessible(true);
-						// 攻撃時と同じ処理を組み込む
-						attackingPlayer.set(e, (EntityPlayer) Shooter);
-						recentlyHit.set(e, 100);
-						recentlySetRevenge.invoke(e, Shooter);
-					} catch (NoSuchFieldException | SecurityException | IllegalArgumentException
-							| IllegalAccessException | NoSuchMethodException | InvocationTargetException e1) {
-						e1.printStackTrace();
-					}
+					//ダメージを与える
+					HideDamage.Attack((EntityLivingBase)e, (HideDamage)damagesource, damage);
 
 					// パケット
 					if (Shooter instanceof EntityPlayerMP) {
@@ -320,12 +301,43 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			dw.updateObject(DATAWATCHER_POSX, (float) endPos.xCoord);
 			dw.updateObject(DATAWATCHER_POSY, (float) endPos.yCoord);
 			dw.updateObject(DATAWATCHER_POSZ, (float) endPos.zCoord);
+
+			onImpact();
 		//	System.out.println(endPos.xCoord + " " + endPos.yCoord + " " + endPos.zCoord+" "+worldObj.getWorldTime());
 		}
 		// 距離計算
 		FlyingDistance += lvo.distanceTo(lvt);
 		// データ同期
 
+	}
+
+	private void onImpact(){
+		//爆発があるなら
+		float range = bulletData.getDataInt(BulletDataList.EXP_RANGE);
+		System.out.println(range+bulletData.getDataString(BulletDataList.EXP_DAMAGE_BASE_LIVING));
+		if(range>0){
+			List<Entity> list = worldObj.getEntitiesWithinAABBExcludingEntity(this, new AxisAlignedBB(posX-range, posY-range, posZ-range, posX+range, posY+range, posZ+range));
+			System.out.println(list);
+			for(Entity e : list){
+				double dis = new Vec3(e.posX, e.posY, e.posZ).distanceTo(new Vec3(this.posX, this.posY, this.posZ));
+				if(!(e instanceof EntityLivingBase)||dis>range){
+					continue;
+				}
+				//ダメージを算出
+				float damage = 0;
+				if(e instanceof EntityPlayer){
+					damage = bulletData.getDataFloat(BulletDataList.EXP_DAMAGE_BASE_PLAYER);
+					damage -= bulletData.getDataFloat(BulletDataList.EXP_DAMAGE_COE_PLAYER) * dis;
+				}else if(e instanceof EntityLiving){
+					damage = bulletData.getDataFloat(BulletDataList.EXP_DAMAGE_BASE_LIVING);
+					damage -= bulletData.getDataFloat(BulletDataList.EXP_DAMAGE_COE_LIVING) * dis;
+				}
+
+				DamageSource damagesource = new HideDamage(HideDamageCase.GUN_Explosion, Shooter).setDamageBypassesArmor();
+				//ダメージを与える
+				HideDamage.Attack((EntityLivingBase)e, (HideDamage)damagesource, damage);
+			}
+		}
 	}
 
 	/** EntityLivingに対するダメージ算出 */
