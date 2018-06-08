@@ -12,6 +12,9 @@ public class HideParticle {
 		EntityFX fx = Minecraft.getMinecraft().effectRenderer.spawnEffectParticle(2, x, y, z, 0D, 0D, 0D, new int[0]);
 	}
 
+	public static EntityFX spawnExplosionEffect(double x,double y,double z,float range){
+		return null;
+	}
 
 
 	public static EntityFX getParticleEntity(String name,int x,int y,int z,int[] data){
