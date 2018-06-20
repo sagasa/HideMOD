@@ -283,6 +283,11 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 					// ダメージを与える
 					HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 
+					// 爆発があるなら
+					if(bulletData.getDataBoolean(BulletDataList.EXP_ON_HIT_ENTITY)){
+						explode(endPos);
+					}
+
 					// パケット
 					if (Shooter instanceof EntityPlayerMP) {
 						PacketHandler.INSTANCE.sendTo(new PacketHit(isHeadShot), (EntityPlayerMP) Shooter);
@@ -293,6 +298,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 					if (bulletPower == 0) {
 						endPos = hit.hitVec;
 						isHittoBlock = false;
+						break;
 					}
 				}
 			}
@@ -310,26 +316,31 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			dw.updateObject(DATAWATCHER_POSY, (float) endPos.yCoord);
 			dw.updateObject(DATAWATCHER_POSZ, (float) endPos.zCoord);
 
-			onImpact();
+			// 時間経過で爆発するなら
+			if(bulletData.getDataBoolean(BulletDataList.EXP_ON_TIMEOUT)&&life < tick){
+				explode(endPos);
+			}
+			// 地面に当たったなら
+			if(bulletData.getDataBoolean(BulletDataList.EXP_ON_HIT_GROUND)&&isHittoBlock){
+				explode(endPos);
+			}
+
 			// System.out.println(endPos.xCoord + " " + endPos.yCoord + " " +
 			// endPos.zCoord+" "+worldObj.getWorldTime());
 		}
 		// 距離計算
 		FlyingDistance += lvo.distanceTo(lvt);
-		// データ同期
-
 	}
 
-	private void onImpact() {
+	private void explode(Vec3 endPos) {
 		// 爆発があるなら
 		float range = bulletData.getDataInt(BulletDataList.EXP_RANGE);
-		System.out.println(range + bulletData.getDataString(BulletDataList.EXP_DAMAGE_BASE_LIVING));
 		if (range > 0) {
-			List<Entity> list = worldObj.getEntitiesWithinAABBExcludingEntity(this, new AxisAlignedBB(posX - range,
-					posY - range, posZ - range, posX + range, posY + range, posZ + range));
-			System.out.println(list);
+			List<Entity> list = worldObj.getEntitiesWithinAABBExcludingEntity(this, new AxisAlignedBB(endPos.xCoord - range,
+					endPos.yCoord - range, endPos.zCoord - range, endPos.xCoord + range, endPos.yCoord + range, endPos.zCoord + range));
+
 			for (Entity e : list) {
-				double dis = new Vec3(e.posX, e.posY, e.posZ).distanceTo(new Vec3(this.posX, this.posY, this.posZ));
+				double dis = new Vec3(e.posX, e.posY, e.posZ).distanceTo(endPos);
 				if (!(e instanceof EntityLivingBase) || dis > range) {
 					continue;
 				}
