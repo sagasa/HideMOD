@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import org.apache.logging.log4j.core.net.DatagramSocketManager;
@@ -96,6 +97,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	int bulletPower;
 	/** 飛距離 */
 	double FlyingDistance = 0;
+	/** 乱数!! */
+	static Random Random = new Random();
 
 	/** init時点での速度 */
 	Vec3 Vec0;
@@ -121,7 +124,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		Shooter = shooter;
 		Shooter_uuid = shooter.getUniqueID();
 		AlreadyHit = new ArrayList<Entity>();
-		bulletPower = gunData.getDataInt(GunDataList.BULLET_POWER);
+		bulletPower = gunData.getDataInt(GunDataList.BULLET_POWER) + bulletData.getDataInt(BulletDataList.BULLET_POWER);
 		// System.out.println("Start;
 		// "+gunData.getDataInt(GunDataList.BULLET_POWER));
 		// System.out.println(this.worldObj.isRemote);
@@ -134,7 +137,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 		// データから読み取る
 		float spead = gunData.getDataFloat(GunDataList.BULLET_SPEED);
-		// 向いている方向に
+
+		// 向いている方向をモーションに
 		motionX = -Math.sin(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
 		motionZ = Math.cos(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
 		motionY = -Math.sin(Math.toRadians(rotationPitch));
@@ -200,13 +204,17 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			posX = dw.getWatchableObjectFloat(DATAWATCHER_POSX);
 			posY = dw.getWatchableObjectFloat(DATAWATCHER_POSY);
 			posZ = dw.getWatchableObjectFloat(DATAWATCHER_POSZ);
-			//System.out.println(((hitState&MASK_HITBLOCK)==MASK_HITBLOCK) +" "+hitState);
-			//地面への着弾音
-			if((hitState&MASK_HITBLOCK)==MASK_HITBLOCK){
-				SoundHandler.playSound(posX, posY, posZ, (Sound) bulletData.getDataObject(BulletDataList.SOUND_HIT_GROUND));
+			// System.out.println(((hitState&MASK_HITBLOCK)==MASK_HITBLOCK) +"
+			// "+hitState);
+			// 地面への着弾音
+			if ((hitState & MASK_HITBLOCK) == MASK_HITBLOCK) {
+				SoundHandler.playSound(posX, posY, posZ,
+						(Sound) bulletData.getDataObject(BulletDataList.SOUND_HIT_GROUND));
 			}
-			//	EntityFX fx = Minecraft.getMinecraft().effectRenderer.spawnEffectParticle(2, posX, posY, posZ, 0D, 0D, 0D, new int[0]);
-		//	fx.renderDistanceWeight = 200;
+			// EntityFX fx =
+			// Minecraft.getMinecraft().effectRenderer.spawnEffectParticle(2,
+			// posX, posY, posZ, 0D, 0D, 0D, new int[0]);
+			// fx.renderDistanceWeight = 200;
 			setDead();
 		}
 		// this.worldObj.spawnParticle(EnumParticleTypes.EXPLOSION_HUGE,posX,posY,posZ,0,0,0,new
@@ -230,8 +238,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		/** 今のtickの位置ベクトル */
 		Vec3 lvt = new Vec3(prevPosX, prevPosY, prevPosZ);
 
-		/**弾が消失した位置*/
-		Vec3 endPos  = lvt;
+		/** 弾が消失した位置 */
+		Vec3 endPos = lvt;
 
 		/** レイトレーサーの終点の位置ベクトル */
 		Vec3 lvend = lvt;
@@ -272,8 +280,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 							damage *= 2;
 						}
 					}
-					//ダメージを与える
-					HideDamage.Attack((EntityLivingBase)e, (HideDamage)damagesource, damage);
+					// ダメージを与える
+					HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 
 					// パケット
 					if (Shooter instanceof EntityPlayerMP) {
@@ -281,8 +289,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 					}
 					bulletPower--;
 					AlreadyHit.add(e);
-					//もしこの衝突で消えたなら
-					if(bulletPower == 0){
+					// もしこの衝突で消えたなら
+					if (bulletPower == 0) {
 						endPos = hit.hitVec;
 						isHittoBlock = false;
 					}
@@ -293,7 +301,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		if (bulletPower == 0 || isHittoBlock || life < tick) {
 			// 爆破処理
 			deathNaxtTick = MASK_HIT;
-			if(isHittoBlock){
+			if (isHittoBlock) {
 				deathNaxtTick = (byte) (deathNaxtTick | MASK_HITBLOCK);
 			}
 			DataWatcher dw = getDataWatcher();
@@ -303,7 +311,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			dw.updateObject(DATAWATCHER_POSZ, (float) endPos.zCoord);
 
 			onImpact();
-		//	System.out.println(endPos.xCoord + " " + endPos.yCoord + " " + endPos.zCoord+" "+worldObj.getWorldTime());
+			// System.out.println(endPos.xCoord + " " + endPos.yCoord + " " +
+			// endPos.zCoord+" "+worldObj.getWorldTime());
 		}
 		// 距離計算
 		FlyingDistance += lvo.distanceTo(lvt);
@@ -311,41 +320,46 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 	}
 
-	private void onImpact(){
-		//爆発があるなら
+	private void onImpact() {
+		// 爆発があるなら
 		float range = bulletData.getDataInt(BulletDataList.EXP_RANGE);
-		System.out.println(range+bulletData.getDataString(BulletDataList.EXP_DAMAGE_BASE_LIVING));
-		if(range>0){
-			List<Entity> list = worldObj.getEntitiesWithinAABBExcludingEntity(this, new AxisAlignedBB(posX-range, posY-range, posZ-range, posX+range, posY+range, posZ+range));
+		System.out.println(range + bulletData.getDataString(BulletDataList.EXP_DAMAGE_BASE_LIVING));
+		if (range > 0) {
+			List<Entity> list = worldObj.getEntitiesWithinAABBExcludingEntity(this, new AxisAlignedBB(posX - range,
+					posY - range, posZ - range, posX + range, posY + range, posZ + range));
 			System.out.println(list);
-			for(Entity e : list){
+			for (Entity e : list) {
 				double dis = new Vec3(e.posX, e.posY, e.posZ).distanceTo(new Vec3(this.posX, this.posY, this.posZ));
-				if(!(e instanceof EntityLivingBase)||dis>range){
+				if (!(e instanceof EntityLivingBase) || dis > range) {
 					continue;
 				}
-				//ダメージを算出
+				// ダメージを算出
 				float damage = 0;
-				if(e instanceof EntityPlayer){
+				if (e instanceof EntityPlayer) {
 					damage = bulletData.getDataFloat(BulletDataList.EXP_DAMAGE_BASE_PLAYER);
 					damage -= bulletData.getDataFloat(BulletDataList.EXP_DAMAGE_COE_PLAYER) * dis;
-				}else if(e instanceof EntityLiving){
+				} else if (e instanceof EntityLiving) {
 					damage = bulletData.getDataFloat(BulletDataList.EXP_DAMAGE_BASE_LIVING);
 					damage -= bulletData.getDataFloat(BulletDataList.EXP_DAMAGE_COE_LIVING) * dis;
 				}
 
-				DamageSource damagesource = new HideDamage(HideDamageCase.GUN_Explosion, Shooter).setDamageBypassesArmor();
-				//ダメージを与える
-				HideDamage.Attack((EntityLivingBase)e, (HideDamage)damagesource, damage);
+				DamageSource damagesource = new HideDamage(HideDamageCase.GUN_Explosion, Shooter)
+						.setDamageBypassesArmor();
+				// ダメージを与える
+				HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 			}
 		}
 	}
 
-	/** EntityLivingに対するダメージ算出 */
+	/** EntityLivingBaseに対するダメージ算出 */
 	private float getFinalLivingDamage(EntityLivingBase target, double distance) {
 		float damage = 0;
 		// プレイヤーなら
 		if (target instanceof EntityPlayer) {
 			damage = bulletData.getDataFloat(BulletDataList.HIT_DAMAGE_PLAYER);
+			// 銃による変化
+			damage *= gunData.getDataFloat(GunDataList.PLAYER_DAMAGE_DIAMETER);
+			damage += gunData.getDataFloat(GunDataList.PLAYER_DAMAGE_ADD);
 			// 減衰開始からの距離を作成
 			float decayStart = bulletData.getDataFloat(BulletDataList.DECAY_DAMAGE_START_PLAYER);
 			float decayDistance = (float) (distance > decayStart ? distance - decayStart : 0);
@@ -357,6 +371,9 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			damage += decayAmount;
 		} else {
 			damage = bulletData.getDataFloat(BulletDataList.HIT_DAMAGE_LIVING);
+			// 銃による変化
+			damage *= gunData.getDataFloat(GunDataList.LIVING_DAMAGE_DIAMETER);
+			damage += gunData.getDataFloat(GunDataList.LIVING_DAMAGE_ADD);
 			// 減衰開始からの距離を作成
 			float decayStart = bulletData.getDataFloat(BulletDataList.DECAY_DAMAGE_START_LIVING);
 			float decayDistance = (float) (distance > decayStart ? distance - decayStart : 0);
@@ -380,11 +397,11 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		buffer.writeDouble(motionX);
 		buffer.writeDouble(motionY);
 		buffer.writeDouble(motionZ);
-		if(bulletData!=null){
+		if (bulletData != null) {
 			buffer.writeBoolean(true);
 			PacketHandler.writeString(buffer, bulletData.getItemInfo().shortName);
 			PacketHandler.writeString(buffer, gunData.getItemInfo().shortName);
-		}else{
+		} else {
 			buffer.writeBoolean(false);
 		}
 
@@ -396,7 +413,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		rotationYaw = Data.readFloat();
 		rotationPitch = Data.readFloat();
 		Vec0 = new Vec3(Data.readDouble(), Data.readDouble(), Data.readDouble());
-		if(Data.readBoolean()){
+		if (Data.readBoolean()) {
 			bulletData = ItemMagazine.getBulletData(PacketHandler.readString(Data));
 			gunData = ItemGun.getGunData(PacketHandler.readString(Data));
 		}

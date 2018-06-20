@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import org.lwjgl.input.Keyboard;
@@ -12,6 +13,7 @@ import org.lwjgl.opengl.GL11;
 
 import entity.EntityBullet;
 import entity.EntityDebug;
+import helper.HideMath;
 import helper.NBTWrapper;
 import hideMod.HideMod;
 import hideMod.PackLoader;
@@ -43,15 +45,19 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import newwork.PacketGuns;
+import newwork.PacketPlaySound;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
 import types.BulletData.BulletDataList;
+import types.Sound;
 import types.guns.GunData;
 import types.guns.GunFireMode;
 import types.guns.LoadedMagazine;
 import types.guns.GunData.GunDataList;
 
 public class PlayerHandler {
+	
+	private static Random Random = new Random();
 	// クライアント側変数
 	private static boolean rightMouseHeld;
 	private static boolean leftMouseHeld;
@@ -79,6 +85,7 @@ public class PlayerHandler {
 	public static String UsingBulletName;
 	public static int ShootDelay = 0;
 	public static int ReloadProgress = -1;
+	public static int PrepareTick = 0;
 	public static GunFireMode fireMode;
 
 	// サーバー側変数
@@ -150,6 +157,7 @@ public class PlayerHandler {
 					// 変数にNBTから読み込み
 					UsingBulletName = NBTWrapper.getGunUseingBullet(item);
 					ShootDelay = NBTWrapper.getGunShootDelay(item);
+					PrepareTick = gundata.getDataInt(GunDataList.PREPARE_TICK);
 					//ReloadProgress = NBTWrapper.getGunReloadProgress(item);
 					ReloadProgress = -1;
 					// System.out.println(NBTWrapper.getGunID(item));
@@ -173,7 +181,7 @@ public class PlayerHandler {
 			if (leftMouseHeld) {
 				// 射撃処理
 				//ReloadProgress = -1;
-				if (ShootDelay <= 0 && !shooted) {
+				if (ShootDelay <= 0 && !shooted && PrepareTick <= 0) {
 					switch (fireMode) {
 					case BURST:
 
@@ -203,6 +211,7 @@ public class PlayerHandler {
 			if (pushKeys.contains(KeyBind.GUN_RELOAD)) {
 				if (ReloadProgress == -1 && getNextReloadNum() > 0) {
 					ReloadProgress = gundata.getDataInt(GunDataList.RELOAD_TICK);
+					PacketHandler.INSTANCE.sendToServer(new PacketPlaySound((Sound) gundata.getDataObject(GunDataList.SOUND_RELOAD),player.posX,player.posY,player.posZ));
 				}
 			}
 			// 弾変更
@@ -224,6 +233,9 @@ public class PlayerHandler {
 			}
 			if (ShootDelay > 0) {
 				ShootDelay--;
+			}
+			if (PrepareTick > 0){
+				PrepareTick--;
 			}
 			// String msg =
 			// player.getCurrentEquippedItem().getTagCompound().toString();
@@ -318,10 +330,19 @@ public class PlayerHandler {
 		} else {
 			// 存在する弾かどうか
 			if (ItemMagazine.isMagazineExist(bulletName)) {
-				//player.worldObj.playSound(player.posX, player.posY, player.posZ, HideMod.MOD_ID+":BARShoot", 10, 1, true);
-				//player.worldObj.playSound(0, 5, 0, HideMod.MOD_ID+":BARShoot", 10, 1, false);
+				//拡散を取得
+				float spread;
+				if(isADS){
+					spread = gun.getDataFloat(GunDataList.ACCURACY_ADS);
+				}else{
+					spread = gun.getDataFloat(GunDataList.ACCURACY);
+				}
+				// 向きに拡散を
+				float yaw = (float) Math.toDegrees(Math.atan(Random.nextDouble()/50*HideMath.normal(0, spread)));
+				float pitch = (float) Math.toDegrees(Math.atan(Random.nextDouble()/50*HideMath.normal(0, spread)));
+				
 				PacketHandler.INSTANCE.sendToServer(new PacketGuns(gun, PackLoader.BULLET_DATA_MAP.get(bulletName),
-						player.rotationYaw, player.rotationPitch));
+						player.rotationYaw+yaw, player.rotationPitch+pitch));
 				ShootDelay = gun.getDataInt(GunDataList.RATE_TICK);
 				// リコイル
 				RecoilHandler.addRecoil(gun);

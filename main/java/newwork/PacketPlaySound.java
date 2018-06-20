@@ -14,6 +14,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import types.Sound;
 import types.inGame.HideSound;
 
 public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySound, IMessage> {
@@ -48,7 +49,11 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 		Pitch = pitch;
 		Delay = delay;
 	}
-	/**サーバー→クライアント 指定位置で再生*/
+	/**クライアント→クライアント 指定位置で再生*/
+	public PacketPlaySound(Sound sound, double x, double y, double z) {
+		this(sound.name, x, y, z, sound.vol, sound.pitch, sound.range, sound.isDelay, sound.isDecay);
+	}
+	/**クライアント→クライアント 指定位置で再生*/
 	public PacketPlaySound(String soundName, double x, double y, double z, float vol, float pitch, float range,boolean delay,boolean decay) {
 		Mode = SERVER_PLAYREQ;
 		Name = soundName;

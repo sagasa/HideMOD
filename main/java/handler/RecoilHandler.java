@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import helper.HideMath;
 import types.guns.GunData;
 import types.guns.GunData.GunDataList;
 import types.guns.GunRecoil;
@@ -27,7 +28,7 @@ public class RecoilHandler {
 		EntityPlayer player = Minecraft.getMinecraft().thePlayer;
 		return getRecoil(data, player.isSneaking(), PlayerHandler.isADS);
 	}
-	//状態から取得 使えなかった場合ルートを参照
+	//状態から取得 使えなかった場合前を参照
 	private static GunRecoil getRecoil(GunData data,boolean isSneak,boolean isADS){
 		if (!isSneak) {
 			if (isADS) {
@@ -72,6 +73,8 @@ public class RecoilHandler {
 
 		pitchShakeTo += getPitchShake(recoil,pitchReturnTo);
 		pitchShakeTick = recoil.pitch_recoil_tick;
+		//リコイルパワー加算
+		recoilPower = recoilPower+getRecoil(data).recoilPower_shoot>100 ? 100 :recoilPower+getRecoil(data).recoilPower_shoot;
 	}
 
 	/**Tick毎の変化*/
@@ -108,13 +111,16 @@ public class RecoilHandler {
 			Minecraft.getMinecraft().thePlayer.rotationPitch+=coe;
 			pitchReturnTick -= 1;
 		}
+		if(recoilPower > 0){
+			recoilPower = recoilPower-getRecoil(data).recoilPower_tick<0 ? 0 :recoilPower-getRecoil(data).recoilPower_tick;
+		}
 	}
 
 	/**yaw軸の戻る先を取得*/
 	static private float getYawReturn(GunRecoil data) {
 		float base = data.yaw_base_min + (data.yaw_base_max - data.yaw_base_min / 100 * recoilPower);
 		float spread = data.yaw_spread_min + ((data.yaw_spread_max - data.yaw_spread_min) / 100 * recoilPower);
-		return (float) normal(base, spread);
+		return (float) HideMath.normal(base, spread);
 	}
 	/**yaw軸のぶれる先を取得*/
 	static private float getYawShake(GunRecoil data, float base) {
@@ -125,24 +131,11 @@ public class RecoilHandler {
 	static private float getPitchReturn(GunRecoil data) {
 		float base = data.pitch_base_min + (data.pitch_base_max - data.pitch_base_min / 100 * recoilPower);
 		float spread = data.pitch_spread_min + ((data.pitch_spread_max - data.pitch_spread_min) / 100 * recoilPower);
-		return (float) normal(base, spread);
+		return (float) HideMath.normal(base, spread);
 	}
 	/**pitch軸のぶれる先を取得*/
 	static private float getPitchShake(GunRecoil data, float base) {
 		float shake = data.pitch_shake_min + ((data.pitch_shake_max - data.pitch_shake_min) / 100 * recoilPower);
 		return base*shake;
-	}
-
-	/** 標準偏差 */
-	static double normal(double ex, double sd) {
-		double xw = 0.0;
-		double x;
-		int n;
-		for (n = 1; n <= 12; n++) { /* 12個の一様乱数の合計 */
-			xw = xw + Math.random();
-		}
-		x = sd * (xw - 6.0) + ex;
-		// System.out.println("calue : "+ x);
-		return (x);
 	}
 }
