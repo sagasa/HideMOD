@@ -25,7 +25,5 @@ eclipse
 
 /*.txt
 
-/run
-!/run/Hide/
-
-!/src
+/run/*
+!/run/Hide
