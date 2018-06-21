@@ -59,8 +59,8 @@ public class PlayerHandler {
 	
 	private static Random Random = new Random();
 	// クライアント側変数
-	private static boolean rightMouseHeld;
-	private static boolean leftMouseHeld;
+	private static boolean rightMouseHold;
+	private static boolean leftMouseHold;
 
 	private static int fireNum = 0;
 	private static boolean shooted = false;
@@ -75,17 +75,19 @@ public class PlayerHandler {
 	public static int HitMarkerTime_H = 0;
 
 	private static int reloadQueue = -1;
+	
+	private static int minigunPrepare = 0;
 
 	public static boolean isADS = false;
 
 	private static boolean fastTick = true;
 
+	public static int PrepareTick = 0;
 	// 銃に格納するデータ
 	public static LoadedMagazine[] loadedMagazines;
 	public static String UsingBulletName;
 	public static int ShootDelay = 0;
 	public static int ReloadProgress = -1;
-	public static int PrepareTick = 0;
 	public static GunFireMode fireMode;
 
 	// サーバー側変数
@@ -111,7 +113,7 @@ public class PlayerHandler {
 	private static void ClientTick(EntityPlayerSP player) {
 		//死んでたらマウスを離す
 		if(player.isDead){
-			rightMouseHeld = leftMouseHeld = false;
+			rightMouseHold = leftMouseHold = false;
 		}
 		// キー入力の取得 押された変化を取得
 		ArrayList<KeyBind> pushKeys = new ArrayList<KeyBind>();
@@ -178,18 +180,42 @@ public class PlayerHandler {
 			GunData gundata = ((ItemGun) item.getItem()).getGunData(item);
 			//リコイルを適応
 			RecoilHandler.updateRecoil(gundata);
-			if (leftMouseHeld) {
+			//右くりっく
+			if(rightMouseHold){
+				
+			}
+			//minigun用処理
+			if(fireMode == GunFireMode.MINIGUN&&rightMouseHold&&minigunPrepare < gundata.getDataInt(GunDataList.PREPARE_TICK)){
+				minigunPrepare++;
+			}else if(minigunPrepare > 0){
+				minigunPrepare--;
+			}
+			//バースト処理
+			if(fireNum > 0&&ShootDelay <= 0){
+				//弾が切れたっぽかったらバースト終了
+				if(!shooted){
+					fireNum = 0;
+				}else{
+					fireNum--;
+					gunShoot(player, gundata);
+				}
+			}else if (leftMouseHold) {
 				// 射撃処理
 				//ReloadProgress = -1;
 				if (ShootDelay <= 0 && !shooted && PrepareTick <= 0) {
 					switch (fireMode) {
 					case BURST:
-
+						fireNum = gundata.getDataInt(GunDataList.BURST_BULLET_NUM);
+						fireNum--;
+						gunShoot(player, gundata);
 						break;
 					case FULLAUTO:
 						gunShoot(player, gundata);
 						break;
 					case MINIGUN:
+						if(minigunPrepare == gundata.getDataInt(GunDataList.PREPARE_TICK)){
+							gunShoot(player, gundata);
+						}
 						break;
 					case SEMIAUTO:
 						// 停止フラグ
@@ -343,7 +369,12 @@ public class PlayerHandler {
 				
 				PacketHandler.INSTANCE.sendToServer(new PacketGuns(gun, PackLoader.BULLET_DATA_MAP.get(bulletName),
 						player.rotationYaw+yaw, player.rotationPitch+pitch));
-				ShootDelay = gun.getDataInt(GunDataList.RATE_TICK);
+				//バーストかどうかでrateが変わる
+				if(fireNum > 0){
+					ShootDelay = gun.getDataInt(GunDataList.BURST_RATE_TICK);
+				}else{
+					ShootDelay = gun.getDataInt(GunDataList.RATE_TICK);
+				}
 				// リコイル
 				RecoilHandler.addRecoil(gun);
 				// 100を超えないように代入
@@ -391,7 +422,9 @@ public class PlayerHandler {
 	public static void MouseEvent(MouseEvent event) {
 		// 左クリックなら
 		if (event.button == 0) {
-			leftMouseHeld = event.buttonstate;
+			leftMouseHold = event.buttonstate;
+		}else if (event.button == 1) {
+			rightMouseHold = event.buttonstate;
 		}
 	}
 
