@@ -20,6 +20,11 @@ plugins {
     id "net.minecraftforge.gradle.forge" version "2.0.2"
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-source', '1.8', '-target', '1.8']
+}
+
 version = "ƒ¿"
 group= "com.sagasa.hidemod" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "HideMOD"

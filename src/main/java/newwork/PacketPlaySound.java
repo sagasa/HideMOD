@@ -102,7 +102,7 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 		}
 	}
 	@Override
-	public IMessage onMessage(PacketPlaySound m, MessageContext ctx) {
+	public IMessage onMessage(final PacketPlaySound m, final MessageContext ctx) {
 		if (ctx.side == Side.SERVER) {
 			ctx.getServerHandler().playerEntity.getServerForPlayer().addScheduledTask(new Runnable() {
 				public void run() {
