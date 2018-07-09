@@ -48,15 +48,13 @@ import newwork.PacketGuns;
 import newwork.PacketPlaySound;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
-import types.BulletData.BulletDataList;
 import types.Sound;
 import types.guns.GunData;
 import types.guns.GunFireMode;
 import types.guns.LoadedMagazine;
-import types.guns.GunData.GunDataList;
 
 public class PlayerHandler {
-	
+
 	private static Random Random = new Random();
 	// クライアント側変数
 	private static boolean rightMouseHold;
@@ -75,7 +73,7 @@ public class PlayerHandler {
 	public static int HitMarkerTime_H = 0;
 
 	private static int reloadQueue = -1;
-	
+
 	private static int minigunPrepare = 0;
 
 	public static boolean isADS = false;
@@ -159,7 +157,7 @@ public class PlayerHandler {
 					// 変数にNBTから読み込み
 					UsingBulletName = NBTWrapper.getGunUseingBullet(item);
 					ShootDelay = NBTWrapper.getGunShootDelay(item);
-					PrepareTick = gundata.getDataInt(GunDataList.PREPARE_TICK);
+					PrepareTick = gundata.PREPARE_TICK;
 					//ReloadProgress = NBTWrapper.getGunReloadProgress(item);
 					ReloadProgress = -1;
 					// System.out.println(NBTWrapper.getGunID(item));
@@ -182,10 +180,10 @@ public class PlayerHandler {
 			RecoilHandler.updateRecoil(gundata);
 			//右くりっく
 			if(rightMouseHold){
-				
+
 			}
 			//minigun用処理
-			if(fireMode == GunFireMode.MINIGUN&&rightMouseHold&&minigunPrepare < gundata.getDataInt(GunDataList.PREPARE_TICK)){
+			if(fireMode == GunFireMode.MINIGUN&&rightMouseHold&&minigunPrepare < gundata.PREPARE_TICK){
 				minigunPrepare++;
 			}else if(minigunPrepare > 0){
 				minigunPrepare--;
@@ -205,7 +203,7 @@ public class PlayerHandler {
 				if (ShootDelay <= 0 && !shooted && PrepareTick <= 0) {
 					switch (fireMode) {
 					case BURST:
-						fireNum = gundata.getDataInt(GunDataList.BURST_BULLET_NUM);
+						fireNum = gundata.BURST_BULLET_NUM;
 						fireNum--;
 						gunShoot(player, gundata);
 						break;
@@ -213,7 +211,7 @@ public class PlayerHandler {
 						gunShoot(player, gundata);
 						break;
 					case MINIGUN:
-						if(minigunPrepare == gundata.getDataInt(GunDataList.PREPARE_TICK)){
+						if(minigunPrepare == gundata.PREPARE_TICK){
 							gunShoot(player, gundata);
 						}
 						break;
@@ -236,8 +234,8 @@ public class PlayerHandler {
 			// リロード
 			if (pushKeys.contains(KeyBind.GUN_RELOAD)) {
 				if (ReloadProgress == -1 && getNextReloadNum() > 0) {
-					ReloadProgress = gundata.getDataInt(GunDataList.RELOAD_TICK);
-					PacketHandler.INSTANCE.sendToServer(new PacketPlaySound((Sound) gundata.getDataObject(GunDataList.SOUND_RELOAD),player.posX,player.posY,player.posZ));
+					ReloadProgress = gundata.RELOAD_TICK;
+					PacketHandler.INSTANCE.sendToServer(new PacketPlaySound((Sound) gundata.SOUND_RELOAD,player.posX,player.posY,player.posZ));
 				}
 			}
 			// 弾変更
@@ -292,9 +290,9 @@ public class PlayerHandler {
 			// 入ってなければ要求
 			if (magazine == null) {
 				// System.out.println(UsingBulletName);
-				return ItemMagazine.getBulletData(UsingBulletName).getDataInt(BulletDataList.MAGAZINE_SIZE);
+				return ItemMagazine.getBulletData(UsingBulletName).MAGAZINE_SIZE;
 			}
-			int num = ItemMagazine.getBulletData(magazine.name).getDataInt(BulletDataList.MAGAZINE_SIZE) - magazine.num;
+			int num = ItemMagazine.getBulletData(magazine.name).MAGAZINE_SIZE - magazine.num;
 			if (num > 0 && magazine.name.equals(UsingBulletName)) {
 				return num;
 			}
@@ -311,7 +309,7 @@ public class PlayerHandler {
 				loadedMagazines[i] = new LoadedMagazine(name, amount);
 				return;
 			}
-			int num = ItemMagazine.getBulletData(magazine.name).getDataInt(BulletDataList.MAGAZINE_SIZE) - magazine.num;
+			int num = ItemMagazine.getBulletData(magazine.name).MAGAZINE_SIZE - magazine.num;
 			if (num > 0 && magazine.name.equals(UsingBulletName)) {
 				loadedMagazines[i] = new LoadedMagazine(name, amount + magazine.num);
 				return;
@@ -359,21 +357,21 @@ public class PlayerHandler {
 				//拡散を取得
 				float spread;
 				if(isADS){
-					spread = gun.getDataFloat(GunDataList.ACCURACY_ADS);
+					spread = gun.ACCURACY_ADS;
 				}else{
-					spread = gun.getDataFloat(GunDataList.ACCURACY);
+					spread = gun.ACCURACY;
 				}
 				// 向きに拡散を
 				float yaw = (float) Math.toDegrees(Math.atan(Random.nextDouble()/50*HideMath.normal(0, spread)));
 				float pitch = (float) Math.toDegrees(Math.atan(Random.nextDouble()/50*HideMath.normal(0, spread)));
-				
+
 				PacketHandler.INSTANCE.sendToServer(new PacketGuns(gun, PackLoader.BULLET_DATA_MAP.get(bulletName),
 						player.rotationYaw+yaw, player.rotationPitch+pitch));
 				//バーストかどうかでrateが変わる
 				if(fireNum > 0){
-					ShootDelay = gun.getDataInt(GunDataList.BURST_RATE_TICK);
+					ShootDelay = gun.BURST_RATE_TICK;
 				}else{
-					ShootDelay = gun.getDataInt(GunDataList.RATE_TICK);
+					ShootDelay = gun.RATE_TICK;
 				}
 				// リコイル
 				RecoilHandler.addRecoil(gun);

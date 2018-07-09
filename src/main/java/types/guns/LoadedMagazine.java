@@ -1,7 +1,6 @@
 package types.guns;
 
 import item.ItemMagazine;
-import types.BulletData.BulletDataList;
 
 /**装填済みのマガジン管理用*/
 public class LoadedMagazine{

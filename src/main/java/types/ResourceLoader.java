@@ -19,9 +19,7 @@ import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.data.IMetadataSerializer;
 import net.minecraft.util.ResourceLocation;
-import types.BulletData.BulletDataList;
 import types.guns.GunData;
-import types.guns.GunData.GunDataList;
 
 /**デフォルトリソースパックに割り込んでリソースを押し込む*/
 public class ResourceLoader implements IResourcePack{
@@ -39,11 +37,11 @@ public class ResourceLoader implements IResourcePack{
     		String registerName = json.matcher(itemModel.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
     		//銃なら
     		if(PackLoader.GUN_DATA_MAP.containsKey(registerName)){
-    			return makeItemModel(PackLoader.GUN_DATA_MAP.get(registerName).getItemInfo().iconName, true);
+    			return makeItemModel(PackLoader.GUN_DATA_MAP.get(registerName).ITEM_INFO.NAME_ICON, true);
     		}
     		//弾なら
     		if(PackLoader.BULLET_DATA_MAP.containsKey(registerName)){
-    			return makeItemModel(PackLoader.BULLET_DATA_MAP.get(registerName).getItemInfo().iconName, true);
+    			return makeItemModel(PackLoader.BULLET_DATA_MAP.get(registerName).ITEM_INFO.NAME_ICON, true);
     		}
 		}
     	Pattern itemTexture = Pattern.compile("^textures\\/items\\/");

@@ -23,7 +23,6 @@ import net.minecraftforge.client.event.RenderPlayerEvent.Pre;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import types.BulletData.BulletDataList;
 import types.guns.LoadedMagazine;
 
 @SideOnly(Side.CLIENT)
@@ -115,7 +114,7 @@ public class RenderHandler {
 				mc.fontRendererObj.drawString(LoadedMagazine.getLoadedNum(PlayerHandler.loadedMagazines)+"/"+PlayerHandler.getCanLoadMagazineNum(Minecraft.getMinecraft().thePlayer), (x+5)/fontSize, (y+21)/fontSize, 0xFFFFFF, false);
 				GlStateManager.scale(1/fontSize, 1/fontSize, 1/fontSize);
 				//使用する弾
-				mc.fontRendererObj.drawString(ItemMagazine.getBulletData(PlayerHandler.UsingBulletName).getItemInfo().displayName, x+40, y+50, 0xFFFFFF);
+				mc.fontRendererObj.drawString(ItemMagazine.getBulletData(PlayerHandler.UsingBulletName).ITEM_INFO.NAME_DISPLAY, x+40, y+50, 0xFFFFFF);
 
 				GlStateManager.disableBlend();
 			}

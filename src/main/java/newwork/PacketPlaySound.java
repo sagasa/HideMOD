@@ -51,7 +51,7 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 	}
 	/**クライアント→クライアント 指定位置で再生*/
 	public PacketPlaySound(Sound sound, double x, double y, double z) {
-		this(sound.name, x, y, z, sound.vol, sound.pitch, sound.range, sound.isDelay, sound.isDecay);
+		this(sound.NAME, x, y, z, sound.VOL, sound.PITCH, sound.RANGE, sound.USE_DELAY, sound.USE_DECAY);
 	}
 	/**クライアント→クライアント 指定位置で再生*/
 	public PacketPlaySound(String soundName, double x, double y, double z, float vol, float pitch, float range,boolean delay,boolean decay) {

@@ -13,7 +13,6 @@ import helper.NBTWrapper;
 import types.guns.GunData;
 import types.guns.GunFireMode;
 import types.guns.LoadedMagazine;
-import types.guns.GunData.GunDataList;
 import hideMod.HideMod;
 import hideMod.PackLoader;
 import net.minecraft.block.Block;
@@ -29,7 +28,6 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.LanguageRegistry;
 import types.BulletData;
-import types.BulletData.BulletDataList;
 
 public class ItemGun extends Item {
 
@@ -68,7 +66,7 @@ public class ItemGun extends Item {
 
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
-		return getGunData(stack).getItemInfo().displayName;
+		return getGunData(stack).ITEM_INFO.NAME_DISPLAY;
 	}
 
 	public static void setUUID(ItemStack item) {
@@ -90,15 +88,15 @@ public class ItemGun extends Item {
 			NBTWrapper.setGunID(item, -1);
 			NBTWrapper.setGunShootDelay(item, 0);
 			NBTWrapper.setGunFireMode(item, GunFireMode.getFireMode(
-					Arrays.asList((String[])data.getDataObject(GunDataList.FIREMODE)).iterator().next().toString()));
-			NBTWrapper.setGunUseingBullet(item, Arrays.asList((String[])data.getDataObject(GunDataList.BULLET_USE)).iterator().next().toString());
+					Arrays.asList(data.FIREMODE).iterator().next().toString()));
+			NBTWrapper.setGunUseingBullet(item, Arrays.asList((String[])data.BULLET_USE).iterator().next().toString());
 		}
 		return item;
 	}
 	/**データ破損チェック*/
 	public static boolean isNormalData(GunData data){
 		//弾が登録されているか
-		if(((String[])data.getDataObject(GunDataList.BULLET_USE)).length==0){
+		if(((String[])data.BULLET_USE).length==0){
 			return false;
 		}
 		return true;
@@ -130,10 +128,10 @@ public class ItemGun extends Item {
 	@Override
 	public void addInformation(ItemStack stack, EntityPlayer playerIn, List tooltip, boolean advanced) {
 		tooltip.add(ChatFormatting.GRAY + "FireMode : " + NBTWrapper.getGunFireMode(stack));
-		tooltip.add(ChatFormatting.GRAY + "UseBullet : " + ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(stack)).getItemInfo().displayName);
+		tooltip.add(ChatFormatting.GRAY + "UseBullet : " + ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(stack)).ITEM_INFO.NAME_DISPLAY);
 		for (LoadedMagazine magazine : NBTWrapper.getGunLoadedMagazines(stack)) {
 			if (magazine != null) {
-				tooltip.add(ItemMagazine.getBulletData(magazine.name).getItemInfo().displayName + "x"
+				tooltip.add(ItemMagazine.getBulletData(magazine.name).ITEM_INFO.NAME_DISPLAY + "x"
 						+ magazine.num);
 			}else{
 				tooltip.add("empty");
@@ -151,7 +149,7 @@ public class ItemGun extends Item {
 
 	/** 次の射撃モードを取得 */
 	public static GunFireMode getNextFireMode(GunData data, GunFireMode now) {
-		List<String> modes = Arrays.asList((String[])data.getDataObject(GunDataList.FIREMODE));
+		List<String> modes = Arrays.asList(data.FIREMODE);
 		int index = modes.indexOf(now.toString()) + 1;
 		if (index > modes.size() - 1) {
 			index = 0;
@@ -160,7 +158,7 @@ public class ItemGun extends Item {
 	}
 	/** 次の使用する弾を取得 */
 	public static String getNextUseMagazine(GunData data, String now) {
-		List<String> modes = Arrays.asList((String[])data.getDataObject(GunDataList.BULLET_USE));
+		List<String> modes = Arrays.asList( data.BULLET_USE);
 		int index = modes.indexOf(now.toString()) + 1;
 		if (index > modes.size() - 1) {
 		//	System.out.println(index);

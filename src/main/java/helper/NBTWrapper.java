@@ -5,7 +5,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import types.guns.GunFireMode;
 import types.guns.LoadedMagazine;
-import types.guns.GunData.GunDataList;
 
 /**NBTの読み書きを集約*/
 public class NBTWrapper {
@@ -27,7 +26,7 @@ public class NBTWrapper {
 
 	/** マガジンの内容を取得 */
 	public static LoadedMagazine[] getGunLoadedMagazines(ItemStack gun) {
-		LoadedMagazine[] loadedMagazines = new LoadedMagazine[ItemGun.getGunData(gun).getDataInt(GunDataList.LOAD_NUM)];
+		LoadedMagazine[] loadedMagazines = new LoadedMagazine[ItemGun.getGunData(gun).LOAD_NUM];
 
 		NBTTagCompound magazines = gun.getTagCompound().getCompoundTag(GUN_NBT_Name).getCompoundTag(GUN_NBT_Magazines);
 

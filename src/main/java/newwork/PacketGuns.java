@@ -31,12 +31,10 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
-import types.BulletData.BulletDataList;
 import types.Sound;
 import types.guns.GunData;
 import types.guns.GunFireMode;
 import types.guns.LoadedMagazine;
-import types.guns.GunData.GunDataList;
 
 /** 送受信両用 */
 public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessage> {
@@ -132,8 +130,8 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 			buf.writeFloat(Yaw);
 			buf.writeFloat(Pitch);
 			// 長さと一緒に文字列を送る
-			PacketHandler.writeString(buf, gunData.getItemInfo().shortName);
-			PacketHandler.writeString(buf, bulletData.getItemInfo().shortName);
+			PacketHandler.writeString(buf, gunData.ITEM_INFO.NAME_SHORT);
+			PacketHandler.writeString(buf, bulletData.ITEM_INFO.NAME_SHORT);
 		}
 		if (mode == GUN_RELOAD_REQ) {
 			PacketHandler.writeString(buf, bulletName);
@@ -197,13 +195,13 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 								}
 							}
 							NBTWrapper.setGunLoadedMagazines(item, magazines);
-							NBTWrapper.setGunShootDelay(item, ItemGun.getGunData(item).getDataInt(GunDataList.RATE_TICK));
+							NBTWrapper.setGunShootDelay(item, ItemGun.getGunData(item).RATE_TICK);
 							Player.inventory.inventoryChanged = false;
 							// 弾を発射
 							EntityBullet bullet = new EntityBullet(Player.worldObj, Player, m.gunData,m.bulletData, m.Yaw, m.Pitch);
 							Player.worldObj.spawnEntityInWorld(bullet);
 
-							SoundHandler.broadcastSound(Player.worldObj, Player.posX, Player.posY, Player.posZ,(Sound) m.gunData.getDataObject(GunDataList.SOUND_SHOOT));
+							SoundHandler.broadcastSound(Player.worldObj, Player.posX, Player.posY, Player.posZ,(Sound) m.gunData.SOUND_SHOOT);
 						}
 					}
 					if (m.mode == GUN_RELOAD_REQ) {
@@ -226,7 +224,7 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 									magazines[i] = new LoadedMagazine(m.bulletName, amount);
 									break;
 								}
-								int num2 = ItemMagazine.getBulletData(magazine.name).getDataInt(BulletDataList.MAGAZINE_SIZE) - magazine.num;
+								int num2 = ItemMagazine.getBulletData(magazine.name).MAGAZINE_SIZE - magazine.num;
 								if (num2 > 0 && magazine.name.equals(m.bulletName)) {
 									magazines[i].num += amount;
 									break;

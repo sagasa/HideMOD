@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import hideMod.HideMod;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.SoundList;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -30,8 +31,8 @@ public class SoundHandler {
 	}
 
 	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用 */
-	public static void broadcastSound(World w,double x, double y, double z, Sound sound) {
-		broadcastSound(w, sound.name, x, y, z, sound.range, sound.vol, sound.pitch, sound.isDelay, sound.isDecay);
+	public static void broadcastSound(World w, double x, double y, double z, Sound sound) {
+		broadcastSound(w, sound.NAME, x, y, z, sound.RANGE, sound.VOL, sound.PITCH, sound.USE_DELAY, sound.USE_DECAY);
 	}
 
 	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用 */
@@ -59,8 +60,9 @@ public class SoundHandler {
 
 	@SideOnly(Side.CLIENT)
 	public static void playSound(double x, double y, double z, Sound sound) {
-		playSound(sound.name, x, y, z, sound.range, sound.vol, sound.pitch, sound.isDelay, sound.isDecay);
+		playSound(sound.NAME, x, y, z, sound.RANGE, sound.VOL, sound.PITCH, sound.USE_DELAY, sound.USE_DECAY);
 	}
+
 	@SideOnly(Side.CLIENT)
 	public static void playSound(String soundName, double x, double y, double z, float range, float vol, float pitch,
 			boolean useSoundDelay, boolean useDecay) {
@@ -75,7 +77,8 @@ public class SoundHandler {
 			if (useSoundDelay) {
 				Delay = (int) (distance * SOUND_SPEAD);
 			}
-			Minecraft.getMinecraft().getSoundHandler().playDelayedSound(new HideSound(soundName, playerVol, pitch, (float)x, (float)y, (float)z), Delay);
+			Minecraft.getMinecraft().getSoundHandler().playDelayedSound(
+					new HideSound(soundName, playerVol, pitch, (float) x, (float) y, (float) z), Delay);
 		}
 	}
 }

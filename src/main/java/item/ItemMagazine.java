@@ -16,9 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
-import types.BulletData.BulletDataList;
 import types.guns.GunData;
-import types.guns.GunData.GunDataList;
 
 public class ItemMagazine extends Item{
 
@@ -31,7 +29,7 @@ public class ItemMagazine extends Item{
 	public ItemMagazine(BulletData data, String name) {
 		this.setCreativeTab(CreativeTabs.tabCombat);
 		this.setUnlocalizedName(name);
-		this.setMaxStackSize(data.getDataInt(BulletDataList.STACK_SIZE));
+		this.setMaxStackSize(data.STACK_SIZE);
 		this.RegisterName = name;
 		this.BulletData = data;
 		INSTANCE_MAP.put(name,this);
@@ -65,13 +63,13 @@ public class ItemMagazine extends Item{
 		if (!item.hasTagCompound()) {
 			item.setTagCompound(new NBTTagCompound());
 		}
-		NBTWrapper.setMagazineBulletNum(item, data.getDataInt(BulletDataList.MAGAZINE_SIZE));
+		NBTWrapper.setMagazineBulletNum(item, data.MAGAZINE_SIZE);
 		return item;
 	}
 
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
-		return getBulletData(stack).getItemInfo().displayName;
+		return getBulletData(stack).ITEM_INFO.NAME_DISPLAY;
 	}
 	//=========================================================
 	//   更新 便利機能
@@ -111,7 +109,7 @@ public class ItemMagazine extends Item{
 
 	/**装弾数取得*/
 	public static int getMagazineSize(ItemStack stack){
-		return getBulletData(stack).getDataInt(BulletDataList.MAGAZINE_SIZE);
+		return getBulletData(stack).MAGAZINE_SIZE;
 	}
 
 	/** アップデート 表示更新など */
@@ -149,7 +147,7 @@ public class ItemMagazine extends Item{
 				}
 				player.inventory.mainInventory[i] = item;
 				//破棄しない設定なら空のマガジンを追加
-				if(!ItemMagazine.getBulletData(bulletName).getDataBoolean(BulletDataList.MAGAZINE_BREAK)){
+				if(!ItemMagazine.getBulletData(bulletName).MAGAZINE_BREAK){
 					player.inventory.addItemStackToInventory(makeMagazine(bulletName,0));
 				}
 			}
