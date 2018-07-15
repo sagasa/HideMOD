@@ -280,13 +280,14 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 						}
 					}
 					// ダメージを与える
-					HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
+					boolean isDamaged = HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 
 					// 爆発があるなら
 					explode(endPos,(Explosion) bulletData.EXP_ON_HIT_ENTITY);
 
+					System.out.println(isDamaged);
 					// パケット
-					if (Shooter instanceof EntityPlayerMP) {
+					if (Shooter instanceof EntityPlayerMP&&isDamaged&&damage>0.5) {
 						PacketHandler.INSTANCE.sendTo(new PacketHit(isHeadShot), (EntityPlayerMP) Shooter);
 					}
 					bulletPower--;
@@ -354,6 +355,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 				// ダメージを与える
 				HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 			}
+			//サウンド
+			SoundHandler.broadcastSound(worldObj, endPos.xCoord, endPos.yCoord, endPos.zCoord, exp.SOUND);
 		}
 	}
 
