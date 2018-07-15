@@ -73,12 +73,20 @@ public class SoundHandler {
 			if (useDecay) {
 				playerVol = playerVol * (float) (1 - (distance / range));
 			}
+			final float finalVol = playerVol;
 			int Delay = 0;
 			if (useSoundDelay) {
 				Delay = (int) (distance * SOUND_SPEAD);
 			}
-			Minecraft.getMinecraft().getSoundHandler().playDelayedSound(
-					new HideSound(soundName, playerVol, pitch, (float) x, (float) y, (float) z), Delay);
+			final int finalDelay = Delay;
+			//同期
+			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
+				public void run() {
+					Minecraft.getMinecraft().getSoundHandler().playDelayedSound(
+							new HideSound(soundName, finalVol, pitch, (float) x, (float) y, (float) z), finalDelay);
+				}
+			});
+
 		}
 	}
 }
