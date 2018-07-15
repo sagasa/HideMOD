@@ -25,9 +25,9 @@ public class HideDamage extends DamageSource {
 		this.DamageCase = Case;
 	}
 
-	/** ダメージを与える 無敵時間を無効化 */
-	public static void Attack(EntityLivingBase victim, HideDamage damageSource, float damage) {
-		victim.attackEntityFrom(damageSource, damage);
+	/** ダメージを与える 無敵時間を無効化 ダメージが入ったらtrue*/
+	public static boolean Attack(EntityLivingBase victim, HideDamage damageSource, float damage) {
+		boolean value = victim.attackEntityFrom(damageSource, damage);
 		victim.hurtResistantTime = 0;
 
 		// リフレクションで改変が必要な変数にぶち抜く
@@ -47,6 +47,7 @@ public class HideDamage extends DamageSource {
 				| NoSuchMethodException | InvocationTargetException e1) {
 			e1.printStackTrace();
 		}
+		return value;
 	}
 
 	@Override

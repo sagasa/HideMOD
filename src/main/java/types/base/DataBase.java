@@ -9,16 +9,6 @@ import com.google.gson.GsonBuilder;
  */
 public abstract class DataBase implements Cloneable {
 
-	/** デフォルト値代入 */
-	public DataBase() {
-
-	}
-
-	/** JsonStringからデータを読み込む */
-	public DataBase(String json) {
-		Gson gson = new Gson();
-		System.out.println(gson.fromJson(json, this.getClass()));
-	}
 
 	/** JsonObjectを作成 */
 	public String MakeJsonData() {
@@ -39,6 +29,7 @@ public abstract class DataBase implements Cloneable {
 		try {
 			for (Field f : clazz.getFields()) {
 				f.set(this, f.get(data));
+				System.out.println("overwrite"+f.getName());
 			}
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			return false;

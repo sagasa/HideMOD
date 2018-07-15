@@ -73,6 +73,9 @@ public class PackLoader {
 	private List<BulletData> cashBulletData;
 	private ContentsPack cashPack;
 
+	/**gson オプションはなし*/
+	private static Gson gson = new Gson();
+
 	/**
 	 * パックから読み込む
 	 *
@@ -144,7 +147,6 @@ public class PackLoader {
 				// ショートネームを登録名に書き換え
 				setGunDomain(cashPack.PACK_ROOTNAME, data);
 				String name = data.ITEM_INFO.NAME_SHORT;
-				System.out.println("AAAA" + name);
 				ItemGun gun = new ItemGun(data, name);
 				// 重複しないかどうか
 				if (GUN_DATA_MAP.containsKey(name)) {
@@ -168,7 +170,6 @@ public class PackLoader {
 				// ショートネームを登録名に書き換え
 				setMagazineDomain(cashPack.PACK_ROOTNAME, data);
 				String name = data.ITEM_INFO.NAME_SHORT;
-				System.out.println("BBBB" + name);
 				ItemMagazine gun = new ItemMagazine(data, name);
 				// 重複しないかどうか
 				if (BULLET_DATA_MAP.containsKey(name)) {
@@ -200,12 +201,13 @@ public class PackLoader {
 		// data.length)), JsonObject.class);
 		// Gun認識
 		if (Pattern.compile("^(.*)guns/(.*).json").matcher(name).matches()) {
-			GunData newGun = new GunData(new String(data, Charset.forName("UTF-8")));
+			GunData newGun = gson.fromJson(new String(data, Charset.forName("UTF-8")), GunData.class);
 			cashGunData.add(newGun);
 		}
 		// bullet認識
 		else if (Pattern.compile("^(.*)bullets/(.*).json").matcher(name).matches()) {
-			BulletData newBullet = new BulletData(new String(data, Charset.forName("UTF-8")));
+			BulletData newBullet = gson.fromJson(new String(data, Charset.forName("UTF-8")), BulletData.class);
+			System.out.println(newBullet);
 			cashBulletData.add(newBullet);
 		}
 		// packInfo認識

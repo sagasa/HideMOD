@@ -191,11 +191,15 @@ public class PlayerHandler {
 			//バースト処理
 			if(fireNum > 0&&ShootDelay <= 0){
 				//弾が切れたっぽかったらバースト終了
-				if(!shooted){
+				if(shooted){
 					fireNum = 0;
 				}else{
 					fireNum--;
 					gunShoot(player, gundata);
+				}
+				//バースト撃ちきり
+				if(fireNum<=0){
+					shooted = true;
 				}
 			}else if (leftMouseHold) {
 				// 射撃処理
