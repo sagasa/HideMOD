@@ -5,8 +5,9 @@ import java.awt.Rectangle;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import hideMod.model.GunModel;
+import item.ItemGun;
 import item.ItemMagazine;
-import item.model.GunModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
@@ -36,7 +37,6 @@ public class RenderHandler {
 	/**float型のより詳細なTick*/
 	static float RenderTick;
 
-	static GunModel model = new GunModel();
 
 	static Minecraft mc = FMLClientHandler.instance().getClient();
 
@@ -152,7 +152,10 @@ public class RenderHandler {
 
 	/**自分の持ってる銃の描画 アニメーションとパーツの稼働はこのメゾットのみ*/
 	public static void RenderHand(RenderHandEvent event) {
-		//model.render(RenderTick,Minecraft.getMinecraft().thePlayer);
+		ItemStack item = mc.thePlayer.getCurrentEquippedItem();
+		if(ItemGun.isGun(item)){
+			((ItemGun)item.getItem()).Model.render(RenderTick,Minecraft.getMinecraft().thePlayer);
+		}
 	}
 
 }

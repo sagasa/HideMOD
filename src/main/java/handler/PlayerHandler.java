@@ -143,6 +143,7 @@ public class PlayerHandler {
 				ReloadProgress = -1;
 				loadedMagazines = null;
 				fireMode = null;
+				isADS = false;
 			}
 			// 銃に持ち替えたなら
 			if (ItemGun.isGun(item)) {

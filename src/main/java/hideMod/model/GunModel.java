@@ -1,32 +1,52 @@
-package item.model;
+package hideMod.model;
 
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
-import types.render.HideRender;
-import types.render.PolygonUV;
-import types.render.VertexUV;
 
-public class GunModel{
+public class GunModel extends ModelBase{
 
-	HideRender GunRender;
+	private ResourceLocation Textur;
+	private int TextureX;
+	private int TextureY;
+
+	DisplayPart GunBody;
 
 	public GunModel() {
-		PolygonUV[] GunModel = new PolygonUV[1];
-		VertexUV ver1 = new VertexUV(0, 0, 0, 0, 0);
-		VertexUV ver2 = new VertexUV(0, 1, 0, 64, 0);
-		VertexUV ver3 = new VertexUV(0, 0, 1, 64, 64);
-		GunModel[0] = new PolygonUV(ver1, ver2, ver3);
-		GunRender = new HideRender(GunModel, 64, 64, new ResourceLocation("hidemod", "dummy.png"));
+
 	}
+
+
+	/**テクスチャの画像を指定*/
+	public void setTexture(ResourceLocation texture){
+		Textur = texture;
+	}
+
+	/**テクスチャの画像サイズを指定*/
+	public void setTextureSize(int x,int y){
+		TextureX = x;
+		TextureY = y;
+	}
+
+	/**モデルを読み込み テクスチャとサイズ指定後に*/
+	public void setModel(String model){
+		Surface GunModel = new Surface();
+		VertexUV ver1 = new VertexUV(0, 0, 0, 0/TextureX, 0/TextureY);
+		VertexUV ver2 = new VertexUV(0, 1, 0, 64/TextureX, 0/TextureY);
+		VertexUV ver3 = new VertexUV(0, 1, 1, 64/TextureX, 64/TextureY);
+		VertexUV ver4 = new VertexUV(0, 0, 1, 0/TextureX, 64/TextureY);
+		GunModel.Vertex = new VertexUV[]{ver1,ver2,ver3,ver4};
+		GunBody = new DisplayPart();
+		GunBody.Surface = new Surface[]{GunModel};
+	}
+
 
 	/**モデル内容
 	 * 本体
@@ -37,8 +57,10 @@ public class GunModel{
 	 * */
 
 	public void render(float partialTicks,EntityPlayerSP player){
+		Minecraft.getMinecraft().renderEngine.bindTexture(Textur);
+
 		GlStateManager.pushMatrix();
-		GlStateManager.disableCull();
+		//GlStateManager.disableCull();
 
 		//高さを合わせる
 		GlStateManager.translate(0, player.getEyeHeight(), 0);
@@ -51,8 +73,8 @@ public class GunModel{
         //GlStateManager.rotate((player.rotationPitch - f5) * 0.1F, 1.0F, 0.0F, 0.0F);
         //GlStateManager.rotate((player.rotationYaw - f6) * 0.1F, 0.0F, 1.0F, 0.0F);
 
-		GunRender.dorender();
-		GlStateManager.enableCull();
+		GunBody.render();
+		//GlStateManager.enableCull();
 		GlStateManager.popMatrix();
 	}
 }

@@ -18,17 +18,25 @@ public abstract class ModelBase {
 	float ScaleY = 1;
 	float ScaleZ = 1;
 
-	public class Vertex {
+	public class VertexUV {
 		float U;
 		float V;
 
 		float X;
 		float Y;
 		float Z;
+
+		public VertexUV(float x,float y,float z,float u,float v) {
+			X = x;
+			Y = y;
+			Z = z;
+			U = u;
+			V = v;
+		}
 	}
 
 	public class Surface {
-		Vertex[] Vertex;
+		VertexUV[] Vertex;
 	}
 
 	// クライアントサイド 表示用
@@ -74,7 +82,7 @@ public abstract class ModelBase {
 		}
 
 		// 長かったから分けただけ
-		private void addVertexWithUV(WorldRenderer worldrenderer, Vertex vertex) {
+		private void addVertexWithUV(WorldRenderer worldrenderer, VertexUV vertex) {
 			worldrenderer.addVertexWithUV(vertex.X, vertex.Y, vertex.Z, vertex.U, vertex.V);
 		}
 
@@ -87,6 +95,7 @@ public abstract class ModelBase {
             GL11.glPopMatrix();
 		}
 
+		/**回転の基準を*/
 		void setPoint(float x, float y, float z) {
 			X = x;
 			Y = y;

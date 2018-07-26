@@ -15,6 +15,7 @@ import types.guns.GunFireMode;
 import types.guns.LoadedMagazine;
 import hideMod.HideMod;
 import hideMod.PackLoader;
+import hideMod.model.GunModel;
 import net.minecraft.block.Block;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
@@ -25,6 +26,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.LanguageRegistry;
 import types.BulletData;
@@ -36,6 +38,10 @@ public class ItemGun extends Item {
 	public String RegisterName;
 	public GunData GunData;
 
+	/**モデル*/
+
+	public GunModel Model = new GunModel();
+
 	// ========================================================================
 	// 登録
 	public ItemGun(GunData data, String name) {
@@ -45,6 +51,11 @@ public class ItemGun extends Item {
 		this.RegisterName = name;
 		this.GunData = data;
 		INSTANCE_MAP.put(name, this);
+		//モデル
+		Model = new GunModel();
+		Model.setTexture(new ResourceLocation("hidemod", "dummy.png"));
+		Model.setTextureSize(64, 64);
+		Model.setModel("");
 	}
 
 	/** クリエイティブタブの中にサブタイプを設定 */
@@ -63,6 +74,7 @@ public class ItemGun extends Item {
 		}
 		return null;
 	}
+
 
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
