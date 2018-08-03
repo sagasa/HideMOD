@@ -17,6 +17,7 @@ import hideMod.HideMod;
 import hideMod.PackLoader;
 import hideMod.model.GunModel;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -29,6 +30,8 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.LanguageRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import types.BulletData;
 
 public class ItemGun extends Item {
@@ -39,8 +42,7 @@ public class ItemGun extends Item {
 	public GunData GunData;
 
 	/**モデル*/
-
-	public GunModel Model = new GunModel();
+	public GunModel Model;
 
 	// ========================================================================
 	// 登録
@@ -51,11 +53,15 @@ public class ItemGun extends Item {
 		this.RegisterName = name;
 		this.GunData = data;
 		INSTANCE_MAP.put(name, this);
+	}
+	@SideOnly(Side.CLIENT)
+	public void setModel(){
 		//モデル
 		Model = new GunModel();
 		Model.setTexture(new ResourceLocation("hidemod", "dummy.png"));
 		Model.setTextureSize(64, 64);
 		Model.setModel("");
+
 	}
 
 	/** クリエイティブタブの中にサブタイプを設定 */

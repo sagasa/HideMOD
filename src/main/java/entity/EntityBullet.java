@@ -302,6 +302,10 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			}
 		}
 		// 削除系
+		if(bulletData==null){
+			setDead();
+			return;
+		}
 		if (bulletPower == 0 || isHittoBlock || life < tick) {
 			// 爆破処理
 			deathNaxtTick = MASK_HIT;
@@ -430,6 +434,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound tag) {
+		setDead(); //TODO
 		long top = tag.getLong("ShooterUUID_top");
 		long last = tag.getLong("ShooterUUID_last");
 		String name = tag.getString("ShooterName");

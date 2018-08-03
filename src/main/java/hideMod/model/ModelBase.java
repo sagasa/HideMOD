@@ -11,6 +11,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 /** モデルの原型 */
+@SideOnly(Side.CLIENT)
 public abstract class ModelBase {
 	String Texture;
 

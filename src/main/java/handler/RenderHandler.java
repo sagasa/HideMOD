@@ -154,7 +154,7 @@ public class RenderHandler {
 	public static void RenderHand(RenderHandEvent event) {
 		ItemStack item = mc.thePlayer.getCurrentEquippedItem();
 		if(ItemGun.isGun(item)){
-			((ItemGun)item.getItem()).Model.render(RenderTick,Minecraft.getMinecraft().thePlayer);
+		//	((ItemGun)item.getItem()).Model.render(RenderTick,Minecraft.getMinecraft().thePlayer);
 		}
 	}
 

@@ -58,6 +58,7 @@ public class PlayerHandler {
 	private static Random Random = new Random();
 	// クライアント側変数
 	private static boolean rightMouseHold;
+
 	private static boolean leftMouseHold;
 
 	private static int fireNum = 0;
@@ -77,6 +78,9 @@ public class PlayerHandler {
 	private static int minigunPrepare = 0;
 
 	public static boolean isADS = false;
+	private static boolean ADSChanged = false;
+	private static int defaultFOV;
+	public static String ScopeName;
 
 	private static boolean fastTick = true;
 
@@ -109,8 +113,8 @@ public class PlayerHandler {
 	/** サウンド処理 描画処理 入力処理 */
 	@SideOnly(Side.CLIENT)
 	private static void ClientTick(EntityPlayerSP player) {
-		//死んでたらマウスを離す
-		if(player.isDead){
+		// 死んでたらマウスを離す
+		if (player.isDead) {
 			rightMouseHold = leftMouseHold = false;
 		}
 		// キー入力の取得 押された変化を取得
@@ -127,16 +131,16 @@ public class PlayerHandler {
 			return;
 		}
 
-		//デバッグ用
-		if(pushKeys.contains(KeyBind.DEBUG)){
-			//System.out.println(Item.itemRegistry);
+		// デバッグ用
+		if (pushKeys.contains(KeyBind.DEBUG)) {
+			// System.out.println(Item.itemRegistry);
 		}
 
 		ItemStack item = player.getCurrentEquippedItem();
 		// アイテムの持ち替え検知
 		if (!ItemStack.areItemStacksEqual(item, lastItem) || player.inventory.currentItem != lastCurrentItem) {
 			// 銃から持ち替えたらな
-			if (ItemGun.isGun(lastItem)&&!ItemGun.isGun(item)) {
+			if (ItemGun.isGun(lastItem) && !ItemGun.isGun(item)) {
 				// 変数をクリア
 				UsingBulletName = null;
 				ShootDelay = 0;
@@ -159,7 +163,7 @@ public class PlayerHandler {
 					UsingBulletName = NBTWrapper.getGunUseingBullet(item);
 					ShootDelay = NBTWrapper.getGunShootDelay(item);
 					PrepareTick = gundata.PREPARE_TICK;
-					//ReloadProgress = NBTWrapper.getGunReloadProgress(item);
+					// ReloadProgress = NBTWrapper.getGunReloadProgress(item);
 					ReloadProgress = -1;
 					// System.out.println(NBTWrapper.getGunID(item));
 					loadedMagazines = NBTWrapper.getGunLoadedMagazines(item);
@@ -173,38 +177,41 @@ public class PlayerHandler {
 		lastCurrentItem = player.inventory.currentItem;
 		// 持っているアイテムがHideModの銃なら
 		if (ItemGun.isGun(item)) {
-			//手の向きを調整
+			// 手の向きを調整
 
 			// gunData取得
 			GunData gundata = ((ItemGun) item.getItem()).getGunData(item);
-			//リコイルを適応
+			// リコイルを適応
 			RecoilHandler.updateRecoil(gundata);
-			//右くりっく
-			if(rightMouseHold){
-
+			// 右くりっく ADS
+			if (rightMouseHold&&!ADSChanged&&fireMode != GunFireMode.MINIGUN ) {
+				isADS = !isADS;
+				ADSChanged = true;
+			}else if(!rightMouseHold){
+				ADSChanged = false;
 			}
-			//minigun用処理
-			if(fireMode == GunFireMode.MINIGUN&&rightMouseHold&&minigunPrepare < gundata.PREPARE_TICK){
+			// minigun用処理
+			if (fireMode == GunFireMode.MINIGUN && rightMouseHold && minigunPrepare < gundata.PREPARE_TICK) {
 				minigunPrepare++;
-			}else if(minigunPrepare > 0){
+			} else if (minigunPrepare > 0) {
 				minigunPrepare--;
 			}
-			//バースト処理
-			if(fireNum > 0&&ShootDelay <= 0){
-				//弾が切れたっぽかったらバースト終了
-				if(shooted){
+			// バースト処理
+			if (fireNum > 0 && ShootDelay <= 0) {
+				// 弾が切れたっぽかったらバースト終了
+				if (shooted) {
 					fireNum = 0;
-				}else{
+				} else {
 					fireNum--;
 					gunShoot(player, gundata);
 				}
-				//バースト撃ちきり
-				if(fireNum<=0){
+				// バースト撃ちきり
+				if (fireNum <= 0) {
 					shooted = true;
 				}
-			}else if (leftMouseHold) {
+			} else if (leftMouseHold) {
 				// 射撃処理
-				//ReloadProgress = -1;
+				// ReloadProgress = -1;
 				if (ShootDelay <= 0 && !shooted && PrepareTick <= 0) {
 					switch (fireMode) {
 					case BURST:
@@ -216,7 +223,7 @@ public class PlayerHandler {
 						gunShoot(player, gundata);
 						break;
 					case MINIGUN:
-						if(minigunPrepare == gundata.PREPARE_TICK){
+						if (minigunPrepare == gundata.PREPARE_TICK) {
 							gunShoot(player, gundata);
 						}
 						break;
@@ -240,7 +247,8 @@ public class PlayerHandler {
 			if (pushKeys.contains(KeyBind.GUN_RELOAD)) {
 				if (ReloadProgress == -1 && getNextReloadNum() > 0) {
 					ReloadProgress = gundata.RELOAD_TICK;
-					PacketHandler.INSTANCE.sendToServer(new PacketPlaySound((Sound) gundata.SOUND_RELOAD,player.posX,player.posY,player.posZ));
+					PacketHandler.INSTANCE.sendToServer(
+							new PacketPlaySound((Sound) gundata.SOUND_RELOAD, player.posX, player.posY, player.posZ));
 				}
 			}
 			// 弾変更
@@ -263,7 +271,7 @@ public class PlayerHandler {
 			if (ShootDelay > 0) {
 				ShootDelay--;
 			}
-			if (PrepareTick > 0){
+			if (PrepareTick > 0) {
 				PrepareTick--;
 			}
 			// String msg =
@@ -279,16 +287,18 @@ public class PlayerHandler {
 		}
 
 	}
-	/**ロードできる弾の総量取得*/
-	public static int getCanLoadMagazineNum(EntityPlayer player){
+
+	/** ロードできる弾の総量取得 */
+	public static int getCanLoadMagazineNum(EntityPlayer player) {
 		int num = 0;
-		for(ItemStack item : player.inventory.mainInventory){
-			if(ItemMagazine.isMagazine(item, UsingBulletName)){
+		for (ItemStack item : player.inventory.mainInventory) {
+			if (ItemMagazine.isMagazine(item, UsingBulletName)) {
 				num += item.stackSize * ItemMagazine.getBulletNum(item);
 			}
 		}
 		return num;
 	}
+
 	/** 最初のスロットの空きを取得 */
 	private static int getNextReloadNum() {
 		for (LoadedMagazine magazine : loadedMagazines) {
@@ -336,12 +346,12 @@ public class PlayerHandler {
 					flag = true;
 				}
 				loadedMagazines[i] = magazine;
-				//マガジン繰り上げ
-				if(flag&&loadedMagazines.length>1){
+				// マガジン繰り上げ
+				if (flag && loadedMagazines.length > 1) {
 					for (int j = 1; j < loadedMagazines.length; j++) {
-						loadedMagazines[j-1] = loadedMagazines[j];
+						loadedMagazines[j - 1] = loadedMagazines[j];
 					}
-					loadedMagazines[loadedMagazines.length-1] = null;
+					loadedMagazines[loadedMagazines.length - 1] = null;
 				}
 				return name;
 			}
@@ -359,30 +369,31 @@ public class PlayerHandler {
 		} else {
 			// 存在する弾かどうか
 			if (ItemMagazine.isMagazineExist(bulletName)) {
-				//拡散を取得
+				// 拡散を取得
 				float spread;
-				if(isADS){
+				if (isADS) {
 					spread = gun.ACCURACY_ADS;
-				}else{
+				} else {
 					spread = gun.ACCURACY;
 				}
 				// 向きに拡散を
-				float yaw = (float) Math.toDegrees(Math.atan(Random.nextDouble()/50*HideMath.normal(0, spread)));
-				float pitch = (float) Math.toDegrees(Math.atan(Random.nextDouble()/50*HideMath.normal(0, spread)));
+				float yaw = (float) Math.toDegrees(Math.atan(Random.nextDouble() / 50 * HideMath.normal(0, spread)));
+				float pitch = (float) Math.toDegrees(Math.atan(Random.nextDouble() / 50 * HideMath.normal(0, spread)));
 
 				PacketHandler.INSTANCE.sendToServer(new PacketGuns(gun, PackLoader.BULLET_DATA_MAP.get(bulletName),
-						player.rotationYaw+yaw, player.rotationPitch+pitch));
-				//バーストかどうかでrateが変わる
-				if(fireNum > 0){
+						player.rotationYaw + yaw, player.rotationPitch + pitch));
+				// バーストかどうかでrateが変わる
+				if (fireNum > 0) {
 					ShootDelay = gun.BURST_RATE_TICK;
-				}else{
+				} else {
 					ShootDelay = gun.RATE_TICK;
 				}
 				// リコイル
 				RecoilHandler.addRecoil(gun);
 				// 100を超えないように代入
-		//		recoilPower = recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun) > 100 ? 100
-		//				: recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun);
+				// recoilPower = recoilPower +
+				// RecoilHandler.getRecoilPowerAdd(player, gun) > 100 ? 100
+				// : recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun);
 			} else {
 				// 存在しなかったなら破棄処理
 				PacketHandler.INSTANCE
@@ -394,7 +405,6 @@ public class PlayerHandler {
 			// player.worldObj.spawnEntityInWorld(dot);
 		}
 	}
-
 
 	/** リロード完了 マガジンを追加する */
 	public static void reloadEnd(int bulletNum, byte reloadQueueID) {
@@ -408,13 +418,13 @@ public class PlayerHandler {
 		}
 	}
 
-	/**サーバーTick処理 プログレスを進める*/
+	/** サーバーTick処理 プログレスを進める */
 	private static void ServerTick(EntityPlayer player) {
 		ItemStack item = player.getCurrentEquippedItem();
 		// アイテムの持ち替え検知
-		if(ItemGun.isGun(item)){
+		if (ItemGun.isGun(item)) {
 			int deilay = NBTWrapper.getGunShootDelay(item);
-			if(deilay>0){
+			if (deilay > 0) {
 				deilay--;
 				NBTWrapper.setGunShootDelay(item, deilay);
 			}
@@ -426,7 +436,7 @@ public class PlayerHandler {
 		// 左クリックなら
 		if (event.button == 0) {
 			leftMouseHold = event.buttonstate;
-		}else if (event.button == 1) {
+		} else if (event.button == 1) {
 			rightMouseHold = event.buttonstate;
 		}
 	}
@@ -443,7 +453,7 @@ public class PlayerHandler {
 
 	/** クライアントサイドでのみ動作 */
 	enum KeyBind {
-		GUN_RELOAD(Keyboard.KEY_R), GUN_FIREMODE(Keyboard.KEY_F), GUN_USEBULLET(Keyboard.KEY_V),DEBUG(Keyboard.KEY_G);
+		GUN_RELOAD(Keyboard.KEY_R), GUN_FIREMODE(Keyboard.KEY_F), GUN_USEBULLET(Keyboard.KEY_V), DEBUG(Keyboard.KEY_G);
 
 		HashMap<String, Integer> keyConfig = new HashMap<String, Integer>();
 
