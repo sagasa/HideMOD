@@ -1,4 +1,4 @@
-package hideMod.model;
+package types.model;
 
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;

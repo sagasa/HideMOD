@@ -13,9 +13,10 @@ import helper.NBTWrapper;
 import types.guns.GunData;
 import types.guns.GunFireMode;
 import types.guns.LoadedMagazine;
+import types.model.ModelGun;
 import hideMod.HideMod;
 import hideMod.PackLoader;
-import hideMod.model.GunModel;
+import hideMod.model.RenderHideGun;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.ModelResourceLocation;
@@ -41,8 +42,8 @@ public class ItemGun extends Item {
 	public String RegisterName;
 	public GunData GunData;
 
-	/**モデル*/
-	public GunModel Model;
+	/**モデル描画*/
+	public RenderHideGun Model;
 
 	// ========================================================================
 	// 登録
@@ -57,11 +58,8 @@ public class ItemGun extends Item {
 	@SideOnly(Side.CLIENT)
 	public void setModel(){
 		//モデル
-		Model = new GunModel();
+		Model = new RenderHideGun(new  ModelGun());
 		Model.setTexture(new ResourceLocation("hidemod", "dummy.png"));
-		Model.setTextureSize(64, 64);
-		Model.setModel("");
-
 	}
 
 	/** クリエイティブタブの中にサブタイプを設定 */

@@ -5,7 +5,6 @@ import java.awt.Rectangle;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-import hideMod.model.GunModel;
 import item.ItemGun;
 import item.ItemMagazine;
 import net.minecraft.client.Minecraft;
@@ -25,6 +24,7 @@ import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import types.guns.LoadedMagazine;
+import types.model.ModelGun;
 
 @SideOnly(Side.CLIENT)
 public class RenderHandler {
