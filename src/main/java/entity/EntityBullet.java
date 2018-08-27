@@ -14,8 +14,7 @@ import org.apache.logging.log4j.core.net.DatagramSocketManager;
 import handler.PacketHandler;
 import handler.SoundHandler;
 import helper.RayTracer;
-import helper.RayTracer.HitBlock;
-import helper.RayTracer.HitEntity;
+import helper.RayTracer.Hit;
 import hideMod.HideMod;
 import io.netty.buffer.ByteBuf;
 import item.ItemGun;
@@ -62,6 +61,7 @@ import types.Sound;
 import types.guns.GunData;
 import types.inGame.HideDamage;
 import types.inGame.HideSound;
+import types.model.HideCollision;
 import types.inGame.HideDamage.HideDamageCase;
 
 /** 銃弾・砲弾・爆弾など投擲系以外の全てこのクラスで追加 */
@@ -243,7 +243,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		/** レイトレーサーの終点の位置ベクトル */
 		Vec3 lvend = lvt;
 
-		for (HitBlock pos : RayTracer.getHitBlock(this, worldObj, lvo, lvt)) {
+		for (Hit pos : RayTracer.getHitBlock(this, worldObj, lvo, lvt)) {
 			Block block = worldObj.getBlockState(pos.blockPos).getBlock();
 			// 透過するブロック
 			if (!(block instanceof BlockBush || block instanceof BlockReed || block instanceof BlockSign
@@ -255,12 +255,14 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		}
 		DamageSource damagesource = new HideDamage(HideDamageCase.GUN_BULLET, Shooter).setDamageBypassesArmor();
 
+		System.out.println(RayTracer.getHit(new HideCollision(), new Vec3(0, 1, 0), new Vec3(0, -1, 0)));
+
 		// LivingEntityに対するあたり判定
 		// BulletPowerが残ってる間HITを取る
-		Iterator<HitEntity> HitEntitys = RayTracer.getHitEntity(this, worldObj, lvo, lvend).iterator();
+		Iterator<Hit> HitEntitys = RayTracer.getHitEntity(this, worldObj, lvo, lvend).iterator();
 		// System.out.println(bulletPower);
 		while (HitEntitys.hasNext() && bulletPower > 0) {
-			HitEntity hit = HitEntitys.next();
+			Hit hit = HitEntitys.next();
 			Entity e = hit.entity;
 			// 多段ヒット防止
 			if (!AlreadyHit.contains(e)) {

@@ -1,5 +1,6 @@
 package handler;
 
+import helper.RayTracer;
 import item.ItemGun;
 import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraftforge.client.event.EntityViewRenderEvent.FogDensity;
@@ -24,6 +25,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import types.model.HideCollision;
 
 /** イベントハンドラ ここから各種ハンドラに投げる */
 public class MasterEventHandler {
