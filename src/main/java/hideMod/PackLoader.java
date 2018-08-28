@@ -33,7 +33,6 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import types.BulletData;
 import types.ContentsPack;
-import types.ImageData;
 import types.ItemInfo;
 import types.Sound;
 import types.base.DataType;
