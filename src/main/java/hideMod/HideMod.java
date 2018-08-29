@@ -18,6 +18,7 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.obj.OBJModel;
 import net.minecraftforge.client.model.obj.OBJModel.MaterialLibrary;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -26,6 +27,7 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -57,9 +59,14 @@ public class HideMod {
     public void preInit(FMLPreInitializationEvent event) {
     	//イベントハンドラ登録
     	MinecraftForge.EVENT_BUS.register(new HideEventHandler());
-
+    	//
     }
-
+    //アイテム登録
+    @SubscribeEvent
+    protected static void registerItems(RegistryEvent.Register<Item> event){
+    	
+    }
+    
     @EventHandler
     public void init(FMLInitializationEvent event) {
     	//エンティティのレンダー登録
