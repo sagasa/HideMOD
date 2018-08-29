@@ -12,7 +12,10 @@ import java.util.UUID;
 import org.apache.logging.log4j.core.net.DatagramSocketManager;
 
 import hideMod.HideMod;
+import helper.RayTracer;
 import io.netty.buffer.ByteBuf;
+import item.ItemGun;
+import item.ItemMagazine;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBush;
 import net.minecraft.block.BlockReed;
@@ -30,6 +33,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.EnumParticleTypes;
@@ -86,13 +92,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 	byte deathNaxtTick = 0;
 
-	/* データウォッチャーID */
-	private static final int DATAWATCHER_END = 5;
-	private static final byte MASK_HITBLOCK = 0b10;
-	private static final byte MASK_HIT = 0b1;
-	private static final int DATAWATCHER_POSX = 6;
-	private static final int DATAWATCHER_POSY = 7;
-	private static final int DATAWATCHER_POSZ = 8;
+	/* データマネージャーパラメータ */
+	private static final DataParameter<Integer> a  = EntityDataManager.createKey(EntityBullet.class, DataSerializers.VARINT);
 
 	public EntityBullet(World worldIn, EntityLivingBase shooter, GunData gunData, BulletData bulletData, float yaw,
 			float pitch) {
@@ -130,13 +131,13 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		motionX *= spead;
 		motionY *= spead;
 		motionZ *= spead;
-		Vec0 = new Vec3(motionX, motionY, motionZ);
+		Vec0 = new Vec3d(motionX, motionY, motionZ);
 	}
 
 	@Override
 	protected void entityInit() {
-		DataWatcher dw = getDataWatcher();
-		dw.addObject(DATAWATCHER_END, deathNaxtTick);
+		EntityDataManager dw = getDataManager();
+		dw.readdObject(DATAWATCHER_END, deathNaxtTick);
 		dw.addObject(DATAWATCHER_POSX, 0f);
 		dw.addObject(DATAWATCHER_POSY, 0f);
 		dw.addObject(DATAWATCHER_POSZ, 0f);
@@ -163,7 +164,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		if (life < tick) {
 			setDead();
 		}
-		if (!this.worldObj.isRemote) {
+		if (!this.world.isRemote) {
 			ServerUpdate();
 		} else {
 			ClientUpdate();
@@ -223,8 +224,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		/** レイトレーサーの終点の位置ベクトル */
 		Vec3d lvend = lvt;
 
-		for (Hit pos : RayTracer.getHitBlock(this, worldObj, lvo, lvt)) {
-			Block block = worldObj.getBlockState(pos.blockPos).getBlock();
+		for (Hit pos : RayTracer.getHitBlock(this, world, lvo, lvt)) {
+			Block block = world.getBlockState(pos.blockPos).getBlock();
 			// 透過するブロック
 			if (!(block instanceof BlockBush || block instanceof BlockReed || block instanceof BlockSign
 					|| block instanceof BlockVine)) {
@@ -239,7 +240,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 		// LivingEntityに対するあたり判定
 		// BulletPowerが残ってる間HITを取る
-		Iterator<Hit> HitEntitys = RayTracer.getHitEntity(this, worldObj, lvo, lvend).iterator();
+		Iterator<Hit> HitEntitys = RayTracer.getHitEntity(this, world, lvo, lvend).iterator();
 		// System.out.println(bulletPower);
 		while (HitEntitys.hasNext() && bulletPower > 0) {
 			Hit hit = HitEntitys.next();
@@ -318,7 +319,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		// 爆発があるなら
 		float range = exp.RANGE;
 		if (range > 0) {
-			List<Entity> list = worldObj.getEntitiesWithinAABBExcludingEntity(this, new AxisAlignedBB(endPos.xCoord - range,
+			List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(this, new AxisAlignedBB(endPos.xCoord - range,
 					endPos.yCoord - range, endPos.zCoord - range, endPos.xCoord + range, endPos.yCoord + range, endPos.zCoord + range));
 
 			for (Entity e : list) {
@@ -342,7 +343,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 				HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 			}
 			//サウンド
-			SoundHandler.broadcastSound(worldObj, endPos.xCoord, endPos.yCoord, endPos.zCoord, exp.SOUND);
+			SoundHandler.broadcastSound(world, endPos.xCoord, endPos.yCoord, endPos.zCoord, exp.SOUND);
 		}
 	}
 
@@ -407,7 +408,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	public void readSpawnData(ByteBuf Data) {
 		rotationYaw = Data.readFloat();
 		rotationPitch = Data.readFloat();
-		Vec0 = new Vec3(Data.readDouble(), Data.readDouble(), Data.readDouble());
+		Vec0 = new Vec3d(Data.readDouble(), Data.readDouble(), Data.readDouble());
 		if (Data.readBoolean()) {
 			bulletData = ItemMagazine.getBulletData(PacketHandler.readString(Data));
 			gunData = ItemGun.getGunData(PacketHandler.readString(Data));
