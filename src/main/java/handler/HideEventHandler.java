@@ -21,20 +21,20 @@ public class HideEventHandler {
 	/* プレイヤーイベント */
 	@SubscribeEvent
 	public void onEvent(PlayerTickEvent event) {
-		//PlayerHandler.PlayerTick(event);
+		PlayerHandler.PlayerTick(event);
 	}
 
 
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedInEvent event) {
 		System.out.println("LOGIN");
-		//PlayerHandler.PlayerJoin(event);
+		PlayerHandler.PlayerJoin(event);
 	}
 
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedOutEvent event) {
 		System.out.println("LOGOUT");
-		//PlayerHandler.PlayerLeft(event);
+		PlayerHandler.PlayerLeft(event);
 	}
 
 	@SubscribeEvent

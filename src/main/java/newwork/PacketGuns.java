@@ -38,7 +38,7 @@ import types.Sound;
 public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessage> {
 
 	byte mode;
-	static final byte GUN_SHOOT = 0;
+	static final byte GUN_TRIGGER_CHANGE = 0;
 	static final byte GUN_RELOAD_REQ = 1;
 	static final byte GUN_RELOAD_REPLY = 2;
 	static final byte GUN_MODE = 3;
@@ -61,8 +61,8 @@ public class PacketGuns implements IMessage, IMessageHandler<PacketGuns, IMessag
 	}
 
 	/** 射撃パケット 視線とプレイヤーインスタンス弾の名前のセット */
-	public PacketGuns(GunData data,BulletData bullet ,float yaw, float pitch) {
-		this.mode = GUN_SHOOT;
+	public PacketGuns(boolean primary,boolean second,) {
+		this.mode = GUN_TRIGGER_CHANGE;
 		this.Yaw = yaw;
 		this.Pitch = pitch;
 		this.gunData = data;

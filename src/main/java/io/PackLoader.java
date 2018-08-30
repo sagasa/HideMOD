@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -20,6 +21,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.ibm.icu.impl.locale.BaseLocale;
 
+import helper.ArrayEditor;
 import hideMod.HideMod;
 import hideMod.PackData;
 import item.ItemGun;
@@ -44,7 +46,7 @@ public class PackLoader {
 
 	/** 追加するクリエイティブタブのリスト */
 	public static List<String> newCreativeTabs = new ArrayList<String>();
-	
+
 	/** ドメイン 銃 */
 	public static final String DOMAIN_GUN = "_gun_";
 	/** ドメイン 弾 */
@@ -55,12 +57,11 @@ public class PackLoader {
 	private List<BulletData> cashBulletData;
 	private PackInfo cashPack;
 
-	/**gson オプションはなし*/
+	/** gson オプションはなし */
 	private static Gson gson = new Gson();
 
 	/**
-	 * ディレクトリからパックを検索し読み込む
-	 * アイテム登録はしていないので注意
+	 * ディレクトリからパックを検索し読み込む アイテム登録はしていないので注意
 	 */
 	public static void load(FMLPreInitializationEvent event) {
 		// パックのディレクトリを参照作成
@@ -104,10 +105,15 @@ public class PackLoader {
 				// 内容を読み取り
 
 				// byte[] buffer = new byte[0x6400000];
-				byte[] buffer = new byte[(int) entry.getSize()];
-				zipIn.read(buffer);
+				byte[] buffer = new byte[1024];
+				byte[] data = new byte[0];
+				int size;
+				while (0 < (size = zipIn.read(buffer))) {
+					data = ArrayEditor.ByteArrayCombining(data, Arrays.copyOf(buffer, size));
+					buffer = new byte[1024];
+				}
 				// パックラッパーに送る
-				PackWrapper(buffer, entry.getName());
+				PackWrapper(data, entry.getName());
 			}
 			zipIn.closeEntry();
 		}
@@ -120,7 +126,7 @@ public class PackLoader {
 				// ショートネームを登録名に書き換え
 				setGunDomain(cashPack.PACK_ROOTNAME, data);
 				String name = data.ITEM_INFO.NAME_SHORT;
-				ItemGun gun = new ItemGun(data, name);
+				ItemGun gun = new ItemGun(data);
 				// 重複しないかどうか
 				if (PackData.GUN_DATA_MAP.containsKey(name)) {
 					HideMod.log("Item has already been added :" + name);
@@ -137,7 +143,7 @@ public class PackLoader {
 				// ショートネームを登録名に書き換え
 				setMagazineDomain(cashPack.PACK_ROOTNAME, data);
 				String name = data.ITEM_INFO.NAME_SHORT;
-				ItemMagazine gun = new ItemMagazine(data, name);
+				ItemMagazine gun = new ItemMagazine(data);
 				// 重複しないかどうか
 				if (PackData.BULLET_DATA_MAP.containsKey(name)) {
 					HideMod.log("Item has already been added :" + name);

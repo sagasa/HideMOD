@@ -7,16 +7,16 @@ import java.util.Map;
 import com.mojang.realmsclient.gui.ChatFormatting;
 
 import helper.NBTWrapper;
-import hideMod.PackLoader;
+import hideMod.PackData;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.DataWatcher;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
-import types.guns.GunData;
 
 public class ItemMagazine extends Item {
 
@@ -27,8 +27,9 @@ public class ItemMagazine extends Item {
 
 	// ========================================================================
 	// 登録
-	public ItemMagazine(BulletData data, String name) {
-		this.setCreativeTab(CreativeTabs.tabCombat);
+	public ItemMagazine(BulletData data) {
+		this.setCreativeTab(CreativeTabs.COMBAT);
+		String name = data.ITEM_INFO.NAME_SHORT;
 		this.setUnlocalizedName(name);
 		this.setMaxStackSize(data.STACK_SIZE);
 		this.RegisterName = name;
@@ -36,11 +37,6 @@ public class ItemMagazine extends Item {
 		INSTANCE_MAP.put(name, this);
 	}
 
-	/** クリエイティブタブの中にサブタイプを設定 */
-	@Override
-	public void getSubItems(Item itemIn, CreativeTabs tab, List subItems) {
-		subItems.add(makeMagazine(RegisterName));
-	}
 
 	/** アイテムスタックを作成 残弾指定 */
 	public static ItemStack makeMagazine(String name, int ammoNum) {
@@ -49,7 +45,7 @@ public class ItemMagazine extends Item {
 
 	/** アイテムスタックを作成 */
 	public static ItemStack makeMagazine(String name) {
-		if (PackLoader.BULLET_DATA_MAP.containsKey(name)) {
+		if (PackData.BULLET_DATA_MAP.containsKey(name)) {
 			ItemStack stack = new ItemStack(INSTANCE_MAP.get(name));
 			stack.setTagCompound(new NBTTagCompound());
 			NBTWrapper.setMagazineName(stack, name);
@@ -123,24 +119,22 @@ public class ItemMagazine extends Item {
 	}
 
 	/** アップデート 表示更新など */
-	@Override
-	public void addInformation(ItemStack stack, EntityPlayer playerIn, List tooltip, boolean advanced) {
+	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+		super.addInformation(stack, worldIn, tooltip, flagIn);
 		tooltip.add(ChatFormatting.GRAY + "Ammo : " + getBulletNum(stack) + "/" + getMagazineSize(stack));
 	}
 
 	/** リロードする弾を取得 アイテムを削除 */
 	public static int ReloadItem(EntityPlayer player, String bulletName, int amount) {
 		int bulletNum = amount;
-		for (int i = 0; i < 36; i++) {
-			ItemStack item = player.inventory.mainInventory[i];
+		for (ItemStack item:player.inventory.mainInventory) {
 			if (item != null && isMagazine(item, bulletName)) {
-				player.inventory.inventoryChanged = true;
 				bulletNum -= getBulletNum(item);
 
 				// 端数を返す
 				if (bulletNum < 0) {
 					ItemStack newMag = item.copy();
-					newMag.stackSize = 1;
+					newMag.setCount(1+newMag.getCount());
 					// アイテムを1つ削除
 					item.stackSize--;
 					if (item.stackSize == 0) {
@@ -167,7 +161,7 @@ public class ItemMagazine extends Item {
 
 	/** BulletData取得 */
 	public static BulletData getBulletData(String name) {
-		return PackLoader.BULLET_DATA_MAP.get(name);
+		return PackData.BULLET_DATA_MAP.get(name);
 	}
 
 	/** BulletData取得 */
@@ -185,6 +179,6 @@ public class ItemMagazine extends Item {
 
 	/** その名前の弾は存在するか */
 	public static boolean isMagazineExist(String name) {
-		return PackLoader.BULLET_DATA_MAP.containsKey(name);
+		return PackData.BULLET_DATA_MAP.containsKey(name);
 	}
 }

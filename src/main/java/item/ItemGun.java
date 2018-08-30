@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 
+import helper.NBTWrapper;
 import hideMod.HideMod;
 import hideMod.PackData;
 import io.PackLoader;
@@ -133,7 +134,7 @@ public class ItemGun extends Item {
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
 		super.addInformation(stack, worldIn, tooltip, flagIn);
-		
+
 		tooltip.add(ChatFormatting.GRAY + "FireMode : " + NBTWrapper.getGunFireMode(stack));
 		tooltip.add(ChatFormatting.GRAY + "UseBullet : " + ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(stack)).ITEM_INFO.NAME_DISPLAY);
 		for (LoadedMagazine magazine : NBTWrapper.getGunLoadedMagazines(stack)) {
@@ -144,7 +145,7 @@ public class ItemGun extends Item {
 				tooltip.add("empty");
 			}
 		}
-		
+
 	}
 
 	/** 銃かどうか */

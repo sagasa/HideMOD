@@ -52,22 +52,23 @@ public class HideMod {
     /** MODのバージョン */
     public static final String MOD_VERSION = "α";
     /** 早紀に読み込まれるべき前提MODをバージョン込みで指定 */
-    public static final String MOD_DEPENDENCIES = "required-after:Forge@[1.8-11.14.0.1239,)";
+    public static final String MOD_DEPENDENCIES = "required:forge@[14.23.4.2705,);";
     /** 起動出来るMinecraft本体のバージョン。記法はMavenのVersion Range Specificationを検索すること。 */
-    public static final String MOD_ACCEPTED_MC_VERSIONS = "[1.8,1.8.9]";
+    public static final String MOD_ACCEPTED_MC_VERSIONS = "[1.12,1.12.2]";
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
     	//イベントハンドラ登録
     	MinecraftForge.EVENT_BUS.register(new HideEventHandler());
-    	//
+    	//パック読み込み
+    	PackLoader.load(event);
     }
     //アイテム登録
     @SubscribeEvent
     protected static void registerItems(RegistryEvent.Register<Item> event){
     	PackData.registerItems(event);
     }
-    
+
     @EventHandler
     public void init(FMLInitializationEvent event) {
     	//エンティティのレンダー登録

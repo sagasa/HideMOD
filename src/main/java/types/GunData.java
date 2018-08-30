@@ -63,6 +63,10 @@ public class GunData extends DataBase {
 	public Sound SOUND_RELOAD=new Sound("sample", 10);
 	/** 使用する弾 : StringArray型 */
 	public String[] BULLET_USE=new String[0];
+	/** セカンダリにできるか*/
+	public boolean USE_SECONDARY = false;
+	/** 両手持ちできるか*/
+	public boolean USE_DUALWIELD = false;
 
 	/**使用マガジンやアタッチメントなどの名前を更新*//**
 	public void setDomain(String Domain) {
@@ -74,5 +78,5 @@ public class GunData extends DataBase {
 			bullets[i] = bullets[i]+PackLoader.DOMAIN_MAGAZINE+Domain;
 		}
 	}*/
-	
+
 }

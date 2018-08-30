@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -12,6 +13,7 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import entity.EntityBullet;
+import helper.NBTWrapper;
 import hideMod.HideMod;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
@@ -41,8 +43,10 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import newwork.PacketGuns;
 import newwork.PacketPlaySound;
+import playerdata.PlayerData;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
+import types.GunData;
 import types.GunFireMode;
 import types.Sound;
 
@@ -51,14 +55,11 @@ public class PlayerHandler {
 	private static Random Random = new Random();
 	// クライアント側変数
 	private static boolean rightMouseHold;
-
 	private static boolean leftMouseHold;
+
 
 	private static int fireNum = 0;
 	private static boolean shooted = false;
-
-	private static ItemStack lastItem;
-	private static int lastCurrentItem;
 
 	private static HashMap<String, Boolean> oldKeys = new HashMap<String, Boolean>();
 	private static HashMap<String, Boolean> newKeys = new HashMap<String, Boolean>();
@@ -77,15 +78,18 @@ public class PlayerHandler {
 
 	private static boolean fastTick = true;
 
-	public static int PrepareTick = 0;
-	// 銃に格納するデータ
-	public static LoadedMagazine[] loadedMagazines;
-	public static String UsingBulletName;
-	public static int ShootDelay = 0;
-	public static int ReloadProgress = -1;
-	public static GunFireMode fireMode;
+	private ItemStack primaryLastItem;
+	private ItemStack secondaryLastItem;
+	private static int lastCurrentItem;
+
+	public LoadedMagazine[] loadedMagazines;
+	public String UsingBulletName;
+	public int ShootDelay = 0;
+	public int ReloadProgress = -1;
+	public GunFireMode fireMode;
 
 	// サーバー側変数
+	private static Map<EntityPlayer,PlayerData> PlayerDataMap = new HashMap<>();
 
 	/** プレイヤーのTick処理 */
 	public static void PlayerTick(PlayerTickEvent event) {
@@ -93,8 +97,8 @@ public class PlayerHandler {
 			// サイドで処理を分ける
 			if (event.side == Side.CLIENT) {
 				// 自分のキャラクターのみ
-				if (event.player.equals(Minecraft.getMinecraft().thePlayer)) {
-					ClientTick(Minecraft.getMinecraft().thePlayer);
+				if (event.player.equals(Minecraft.getMinecraft().player)) {
+					ClientTick(Minecraft.getMinecraft().player);
 				}
 			} else if (event.side == Side.SERVER) {
 				ServerTick(event.player);
@@ -129,7 +133,13 @@ public class PlayerHandler {
 			// System.out.println(Item.itemRegistry);
 		}
 
-		ItemStack item = player.getCurrentEquippedItem();
+		GunData main = ItemGun.getGunData(player.getHeldItemMainhand());
+		GunData off = ItemGun.getGunData(player.getHeldItemOffhand());
+		//トリガー通知
+		if(main != null&&off != null&&main.USE_DUALWIELD&&off.USE_DUALWIELD&&off.USE_SECONDARY){
+			//両手持ち可能な状態
+		}
+
 		// アイテムの持ち替え検知
 		if (!ItemStack.areItemStacksEqual(item, lastItem) || player.inventory.currentItem != lastCurrentItem) {
 			// 銃から持ち替えたらな
@@ -427,21 +437,25 @@ public class PlayerHandler {
 	/** マウスイベント */
 	public static void MouseEvent(MouseEvent event) {
 		// 左クリックなら
-		if (event.button == 0) {
-			leftMouseHold = event.buttonstate;
-		} else if (event.button == 1) {
-			rightMouseHold = event.buttonstate;
+		if (event.getButton() == 0) {
+			leftMouseHold = event.isButtonstate();
+		} else if (event.getButton() == 1) {
+			rightMouseHold = event.isButtonstate();
 		}
 	}
 
 	/** 接続時にサーバーサイドで呼ばれる */
 	public static void PlayerJoin(PlayerLoggedInEvent event) {
-
+		PlayerDataMap.put(event.player, new PlayerData());
 	}
 
 	/** 切断時にサーバーサイドで呼ばれる */
 	public static void PlayerLeft(PlayerLoggedOutEvent event) {
-
+		PlayerDataMap.remove(event.player);
+	}
+	/** プレイヤーデータを取得*/
+	public static PlayerData getPlayerData(EntityPlayer player){
+		return PlayerDataMap.get(player);
 	}
 
 	/** クライアントサイドでのみ動作 */
