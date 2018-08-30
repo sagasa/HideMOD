@@ -1,7 +1,7 @@
 package types.model;
 
 public class VertexUV {
-	public VertexUV(int x, int y, int z, int u, int v) {
+	public VertexUV(float x, float y, float z, float u, float v) {
 		X = x;
 		Y = y;
 		Z = z;

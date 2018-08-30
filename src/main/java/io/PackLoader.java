@@ -216,7 +216,7 @@ public class PackLoader {
 		// 音のドメインがなければ定義
 		checkSoundDomain(data.SOUND_HIT_ENTITY);
 		checkSoundDomain(data.SOUND_HIT_GROUND);
-		checkSoundDomain(data.SOUND_PASSING_USE);
+		checkSoundDomain(data.SOUND_PASSING);
 	}
 
 	/** 使用マガジンやアタッチメントなどの名前を更新 */

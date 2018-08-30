@@ -32,12 +32,13 @@ public class RayTracer {
 			this.range = range;
 		}
 		public Hit(Vec3d hitvec, double range) {
-
+			super(null, hitvec);
+			this.typeOfHit = Type.MISS;
 			this.range = range;
 		}
 		public Hit(BlockPos block, Vec3d hetvec) {
+			super(hetvec, null, block);
 			this.hitVec = hetvec;
-			this.blockPos = block;
 		}
 
 		@Override

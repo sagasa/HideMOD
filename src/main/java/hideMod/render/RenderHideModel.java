@@ -23,31 +23,22 @@ public class RenderHideModel {
 		// 面を全部呼ぶ
 		for (Polygon surface : part.Polygon) {
 			if (surface.Vertex.length == 3) {
-				bb.begin(GL11.GL_QUADS, DefaultVertexFormats.OLDMODEL_POSITION_TEX_NORMAL);
-				bb.pos(x, y, z)
-
-				worldrenderer.startDrawingQuads();
-				addVertexWithUV(worldrenderer, surface.Vertex[0]);
-				addVertexWithUV(worldrenderer, surface.Vertex[1]);
-				addVertexWithUV(worldrenderer, surface.Vertex[2]);
-				addVertexWithUV(worldrenderer, surface.Vertex[2]);
-				Tessellator.getInstance().draw();
+				bb.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.OLDMODEL_POSITION_TEX_NORMAL);
+				
 			} else if (surface.Vertex.length == 4) {
-				worldrenderer.startDrawingQuads();
-				addVertexWithUV(worldrenderer, surface.Vertex[0]);
-				addVertexWithUV(worldrenderer, surface.Vertex[1]);
-				addVertexWithUV(worldrenderer, surface.Vertex[2]);
-				addVertexWithUV(worldrenderer, surface.Vertex[3]);
-				Tessellator.getInstance().draw();
+				bb.begin(GL11.GL_QUADS, DefaultVertexFormats.OLDMODEL_POSITION_TEX_NORMAL);
+
+			} else {
+				return;
 			}
+			//頂点を呼ぶ
+			for(VertexUV vert:surface.Vertex){
+				bb.pos(vert.X, vert.Y, vert.Z).tex(vert.U,vert.V);
+			}
+			Tessellator.getInstance().draw();
 		}
 		GL11.glEndList();
 		part.compiled = true;
-	}
-
-	// 長かったから分けただけ
-	private void addVertexWithUV(WorldRenderer worldrenderer, VertexUV vertex) {
-		worldrenderer.addVertexWithUV(vertex.X, vertex.Y, vertex.Z, vertex.U, vertex.V);
 	}
 
 	void dorender(DisplayPart part) {

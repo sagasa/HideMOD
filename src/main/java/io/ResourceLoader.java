@@ -1,4 +1,4 @@
-package types;
+package io;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -14,12 +14,11 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import hideMod.HideMod;
-import hideMod.PackLoader;
+import hideMod.PackData;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
-import net.minecraft.client.resources.data.IMetadataSerializer;
+import net.minecraft.client.resources.data.MetadataSerializer;
 import net.minecraft.util.ResourceLocation;
-import types.guns.GunData;
 
 /**デフォルトリソースパックに割り込んでリソースを押し込む*/
 public class ResourceLoader implements IResourcePack{
@@ -36,28 +35,28 @@ public class ResourceLoader implements IResourcePack{
     	if (itemModel.matcher(resource.getResourcePath()).find()) {
     		String registerName = json.matcher(itemModel.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
     		//銃なら
-    		if(PackLoader.GUN_DATA_MAP.containsKey(registerName)){
-    			return makeItemModel(PackLoader.GUN_DATA_MAP.get(registerName).ITEM_INFO.NAME_ICON, true);
+    		if(PackData.GUN_DATA_MAP.containsKey(registerName)){
+    			return makeItemModel(PackData.GUN_DATA_MAP.get(registerName).ITEM_INFO.NAME_ICON, true);
     		}
     		//弾なら
-    		if(PackLoader.BULLET_DATA_MAP.containsKey(registerName)){
-    			return makeItemModel(PackLoader.BULLET_DATA_MAP.get(registerName).ITEM_INFO.NAME_ICON, true);
+    		if(PackData.BULLET_DATA_MAP.containsKey(registerName)){
+    			return makeItemModel(PackData.BULLET_DATA_MAP.get(registerName).ITEM_INFO.NAME_ICON, true);
     		}
 		}
     	Pattern itemTexture = Pattern.compile("^textures\\/items\\/");
     	Pattern png = Pattern.compile("\\.png$");
     	if (itemTexture.matcher(resource.getResourcePath()).find()) {
     		String iconName = png.matcher(itemTexture.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
-    		if(PackLoader.ICON_MAP.containsKey(iconName)){
-    			return new ByteArrayInputStream(PackLoader.ICON_MAP.get(iconName));
+    		if(PackData.ICON_MAP.containsKey(iconName)){
+    			return new ByteArrayInputStream(PackData.ICON_MAP.get(iconName));
     		}
     	}
     	Pattern Sound = Pattern.compile("^sounds\\/");
     	Pattern ogg = Pattern.compile("\\.ogg$");
     	if (Sound.matcher(resource.getResourcePath()).find()) {
     		String iconName = ogg.matcher(Sound.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
-    		if(PackLoader.SOUND_MAP.containsKey(iconName)){
-    			return new ByteArrayInputStream(PackLoader.SOUND_MAP.get(iconName));
+    		if(PackData.SOUND_MAP.containsKey(iconName)){
+    			return new ByteArrayInputStream(PackData.SOUND_MAP.get(iconName));
     		}
     	}
 		return null;
@@ -66,7 +65,7 @@ public class ResourceLoader implements IResourcePack{
     /**sounds.jsonの内容*/
     private InputStream makeSoundJson(){
     	StringBuilder sb = new StringBuilder("{");
-    	for(String name:PackLoader.SOUND_MAP.keySet()){
+    	for(String name:PackData.SOUND_MAP.keySet()){
     		sb.append("\""+name+"\": {\"category\" : \"player\",\"sounds\" : [ \""+HideMod.MOD_ID+":"+name+"\" ]},");
     	}
     	sb.append("\""+"sample"+"\": {\"category\" : \"player\",\"sounds\" : [ \""+HideMod.MOD_ID+":"+"sample"+"\" ]}}");
@@ -97,11 +96,11 @@ public class ResourceLoader implements IResourcePack{
     	if (itemModel.matcher(resource.getResourcePath()).find()) {
     		String registerName = json.matcher(itemModel.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
     		//銃なら
-    		if(PackLoader.GUN_DATA_MAP.containsKey(registerName)){
+    		if(PackData.GUN_DATA_MAP.containsKey(registerName)){
     			return true;
     		}
     		//弾なら
-    		if(PackLoader.BULLET_DATA_MAP.containsKey(registerName)){
+    		if(PackData.BULLET_DATA_MAP.containsKey(registerName)){
     			return true;
     		}
 		}
@@ -109,7 +108,7 @@ public class ResourceLoader implements IResourcePack{
     	Pattern png = Pattern.compile("\\.png$");
     	if (itemTexture.matcher(resource.getResourcePath()).find()) {
     		String iconName = png.matcher(itemTexture.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
-    		if(PackLoader.ICON_MAP.containsKey(iconName)&&!iconName.equals("sample")){
+    		if(PackData.ICON_MAP.containsKey(iconName)&&!iconName.equals("sample")){
     			return true;
     		}
     	}
@@ -117,7 +116,7 @@ public class ResourceLoader implements IResourcePack{
     	Pattern ogg = Pattern.compile("\\.ogg$");
     	if (Sound.matcher(resource.getResourcePath()).find()) {
     		String iconName = ogg.matcher(Sound.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
-    		if(PackLoader.SOUND_MAP.containsKey(iconName)){
+    		if(PackData.SOUND_MAP.containsKey(iconName)){
     			return true;
     		}
     	}
@@ -130,11 +129,6 @@ public class ResourceLoader implements IResourcePack{
     }
 
     @Override
-    public IMetadataSection getPackMetadata(IMetadataSerializer par1MetadataSerializer, String par2Str){
-        return null;
-    }
-
-    @Override
     public BufferedImage getPackImage() {
         return null;
     }
@@ -143,4 +137,10 @@ public class ResourceLoader implements IResourcePack{
     public String getPackName() {
         return "DummyResourcePack";
     }
+
+	@Override
+	public <T extends IMetadataSection> T getPackMetadata(MetadataSerializer metadataSerializer,
+			String metadataSectionName) throws IOException {
+		return null;
+	}
 }

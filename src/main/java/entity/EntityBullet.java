@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import org.apache.logging.log4j.core.net.DatagramSocketManager;
 
+import handler.PacketHandler;
 import hideMod.HideMod;
 import helper.RayTracer;
 import io.netty.buffer.ByteBuf;
@@ -42,6 +43,7 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldProvider.WorldSleepResult;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
@@ -49,6 +51,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import types.BulletData;
 import types.GunData;
+import types.Sound;
 
 /** 銃弾・砲弾・爆弾など投擲系以外の全てこのクラスで追加 */
 public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
@@ -72,18 +75,18 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 	// サーバーサイドでしか代入されていないので注意
 	/** データ取り出し元 */
-	GunData gunData;
-	BulletData bulletData;
+	private GunData gunData;
+	private BulletData bulletData;
 	UUID Shooter_uuid;
-	RayTracer RayTracer;
+	private RayTracer RayTracer;
 	/** 当たったエンティティのリスト 多段ヒット防止用 */
-	List<Entity> AlreadyHit;
+	private List<Entity> AlreadyHit;
 	/** あと何体に当たれるか */
-	int bulletPower;
+	private int bulletPower;
 	/** 飛距離 */
-	double FlyingDistance = 0;
+	private double FlyingDistance = 0;
 	/** 乱数!! */
-	static Random Random = new Random();
+	private static Random Random = new Random();
 
 	/** init時点での速度 */
 	Vec3d Vec0;
@@ -136,20 +139,17 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	protected void entityInit() {
-		EntityDataManager dw = getDataManager();
-		dw.readdObject(DATAWATCHER_END, deathNaxtTick);
-		dw.addObject(DATAWATCHER_POSX, 0f);
-		dw.addObject(DATAWATCHER_POSY, 0f);
-		dw.addObject(DATAWATCHER_POSZ, 0f);
+		EntityDataManager dm = getDataManager();
+
 	}
 
 	@Override
 	public void onUpdate() {
 		// 初期化
 		if (fastTick && Vec0 != null) {
-			this.motionX = Vec0.xCoord;
-			this.motionY = Vec0.yCoord;
-			this.motionZ = Vec0.zCoord;
+			this.motionX = Vec0.x;
+			this.motionY = Vec0.y;
+			this.motionZ = Vec0.z;
 		}
 
 		this.lastTickPosX = this.posX;

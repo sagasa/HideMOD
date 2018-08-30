@@ -9,9 +9,11 @@ import java.util.UUID;
 import com.mojang.realmsclient.gui.ChatFormatting;
 
 import hideMod.HideMod;
+import hideMod.PackData;
 import io.PackLoader;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -25,6 +27,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import types.BulletData;
 import types.GunData;
+import types.GunFireMode;
 
 public class ItemGun extends Item {
 
@@ -38,8 +41,9 @@ public class ItemGun extends Item {
 
 	// ========================================================================
 	// 登録
-	public ItemGun(GunData data, String name) {
+	public ItemGun(GunData data) {
 		this.setCreativeTab(CreativeTabs.COMBAT);
+		String name = data.ITEM_INFO.NAME_SHORT;
 		this.setUnlocalizedName(name);
 		this.setMaxStackSize(1);
 		this.RegisterName = name;
@@ -55,7 +59,7 @@ public class ItemGun extends Item {
 
 	/** アイテムスタックを作成 */
 	public static ItemStack makeGun(String name) {
-		if (PackLoader.GUN_DATA_MAP.containsKey(name)) {
+		if (PackData.GUN_DATA_MAP.containsKey(name)) {
 			ItemStack stack = new ItemStack(INSTANCE_MAP.get(name));
 			stack = checkGunNBT(stack);
 			NBTWrapper.setGunName(stack, name);
@@ -127,7 +131,9 @@ public class ItemGun extends Item {
 	// 更新 便利機能
 	/** アップデート 表示更新など */
 	@Override
-	public void addInformation(ItemStack stack, EntityPlayer playerIn, List tooltip, boolean advanced) {
+	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+		super.addInformation(stack, worldIn, tooltip, flagIn);
+		
 		tooltip.add(ChatFormatting.GRAY + "FireMode : " + NBTWrapper.getGunFireMode(stack));
 		tooltip.add(ChatFormatting.GRAY + "UseBullet : " + ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(stack)).ITEM_INFO.NAME_DISPLAY);
 		for (LoadedMagazine magazine : NBTWrapper.getGunLoadedMagazines(stack)) {
@@ -138,6 +144,7 @@ public class ItemGun extends Item {
 				tooltip.add("empty");
 			}
 		}
+		
 	}
 
 	/** 銃かどうか */
@@ -179,7 +186,7 @@ public class ItemGun extends Item {
 
 	/** GunData取得 */
 	public static GunData getGunData(String name) {
-		return PackLoader.GUN_DATA_MAP.get(name);
+		return PackData.getGunData(name);
 	}
 	/** GunData取得 */
 	public static GunData getGunData(ItemStack item) {

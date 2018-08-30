@@ -34,6 +34,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import handler.HideEventHandler;
+import io.PackLoader;
 
 @Mod(modid = HideMod.MOD_ID,
         name = HideMod.MOD_NAME,
@@ -64,7 +65,7 @@ public class HideMod {
     //アイテム登録
     @SubscribeEvent
     protected static void registerItems(RegistryEvent.Register<Item> event){
-    	
+    	PackData.registerItems(event);
     }
     
     @EventHandler
