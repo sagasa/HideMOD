@@ -137,7 +137,16 @@ public class PlayerHandler {
 		GunData off = ItemGun.getGunData(player.getHeldItemOffhand());
 		//トリガー通知
 		if(main != null&&off != null&&main.USE_DUALWIELD&&off.USE_DUALWIELD&&off.USE_SECONDARY){
-			//両手持ち可能な状態
+			//両手持ち可能な状態かつ両手に銃を持っている
+			if(main.equals(off)){
+				//メインとサブが同じ武器なら
+				
+			}else{
+				//違ったら
+				
+			}
+		}else if(main!=null||off!=null){
+			//どちらかに銃を持っているなら
 		}
 
 		// アイテムの持ち替え検知
