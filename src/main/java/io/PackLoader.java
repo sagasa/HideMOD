@@ -79,12 +79,12 @@ public class PackLoader {
 			System.out.println(file.getName());
 			if (zip.matcher(file.getName()).matches()) {
 				// Add the directory to the content pack list
-				HideMod.log("Loading content pack : " + file.getName() + "...");
+				System.out.println("Loading content pack : " + file.getName() + "...");
 				try {
 					PackLoader reader = new PackLoader();
 					reader.PackRead(file);
 				} catch (IOException e) {
-					HideMod.log("error : IOException");
+					System.out.println("error : IOException");
 				}
 			}
 		}
@@ -129,12 +129,12 @@ public class PackLoader {
 				ItemGun gun = new ItemGun(data);
 				// 重複しないかどうか
 				if (PackData.GUN_DATA_MAP.containsKey(name)) {
-					HideMod.log("Item has already been added :" + name);
+					System.out.println("Item has already been added :" + name);
 					continue;
 				}
 				// データが破損していないか
 				if (!ItemGun.isNormalData(data)) {
-					HideMod.log("GunData is damaged :" + name);
+					System.out.println("GunData is damaged :" + name);
 					continue;
 				}
 				PackData.GUN_DATA_MAP.put(name, data);
@@ -146,14 +146,14 @@ public class PackLoader {
 				ItemMagazine gun = new ItemMagazine(data);
 				// 重複しないかどうか
 				if (PackData.BULLET_DATA_MAP.containsKey(name)) {
-					HideMod.log("Item has already been added :" + name);
+					System.out.println("Item has already been added :" + name);
 					continue;
 				}
 				PackData.BULLET_DATA_MAP.put(name, data);
 			}
-			HideMod.log("Load Successful!");
+			System.out.println("Load Successful!");
 		} else {
-			HideMod.log("error : Missing PackInfo");
+			System.out.println("error : Missing PackInfo");
 		}
 	}
 
@@ -187,7 +187,7 @@ public class PackLoader {
 			String n = Pattern.compile(".png$").matcher(Pattern.compile("^(.*)icon/").matcher(name).replaceAll(""))
 					.replaceAll("");
 			if (PackData.ICON_MAP.containsKey(n)) {
-				HideMod.log("error : Resource is Already exists Name:" + n);
+				System.out.println("error : Resource is Already exists Name:" + n);
 			} else {
 				PackData.ICON_MAP.put(n, data);
 			}
@@ -206,7 +206,7 @@ public class PackLoader {
 			String n = Pattern.compile(".ogg$").matcher(Pattern.compile("^(.*)sounds/").matcher(name).replaceAll(""))
 					.replaceAll("");
 			if (PackData.SOUND_MAP.containsKey(n)) {
-				HideMod.log("error : Resource is Already exists Name:" + n);
+				System.out.println("error : Resource is Already exists Name:" + n);
 			} else {
 				PackData.SOUND_MAP.put(n, data);
 			}

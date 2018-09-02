@@ -3,7 +3,12 @@ package hideMod;
 import java.util.HashMap;
 
 import item.ItemGun;
+import item.ItemMagazine;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.RegistryEvent.Register;
 import net.minecraftforge.registries.IForgeRegistry;
 import types.BulletData;
@@ -30,12 +35,28 @@ public class PackData {
 	public static BulletData getBulletData(String name){
 		return BULLET_DATA_MAP.get(name);
 	}
-	
+
 	/**アイテム登録*/
 	public static void registerItems(Register<Item> event) {
 		IForgeRegistry<Item> register = event.getRegistry();
+		System.out.println("アイテム登録中！！！");
 		for(GunData data:GUN_DATA_MAP.values()){
-			new ItemGun(data);
+			Item item = new ItemGun(data);
+			register.register(item);
+		}
+		for(BulletData data:BULLET_DATA_MAP.values()){
+			register.register(new ItemMagazine(data));
 		}
 	}
+	/**モデル登録*/
+	public static void registerModel(){
+		for(Item item : ItemGun.INSTANCE_MAP.values()){
+			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(new ResourceLocation(HideMod.MOD_ID, "gun"), "inventory"));
+		}
+		for(Item item : ItemMagazine.INSTANCE_MAP.values()){
+			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(new ResourceLocation(HideMod.MOD_ID, "magazine"), "inventory"));
+		}
+
+	}
+
 }

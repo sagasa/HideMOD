@@ -1,13 +1,18 @@
 package handler;
 
+import hideMod.PackData;
+import net.minecraft.item.Item;
+import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderItemInFrameEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerEvent.StopTracking;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
+import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
@@ -18,6 +23,18 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class HideEventHandler {
+	/*イニシャライズ*/
+	@SubscribeEvent
+    public void onEvent(RegistryEvent.Register<Item> event){
+    	System.out.println("レジスター呼ばれた！！");
+    	PackData.registerItems(event);
+    }
+	@SubscribeEvent
+    @SideOnly(Side.CLIENT)
+    public void onEvent(ModelRegistryEvent event) {
+        PackData.registerModel();
+    }
+
 	/* プレイヤーイベント */
 	@SubscribeEvent
 	public void onEvent(PlayerTickEvent event) {
@@ -39,7 +56,7 @@ public class HideEventHandler {
 
 	@SubscribeEvent
 	public void onEvent(MouseEvent event) {
-	//	PlayerHandler.MouseEvent(event);
+		PlayerHandler.MouseEvent(event);
 	}
 
 	@SubscribeEvent

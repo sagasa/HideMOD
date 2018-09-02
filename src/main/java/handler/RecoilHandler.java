@@ -1,12 +1,12 @@
 package handler;
 
+import helper.HideMath;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import helper.HideMath;
-import types.guns.GunData;
-import types.guns.Recoil;
+import types.GunData;
+import types.Recoil;
 
 @SideOnly(Side.CLIENT)
 public class RecoilHandler {
@@ -24,7 +24,7 @@ public class RecoilHandler {
 
 	/** プレイヤーの状態から使用するリコイルを取得 */
 	private static Recoil getRecoil(GunData data) {
-		EntityPlayer player = Minecraft.getMinecraft().thePlayer;
+		EntityPlayer player = Minecraft.getMinecraft().player;
 		return getRecoil(data, player.isSneaking(), PlayerHandler.isADS);
 	}
 
@@ -86,7 +86,7 @@ public class RecoilHandler {
 		if (yawShakeTick >= 0) {
 			float coe = yawShakeTo / (yawShakeTick + 1);
 			yawShakeTo -= coe;
-			Minecraft.getMinecraft().thePlayer.rotationYaw += coe;
+			Minecraft.getMinecraft().player.rotationYaw += coe;
 			yawShakeTick -= 1;
 			if (yawShakeTick == -1) {
 				yawReturnTick = recoil.YAW_RETURN_TICK;
@@ -95,7 +95,7 @@ public class RecoilHandler {
 		if (pitchShakeTick >= 0) {
 			float coe = pitchShakeTo / (pitchShakeTick + 1);
 			pitchShakeTo -= coe;
-			Minecraft.getMinecraft().thePlayer.rotationPitch -= coe;
+			Minecraft.getMinecraft().player.rotationPitch -= coe;
 			pitchShakeTick -= 1;
 			if (pitchShakeTick == -1) {
 				pitchReturnTick = recoil.PITCH_RETURN_TICK;
@@ -105,13 +105,13 @@ public class RecoilHandler {
 		if (yawReturnTick >= 0) {
 			float coe = yawReturnTo / (yawReturnTick + 1);
 			yawReturnTo -= coe;
-			Minecraft.getMinecraft().thePlayer.rotationYaw -= coe;
+			Minecraft.getMinecraft().player.rotationYaw -= coe;
 			yawReturnTick -= 1;
 		}
 		if (pitchReturnTick >= 0) {
 			float coe = pitchReturnTo / (pitchReturnTick + 1);
 			pitchReturnTo -= coe;
-			Minecraft.getMinecraft().thePlayer.rotationPitch += coe;
+			Minecraft.getMinecraft().player.rotationPitch += coe;
 			pitchReturnTick -= 1;
 		}
 		if (recoilPower > 0) {

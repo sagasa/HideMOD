@@ -4,18 +4,18 @@ import java.awt.List;
 import java.util.ArrayList;
 
 import hideMod.HideMod;
+import hideMod.sound.HideSound;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundList;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import newwork.PacketPlaySound;
-import types.inGame.HideSound;
 import types.Sound;
 
 /** サーバーからクライアントへサウンドを流すハンドラ */
@@ -27,7 +27,7 @@ public class SoundHandler {
 	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用 */
 	public static void broadcastSound(String soundName, Entity e, float range, float vol, float pitch,
 			boolean useSoundDelay, boolean useDecay) {
-		broadcastSound(e.worldObj, soundName, e.posX, e.posY, e.posZ, range, vol, pitch, useSoundDelay, useDecay);
+		broadcastSound(e.world, soundName, e.posX, e.posY, e.posZ, range, vol, pitch, useSoundDelay, useDecay);
 	}
 
 	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用 */
@@ -40,7 +40,7 @@ public class SoundHandler {
 			float pitch, boolean useSoundDelay, boolean useDecay) {
 		// 同じワールドのプレイヤーの距離を計算してパケットを送信
 		for (EntityPlayer player : (ArrayList<EntityPlayer>) w.playerEntities) {
-			double distance = new Vec3(x, y, z).distanceTo(new Vec3(player.posX, player.posY, player.posZ));
+			double distance = new Vec3d(x, y, z).distanceTo(new Vec3d(player.posX, player.posY, player.posZ));
 			if (distance < range) {
 				float playerVol = vol;
 				if (useDecay) {
@@ -66,8 +66,8 @@ public class SoundHandler {
 	@SideOnly(Side.CLIENT)
 	public static void playSound(String soundName, double x, double y, double z, float range, float vol, float pitch,
 			boolean useSoundDelay, boolean useDecay) {
-		EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-		double distance = new Vec3(x, y, z).distanceTo(new Vec3(player.posX, player.posY, player.posZ));
+		EntityPlayer player = Minecraft.getMinecraft().player;
+		double distance = new Vec3d(x, y, z).distanceTo(new Vec3d(player.posX, player.posY, player.posZ));
 		if (distance < range) {
 			float playerVol = vol;
 			if (useDecay) {

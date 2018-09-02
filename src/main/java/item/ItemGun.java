@@ -1,6 +1,8 @@
 package item;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import types.BulletData;
@@ -32,9 +35,8 @@ import types.GunFireMode;
 
 public class ItemGun extends Item {
 
-	private static Map<String, ItemGun> INSTANCE_MAP = new HashMap<String, ItemGun>();
+	public static Map<String, ItemGun> INSTANCE_MAP = new HashMap<String, ItemGun>();
 
-	public String RegisterName;
 	public GunData GunData;
 
 	/**モデル描画*/
@@ -43,19 +45,14 @@ public class ItemGun extends Item {
 	// ========================================================================
 	// 登録
 	public ItemGun(GunData data) {
+		super();
 		this.setCreativeTab(CreativeTabs.COMBAT);
 		String name = data.ITEM_INFO.NAME_SHORT;
 		this.setUnlocalizedName(name);
+		this.setRegistryName(name);
 		this.setMaxStackSize(1);
-		this.RegisterName = name;
 		this.GunData = data;
 		INSTANCE_MAP.put(name, this);
-	}
-	@SideOnly(Side.CLIENT)
-	public void setModel(){
-		//モデル
-//		Model = new RenderHideGun(new  ModelGun());
-//		Model.setTexture(new ResourceLocation("hidemod", "dummy.png"));
 	}
 
 	/** アイテムスタックを作成 */
@@ -63,23 +60,22 @@ public class ItemGun extends Item {
 		if (PackData.GUN_DATA_MAP.containsKey(name)) {
 			ItemStack stack = new ItemStack(INSTANCE_MAP.get(name));
 			stack = checkGunNBT(stack);
-			NBTWrapper.setGunName(stack, name);
 			return stack;
 		}
 		return null;
 	}
-
+	/**アイテムスタック作成時に呼ばれる これの中でNBTを設定する*/
+	@Override
+	public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
+		checkGunNBT(stack);
+		return super.initCapabilities(stack, nbt);
+	}
 
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
 		return getGunData(stack).ITEM_INFO.NAME_DISPLAY;
 	}
 
-	public static void setUUID(ItemStack item) {
-		if (NBTWrapper.getGunID(item) == -1) {
-			NBTWrapper.setGunID(item, UUID.randomUUID().getLeastSignificantBits());
-		}
-	}
 
 	/** どのような状態からでも有効なNBTを書き込む */
 	public static ItemStack checkGunNBT(ItemStack item) {
@@ -87,16 +83,13 @@ public class ItemGun extends Item {
 			return item;
 		}
 		// タグがなければ書き込む
-		if (!item.hasTagCompound()) {
-			item.setTagCompound(new NBTTagCompound());
 			GunData data = getGunData(item);
 
-			NBTWrapper.setGunID(item, -1);
+			NBTWrapper.setHideID(item, UUID.randomUUID().getLeastSignificantBits());
 			NBTWrapper.setGunShootDelay(item, 0);
 			NBTWrapper.setGunFireMode(item, GunFireMode.getFireMode(
 					Arrays.asList(data.FIREMODE).iterator().next().toString()));
 			NBTWrapper.setGunUseingBullet(item, Arrays.asList((String[])data.BULLET_USE).iterator().next().toString());
-		}
 		return item;
 	}
 	/**データ破損チェック*/
@@ -134,7 +127,10 @@ public class ItemGun extends Item {
 	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
 		super.addInformation(stack, worldIn, tooltip, flagIn);
-
+		//破損チェック
+		if(!stack.hasTagCompound()){
+			return;
+		}
 		tooltip.add(ChatFormatting.GRAY + "FireMode : " + NBTWrapper.getGunFireMode(stack));
 		tooltip.add(ChatFormatting.GRAY + "UseBullet : " + ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(stack)).ITEM_INFO.NAME_DISPLAY);
 		for (LoadedMagazine magazine : NBTWrapper.getGunLoadedMagazines(stack)) {
@@ -182,7 +178,7 @@ public class ItemGun extends Item {
 
 	/** スタックから銃の登録名を取得 */
 	public static String getGunName(ItemStack item) {
-		return ((ItemGun) item.getItem()).RegisterName;
+		return getGunData(item).ITEM_INFO.NAME_SHORT;
 	}
 
 	/** GunData取得 */

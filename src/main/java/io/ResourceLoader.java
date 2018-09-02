@@ -128,6 +128,7 @@ public class ResourceLoader implements IResourcePack{
         return ImmutableSet.of("hidemod");
     }
 
+
     @Override
     public BufferedImage getPackImage() {
         return null;

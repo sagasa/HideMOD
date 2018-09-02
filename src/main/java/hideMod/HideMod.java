@@ -22,9 +22,9 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
-
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -32,9 +32,11 @@ import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-
+import net.minecraftforge.registries.RegistryManager;
 import handler.HideEventHandler;
+import handler.PacketHandler;
 import io.PackLoader;
+import io.ResourceLoader;
 
 @Mod(modid = HideMod.MOD_ID,
         name = HideMod.MOD_NAME,
@@ -56,17 +58,24 @@ public class HideMod {
     /** 起動出来るMinecraft本体のバージョン。記法はMavenのVersion Range Specificationを検索すること。 */
     public static final String MOD_ACCEPTED_MC_VERSIONS = "[1.12,1.12.2]";
 
+    /*イニシャライズ*/
+    @EventHandler
+    public void construct(FMLConstructionEvent event) {
+    	MinecraftForge.EVENT_BUS.register(new HideEventHandler());
+    }
+
+    //
+
+	//アイテム登録
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-    	//イベントハンドラ登録
-    	MinecraftForge.EVENT_BUS.register(new HideEventHandler());
     	//パック読み込み
     	PackLoader.load(event);
-    }
-    //アイテム登録
-    @SubscribeEvent
-    protected static void registerItems(RegistryEvent.Register<Item> event){
-    	PackData.registerItems(event);
+    	//パケットの初期設定
+    	PacketHandler.init();
+    	//リソースローダーを追加
+		List<IResourcePack> defaultResourcePacks = ObfuscationReflectionHelper.getPrivateValue(Minecraft.class, Minecraft.getMinecraft(), "defaultResourcePacks", "field_110449_ao");
+    	defaultResourcePacks.add(new ResourceLoader());
     }
 
     @EventHandler
@@ -83,12 +92,6 @@ public class HideMod {
     void RegistryRenders(){
     //	Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta, location);
 
-
-    }
-
-    /**ログ出力 試験用*/
-    public static void log(Object String){
-    	System.out.println("[HideMod] " + String.toString());
 
     }
 }
