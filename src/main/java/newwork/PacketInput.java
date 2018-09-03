@@ -30,42 +30,39 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
-import playerdata.PlayerData;
+import playerdata.HidePlayerData;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
 import types.GunData;
 import types.GunFireMode;
 import types.Sound;
 
-/** サーバー */
-public class PacketPlayerState implements IMessage, IMessageHandler<PacketPlayerState, IMessage> {
+/** 入力をサーバーに送る */
+public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMessage> {
 
-	byte mode;
-	static final byte TRIGGER_CHANGE = 0;
-	static final byte GUN_RELOAD = 1;
-	static final byte EQUIP_MODE = 2;
-	static final byte GUN_MODE = 3;
-	static final byte GUN_BULLET = 4;
+	private byte mode;
+	public static final byte TRIGGER_CHANGE = 0;
+	public static final byte GUN_RELOAD = 1;
+	public static final byte GUN_MODE = 3;
+	public static final byte GUN_BULLET = 4;
 
-	public PacketPlayerState() {
+	public PacketInput() {
 	}
 
 	private boolean right;
 	private boolean left;
 
 	/** トリガーパケット */
-	public PacketPlayerState(boolean left, boolean right) {
+	public PacketInput(boolean left, boolean right) {
 		this.mode = TRIGGER_CHANGE;
 		this.right = right;
 		this.left = left;
 	}
+	public PacketInput(byte mode){
+		this.mode = mode;
+	}
 
 	private EquipMode equipMode;
-
-	/** 状態通知 */
-	public PacketPlayerState(EquipMode equipmode) {
-		equipMode = equipmode;
-	}
 
 	@Override // ByteBufからデータを読み取る。
 	public void fromBytes(ByteBuf buf) {
@@ -76,8 +73,6 @@ public class PacketPlayerState implements IMessage, IMessageHandler<PacketPlayer
 		} else if (mode == GUN_MODE) {
 		} else if (mode == GUN_BULLET) {
 		} else if (mode == GUN_RELOAD) {
-		} else if (mode == EQUIP_MODE) {
-			equipMode = EquipMode.valueOf(PacketHandler.readString(buf));
 		}
 	}
 
@@ -90,28 +85,30 @@ public class PacketPlayerState implements IMessage, IMessageHandler<PacketPlayer
 		} else if (mode == GUN_MODE) {
 		} else if (mode == GUN_BULLET) {
 		} else if (mode == GUN_RELOAD) {
-		} else if (mode == EQUIP_MODE) {
-			PacketHandler.writeString(buf, equipMode.toString());
 		}
 	}
 
 	// 受信イベント
 	@Override // IMessageHandlerのメソッド
-	public IMessage onMessage(PacketPlayerState m, MessageContext ctx) {
+	public IMessage onMessage(PacketInput m, MessageContext ctx) {
 		// クライアントへ送った際に、EntityPlayerインスタンスはこのように取れる。
 		// EntityPlayer player =
 		// SamplePacketMod.proxy.getEntityPlayerInstance();
 		// サーバーへ送った際に、EntityPlayerインスタンス（EntityPlayerMPインスタンス）はこのように取れる。
 		// EntityPlayer Player = ctx.getServerHandler().playerEntity;
 		// System.out.println(ctx.side);
-		System.out.println("パケット受信");
-		PlayerData data = PlayerHandler.getPlayerData(ctx.getServerHandler().player);
+		HidePlayerData data = PlayerHandler.getPlayerData(ctx.getServerHandler().player);
 		if (m.mode == TRIGGER_CHANGE) {
-			data.leftMouse = m.left;
-			data.rightMouse = m.right;
-		}else if(m.mode == EQUIP_MODE){
-			data.equipMode = m.equipMode;
+			data.input.leftMouse = m.left;
+			data.input.rightMouse = m.right;
+		}else if(m.mode == GUN_BULLET){
+			data.input.changeAmmo = true;
+		}else if(m.mode == GUN_MODE){
+			data.input.changeFiremode = true;
+		}else if(m.mode == GUN_RELOAD){
+			data.input.reload = true;
 		}
+
 		return null;
 	}
 }

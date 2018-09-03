@@ -9,8 +9,8 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 import newwork.PacketHit;
+import newwork.PacketInput;
 import newwork.PacketPlaySound;
-import newwork.PacketPlayerState;
 
 public class PacketHandler {
 
@@ -24,7 +24,7 @@ public class PacketHandler {
         /*IMesssageHandlerクラスとMessageクラスの登録。
         *第三引数：MessageクラスのMOD内での登録ID。256個登録できる
         *第四引数：送り先指定。クライアントかサーバーか、Side.CLIENT Side.SERVER*/
-        INSTANCE.registerMessage(PacketPlayerState.class, PacketPlayerState.class, 0, Side.SERVER);
+        INSTANCE.registerMessage(PacketInput.class, PacketInput.class, 0, Side.SERVER);
         INSTANCE.registerMessage(PacketHit.class, PacketHit.class, 2, Side.CLIENT);
         INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 3, Side.CLIENT);
         INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 4, Side.SERVER);
