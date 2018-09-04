@@ -57,20 +57,8 @@ public class PlayerHandler {
 
 	private static Random Random = new Random();
 	// クライアント側変数
-	private static boolean rightMouseHold = false;
-	private static boolean leftMouseHold = false;
-	private static EquipMode equipMode = EquipMode.None;
-
-	private static int fireNum = 0;
-	private static boolean shooted = false;
-
-	private static HashMap<String, Boolean> oldKeys = new HashMap<String, Boolean>();
-	private static HashMap<String, Boolean> newKeys = new HashMap<String, Boolean>();
-
 	public static int HitMarkerTime = 0;
 	public static int HitMarkerTime_H = 0;
-
-	private static int reloadQueue = -1;
 
 	private static int minigunPrepare = 0;
 
@@ -109,6 +97,12 @@ public class PlayerHandler {
 		}
 	}
 
+	private static HashMap<String, Boolean> oldKeys = new HashMap<String, Boolean>();
+	private static HashMap<String, Boolean> newKeys = new HashMap<String, Boolean>();
+	private static boolean rightMouseHold = false;
+	private static boolean lastRightMouse = false;	
+	private static boolean leftMouseHold = false;
+	private static boolean lastLeftMouse = false;
 	/**入力処理 */
 	@SideOnly(Side.CLIENT)
 	private static void ClientTick(EntityPlayerSP player) {
@@ -117,6 +111,9 @@ public class PlayerHandler {
 			rightMouseHold = leftMouseHold = false;
 			PacketHandler.INSTANCE.sendToServer(new PacketInput(rightMouseHold, leftMouseHold));
 		}
+		
+		System.out.println(System.currentTimeMillis()+" : "+leftMouseHold);
+		
 		// キー入力の取得 押された変化を取得
 		ArrayList<KeyBind> pushKeys = new ArrayList<KeyBind>();
 		oldKeys.putAll(newKeys);
@@ -133,22 +130,24 @@ public class PlayerHandler {
 		}else if(pushKeys.contains(KeyBind.GUN_USEBULLET)){
 			PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_BULLET));
 		}
+		//マウス
+		if (lastLeftMouse != leftMouseHold || lastRightMouse != rightMouseHold) {
+			PacketHandler.INSTANCE.sendToServer(new PacketInput(rightMouseHold, leftMouseHold));
+			lastLeftMouse = leftMouseHold;
+			lastRightMouse = rightMouseHold;
+		}
 		//リコイルアップデート
 		RecoilHandler.updateRecoil();
 
 	}
 	/** マウスイベント */
 	public static void MouseEvent(MouseEvent event) {
-		boolean left = leftMouseHold;
-		boolean right = rightMouseHold;
 		// 左クリックなら
 		if (event.getButton() == 0) {
+			System.out.println(System.currentTimeMillis()+" : "+"Event");
 			leftMouseHold = event.isButtonstate();
 		} else if (event.getButton() == 1) {
 			rightMouseHold = event.isButtonstate();
-		}
-		if (left != leftMouseHold || right != rightMouseHold) {
-			PacketHandler.INSTANCE.sendToServer(new PacketInput(rightMouseHold, leftMouseHold));
 		}
 	}
 

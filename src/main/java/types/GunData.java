@@ -15,6 +15,8 @@ public class GunData extends DataBase {
 	public float BULLET_SPEED = 5f;
 	/** 持ってから撃てるまで ; tickかかる : int型 **/
 	public int PREPARE_TICK = 0;
+	/** ADSへの切り替え時間 ; tickかかる : int型 **/
+	public int ADS_TICK = 0;
 	/** リロード ; リロードにtickかかる : int型 **/
 	public int RELOAD_TICK= 20;
 	/** レート ; レートtick間隔で発射する : int型 **/

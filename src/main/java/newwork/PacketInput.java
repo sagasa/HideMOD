@@ -43,6 +43,7 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 	private byte mode;
 	public static final byte TRIGGER_CHANGE = 0;
 	public static final byte GUN_RELOAD = 1;
+	public static final byte GUN_ADS = 2;
 	public static final byte GUN_MODE = 3;
 	public static final byte GUN_BULLET = 4;
 
@@ -61,6 +62,13 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 	public PacketInput(byte mode){
 		this.mode = mode;
 	}
+	
+	private boolean isADS;
+	/**ADSトグルパケット*/
+	public PacketInput(boolean isads){
+		this.mode = GUN_ADS;
+		this.isADS = isads;
+	}
 
 	private EquipMode equipMode;
 
@@ -70,7 +78,8 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 		if (mode == TRIGGER_CHANGE) {
 			right = buf.readBoolean();
 			left = buf.readBoolean();
-		} else if (mode == GUN_MODE) {
+		} else if (mode == GUN_ADS) {
+			isADS = buf.readBoolean();
 		} else if (mode == GUN_BULLET) {
 		} else if (mode == GUN_RELOAD) {
 		}
@@ -82,7 +91,8 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 		if (mode == TRIGGER_CHANGE) {
 			buf.writeBoolean(right);
 			buf.writeBoolean(left);
-		} else if (mode == GUN_MODE) {
+		} else if (mode == GUN_ADS) {
+			buf.writeBoolean(isADS);
 		} else if (mode == GUN_BULLET) {
 		} else if (mode == GUN_RELOAD) {
 		}
