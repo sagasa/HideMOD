@@ -46,6 +46,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import newwork.PacketInput;
 import newwork.PacketPlaySound;
 import playerdata.HidePlayerData;
+import playerdata.HidePlayerData.ServerPlayerData;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
 import types.GunData;
@@ -100,10 +101,11 @@ public class PlayerHandler {
 	private static HashMap<String, Boolean> oldKeys = new HashMap<String, Boolean>();
 	private static HashMap<String, Boolean> newKeys = new HashMap<String, Boolean>();
 	private static boolean rightMouseHold = false;
-	private static boolean lastRightMouse = false;	
+	private static boolean lastRightMouse = false;
 	private static boolean leftMouseHold = false;
 	private static boolean lastLeftMouse = false;
-	/**入力処理 */
+
+	/** 入力処理 */
 	@SideOnly(Side.CLIENT)
 	private static void ClientTick(EntityPlayerSP player) {
 		// 死んでたらマウスを離す
@@ -111,9 +113,6 @@ public class PlayerHandler {
 			rightMouseHold = leftMouseHold = false;
 			PacketHandler.INSTANCE.sendToServer(new PacketInput(rightMouseHold, leftMouseHold));
 		}
-		
-		System.out.println(System.currentTimeMillis()+" : "+leftMouseHold);
-		
 		// キー入力の取得 押された変化を取得
 		ArrayList<KeyBind> pushKeys = new ArrayList<KeyBind>();
 		oldKeys.putAll(newKeys);
@@ -123,39 +122,39 @@ public class PlayerHandler {
 				pushKeys.add(bind);
 			}
 		}
-		if(pushKeys.contains(KeyBind.GUN_FIREMODE)){
+		if (pushKeys.contains(KeyBind.GUN_FIREMODE)) {
 			PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_MODE));
-		}else if(pushKeys.contains(KeyBind.GUN_RELOAD)){
+		} else if (pushKeys.contains(KeyBind.GUN_RELOAD)) {
 			PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_RELOAD));
-		}else if(pushKeys.contains(KeyBind.GUN_USEBULLET)){
+		} else if (pushKeys.contains(KeyBind.GUN_USEBULLET)) {
 			PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_BULLET));
 		}
-		//マウス
+		// マウス
 		if (lastLeftMouse != leftMouseHold || lastRightMouse != rightMouseHold) {
 			PacketHandler.INSTANCE.sendToServer(new PacketInput(rightMouseHold, leftMouseHold));
 			lastLeftMouse = leftMouseHold;
 			lastRightMouse = rightMouseHold;
 		}
-		//リコイルアップデート
+		// リコイルアップデート
 		RecoilHandler.updateRecoil();
 
 	}
+
 	/** マウスイベント */
 	public static void MouseEvent(MouseEvent event) {
 		// 左クリックなら
 		if (event.getButton() == 0) {
-			System.out.println(System.currentTimeMillis()+" : "+"Event");
 			leftMouseHold = event.isButtonstate();
 		} else if (event.getButton() == 1) {
 			rightMouseHold = event.isButtonstate();
 		}
 	}
 
-	/**装備の状態*/
+	/** 装備の状態 */
 	public enum EquipMode {
 		Main, Off, Dual, OtherDual, None;
-		/**プレイヤーから装備の状態を取得*/
-		public static EquipMode getEqipMode(EntityPlayer player){
+		/** プレイヤーから装備の状態を取得 */
+		public static EquipMode getEqipMode(EntityPlayer player) {
 			GunData main = ItemGun.getGunData(player.getHeldItemMainhand());
 			GunData off = ItemGun.getGunData(player.getHeldItemOffhand());
 			// 状態検知
@@ -181,29 +180,59 @@ public class PlayerHandler {
 		}
 	}
 
-
 	/** サーバーTick処理 プログレスを進める */
 	private static void ServerTick(EntityPlayer player) {
-		HidePlayerData data = getPlayerData(player);
+		ServerPlayerData data = getPlayerData(player).Server;
 		EquipMode em = EquipMode.getEqipMode(player);
+		ItemStack main = player.getHeldItemMainhand();
+		ItemStack off = player.getHeldItemOffhand();
 		List<ItemStack> items = new ArrayList<>();
-		//変更対象をリストに
-		if(em==EquipMode.OtherDual||em==EquipMode.Main){
-			items.add(player.getHeldItemMainhand());
-		}else if(em==EquipMode.Off){
-			items.add(player.getHeldItemOffhand());
-		}else if(em==EquipMode.Dual){
-			items.add(player.getHeldItemMainhand());
-			items.add(player.getHeldItemOffhand());
+		// 変更対象をリストに
+		if (em == EquipMode.OtherDual || em == EquipMode.Main) {
+			items.add(main);
+		} else if (em == EquipMode.Off) {
+			items.add(off);
+		} else if (em == EquipMode.Dual) {
+			items.add(main);
+			items.add(off);
 		}
-		if(data.input.changeAmmo){
-			data.input.changeAmmo = false;
+		if (data.changeAmmo) {
+			data.changeAmmo = false;
 			items.forEach(item -> NBTWrapper.setGunUseingBullet(item, ItemGun.getNextUseMagazine(item)));
-		}else if(data.input.changeFiremode){
-			data.input.changeFiremode = false;
+		} else if (data.changeFiremode) {
+			data.changeFiremode = false;
 			items.forEach(item -> NBTWrapper.setGunFireMode(item, ItemGun.getNextFireMode(item)));
 		}
-		//射撃処理
+		if (data.reloadstate > 0) {
+			data.reloadstate--;
+		}
+		// 持ち替え検知
+		if (data.idMain != NBTWrapper.getHideID(main) || data.idOff != NBTWrapper.getHideID(off)) {
+			data.idMain = NBTWrapper.getHideID(main);
+			data.idOff = NBTWrapper.getHideID(off);
+			// 持ち替えでキャンセルするもの
+			data.reloadstate = -1;
+			data.ads = false;
+			data.adsstate = 0;
+		}
+		// 射撃処理
+		if (em == EquipMode.Main || em == EquipMode.Off || em == EquipMode.Dual) {
+			// トリガー判定
+			if (data.leftMouse) {
+
+			} else {
+				data.stopshoot = false;
+			}
+
+			ItemStack item = player.getHeldItemMainhand();
+			GunData gun = ItemGun.getGunData(item);
+			GunFireMode mode = NBTWrapper.getGunFireMode(item);
+			if (mode == GunFireMode.SEMIAUTO && data.stopshoot) {
+				ItemGun.shoot(player.getHeldItemMainhand());
+				data.stopshoot = true;
+			}
+
+		}
 
 	}
 

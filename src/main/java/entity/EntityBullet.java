@@ -71,13 +71,12 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 	int life = 60;
 	public int tick = 0;
-	public EntityLivingBase Shooter;
+	public Entity Shooter;
 
 	// サーバーサイドでしか代入されていないので注意
 	/** データ取り出し元 */
 	private GunData gunData;
 	private BulletData bulletData;
-	UUID Shooter_uuid;
 	private RayTracer RayTracer;
 	/** 当たったエンティティのリスト 多段ヒット防止用 */
 	private List<Entity> AlreadyHit;
@@ -88,8 +87,6 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	/** 乱数!! */
 	private static Random Random = new Random();
 
-	/** init時点での速度 */
-	Vec3d Vec0;
 
 	boolean fastTick = true;
 
@@ -98,24 +95,18 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	/* データマネージャーパラメータ */
 	private static final DataParameter<Integer> a  = EntityDataManager.createKey(EntityBullet.class, DataSerializers.VARINT);
 
-	public EntityBullet(World worldIn, EntityLivingBase shooter, GunData gunData, BulletData bulletData, float yaw,
-			float pitch) {
-		this(worldIn);
 
-		this.gunData = gunData;
-		this.bulletData = bulletData;
+	public EntityBullet(GunData gun, BulletData bullet, Entity shooter, double x, double y, double z,
+			float yaw, float pitch) {
+		this(shooter.world);
+
+		this.gunData = gun;
+		this.bulletData = bullet;
 		Shooter = shooter;
-		Shooter_uuid = shooter.getUniqueID();
 		AlreadyHit = new ArrayList<Entity>();
 		bulletPower = gunData.BULLET_POWER + bulletData.BULLET_POWER;
-		// System.out.println("Start;
-		// "+gunData.getDataInt(GunDataList.BULLET_POWER));
-		// System.out.println(this.worldObj.isRemote);
 
-		// Shooter.addChatMessage(new ChatComponentText("発射"));
-		// データ格納
-
-		setLocationAndAngles(Shooter.posX, Shooter.posY + Shooter.getEyeHeight(), Shooter.posZ, yaw, pitch);
+		setLocationAndAngles(x,y,z,yaw,pitch);
 		setPosition(posX, posY, posZ);
 
 		// データから読み取る
@@ -134,7 +125,6 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		motionX *= spead;
 		motionY *= spead;
 		motionZ *= spead;
-		Vec0 = new Vec3d(motionX, motionY, motionZ);
 	}
 
 	@Override

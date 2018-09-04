@@ -62,7 +62,7 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 	public PacketInput(byte mode){
 		this.mode = mode;
 	}
-	
+
 	private boolean isADS;
 	/**ADSトグルパケット*/
 	public PacketInput(boolean isads){
@@ -109,14 +109,14 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 		// System.out.println(ctx.side);
 		HidePlayerData data = PlayerHandler.getPlayerData(ctx.getServerHandler().player);
 		if (m.mode == TRIGGER_CHANGE) {
-			data.input.leftMouse = m.left;
-			data.input.rightMouse = m.right;
+			data.Server.leftMouse = m.left;
+			data.Server.rightMouse = m.right;
 		}else if(m.mode == GUN_BULLET){
-			data.input.changeAmmo = true;
+			data.Server.changeAmmo = true;
 		}else if(m.mode == GUN_MODE){
-			data.input.changeFiremode = true;
+			data.Server.changeFiremode = true;
 		}else if(m.mode == GUN_RELOAD){
-			data.input.reload = true;
+			data.Server.reload = true;
 		}
 
 		return null;

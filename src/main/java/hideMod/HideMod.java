@@ -38,60 +38,55 @@ import handler.PacketHandler;
 import io.PackLoader;
 import io.ResourceLoader;
 
-@Mod(modid = HideMod.MOD_ID,
-        name = HideMod.MOD_NAME,
-        version = HideMod.MOD_VERSION,
-        dependencies = HideMod.MOD_DEPENDENCIES,
-        acceptedMinecraftVersions = HideMod.MOD_ACCEPTED_MC_VERSIONS,
-        useMetadata = true)
+@Mod(modid = HideMod.MOD_ID, name = HideMod.MOD_NAME, version = HideMod.MOD_VERSION, dependencies = HideMod.MOD_DEPENDENCIES, acceptedMinecraftVersions = HideMod.MOD_ACCEPTED_MC_VERSIONS, useMetadata = true)
 
-/**メインクラス*/
+/** メインクラス */
 public class HideMod {
-    /** ModId文字列 */
-    public static final String MOD_ID = "hidemod";
-    /** MOD名称 */
-    public static final String MOD_NAME = "HideMod";
-    /** MODのバージョン */
-    public static final String MOD_VERSION = "α";
-    /** 早紀に読み込まれるべき前提MODをバージョン込みで指定 */
-    public static final String MOD_DEPENDENCIES = "required:forge@[14.23.4.2705,);";
-    /** 起動出来るMinecraft本体のバージョン。記法はMavenのVersion Range Specificationを検索すること。 */
-    public static final String MOD_ACCEPTED_MC_VERSIONS = "[1.12,1.12.2]";
+	/** ModId文字列 */
+	public static final String MOD_ID = "hidemod";
+	/** MOD名称 */
+	public static final String MOD_NAME = "HideMod";
+	/** MODのバージョン */
+	public static final String MOD_VERSION = "α";
+	/** 早紀に読み込まれるべき前提MODをバージョン込みで指定 */
+	public static final String MOD_DEPENDENCIES = "required:forge@[14.23.4.2705,);";
+	/** 起動出来るMinecraft本体のバージョン。記法はMavenのVersion Range Specificationを検索すること。 */
+	public static final String MOD_ACCEPTED_MC_VERSIONS = "[1.12,1.12.2]";
 
-    /*イニシャライズ*/
-    @EventHandler
-    public void construct(FMLConstructionEvent event) {
-    	MinecraftForge.EVENT_BUS.register(new HideEventHandler());
-    }
+	/* イニシャライズ */
+	@EventHandler
+	public void construct(FMLConstructionEvent event) {
+		MinecraftForge.EVENT_BUS.register(new HideEventHandler());
+	}
 
-    //
+	//
 
-	//アイテム登録
-    @EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-    	//パック読み込み
-    	PackLoader.load(event);
-    	//パケットの初期設定
-    	PacketHandler.init();
-    	//リソースローダーを追加
-		List<IResourcePack> defaultResourcePacks = ObfuscationReflectionHelper.getPrivateValue(Minecraft.class, Minecraft.getMinecraft(), "defaultResourcePacks", "field_110449_ao");
-    	defaultResourcePacks.add(new ResourceLoader());
-    }
+	// アイテム登録
+	@EventHandler
+	public void preInit(FMLPreInitializationEvent event) {
+		// パック読み込み
+		PackLoader.load(event);
+		// パケットの初期設定
+		PacketHandler.init();
+	}
 
-    @EventHandler
-    public void init(FMLInitializationEvent event) {
-    	//エンティティのレンダー登録
-    	if(FMLCommonHandler.instance().getSide().isClient()) {
-    		RegistryRenders();
-    	}
+	@EventHandler
+	public void init(FMLInitializationEvent event) {
+		// エンティティのレンダー登録
+		if (FMLCommonHandler.instance().getSide().isClient()) {
+			RegistryRenders();
+		}
 
+	}
 
+	@SideOnly(Side.CLIENT)
+	void RegistryRenders() {
+		// Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item,
+		// meta, location);
+		// リソースローダーを追加
+		List<IResourcePack> defaultResourcePacks = ObfuscationReflectionHelper.getPrivateValue(Minecraft.class,
+				Minecraft.getMinecraft(), "defaultResourcePacks", "field_110449_ao");
+		defaultResourcePacks.add(new ResourceLoader());
 
-    }
-    @SideOnly(Side.CLIENT)
-    void RegistryRenders(){
-    //	Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta, location);
-
-
-    }
+	}
 }
