@@ -62,24 +62,10 @@ public class PlayerHandler {
 	public static int HitMarkerTime = 0;
 	public static int HitMarkerTime_H = 0;
 
-	private static int minigunPrepare = 0;
-
 	public static boolean isADS = false;
 	private static boolean ADSChanged = false;
 	private static int defaultFOV;
 	public static String ScopeName;
-
-	private static boolean fastTick = true;
-
-	private static ItemStack primaryLastItem;
-	private static ItemStack secondaryLastItem;
-	private static int lastCurrentItem;
-
-	public static LoadedMagazine[] loadedMagazines;
-	public static String UsingBulletName;
-	public static int ShootDelay = 0;
-	public static int ReloadProgress = -1;
-	public static GunFireMode fireMode;
 
 	// サーバー側変数
 	private static Map<UUID, HidePlayerData> PlayerDataMap = new HashMap<>();
@@ -183,6 +169,7 @@ public class PlayerHandler {
 
 	/** サーバーTick処理 プログレスを進める */
 	private static void ServerTick(EntityPlayer player) {
+		// if(player.getRidingEntity() instanceof )
 		ServerPlayerData data = getPlayerData(player).Server;
 		EquipMode em = EquipMode.getEqipMode(player);
 		ItemStack main = player.getHeldItemMainhand();
@@ -200,11 +187,31 @@ public class PlayerHandler {
 		if (data.changeAmmo) {
 			data.changeAmmo = false;
 			items.forEach(item -> NBTWrapper.setGunUseingBullet(item, ItemGun.getNextUseMagazine(item)));
-		} else if (data.changeFiremode) {
+		}
+		if (data.changeFiremode) {
 			data.changeFiremode = false;
 			items.forEach(item -> NBTWrapper.setGunFireMode(item, ItemGun.getNextFireMode(item)));
 		}
-		if (data.reloadstate > 0) {
+		if (data.reload) {
+			data.reload = false;
+			if (data.reloadstate > 0) {
+				data.reloadall = true;
+			} else {
+				int time = 0;
+				for (ItemStack item : items) {
+					time += ItemGun.getGunData(item).RELOAD_TICK;
+				}
+				data.reloadall = false;
+				data.reloadstate = time;
+				System.out.println("reload");
+			}
+		}
+		if (0 <= data.reloadstate) {
+			if (data.reloadstate == 0) {
+				for (ItemStack item : items) {
+					data.reload = ItemGun.reload(player, item, data.reloadall) == true ? true : false;
+				}
+			}
 			data.reloadstate--;
 		}
 		// 持ち替え検知
@@ -215,19 +222,45 @@ public class PlayerHandler {
 			data.reloadstate = -1;
 			data.ads = false;
 			data.adsstate = 0;
+			data.mainState.clear();
+			data.offState.clear();
 		}
 		// 射撃処理
-		if (em == EquipMode.Main || em == EquipMode.Off || em == EquipMode.Dual) {
-			// トリガー判定
-			if (data.leftMouse) {
-
-			} else {
-
+		if (em == EquipMode.Main) {
+			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), data.mainState, data.ads, leftMouseHold);
+		} else if (em == EquipMode.Off) {
+			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(off), data.offState, data.ads, leftMouseHold);
+		} else if (em == EquipMode.OtherDual) {
+			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), data.mainState, data.ads, leftMouseHold);
+			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(off), data.offState, data.ads, rightMouseHold);
+		} else if (em == EquipMode.Dual) {
+			boolean mainTrigger = false;
+			boolean offTrigger = false;
+			GunFireMode mode = NBTWrapper.getGunFireMode(main);
+			if (mode == GunFireMode.BURST || mode == GunFireMode.SEMIAUTO) {
+				if (data.leftClick) {
+					if ((data.dualToggle || data.offState.shootDelay > 0 || !ItemGun.canShoot(off))
+							&& !data.mainState.stopshoot) {
+						mainTrigger = true;
+						data.dualToggle = false;
+					} else if ((!data.dualToggle || data.mainState.shootDelay > 0 || !ItemGun.canShoot(main))
+							&& !data.offState.stopshoot) {
+						offTrigger = true;
+						data.dualToggle = true;
+					}
+				}
+			}else{
+				mainTrigger = offTrigger = leftMouseHold;
 			}
+			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), data.mainState, data.ads, mainTrigger);
+			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(main), data.offState, data.ads, offTrigger);
 		}
+		// アップデート
+		data.mainState.update();
+		data.offState.update();
+		data.rightClick = data.leftClick = false;
 	}
 
-	
 	/** 接続時にサーバーサイドで呼ばれる */
 	public static void PlayerJoin(PlayerLoggedInEvent event) {
 		PlayerDataMap.put(event.player.getUniqueID(), new HidePlayerData());

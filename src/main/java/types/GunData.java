@@ -19,6 +19,8 @@ public class GunData extends DataBase {
 	public int ADS_TICK = 0;
 	/** リロード ; リロードにtickかかる : int型 **/
 	public int RELOAD_TICK= 20;
+	/**まとめてリロードできるか : boolean型*/
+	public boolean RELOAD_ALL = false;
 	/** レート ; レートtick間隔で発射する : float型 **/
 	public float RATE_TICK = 2;
 	/** 射撃モード : String配列型 **/

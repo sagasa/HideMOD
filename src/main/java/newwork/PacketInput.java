@@ -109,7 +109,13 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 		// System.out.println(ctx.side);
 		HidePlayerData data = PlayerHandler.getPlayerData(ctx.getServerHandler().player);
 		if (m.mode == TRIGGER_CHANGE) {
+			if(data.Server.leftMouse != m.left&&m.left){
+				data.Server.leftClick = true;
+			}
 			data.Server.leftMouse = m.left;
+			if(data.Server.rightMouse != m.right&&m.right){
+				data.Server.rightClick = true;
+			}
 			data.Server.rightMouse = m.right;
 		}else if(m.mode == GUN_BULLET){
 			data.Server.changeAmmo = true;

@@ -1,5 +1,6 @@
 package item;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,6 +11,7 @@ import java.util.UUID;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 
+import handler.GunManager;
 import handler.RecoilHandler;
 import helper.HideMath;
 import helper.NBTWrapper;
@@ -31,6 +33,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import playerdata.GunState;
 import types.BulletData;
 import types.GunData;
 import types.GunFireMode;
@@ -174,9 +177,110 @@ public class ItemGun extends Item {
 	}
 
 	// 銃火器の処理
-	/**射撃*/
-	public static void shoot(ItemStack gun){
-	
+	/** 射撃 */
+	public static void shootUpdate(ItemStack gun, Entity shooter, GunFireMode mode, GunState state, boolean isADS,
+			boolean trigger) {
+		GunManager.gunUpdate(shooter, getGunData(gun), NBTWrapper.getHideTag(gun), mode, state, isADS, trigger);
+	}
+	/**弾が1つでも入っているか*/
+	public static boolean canShoot(ItemStack gun){
+		if(!isGun(gun)){
+			return false;
+		}
+		for (LoadedMagazine mag : NBTWrapper.getGunLoadedMagazines(gun)) {
+			if (mag != null && mag.num > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** リロード まだリロード処理が残ればtrue */
+	public static boolean reload(EntityPlayer player, ItemStack gun, boolean isexit) {
+		System.out.println("開始");
+		// リスト化
+		List<LoadedMagazine> list = new ArrayList<>();
+		for (LoadedMagazine mag : NBTWrapper.getGunLoadedMagazines(gun)) {
+			if (mag != null && mag.num > 0) {
+				list.add(mag);
+			}
+		}
+		// 排出
+		if (isexit) {
+			for (LoadedMagazine magazine : list) {
+				if (PackData.getBulletData(magazine.name) != null) {
+					player.addItemStackToInventory(ItemMagazine.makeMagazine(magazine.name, magazine.num));
+				}
+			}
+			list.clear();
+		}
+		GunData data = getGunData(gun);
+		System.out.println("start" + list);
+		if (data.RELOAD_ALL) {
+			while (reload(player, gun, list))
+				;
+			NBTWrapper.setGunLoadedMagazines(gun, list.toArray(new LoadedMagazine[list.size()]));
+			return false;
+		} else {
+			reload(player, gun, list);
+			System.out.println("end" + list);
+			NBTWrapper.setGunLoadedMagazines(gun, list.toArray(new LoadedMagazine[list.size()]));
+			return reload(player, gun, list);
+		}
+	}
+
+	/** リロード処理 何かしたらtrue */
+	private static boolean reload(EntityPlayer player, ItemStack gun, List<LoadedMagazine> list) {
+		GunData data = getGunData(gun);
+		String magName = NBTWrapper.getGunUseingBullet(gun);
+		int magSize = ItemMagazine.getBulletData(magName).MAGAZINE_SIZE;
+		if (list.size() < data.LOAD_NUM) {
+			int n = getMag(magName, magSize, player, ItemMagazine.getBulletData(magName).MAGAZINE_BREAK);
+			if (n == 0) {
+				return false;
+			}
+			list.add(0, new LoadedMagazine(magName, n));
+			return true;
+		}
+		for (LoadedMagazine mag : list) {
+			if (mag.name.equals(magName) && mag.num < magSize) {
+				int n = getMag(magName, magSize - mag.num, player, ItemMagazine.getBulletData(magName).MAGAZINE_BREAK);
+				if (n == 0) {
+					return false;
+				}
+				mag.num += n;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static int getMag(String name, int value, EntityPlayer player, boolean isBreak) {
+		int c = value;
+		for (ItemStack item : player.inventory.mainInventory) {
+			if (ItemMagazine.isMagazine(item, name)) {
+				int n = NBTWrapper.getMagazineBulletNum(item);
+				if (n <= c) {
+					c -= n;
+					if (item.getCount() > 1) {
+						item.setCount(item.getCount() - 1);
+					} else {
+						if (isBreak) {
+							item.setCount(item.getCount() - 1);
+						} else {
+							NBTWrapper.setMagazineBulletNum(item, 0);
+						}
+					}
+					if (c == 0) {
+						return value;
+					}
+				} else if (c < n) {
+					NBTWrapper.setMagazineBulletNum(item, n - c);
+					return value;
+				}
+			}
+		}
+		return value - c;
 	}
 
 	/** 次の射撃モードを取得 */

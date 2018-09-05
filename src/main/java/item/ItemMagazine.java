@@ -132,40 +132,7 @@ public class ItemMagazine extends Item {
 		tooltip.add(ChatFormatting.GRAY + "Ammo : " + getBulletNum(stack) + "/" + getMagazineSize(stack));
 	}
 
-	/** リロードする弾を取得 アイテムを削除 */
-	public static int ReloadItem(EntityPlayer player, String bulletName, int amount) {
-		int bulletNum = amount;
-		for (ItemStack item:player.inventory.mainInventory) {
-			if (item != null && isMagazine(item, bulletName)) {
-				bulletNum -= getBulletNum(item);
 
-				// 端数を返す
-				if (bulletNum < 0) {
-					ItemStack newMag = item.copy();
-					newMag.setCount(1+newMag.getCount());
-					// アイテムを1つ削除
-					item.stackSize--;
-					if (item.stackSize == 0) {
-						item = null;
-					}
-					player.inventory.mainInventory[i] = item;
-					player.inventory.addItemStackToInventory(setBulletNum(newMag, bulletNum * -1));
-					return amount;
-				}
-				// アイテムを1つ削除
-				item.stackSize--;
-				if (item.stackSize == 0) {
-					item = null;
-				}
-				player.inventory.mainInventory[i] = item;
-				// 破棄しない設定なら空のマガジンを追加
-				if (!ItemMagazine.getBulletData(bulletName).MAGAZINE_BREAK) {
-					player.inventory.addItemStackToInventory(makeMagazine(bulletName, 0));
-				}
-			}
-		}
-		return amount - bulletNum;
-	}
 
 	/** BulletData取得 */
 	public static BulletData getBulletData(String name) {

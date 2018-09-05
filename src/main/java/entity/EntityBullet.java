@@ -50,6 +50,7 @@ import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import types.BulletData;
+import types.Explosion;
 import types.GunData;
 import types.Sound;
 
@@ -97,7 +98,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 
 	public EntityBullet(GunData gun, BulletData bullet, Entity shooter, double x, double y, double z,
-			float yaw, float pitch) {
+			float yaw, float pitch, float offset, boolean isADS) {
 		this(shooter.world);
 
 		this.gunData = gun;

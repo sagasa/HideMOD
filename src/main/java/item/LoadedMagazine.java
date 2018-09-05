@@ -12,7 +12,7 @@ public class LoadedMagazine{
 	}
 	@Override
 	public String toString() {
-		return super.toString()+name+" "+num;
+		return super.toString()+"[name="+name+",num="+num+"]";
 	}
 	/**今の残弾を返す*/
 	public static int getLoadedNum(LoadedMagazine[] magazines){
