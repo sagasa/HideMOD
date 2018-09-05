@@ -176,11 +176,7 @@ public class ItemGun extends Item {
 	// 銃火器の処理
 	/**射撃*/
 	public static void shoot(ItemStack gun){
-		GunData gunData = getGunData(gun);
-		BulletData bulletData = getNextBullet(gun);
-		if(bulletData != null){
-
-		}
+	
 	}
 
 	/** 次の射撃モードを取得 */
@@ -209,91 +205,4 @@ public class ItemGun extends Item {
 		}
 		return modes.get(index);
 	}
-
-	/** 弾を1つ消費する 消費した弾のBulletDataを返す */
-	private static BulletData getNextBullet(ItemStack gun) {
-		LoadedMagazine[] loadedMagazines = NBTWrapper.getGunLoadedMagazines(gun);
-		for (int i = 0; i < loadedMagazines.length; i++) {
-			LoadedMagazine magazine = loadedMagazines[i];
-			// 1つ消費する
-			if (magazine != null && magazine.num > 0) {
-				String name = magazine.name;
-				magazine.num--;
-				if (magazine.num <= 0) {
-					magazine = null;
-					// マガジン繰り上げ
-					if (loadedMagazines.length > 1) {
-						for (int j = 1; j < loadedMagazines.length; j++) {
-							loadedMagazines[j - 1] = loadedMagazines[j];
-						}
-						loadedMagazines[loadedMagazines.length - 1] = null;
-					}
-				}
-				return PackData.getBulletData(name);
-			}
-		}
-		return null;
-	}
-	/**
-	 * ロードできる弾の総量取得 * public static int getCanLoadMagazineNum(EntityPlayer
-	 * player) { int num = 0; for (ItemStack item :
-	 * player.inventory.mainInventory) { if (ItemMagazine.isMagazine(item,
-	 * UsingBulletName)) { num += item.getCount() *
-	 * ItemMagazine.getBulletNum(item); } } return num; }
-	 *
-	 * /** 最初のスロットの空きを取得 * private static int getNextReloadNum() { for
-	 * (LoadedMagazine magazine : loadedMagazines) { // 入ってなければ要求 if (magazine
-	 * == null) { // System.out.println(UsingBulletName); return
-	 * ItemMagazine.getBulletData(UsingBulletName).MAGAZINE_SIZE; } int num =
-	 * ItemMagazine.getBulletData(magazine.name).MAGAZINE_SIZE - magazine.num;
-	 * if (num > 0 && magazine.name.equals(UsingBulletName)) { return num; } }
-	 * return 0; }
-	 *
-	 * /** マガジンを追加 * private static void addMagazine(String name, int amount) {
-	 * for (int i = 0; i < loadedMagazines.length; i++) { LoadedMagazine
-	 * magazine = loadedMagazines[i]; // 入ってなければ追加 if (magazine == null) {
-	 * loadedMagazines[i] = new LoadedMagazine(name, amount); return; } int num
-	 * = ItemMagazine.getBulletData(magazine.name).MAGAZINE_SIZE - magazine.num;
-	 * if (num > 0 && magazine.name.equals(UsingBulletName)) {
-	 * loadedMagazines[i] = new LoadedMagazine(name, amount + magazine.num);
-	 * return; } } }
-	 *
-	 * /** 弾を1つ消費する 消費した弾の登録名を返す * private static String getNextBullet() { for
-	 * (int i = 0; i < loadedMagazines.length; i++) { LoadedMagazine magazine =
-	 * loadedMagazines[i]; // 1つ消費する if (magazine != null && magazine.num > 0) {
-	 * String name = magazine.name; magazine.num--; boolean flag = false; if
-	 * (magazine.num <= 0) { magazine = null; flag = true; } loadedMagazines[i]
-	 * = magazine; // マガジン繰り上げ if (flag && loadedMagazines.length > 1) { for
-	 * (int j = 1; j < loadedMagazines.length; j++) { loadedMagazines[j - 1] =
-	 * loadedMagazines[j]; } loadedMagazines[loadedMagazines.length - 1] = null;
-	 * } return name; } } return null; }
-	 *
-	 * /** 射撃処理 * private static void gunShoot(EntityPlayer player, GunData gun)
-	 * { // 弾を確認 String bulletName = getNextBullet(); if (bulletName == null) {
-	 * // カチって音を出す… shooted = true; } else { // 存在する弾かどうか if
-	 * (ItemMagazine.isMagazineExist(bulletName)) { // 拡散を取得 float spread; if
-	 * (isADS) { spread = gun.ACCURACY_ADS; } else { spread = gun.ACCURACY; } //
-	 * 向きに拡散を float yaw = (float) Math.toDegrees(Math.atan(Random.nextDouble() /
-	 * 50 * HideMath.normal(0, spread))); float pitch = (float)
-	 * Math.toDegrees(Math.atan(Random.nextDouble() / 50 * HideMath.normal(0,
-	 * spread)));
-	 *
-	 * // PacketHandler.INSTANCE.sendToServer(new PacketGuns(gun, //
-	 * PackData.BULLET_DATA_MAP.get(bulletName), // player.rotationYaw + yaw,
-	 * player.rotationPitch + pitch)); // バーストかどうかでrateが変わる if (fireNum > 0) {
-	 * ShootDelay = gun.BURST_RATE_TICK; } else { ShootDelay = gun.RATE_TICK; }
-	 * // リコイル RecoilHandler.addRecoil(gun); // 100を超えないように代入 // recoilPower =
-	 * recoilPower + // RecoilHandler.getRecoilPowerAdd(player, gun) > 100 ? 100
-	 * // : recoilPower + RecoilHandler.getRecoilPowerAdd(player, gun); } else {
-	 * // 存在しなかったなら破棄処理 // PacketHandler.INSTANCE // .sendToServer(new
-	 * PacketGuns(UsingBulletName, (byte) // player.inventory.currentItem, 0));
-	 * } // どっとを表示 // EntityDebug dot = new EntityDebug(player.worldObj, new //
-	 * Vec3(player.posX,player.posY, player.posZ)); //
-	 * player.worldObj.spawnEntityInWorld(dot); } }
-	 *
-	 * /** リロード完了 マガジンを追加する * public static void reloadEnd(int bulletNum, byte
-	 * reloadQueueID) { // キューが進んでいたなら停止 if (reloadQueue != reloadQueueID) {
-	 * return; } // リロードできたなら if (bulletNum != 0) { addMagazine(UsingBulletName,
-	 * bulletNum); } }//
-	 */
 }

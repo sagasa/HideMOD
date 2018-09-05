@@ -31,6 +31,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
@@ -221,21 +222,12 @@ public class PlayerHandler {
 			if (data.leftMouse) {
 
 			} else {
-				data.stopshoot = false;
-			}
 
-			ItemStack item = player.getHeldItemMainhand();
-			GunData gun = ItemGun.getGunData(item);
-			GunFireMode mode = NBTWrapper.getGunFireMode(item);
-			if (mode == GunFireMode.SEMIAUTO && data.stopshoot) {
-				ItemGun.shoot(player.getHeldItemMainhand());
-				data.stopshoot = true;
 			}
-
 		}
-
 	}
 
+	
 	/** 接続時にサーバーサイドで呼ばれる */
 	public static void PlayerJoin(PlayerLoggedInEvent event) {
 		PlayerDataMap.put(event.player.getUniqueID(), new HidePlayerData());
