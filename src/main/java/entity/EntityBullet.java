@@ -81,23 +81,19 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 	int life = 60;
 	public int tick = 0;
-	public Entity Shooter;
 
-	// サーバーサイドでしか代入されていないので注意
-	/** データ取り出し元 */
+	private RayTracer RayTracer;
+	// サーバー・クライアント両方で代入されているべき
 	private GunData gunData;
 	private BulletData bulletData;
-	private RayTracer RayTracer;
+	public Entity Shooter;
+
 	/** 当たったエンティティのリスト 多段ヒット防止用 */
 	private List<Entity> AlreadyHit;
 	/** あと何体に当たれるか */
 	private int bulletPower;
 	/** 飛距離 */
 	private double FlyingDistance = 0;
-	/** 乱数!! */
-	private static Random Random = new Random();
-
-	boolean fastTick = true;
 
 	byte deathNaxtTick = 0;
 
@@ -120,6 +116,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 		// データから読み取る
 		float spead = gunData.BULLET_SPEED;
+		spead = 0.1f;
 
 		// 向いている方向をモーションに
 		motionX = -Math.sin(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
@@ -139,11 +136,15 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	@Override
 	protected void entityInit() {
 		EntityDataManager dm = getDataManager();
-
+		System.out.println("init");
 	}
 
 	@Override
 	public void onUpdate() {
+		onUpdate(1);
+	}
+
+	private void onUpdate(float tick) {
 		this.lastTickPosX = this.posX;
 		this.lastTickPosY = this.posY;
 		this.lastTickPosZ = this.posZ;
@@ -152,7 +153,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		this.prevPosY = this.posY + this.motionY;
 		this.prevPosZ = this.posZ + this.motionZ;
 
-		tick++;
+		this.tick++;
 		if (life < tick) {
 			setDead();
 		}
@@ -210,7 +211,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		}
 		DamageSource damagesource = new HideDamage(HideDamageCase.GUN_BULLET, Shooter).setDamageBypassesArmor();
 
-		System.out.println(RayTracer.getHit(new HideCollision(), new Vec3d(0, 1, 0), new Vec3d(0, -1, 0)));
+		// System.out.println(RayTracer.getHit(new HideCollision(), new Vec3d(0,
+		// 1, 0), new Vec3d(0, -1, 0)));
 
 		// LivingEntityに対するあたり判定
 		// BulletPowerが残ってる間HITを取る
@@ -242,7 +244,6 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 					// 爆発があるなら
 					explode(endPos, (Explosion) bulletData.EXP_ON_HIT_ENTITY);
 
-					System.out.println(isDamaged);
 					// パケット
 					if (Shooter instanceof EntityPlayerMP && isDamaged && damage > 0.5) {
 						PacketHandler.INSTANCE.sendTo(new PacketHit(isHeadShot), (EntityPlayerMP) Shooter);
@@ -265,7 +266,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		}
 		if (bulletPower == 0 || isHittoBlock || life < tick) {
 			// 爆破処理
-			
+
 			// 時間経過で爆発するなら
 			explode(endPos, (Explosion) bulletData.EXP_ON_TIMEOUT);
 
@@ -375,24 +376,26 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 	/** サーバーからの情報を変数に書き込む */
 	@Override
-	public void readSpawnData(ByteBuf Data) {
-		rotationYaw = Data.readFloat();
-		rotationPitch = Data.readFloat();
-		new Vec3d(Data.readDouble(), Data.readDouble(), Data.readDouble());
-		if (Data.readBoolean()) {
-			bulletData = ItemMagazine.getBulletData(PacketHandler.readString(Data));
-			gunData = ItemGun.getGunData(PacketHandler.readString(Data));
-		}
+	public void readSpawnData(ByteBuf buf) {
+		rotationYaw = buf.readFloat();
+		rotationPitch = buf.readFloat();
+		new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+		buf.readDouble();
+		bulletData = ItemMagazine.getBulletData(PacketHandler.readString(buf));
+		gunData = ItemGun.getGunData(PacketHandler.readString(buf));
+
 	}
 
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound tag) {
-
+		setDead();
+		System.out.println("read");
 	}
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound tag) {
-
+		// setDead();
+		System.out.println("write");
 	}
 
 }

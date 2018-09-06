@@ -260,8 +260,8 @@ public class ItemGun extends Item {
 			if (ItemMagazine.isMagazine(item, name)) {
 				int n = NBTWrapper.getMagazineBulletNum(item);
 				if (n <= c) {
-					c -= n;
-					if (item.getCount() > 1) {
+					if (item.getCount() > 0) {
+						c -= n;
 						item.setCount(item.getCount() - 1);
 						if (!isBreak) {
 							player.addItemStackToInventory(ItemMagazine.makeMagazine(name, 0));

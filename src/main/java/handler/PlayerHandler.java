@@ -98,7 +98,7 @@ public class PlayerHandler {
 		// 死んでたらマウスを離す
 		if (player.isDead) {
 			rightMouseHold = leftMouseHold = false;
-			PacketHandler.INSTANCE.sendToServer(new PacketInput(rightMouseHold, leftMouseHold));
+			PacketHandler.INSTANCE.sendToServer(new PacketInput(leftMouseHold,rightMouseHold));
 		}
 		// キー入力の取得 押された変化を取得
 		ArrayList<KeyBind> pushKeys = new ArrayList<KeyBind>();
@@ -118,7 +118,7 @@ public class PlayerHandler {
 		}
 		// マウス
 		if (lastLeftMouse != leftMouseHold || lastRightMouse != rightMouseHold) {
-			PacketHandler.INSTANCE.sendToServer(new PacketInput(rightMouseHold, leftMouseHold));
+			PacketHandler.INSTANCE.sendToServer(new PacketInput(leftMouseHold,rightMouseHold));
 			lastLeftMouse = leftMouseHold;
 			lastRightMouse = rightMouseHold;
 		}

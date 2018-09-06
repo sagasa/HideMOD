@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 
+import entity.EntityBullet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -71,6 +72,8 @@ public class HideMod {
 		PacketHandler.init();
 		//ダメージの初期設定
 		HideDamage.init();
+		//エンティティ登録
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"entity_bullet"), EntityBullet.class, "entity_bullet", 1, MOD_ID, 512, 1, false);
 	}
 
 	@EventHandler

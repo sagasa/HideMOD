@@ -43,7 +43,7 @@ public class GunManager {
 			}
 		} else if (mode == GunFireMode.BURST && !state.stopshoot) {
 			//射撃開始
-			if (trigger && state.shootNum == 0 && state.shootDelay <= 0&&!state.stopshoot) {
+			if (trigger && state.shootNum == -1 && state.shootDelay <= 0&&!state.stopshoot) {
 				state.shootNum = gundata.BURST_BULLET_NUM;
 			}
 			while(state.shootNum>0&&state.shootDelay <= 0&& !state.stopshoot){
@@ -53,10 +53,11 @@ public class GunManager {
 			}
 			if(state.shootNum == 0){
 				state.stopshoot = true;
+				state.shootNum = -1;
 				state.shootDelay += gundata.RATE_TICK;
 			}
 			if(state.stopshoot){
-				state.shootNum = 0;
+				state.shootNum = -1;
 			}
 
 		} else if (mode == GunFireMode.MINIGUN && !state.stopshoot && state.shootDelay <= 0 && trigger) {
@@ -87,7 +88,7 @@ public class GunManager {
 			float yaw, float pitch, float offset, boolean isADS) {
 		for (int i = 0; i < bulletdata.SHOOT_NUM; i++) {
 			EntityBullet bullet = new EntityBullet(gundata, bulletdata, shooter, x, y, z, yaw, pitch, offset, isADS);
-		//	shooter.world.spawnEntity(bullet);
+			shooter.world.spawnEntity(bullet);
 		}
 	}
 

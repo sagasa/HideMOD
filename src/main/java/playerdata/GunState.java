@@ -16,6 +16,6 @@ public class GunState {
 	public void clear(){
 		stopshoot = false;
 		shootDelay = 0;
-		shootNum = 0;
+		shootNum = -1;
 	}
 }
