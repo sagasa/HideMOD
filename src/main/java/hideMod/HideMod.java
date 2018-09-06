@@ -33,6 +33,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.RegistryManager;
+import playerdata.HideDamage;
 import handler.HideEventHandler;
 import handler.PacketHandler;
 import io.PackLoader;
@@ -68,6 +69,8 @@ public class HideMod {
 		PackLoader.load(event);
 		// パケットの初期設定
 		PacketHandler.init();
+		//ダメージの初期設定
+		HideDamage.init();
 	}
 
 	@EventHandler

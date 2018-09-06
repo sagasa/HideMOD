@@ -182,15 +182,14 @@ public class ItemGun extends Item {
 			boolean trigger) {
 		GunManager.gunUpdate(shooter, getGunData(gun), NBTWrapper.getHideTag(gun), mode, state, isADS, trigger);
 	}
-	/**弾が1つでも入っているか*/
-	public static boolean canShoot(ItemStack gun){
-		if(!isGun(gun)){
+
+	/** 弾が1つでも入っているか */
+	public static boolean canShoot(ItemStack gun) {
+		if (!isGun(gun)) {
 			return false;
 		}
-		for (LoadedMagazine mag : NBTWrapper.getGunLoadedMagazines(gun)) {
-			if (mag != null && mag.num > 0) {
-				return true;
-			}
+		if(LoadedMagazine.getLoadedNum(NBTWrapper.getGunLoadedMagazines(gun))>0){
+			return true;
 		}
 		return false;
 	}
@@ -264,23 +263,22 @@ public class ItemGun extends Item {
 					c -= n;
 					if (item.getCount() > 1) {
 						item.setCount(item.getCount() - 1);
-					} else {
-						if (isBreak) {
-							item.setCount(item.getCount() - 1);
-						} else {
-							NBTWrapper.setMagazineBulletNum(item, 0);
+						if (!isBreak) {
+							player.addItemStackToInventory(ItemMagazine.makeMagazine(name, 0));
 						}
 					}
 					if (c == 0) {
 						return value;
 					}
 				} else if (c < n) {
-					NBTWrapper.setMagazineBulletNum(item, n - c);
+					item.setCount(item.getCount() - 1);
+					player.addItemStackToInventory(ItemMagazine.makeMagazine(name, n - c));
 					return value;
 				}
 			}
 		}
 		return value - c;
+
 	}
 
 	/** 次の射撃モードを取得 */
@@ -308,5 +306,16 @@ public class ItemGun extends Item {
 			return now;
 		}
 		return modes.get(index);
+	}
+	/**銃で使用中の弾薬の所持数を返す*/
+	public static int getCanUseingBulletNum(ItemStack gun,EntityPlayer player){
+		int num = 0;
+		String bulletName = NBTWrapper.getGunUseingBullet(gun);
+		for(ItemStack item : player.inventory.mainInventory){
+			if(ItemMagazine.isMagazine(item, bulletName)){
+				num += NBTWrapper.getMagazineBulletNum(item)*item.getCount();
+			}
+		}
+		return num;
 	}
 }
