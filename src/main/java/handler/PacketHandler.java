@@ -1,10 +1,17 @@
 package handler;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializer;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec2f;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
@@ -20,7 +27,8 @@ public class PacketHandler {
 
 
     public static void init() {
-
+    	DataSerializers.registerSerializer(Vec3d);
+    	DataSerializers.registerSerializer(Vec2f);
         /*IMesssageHandlerクラスとMessageクラスの登録。
         *第三引数：MessageクラスのMOD内での登録ID。256個登録できる
         *第四引数：送り先指定。クライアントかサーバーか、Side.CLIENT Side.SERVER*/
@@ -67,4 +75,47 @@ public class PacketHandler {
 	    }
 	    return sb.toString();
 	}
+    /**EntityDataManager用のデータシリアライザ*/
+    public static final DataSerializer<Vec3d> Vec3d = new DataSerializer<Vec3d>()
+    {
+        public void write(PacketBuffer buf, Vec3d value)
+        {
+            buf.writeDouble(value.x);
+            buf.writeDouble(value.y);
+            buf.writeDouble(value.z);
+        }
+        public Vec3d read(PacketBuffer buf) throws IOException
+        {
+            return new Vec3d(buf.readDouble(),buf.readDouble(),buf.readDouble());
+        }
+        public DataParameter<Vec3d> createKey(int id)
+        {
+            return new DataParameter<Vec3d>(id, this);
+        }
+        public Vec3d copyValue(Vec3d value)
+        {
+            return value;
+        }
+    };
+    /**EntityDataManager用のデータシリアライザ*/
+    public static final DataSerializer<Vec2f> Vec2f = new DataSerializer<Vec2f>()
+    {
+        public void write(PacketBuffer buf, Vec2f value)
+        {
+            buf.writeDouble(value.x);
+            buf.writeDouble(value.y);
+        }
+        public Vec2f read(PacketBuffer buf) throws IOException
+        {
+            return new Vec2f(buf.readFloat(),buf.readFloat());
+        }
+        public DataParameter<Vec2f> createKey(int id)
+        {
+            return new DataParameter<Vec2f>(id, this);
+        }
+        public Vec2f copyValue(Vec2f value)
+        {
+            return value;
+        }
+    };
 }

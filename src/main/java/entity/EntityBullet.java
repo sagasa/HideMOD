@@ -1,5 +1,6 @@
 package entity;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,7 +37,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializer;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
@@ -79,10 +82,12 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		RayTracer = new RayTracer();
 	}
 
-	int life = 60;
-	public int tick = 0;
+	public float life = 0;
 
 	private RayTracer RayTracer;
+
+	// サーバーのみ
+	private float addtick;
 	// サーバー・クライアント両方で代入されているべき
 	private GunData gunData;
 	private BulletData bulletData;
@@ -95,16 +100,26 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	/** 飛距離 */
 	private double FlyingDistance = 0;
 
+	/** Tickスキップ保管用 */
+	private long lastWorldTick = 0;
+
 	byte deathNaxtTick = 0;
 
 	/* データマネージャーパラメータ */
-	private static final DataParameter<Integer> a = EntityDataManager.createKey(EntityBullet.class,
-			DataSerializers.VARINT);
+	private static final DataParameter<Vec3d> Vec3d = EntityDataManager.createKey(EntityBullet.class,
+			PacketHandler.Vec3d);
+	private static final DataParameter<Byte> Flag = EntityDataManager.createKey(EntityBullet.class,
+			DataSerializers.BYTE);
+
+	private static final byte FLAG_EMPTY = 0b0000000;
+	private static final byte FLAG_DEATH_NEXT_TICK = 0b0000001;
+	private static final byte FLAG_DEATH_TYPE_GROUND = 0b0000010;
+	private static final byte FLAG_DEATH_TYPE_ENTITY = 0b0000100;
 
 	public EntityBullet(GunData gun, BulletData bullet, Entity shooter, double x, double y, double z, float yaw,
 			float pitch, float offset, boolean isADS) {
 		this(shooter.world);
-
+		this.addtick = offset;
 		this.gunData = gun;
 		this.bulletData = bullet;
 		Shooter = shooter;
@@ -136,12 +151,24 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	@Override
 	protected void entityInit() {
 		EntityDataManager dm = getDataManager();
-		System.out.println("init");
+		dm.register(Vec3d, new Vec3d(0, 0, 0));
+		dm.register(Flag, FLAG_EMPTY);
+		// 初期化
+		if (!world.isRemote) {
+			// Tick補完
+			this.lastTickPosX = this.posX += (this.motionX * addtick);
+			this.lastTickPosY = this.posY += (this.motionY * addtick);
+			this.lastTickPosZ = this.posZ += (this.motionZ * addtick);
+		}
+		lastWorldTick = world.getTotalWorldTime();
+		System.out.println("init"+world.getTotalWorldTime());
 	}
 
 	@Override
 	public void onUpdate() {
-		onUpdate(1);
+		onUpdate(world.getTotalWorldTime() - lastWorldTick);
+		System.out.println("update "+(world.getTotalWorldTime() - lastWorldTick)+"tick on"+world.getTotalWorldTime());
+		lastWorldTick = world.getTotalWorldTime();
 	}
 
 	private void onUpdate(float tick) {
@@ -149,14 +176,12 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		this.lastTickPosY = this.posY;
 		this.lastTickPosZ = this.posZ;
 
-		this.prevPosX = this.posX + this.motionX;
-		this.prevPosY = this.posY + this.motionY;
-		this.prevPosZ = this.posZ + this.motionZ;
+		this.prevPosX = this.posX + (this.motionX * tick);
+		this.prevPosY = this.posY + (this.motionY * tick);
+		this.prevPosZ = this.posZ + (this.motionZ * tick);
 
-		this.tick++;
-		if (life < tick) {
-			setDead();
-		}
+		this.life += tick;
+
 		if (!this.world.isRemote) {
 			ServerUpdate();
 		} else {
@@ -166,15 +191,6 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		this.posY = this.prevPosY;
 		this.posZ = this.prevPosZ;
 		this.setPosition(this.posX, this.posY, this.posZ);
-	}
-
-	private void ClientUpdate() {
-		// クライアントサイド
-		// データ同期
-
-		// this.worldObj.spawnParticle(EnumParticleTypes.EXPLOSION_HUGE,posX,posY,posZ,0,0,0,new
-		// int[0]);
-		// this.posX, this.posY, this.posZ, 1, 1, 1, new int[0]);
 	}
 
 	private void ServerUpdate() {
@@ -264,20 +280,43 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			setDead();
 			return;
 		}
-		if (bulletPower == 0 || isHittoBlock || life < tick) {
-			// 爆破処理
-
-			// 時間経過で爆発するなら
-			explode(endPos, (Explosion) bulletData.EXP_ON_TIMEOUT);
-
-			// 地面に当たったなら
-			explode(endPos, (Explosion) bulletData.EXP_ON_HIT_GROUND);
-
-			// System.out.println(endPos.xCoord + " " + endPos.yCoord + " " +
-			// endPos.zCoord+" "+worldObj.getWorldTime());
+		if (bulletPower == 0 || isHittoBlock || bulletData.BULLET_LIFE < life) {
+			EntityDataManager dm = getDataManager();
+			Vec3d exppos = endPos.add(lvt.subtract(lvo).normalize().scale(0.1));
+			if (bulletPower == 0) {
+				deathNaxtTick = FLAG_DEATH_NEXT_TICK | FLAG_DEATH_TYPE_ENTITY;
+				// エンティティに当たって爆発するなら
+				explode(exppos, (Explosion) bulletData.EXP_ON_HIT_ENTITY);
+			}
+			if (bulletData.BULLET_LIFE < life) {
+				deathNaxtTick =  FLAG_DEATH_NEXT_TICK;
+				// 時間経過で爆発するなら
+				explode(exppos, (Explosion) bulletData.EXP_ON_TIMEOUT);
+			}
+			if (isHittoBlock) {
+				deathNaxtTick = FLAG_DEATH_NEXT_TICK | FLAG_DEATH_TYPE_GROUND;
+				// 地面に当たったなら
+				explode(exppos, (Explosion) bulletData.EXP_ON_HIT_GROUND);
+			}
+			dm.set(Vec3d, endPos);
+			dm.set(Flag, deathNaxtTick);
 		}
 		// 距離計算
 		FlyingDistance += lvo.distanceTo(lvt);
+	}
+
+	private void ClientUpdate() {
+		// クライアントサイド
+		// データ同期
+		EntityDataManager dm = getDataManager();
+		byte flag = dm.get(Flag);
+		if ((flag & FLAG_DEATH_NEXT_TICK) == FLAG_DEATH_NEXT_TICK) {
+			Vec3d pos = dm.get(Vec3d);
+			posX = pos.x;
+			posY = pos.y;
+			posZ = pos.z;
+			SoundHandler.playSound(posX, posY, posZ, bulletData.SOUND_HIT_GROUND);
+		}
 	}
 
 	private void explode(Vec3d endPos, Explosion exp) {
@@ -364,12 +403,13 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	/** クライアントに必要な情報を送る */
 	@Override
 	public void writeSpawnData(ByteBuf buffer) {
+		System.out.println("to Client");
 		buffer.writeFloat(rotationYaw);
 		buffer.writeFloat(rotationPitch);
 		buffer.writeDouble(motionX);
 		buffer.writeDouble(motionY);
 		buffer.writeDouble(motionZ);
-		buffer.writeDouble(world.getWorldTime());
+		buffer.writeDouble(world.getTotalWorldTime());
 		PacketHandler.writeString(buffer, bulletData.ITEM_INFO.NAME_SHORT);
 		PacketHandler.writeString(buffer, gunData.ITEM_INFO.NAME_SHORT);
 	}
@@ -377,10 +417,14 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	/** サーバーからの情報を変数に書き込む */
 	@Override
 	public void readSpawnData(ByteBuf buf) {
+		System.out.println("form Server");
 		rotationYaw = buf.readFloat();
 		rotationPitch = buf.readFloat();
-		new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
-		buf.readDouble();
+		motionX = buf.readDouble();
+		motionY = buf.readDouble();
+		motionZ = buf.readDouble();
+		float tickt = (float) (world.getTotalWorldTime()-buf.readDouble());
+		onUpdate(tickt);
 		bulletData = ItemMagazine.getBulletData(PacketHandler.readString(buf));
 		gunData = ItemGun.getGunData(PacketHandler.readString(buf));
 
@@ -389,13 +433,10 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound tag) {
 		setDead();
-		System.out.println("read");
 	}
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound tag) {
-		// setDead();
-		System.out.println("write");
 	}
 
 }
