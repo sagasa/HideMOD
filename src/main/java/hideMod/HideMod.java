@@ -70,10 +70,22 @@ public class HideMod {
 		PackLoader.load(event);
 		// パケットの初期設定
 		PacketHandler.init();
-		//ダメージの初期設定
+		// ダメージの初期設定
 		HideDamage.init();
-		//エンティティ登録
-		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID,"entity_bullet"), EntityBullet.class, "entity_bullet", 1, MOD_ID, 512, 1, false);
+		// エンティティ登録
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,
+				"entity_bullet", 1, MOD_ID, 512, 1, false);
+
+		if (FMLCommonHandler.instance().getSide().isClient()) {
+			// リソースローダーを追加
+			List<IResourcePack> defaultResourcePacks = ObfuscationReflectionHelper.getPrivateValue(Minecraft.class,
+					Minecraft.getMinecraft(), "defaultResourcePacks");
+			defaultResourcePacks.add(new ResourceLoader());
+
+			Minecraft.getMinecraft().refreshResources();
+			System.out.println(defaultResourcePacks);
+		}
+
 	}
 
 	@EventHandler
@@ -88,11 +100,7 @@ public class HideMod {
 	@SideOnly(Side.CLIENT)
 	void RegistryRenders() {
 		// Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item,
-		// meta, location);
-		// リソースローダーを追加
-		List<IResourcePack> defaultResourcePacks = ObfuscationReflectionHelper.getPrivateValue(Minecraft.class,
-				Minecraft.getMinecraft(), "defaultResourcePacks", "field_110449_ao");
-		defaultResourcePacks.add(new ResourceLoader());
+		// meta, location)
 
 	}
 }

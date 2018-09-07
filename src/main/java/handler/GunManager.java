@@ -34,12 +34,12 @@ public class GunManager {
 				state.shootDelay = 0;
 			}
 			shoot(shooter, gundata, hideTag, state, isADS, x, y, z, yaw, pitch);
-			state.shootDelay += gundata.RATE_TICK;
+			state.shootDelay += toTick(gundata.RPM);
 			state.stopshoot = true;
 		} else if (mode == GunFireMode.FULLAUTO && !state.stopshoot && state.shootDelay <= 0 && trigger) {
 			while (state.shootDelay <= 0 && !state.stopshoot) {
 				shoot(shooter, gundata, hideTag, state, isADS, x, y, z, yaw, pitch);
-				state.shootDelay += gundata.RATE_TICK;
+				state.shootDelay += toTick(gundata.RPM);
 			}
 		} else if (mode == GunFireMode.BURST && !state.stopshoot) {
 			//射撃開始
@@ -48,13 +48,13 @@ public class GunManager {
 			}
 			while(state.shootNum>0&&state.shootDelay <= 0&& !state.stopshoot){
 				shoot(shooter, gundata, hideTag, state, isADS, x, y, z, yaw, pitch);
-				state.shootDelay += gundata.BURST_RATE_TICK;
+				state.shootDelay += toTick(gundata.BURST_RPM);;
 				state.shootNum --;
 			}
 			if(state.shootNum == 0){
 				state.stopshoot = true;
 				state.shootNum = -1;
-				state.shootDelay += gundata.RATE_TICK;
+				state.shootDelay += toTick(gundata.RPM);
 			}
 			if(state.stopshoot){
 				state.shootNum = -1;
@@ -63,7 +63,7 @@ public class GunManager {
 		} else if (mode == GunFireMode.MINIGUN && !state.stopshoot && state.shootDelay <= 0 && trigger) {
 			while (state.shootDelay <= 0 && !state.stopshoot) {
 				shoot(shooter, gundata, hideTag, state, isADS, x, y, z, yaw, pitch);
-				state.shootDelay += gundata.RATE_TICK;
+				state.shootDelay += toTick(gundata.RPM);
 			}
 		}
 		if(!trigger){
@@ -76,8 +76,8 @@ public class GunManager {
 			boolean isADS, double x, double y, double z, float yaw, float pitch) {
 		BulletData bullet = NBTWrapper.getNextBullet(hideTag);
 		if (bullet != null) {
-			System.out.println(state.shootDelay);// TODO
-			shoot(gundata, bullet, shooter, x, y, z, yaw, pitch, state.shootDelay, isADS);
+			//System.out.println(state.shootDelay+1f);// TODO
+			shoot(gundata, bullet, shooter, x, y, z, yaw, pitch, state.shootDelay+1f, isADS);
 		} else {
 			state.stopshoot = true;
 		}
@@ -87,6 +87,7 @@ public class GunManager {
 	private static void shoot(GunData gundata, BulletData bulletdata, Entity shooter, double x, double y, double z,
 			float yaw, float pitch, float offset, boolean isADS) {
 		for (int i = 0; i < bulletdata.SHOOT_NUM; i++) {
+			SoundHandler.broadcastSound(shooter.world, x, y, z, gundata.SOUND_SHOOT);
 			EntityBullet bullet = new EntityBullet(gundata, bulletdata, shooter, x, y, z, yaw, pitch, offset, isADS);
 			shooter.world.spawnEntity(bullet);
 		}
@@ -115,5 +116,8 @@ public class GunManager {
 		}
 		return null;
 	}
-
+	/**RPMをTickに変換*/
+	private static float toTick(int rpm){
+		return 1200f/rpm;
+	}
 }

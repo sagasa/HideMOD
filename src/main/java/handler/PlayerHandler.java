@@ -227,12 +227,12 @@ public class PlayerHandler {
 		}
 		// 射撃処理
 		if (em == EquipMode.Main) {
-			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), data.mainState, data.ads, leftMouseHold);
+			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), data.mainState, data.ads, data.leftMouse);
 		} else if (em == EquipMode.Off) {
-			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(off), data.offState, data.ads, leftMouseHold);
+			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(off), data.offState, data.ads, data.leftMouse);
 		} else if (em == EquipMode.OtherDual) {
-			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), data.mainState, data.ads, leftMouseHold);
-			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(off), data.offState, data.ads, rightMouseHold);
+			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), data.mainState, data.ads, data.leftMouse);
+			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(off), data.offState, data.ads, data.rightMouse);
 		} else if (em == EquipMode.Dual) {
 			boolean mainTrigger = false;
 			boolean offTrigger = false;
@@ -250,7 +250,7 @@ public class PlayerHandler {
 					}
 				}
 			}else{
-				mainTrigger = offTrigger = leftMouseHold;
+				mainTrigger = offTrigger = data.leftMouse;
 			}
 			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), data.mainState, data.ads, mainTrigger);
 			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(main), data.offState, data.ads, offTrigger);

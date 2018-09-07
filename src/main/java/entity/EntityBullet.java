@@ -131,7 +131,6 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 		// データから読み取る
 		float spead = gunData.BULLET_SPEED;
-		spead = 0.1f;
 
 		// 向いている方向をモーションに
 		motionX = -Math.sin(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
@@ -146,28 +145,20 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		motionX *= spead;
 		motionY *= spead;
 		motionZ *= spead;
+		setPosition(posX, posY, posZ);
 	}
 
 	@Override
 	protected void entityInit() {
+		// 初期化
 		EntityDataManager dm = getDataManager();
 		dm.register(Vec3d, new Vec3d(0, 0, 0));
 		dm.register(Flag, FLAG_EMPTY);
-		// 初期化
-		if (!world.isRemote) {
-			// Tick補完
-			this.lastTickPosX = this.posX += (this.motionX * addtick);
-			this.lastTickPosY = this.posY += (this.motionY * addtick);
-			this.lastTickPosZ = this.posZ += (this.motionZ * addtick);
-		}
-		lastWorldTick = world.getTotalWorldTime();
-		System.out.println("init"+world.getTotalWorldTime());
 	}
 
 	@Override
 	public void onUpdate() {
 		onUpdate(world.getTotalWorldTime() - lastWorldTick);
-		System.out.println("update "+(world.getTotalWorldTime() - lastWorldTick)+"tick on"+world.getTotalWorldTime());
 		lastWorldTick = world.getTotalWorldTime();
 	}
 
@@ -289,7 +280,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 				explode(exppos, (Explosion) bulletData.EXP_ON_HIT_ENTITY);
 			}
 			if (bulletData.BULLET_LIFE < life) {
-				deathNaxtTick =  FLAG_DEATH_NEXT_TICK;
+				deathNaxtTick = FLAG_DEATH_NEXT_TICK;
 				// 時間経過で爆発するなら
 				explode(exppos, (Explosion) bulletData.EXP_ON_TIMEOUT);
 			}
@@ -316,6 +307,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			posY = pos.y;
 			posZ = pos.z;
 			SoundHandler.playSound(posX, posY, posZ, bulletData.SOUND_HIT_GROUND);
+
+			setDead();
 		}
 	}
 
@@ -403,31 +396,36 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	/** クライアントに必要な情報を送る */
 	@Override
 	public void writeSpawnData(ByteBuf buffer) {
-		System.out.println("to Client");
+		lastWorldTick = world.getTotalWorldTime();
+		// System.out.println("to Client");
 		buffer.writeFloat(rotationYaw);
 		buffer.writeFloat(rotationPitch);
 		buffer.writeDouble(motionX);
 		buffer.writeDouble(motionY);
 		buffer.writeDouble(motionZ);
 		buffer.writeDouble(world.getTotalWorldTime());
+		buffer.writeFloat(addtick);
 		PacketHandler.writeString(buffer, bulletData.ITEM_INFO.NAME_SHORT);
 		PacketHandler.writeString(buffer, gunData.ITEM_INFO.NAME_SHORT);
+		onUpdate(addtick);
 	}
 
 	/** サーバーからの情報を変数に書き込む */
 	@Override
 	public void readSpawnData(ByteBuf buf) {
-		System.out.println("form Server");
+		lastWorldTick = world.getTotalWorldTime();
+		// System.out.println("form Server");
 		rotationYaw = buf.readFloat();
 		rotationPitch = buf.readFloat();
 		motionX = buf.readDouble();
 		motionY = buf.readDouble();
 		motionZ = buf.readDouble();
-		float tickt = (float) (world.getTotalWorldTime()-buf.readDouble());
-		onUpdate(tickt);
+		float tickt = (float) (world.getTotalWorldTime() - buf.readDouble());
+		tickt = tickt < 0 ? 0 : tickt;
+		tickt += buf.readFloat();
 		bulletData = ItemMagazine.getBulletData(PacketHandler.readString(buf));
 		gunData = ItemGun.getGunData(PacketHandler.readString(buf));
-
+		onUpdate(tickt);
 	}
 
 	@Override

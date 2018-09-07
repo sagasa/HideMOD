@@ -21,14 +21,14 @@ public class GunData extends DataBase {
 	public int RELOAD_TICK= 20;
 	/**まとめてリロードできるか : boolean型*/
 	public boolean RELOAD_ALL = false;
-	/** レート ; レートtick間隔で発射する : float型 **/
-	public float RATE_TICK = 2;
+	/** 分間発射数 : int型 **/
+	public int RPM = 600;
 	/** 射撃モード : String配列型 **/
 	public String[] FIREMODE=new String[] { "semiauto" };
 	/** 貫通力 貫通力体のMOBにダメージが与えられる -1で∞ : int型 **/
 	public int BULLET_POWER = 1;
-	/** バーストのレート : float型 **/
-	public float BURST_RATE_TICK = 1;
+	/** バーストの分間発射数 : int型 **/
+	public int BURST_RPM = 800;
 	/** バーストの発射数 : int型 **/
 	public int BURST_BULLET_NUM = 3;
 	/** 装填数 : int型 **/
