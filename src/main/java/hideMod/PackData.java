@@ -2,14 +2,20 @@ package hideMod;
 
 import java.util.HashMap;
 
+import entity.EntityBullet;
+import entity.render.RenderBullet;
 import item.ItemGun;
 import item.ItemMagazine;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.RegistryEvent.Register;
+import net.minecraftforge.fml.client.registry.IRenderFactory;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 import types.BulletData;
 import types.GunData;
@@ -56,7 +62,12 @@ public class PackData {
 		for(Item item : ItemMagazine.INSTANCE_MAP.values()){
 			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(new ResourceLocation(HideMod.MOD_ID, "magazine"), "inventory"));
 		}
-
+		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new IRenderFactory() {
+			@Override
+			public Render createRenderFor(RenderManager manager) {
+				return new RenderBullet(manager);
+			}
+		});
 	}
 
 }
