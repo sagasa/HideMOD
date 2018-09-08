@@ -16,6 +16,8 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.RegistryEvent.Register;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
 import types.BulletData;
 import types.GunData;
@@ -55,6 +57,7 @@ public class PackData {
 		}
 	}
 	/**モデル登録*/
+	@SideOnly(Side.CLIENT)
 	public static void registerModel(){
 		for(Item item : ItemGun.INSTANCE_MAP.values()){
 			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(new ResourceLocation(HideMod.MOD_ID, "gun"), "inventory"));

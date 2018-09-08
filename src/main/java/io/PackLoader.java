@@ -185,7 +185,7 @@ public class PackLoader {
 		// Icon
 		if (Pattern.compile("^(.*)icon/(.*).png").matcher(name).matches()) {
 			String n = Pattern.compile(".png$").matcher(Pattern.compile("^(.*)icon/").matcher(name).replaceAll(""))
-					.replaceAll("");
+					.replaceAll("").toLowerCase();
 			if (PackData.ICON_MAP.containsKey(n)) {
 				System.out.println("error : Resource is Already exists Name:" + n);
 			} else {
@@ -204,7 +204,7 @@ public class PackLoader {
 		if (Pattern.compile("^(.*)sounds/(.*).ogg").matcher(name).matches()) {
 			System.out.println("sounds");
 			String n = Pattern.compile(".ogg$").matcher(Pattern.compile("^(.*)sounds/").matcher(name).replaceAll(""))
-					.replaceAll("");
+					.replaceAll("").toLowerCase();
 			if (PackData.SOUND_MAP.containsKey(n)) {
 				System.out.println("error : Resource is Already exists Name:" + n);
 			} else {

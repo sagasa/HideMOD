@@ -267,6 +267,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 				}
 			}
 		}
+		System.out.println(bulletPower);
 		// 削除系
 		if (bulletData == null) {
 			setDead();
@@ -431,7 +432,6 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		onUpdate(tickt);
 		//オーナーならリコイルを追加
 		if(Shooter.isEntityEqual(Minecraft.getMinecraft().player)){
-			System.out.println("リコイル");
 			RecoilHandler.addRecoil(gunData);
 		}
 	}

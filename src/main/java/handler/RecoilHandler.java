@@ -69,7 +69,7 @@ public class RecoilHandler {
 	/** 反動を与える */
 	public static void addRecoil(GunData data) {
 		// 銃が変わったならリコイルの適応を解除
-		if (!nowGun.equals(data)) {
+		if (!data.equals(nowGun)) {
 			yawShakeTo = pitchShakeTo = 0;
 			nowGun = data;
 		}

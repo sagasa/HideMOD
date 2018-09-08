@@ -256,6 +256,7 @@ public class PlayerHandler {
 			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(main), data.offState, data.ads, offTrigger);
 		}
 		// アップデート
+		//data.
 		data.mainState.update();
 		data.offState.update();
 		data.rightClick = data.leftClick = false;
