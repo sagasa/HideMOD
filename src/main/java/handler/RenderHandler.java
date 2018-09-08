@@ -79,6 +79,14 @@ public class RenderHandler {
 
 		if (EquipMode.getEqipMode(mc.player) == EquipMode.Main) {
 			writeGunInfo(x, y, mc.player.getHeldItemMainhand());
+		}else if (EquipMode.getEqipMode(mc.player) == EquipMode.Off) {
+			writeGunInfo(x, y, mc.player.getHeldItemOffhand());
+		}else if (EquipMode.getEqipMode(mc.player) == EquipMode.Dual) {
+			writeGunInfo(x, y, mc.player.getHeldItemMainhand());
+			writeGunInfo(x-120, y, mc.player.getHeldItemOffhand());
+		}else if (EquipMode.getEqipMode(mc.player) == EquipMode.OtherDual) {
+			writeGunInfo(x, y, mc.player.getHeldItemMainhand());
+			writeGunInfo(x-120, y, mc.player.getHeldItemOffhand());
 		}
 
 	}

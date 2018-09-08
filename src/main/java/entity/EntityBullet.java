@@ -13,6 +13,7 @@ import java.util.UUID;
 import org.apache.logging.log4j.core.net.DatagramSocketManager;
 
 import handler.PacketHandler;
+import handler.RecoilHandler;
 import handler.SoundHandler;
 import hideMod.HideMod;
 import helper.RayTracer;
@@ -405,6 +406,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		buffer.writeDouble(motionZ);
 		buffer.writeDouble(world.getTotalWorldTime());
 		buffer.writeFloat(addtick);
+		buffer.writeInt(Shooter.getEntityId());
 		PacketHandler.writeString(buffer, bulletData.ITEM_INFO.NAME_SHORT);
 		PacketHandler.writeString(buffer, gunData.ITEM_INFO.NAME_SHORT);
 		onUpdate(addtick);
@@ -423,9 +425,15 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		float tickt = (float) (world.getTotalWorldTime() - buf.readDouble());
 		tickt = tickt < 0 ? 0 : tickt;
 		tickt += buf.readFloat();
+		Shooter = world.getEntityByID(buf.readInt());
 		bulletData = ItemMagazine.getBulletData(PacketHandler.readString(buf));
 		gunData = ItemGun.getGunData(PacketHandler.readString(buf));
 		onUpdate(tickt);
+		//オーナーならリコイルを追加
+		if(Shooter.isEntityEqual(Minecraft.getMinecraft().player)){
+			System.out.println("リコイル");
+			RecoilHandler.addRecoil(gunData);
+		}
 	}
 
 	@Override

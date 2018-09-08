@@ -1,6 +1,7 @@
 package handler;
 
 import hideMod.PackData;
+import item.ItemGun;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.MouseEvent;
@@ -23,24 +24,24 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class HideEventHandler {
-	/*イニシャライズ*/
+	/* イニシャライズ */
 	@SubscribeEvent
-    public void onEvent(RegistryEvent.Register<Item> event){
-    	System.out.println("レジスター呼ばれた！！");
-    	PackData.registerItems(event);
-    }
+	public void onEvent(RegistryEvent.Register<Item> event) {
+		// System.out.println("レジスター呼ばれた！！");
+		PackData.registerItems(event);
+	}
+
 	@SubscribeEvent
-    @SideOnly(Side.CLIENT)
-    public void onEvent(ModelRegistryEvent event) {
-        PackData.registerModel();
-    }
+	@SideOnly(Side.CLIENT)
+	public void onEvent(ModelRegistryEvent event) {
+		PackData.registerModel();
+	}
 
 	/* プレイヤーイベント */
 	@SubscribeEvent
 	public void onEvent(PlayerTickEvent event) {
 		PlayerHandler.PlayerTick(event);
 	}
-
 
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedInEvent event) {
@@ -72,9 +73,9 @@ public class HideEventHandler {
 	// 銃で破壊できないように
 	@SubscribeEvent
 	public void onEvent(BreakEvent event) {
-	/*	if (event.isCancelable() && ItemGun.isGun(event.getPlayer().inventory.getCurrentItem())) {
+		if (event.isCancelable() && ItemGun.isGun(event.getPlayer().inventory.getCurrentItem())) {
 			event.setCanceled(true);
-		}*/
+		}
 	}
 
 	// ======アップデート=========
@@ -94,7 +95,7 @@ public class HideEventHandler {
 	@SideOnly(Side.CLIENT)
 	public void onEvent(TickEvent.RenderTickEvent event) {
 		if (event.phase.equals(Phase.START)) {
-	//		RenderHandler.setRenderTick(event.renderTickTime);
+			RenderHandler.setRenderTick(event.renderTickTime);
 		}
 	}
 
@@ -102,13 +103,13 @@ public class HideEventHandler {
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onEvent(RenderLivingEvent.Post event) {
-//		RenderHandler.RenderEntityEvent(event);
+		RenderHandler.RenderEntityEvent(event);
 	}
 
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onEvent(RenderHandEvent event) {
-	//	RenderHandler.RenderHand(event);
+		RenderHandler.RenderHand(event);
 	}
 
 	// オーバーレイGUI表示
@@ -116,8 +117,8 @@ public class HideEventHandler {
 	@SideOnly(Side.CLIENT)
 	public void onEvent(RenderGameOverlayEvent event) {
 		// System.out.println(event.target+"Stop");
-	//	RenderHandler.writeGameOverlay(event);
-	//	System.out.println(event.type);
+		RenderHandler.writeGameOverlay(event);
+		// System.out.println(event.type);
 	}
 
 	// 額縁描画
@@ -127,12 +128,12 @@ public class HideEventHandler {
 		// System.out.println(event.target+"Stop");
 		System.out.println(event);
 	}
-/*
- * Fog削除できるぞ
-	@SubscribeEvent
-	@SideOnly(Side.CLIENT)
-	public void onEvent(FogDensity event) {
-		System.out.println(event.density);
-		event.setCanceled(true);
-	}*/
+	/*
+	 * Fog削除できるぞ
+	 * 
+	 * @SubscribeEvent
+	 * 
+	 * @SideOnly(Side.CLIENT) public void onEvent(FogDensity event) {
+	 * System.out.println(event.density); event.setCanceled(true); }
+	 */
 }
