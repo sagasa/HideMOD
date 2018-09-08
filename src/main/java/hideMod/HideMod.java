@@ -82,7 +82,7 @@ public class HideMod {
 		if (FMLCommonHandler.instance().getSide().isClient()) {
 			// リソースローダーを追加
 			List<IResourcePack> defaultResourcePacks = ObfuscationReflectionHelper.getPrivateValue(Minecraft.class,
-					Minecraft.getMinecraft(), "defaultResourcePacks");
+					Minecraft.getMinecraft(), "defaultResourcePacks","field_110449_ao");
 			defaultResourcePacks.add(new ResourceLoader());
 
 			Minecraft.getMinecraft().refreshResources();

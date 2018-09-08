@@ -25,10 +25,24 @@ public class HideDamage extends DamageSource {
 	public static void init() {
 		// 名前を指定して取得
 		try {
-			attackingPlayer = EntityLivingBase.class.getDeclaredField("attackingPlayer");
-			recentlyHit = EntityLivingBase.class.getDeclaredField("recentlyHit");
-			recentlySetRevenge = EntityLivingBase.class.getMethod("setRevengeTarget", EntityLivingBase.class);
-		} catch (NoSuchFieldException | SecurityException | NoSuchMethodException e) {
+			//こっちじゃなければもう1つを試す
+			try {
+				attackingPlayer = EntityLivingBase.class.getDeclaredField("attackingPlayer");
+				recentlyHit = EntityLivingBase.class.getDeclaredField("recentlyHit");
+				recentlySetRevenge = EntityLivingBase.class.getMethod("setRevengeTarget", EntityLivingBase.class);
+			} catch (NoSuchFieldException | NoSuchMethodException e) {
+				try {
+					attackingPlayer = attackingPlayer == null ? EntityLivingBase.class.getDeclaredField("field_70717_bb") : attackingPlayer;
+					recentlyHit = recentlyHit == null ? EntityLivingBase.class.getDeclaredField("field_70718_bc") : recentlyHit;
+					recentlySetRevenge = recentlySetRevenge == null
+							? EntityLivingBase.class.getMethod("func_70604_c", EntityLivingBase.class) : recentlySetRevenge;
+				} catch (NoSuchFieldException | NoSuchMethodException e1) {
+					System.out.println("どっちでもなかった");
+					e1.printStackTrace();
+				}
+			}
+
+		} catch (SecurityException e) {
 			e.printStackTrace();
 		}
 		// アクセス権限を与える
@@ -49,7 +63,7 @@ public class HideDamage extends DamageSource {
 		// リフレクションで改変が必要な変数にぶち抜く
 		try {
 			// 攻撃時と同じ処理を組み込む TODO タレットなどの処理の追記がいるかも
-			if(damageSource.Attacker instanceof EntityPlayer){
+			if (damageSource.Attacker instanceof EntityPlayer) {
 				attackingPlayer.set(victim, (EntityPlayer) damageSource.Attacker);
 				recentlyHit.set(victim, 100);
 			}

@@ -2,13 +2,13 @@ package handler;
 
 import helper.HideMath;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import types.GunData;
 import types.Recoil;
 
-@SideOnly(Side.CLIENT)
 public class RecoilHandler {
 	private static int recoilPower = 0;
 
@@ -29,6 +29,7 @@ public class RecoilHandler {
 		return recoilPower;
 	}
 	/** プレイヤーの状態から使用するリコイルを取得 */
+	@SideOnly(Side.CLIENT)
 	private static Recoil getRecoil(GunData data) {
 		EntityPlayer player = Minecraft.getMinecraft().player;
 		return getRecoil(data, player.isSneaking(), PlayerHandler.isADS);
@@ -66,8 +67,13 @@ public class RecoilHandler {
 		}
 	}
 
-	/** 反動を与える */
-	public static void addRecoil(GunData data) {
+	/** 反動を与える
+	 * @param shooter */
+	public static void addRecoil(GunData data, Entity shooter) {
+		//オーナーか
+		if(!Minecraft.getMinecraft().player.isEntityEqual(shooter)){
+			return;
+		}
 		// 銃が変わったならリコイルの適応を解除
 		if (!data.equals(nowGun)) {
 			yawShakeTo = pitchShakeTo = 0;
@@ -92,6 +98,7 @@ public class RecoilHandler {
 	}
 
 	/** Tick毎の変化 */
+	@SideOnly(Side.CLIENT)
 	static public void updateRecoil() {
 		// 撃ってなければ戻る
 		if (nowGun == null) {

@@ -267,7 +267,6 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 				}
 			}
 		}
-		System.out.println(bulletPower);
 		// 削除系
 		if (bulletData == null) {
 			setDead();
@@ -275,7 +274,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		}
 		if (bulletPower == 0 || isHittoBlock || bulletData.BULLET_LIFE < life) {
 			EntityDataManager dm = getDataManager();
-			Vec3d exppos = endPos.add(lvt.subtract(lvo).normalize().scale(0.1));
+			Vec3d exppos = endPos.add(lvt.subtract(lvo).normalize().scale(-0.2));
+			System.out.println(endPos+" "+exppos);
 			if (bulletPower == 0) {
 				deathNaxtTick = FLAG_DEATH_NEXT_TICK | FLAG_DEATH_TYPE_ENTITY;
 				// エンティティに当たって爆発するなら
@@ -327,6 +327,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 				}
 				// 障害物の判定
 				double dis = -1;
+				System.out.println(world.rayTraceBlocks(endPos, new Vec3d(e.posX, e.posY, e.posZ), false, true, false));
 				if (world.rayTraceBlocks(endPos, new Vec3d(e.posX, e.posY, e.posZ), false, true, false) == null) {
 					dis = new Vec3d(e.posX, e.posY, e.posZ).distanceTo(endPos);
 				}
@@ -430,10 +431,9 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		bulletData = ItemMagazine.getBulletData(PacketHandler.readString(buf));
 		gunData = ItemGun.getGunData(PacketHandler.readString(buf));
 		onUpdate(tickt);
-		//オーナーならリコイルを追加
-		if(Shooter.isEntityEqual(Minecraft.getMinecraft().player)){
-			RecoilHandler.addRecoil(gunData);
-		}
+		// オーナーならリコイルを追加
+		RecoilHandler.addRecoil(gunData, Shooter);
+
 	}
 
 	@Override
