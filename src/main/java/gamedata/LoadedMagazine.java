@@ -1,0 +1,74 @@
+package gamedata;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
+import hideMod.PackData;
+import types.BulletData;
+
+/**装填済みのマガジン管理用 変更通知機能付き*/
+public class LoadedMagazine{
+	private List<Magazine> magazineList = new ArrayList<>();
+	private MagazineLisner lisner;
+	
+	public interface MagazineLisner{
+		abstract public void MagazineUse(LoadedMagazine magazines);
+	}
+	/**単体のマガジン*/
+	public class Magazine{
+		public String name;
+		public int num;
+		public Magazine(String name, int num) {
+			this.name = name;
+			this.num = num;
+		}
+		@Override
+		public String toString() {
+			return super.toString()+"[name="+name+",num="+num+"]";
+		}
+	}
+	/**次に撃つ弾を取得 消費する*/
+	public BulletData getNextBullet(){
+		if(magazineList.size()>0&&magazineList.get(0).num>0){
+			if(PackData.getBulletData(magazineList.get(0).name)==null){
+				magazineList.remove(0);
+				return getNextBullet();
+			}
+			//通知
+			if(lisner!=null){
+				lisner.MagazineUse(this);
+			}
+			magazineList.get(0).num --;
+			return PackData.getBulletData(magazineList.get(0).name);
+		}
+		return null;
+	}
+	
+	public void addMagazinetoNext(@Nonnull Magazine mag){
+		magazineList.add(0, mag);
+	}
+	public void addMagazinetoLast(@Nonnull Magazine mag){
+		magazineList.add(mag);
+	}
+	
+	public List<Magazine> getList(){
+		return magazineList;
+	}
+
+	@Override
+	public String toString() {
+		return super.toString()+magazineList;
+	}
+	/**今の残弾を返す*/
+	public int getLoadedNum(){
+		int num = 0;
+		for (Magazine magazine : magazineList) {
+			if(magazine != null){
+				num += magazine.num;
+			}
+		}
+		return num;
+	}
+}

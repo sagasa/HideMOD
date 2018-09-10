@@ -1,8 +1,9 @@
 package helper;
 
+import gamedata.LoadedMagazine;
+import gamedata.LoadedMagazine.Magazine;
 import hideMod.PackData;
 import item.ItemGun;
-import item.LoadedMagazine;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import types.BulletData;
@@ -53,29 +54,30 @@ public class NBTWrapper {
 	}
 
 	/** マガジンの内容を取得 */
-	public static LoadedMagazine[] getGunLoadedMagazines(ItemStack gun) {
-		LoadedMagazine[] loadedMagazines = new LoadedMagazine[ItemGun.getGunData(gun).LOAD_NUM];
+	public static LoadedMagazine getGunLoadedMagazines(ItemStack gun) {
+		LoadedMagazine loadedMagazines = new LoadedMagazine();
 		NBTTagCompound magazines = getTag(getHideTag(gun), GUN_NBT_Magazines);
-
-		for (int i = 0; i < loadedMagazines.length; i++) {
-			if (magazines.hasKey(i + "") && magazines.getCompoundTag(i + "").getInteger(GUN_NBT_Magazine_Number) > 0) {
-				NBTTagCompound magData = magazines.getCompoundTag(i + "");
-				loadedMagazines[i] = new LoadedMagazine(magData.getString(GUN_NBT_Magazine_Name),
-						magData.getInteger(GUN_NBT_Magazine_Number));
+		int i = 0;
+		while(magazines.hasKey(i + "")){
+			NBTTagCompound magData = magazines.getCompoundTag(i + "");
+			if(magData.getInteger(GUN_NBT_Magazine_Number) > 0){
+				loadedMagazines.addMagazinetoNext(loadedMagazines.new Magazine(magData.getString(GUN_NBT_Magazine_Name),
+						magData.getInteger(GUN_NBT_Magazine_Number)));
 			}
+			i++;
 		}
 		return loadedMagazines;
 	}
 
-
 	/** マガジンの内容を書き込み */
-	public static ItemStack setGunLoadedMagazines(ItemStack gun, LoadedMagazine[] newMagazines) {
+	public static ItemStack setGunLoadedMagazines(ItemStack gun, LoadedMagazine newMagazines) {
 		NBTTagCompound magazines = new NBTTagCompound();
-		for (int i = 0; i < newMagazines.length; i++) {
-			if (newMagazines[i] != null) {
+		for (int i = 0; i < newMagazines.getList().size(); i++) {
+			Magazine mag = newMagazines.getList().get(i);
+			if (mag != null) {
 				NBTTagCompound magazine = new NBTTagCompound();
-				magazine.setInteger(GUN_NBT_Magazine_Number, newMagazines[i].num);
-				magazine.setString(GUN_NBT_Magazine_Name, newMagazines[i].name);
+				magazine.setInteger(GUN_NBT_Magazine_Number, mag.num);
+				magazine.setString(GUN_NBT_Magazine_Name, mag.name);
 				magazines.setTag(i + "", magazine);
 			}
 		}

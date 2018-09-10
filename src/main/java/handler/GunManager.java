@@ -1,83 +1,87 @@
 package handler;
 
 import entity.EntityBullet;
+import gamedata.GunState;
+import gamedata.LoadedMagazine;
+import gamedata.HidePlayerData.ServerPlayerData;
 import helper.NBTWrapper;
 import hideMod.PackData;
 import item.ItemGun;
-import item.LoadedMagazine;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
-import playerdata.GunState;
-import playerdata.HidePlayerData.ServerPlayerData;
+import newwork.PacketShoot;
 import types.BulletData;
 import types.GunData;
 import types.GunFireMode;
 
-/** 射撃処理 Mod全体での共通のEntityBullet生成処理 */
+/** 射撃処理 Mod全体での共通のEntityBullet生成処理 射撃時の処理はクライアントに集約 */
 public class GunManager {
-
-	public static void gunUpdate(Entity shooter, GunData gundata, NBTTagCompound hideTag, GunFireMode mode,
-			GunState state, boolean isADS, boolean trigger) {
+	public static void gunUpdateDefaultPos(Entity shooter, GunData gundata, NBTTagCompound hideTag, GunFireMode mode,
+			GunState state, boolean isADS, boolean trigger, float lastyaw, float lastpitch) {
 		gunUpdate(shooter, gundata, hideTag, mode, state, isADS, trigger, shooter.posX,
-				shooter.posY + shooter.getEyeHeight(), shooter.posZ, shooter.rotationYaw, shooter.rotationPitch);
+				shooter.posY + shooter.getEyeHeight(), shooter.posZ, shooter.rotationYaw, shooter.rotationPitch,
+				lastyaw, lastpitch);
 	}
 
 	/** 銃の射撃処理 */
 	public static void gunUpdate(Entity shooter, GunData gundata, NBTTagCompound hideTag, GunFireMode mode,
-			GunState state, boolean isADS, boolean trigger, double x, double y, double z, float yaw, float pitch) {
+			GunState state, boolean isADS, boolean trigger, double x, double y, double z, float yaw, float pitch,
+			float lastyaw, float lastpitch) {
 		if (mode == GunFireMode.SEMIAUTO && !state.stopshoot && state.shootDelay <= 0 && trigger) {
 			if (state.shootDelay < 0) {
 				state.shootDelay = 0;
 			}
-			shoot(shooter, gundata, hideTag, state, isADS, x, y, z, yaw, pitch);
+			shoot(shooter, gundata, hideTag, state, isADS, x, y, z, yaw, pitch, lastyaw, lastpitch);
 			state.shootDelay += toTick(gundata.RPM);
 			state.stopshoot = true;
 		} else if (mode == GunFireMode.FULLAUTO && !state.stopshoot && state.shootDelay <= 0 && trigger) {
 			while (state.shootDelay <= 0 && !state.stopshoot) {
-				shoot(shooter, gundata, hideTag, state, isADS, x, y, z, yaw, pitch);
+				shoot(shooter, gundata, hideTag, state, isADS, x, y, z, yaw, pitch, lastyaw, lastpitch);
 				state.shootDelay += toTick(gundata.RPM);
 			}
 		} else if (mode == GunFireMode.BURST && !state.stopshoot) {
-			//射撃開始
-			if (trigger && state.shootNum == -1 && state.shootDelay <= 0&&!state.stopshoot) {
+			// 射撃開始
+			if (trigger && state.shootNum == -1 && state.shootDelay <= 0 && !state.stopshoot) {
 				state.shootNum = gundata.BURST_BULLET_NUM;
 			}
-			while(state.shootNum>0&&state.shootDelay <= 0&& !state.stopshoot){
-				shoot(shooter, gundata, hideTag, state, isADS, x, y, z, yaw, pitch);
-				state.shootDelay += toTick(gundata.BURST_RPM);;
-				state.shootNum --;
+			while (state.shootNum > 0 && state.shootDelay <= 0 && !state.stopshoot) {
+				shoot(shooter, gundata, hideTag, state, isADS, x, y, z, yaw, pitch, lastyaw, lastpitch);
+				state.shootDelay += toTick(gundata.BURST_RPM);
+				;
+				state.shootNum--;
 			}
-			if(state.shootNum == 0){
+			if (state.shootNum == 0) {
 				state.stopshoot = true;
 				state.shootNum = -1;
 				state.shootDelay += toTick(gundata.RPM);
 			}
-			if(state.stopshoot){
+			if (state.stopshoot) {
 				state.shootNum = -1;
 			}
 
 		} else if (mode == GunFireMode.MINIGUN && !state.stopshoot && state.shootDelay <= 0 && trigger) {
 			while (state.shootDelay <= 0 && !state.stopshoot) {
-				shoot(shooter, gundata, hideTag, state, isADS, x, y, z, yaw, pitch);
+				shoot(shooter, gundata, hideTag, state, isADS, x, y, z, yaw, pitch, lastyaw, lastpitch);
 				state.shootDelay += toTick(gundata.RPM);
 			}
 		}
-		if(!trigger){
+		if (!trigger) {
 			state.stopshoot = false;
 		}
 	}
 
 	/** 弾があったら射撃 無ければ射撃停止 */
-	private static void shoot(Entity shooter, GunData gundata,NBTTagCompound hideTag, GunState state,
-			boolean isADS, double x, double y, double z, float yaw, float pitch) {
+	private static void shoot(Entity shooter, GunData gundata, NBTTagCompound hideTag, GunState state, boolean isADS,
+			double x, double y, double z, float yaw, float pitch, float lastyaw, float lastpitch) {
 		BulletData bullet = NBTWrapper.getNextBullet(hideTag);
 		if (bullet != null) {
-			//System.out.println(state.shootDelay+1f);// TODO
-			shoot(gundata, bullet, shooter, x, y, z, yaw, pitch, state.shootDelay+1f, isADS);
+			// System.out.println(state.shootDelay+1f);// TODO
+			shoot(gundata, bullet, shooter, x, y, z, getValue(lastyaw, yaw, state.shootDelay + 1f),
+					getValue(lastpitch, pitch, state.shootDelay + 1f), state.shootDelay + 1f, isADS);
 		} else {
 			state.stopshoot = true;
 		}
@@ -87,9 +91,15 @@ public class GunManager {
 	private static void shoot(GunData gundata, BulletData bulletdata, Entity shooter, double x, double y, double z,
 			float yaw, float pitch, float offset, boolean isADS) {
 		for (int i = 0; i < bulletdata.SHOOT_NUM; i++) {
-			SoundHandler.broadcastSound(shooter.world, x, y, z, gundata.SOUND_SHOOT);
-			EntityBullet bullet = new EntityBullet(gundata, bulletdata, shooter, x, y, z, yaw, pitch, offset, isADS);
-			shooter.world.spawnEntity(bullet);
+			if(shooter.world.isRemote){
+				//クライアントなら
+				PacketHandler.INSTANCE.sendToServer(new PacketShoot(gundata, bulletdata, shooter, x, y, z, yaw, pitch, offset, isADS,shooter.world.getTotalWorldTime()));
+			}else{
+				//サーバーなら
+				SoundHandler.broadcastSound(shooter.world, x, y, z, gundata.SOUND_SHOOT);
+				EntityBullet bullet = new EntityBullet(gundata, bulletdata, shooter, x, y, z, yaw, pitch, offset, isADS);
+				shooter.world.spawnEntity(bullet);
+			}
 		}
 	}
 
@@ -116,8 +126,14 @@ public class GunManager {
 		}
 		return null;
 	}
-	/**RPMをTickに変換*/
-	private static float toTick(int rpm){
-		return 1200f/rpm;
+
+	/** 2つの値と0~1のfloatから間の値を返す */
+	private static float getValue(float min, float max, float coe) {
+		return min + (max - min) * coe;
+	}
+
+	/** RPMをTickに変換 */
+	private static float toTick(int rpm) {
+		return 1200f / rpm;
 	}
 }

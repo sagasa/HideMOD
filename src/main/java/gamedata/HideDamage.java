@@ -1,4 +1,4 @@
-package playerdata;
+package gamedata;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

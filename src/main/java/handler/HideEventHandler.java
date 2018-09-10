@@ -2,6 +2,7 @@ package handler;
 
 import hideMod.PackData;
 import item.ItemGun;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.MouseEvent;
@@ -10,6 +11,7 @@ import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderItemInFrameEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerEvent.StopTracking;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
@@ -35,6 +37,12 @@ public class HideEventHandler {
 	@SideOnly(Side.CLIENT)
 	public void onEvent(ModelRegistryEvent event) {
 		PackData.registerModel();
+	}
+
+	/**型に応じてデータマネージャーを添付する*/
+	@SubscribeEvent
+	public void onEvent(EntityEvent.EntityConstructing event) {
+		HideEntityDataManager.onEntityInit(event);
 	}
 
 	/* プレイヤーイベント */

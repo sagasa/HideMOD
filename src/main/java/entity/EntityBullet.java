@@ -12,6 +12,8 @@ import java.util.UUID;
 
 import org.apache.logging.log4j.core.net.DatagramSocketManager;
 
+import gamedata.HideDamage;
+import gamedata.HideDamage.HideDamageCase;
 import handler.PacketHandler;
 import handler.RecoilHandler;
 import handler.SoundHandler;
@@ -59,8 +61,6 @@ import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import newwork.PacketHit;
-import playerdata.HideDamage;
-import playerdata.HideDamage.HideDamageCase;
 import types.BulletData;
 import types.Explosion;
 import types.GunData;

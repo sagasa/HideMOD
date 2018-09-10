@@ -1,4 +1,4 @@
-package playerdata;
+package gamedata;
 
 /**銃のアップデートに関係する数値*/
 public class GunState {

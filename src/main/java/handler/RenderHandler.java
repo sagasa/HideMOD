@@ -5,11 +5,11 @@ import java.awt.Rectangle;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import gamedata.LoadedMagazine;
 import handler.PlayerHandler.EquipMode;
 import helper.NBTWrapper;
 import item.ItemGun;
 import item.ItemMagazine;
-import item.LoadedMagazine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BufferBuilder;

@@ -13,6 +13,11 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import entity.EntityBullet;
+import gamedata.Gun;
+import gamedata.GunState;
+import gamedata.HidePlayerData;
+import gamedata.LoadedMagazine;
+import gamedata.HidePlayerData.ServerPlayerData;
 import helper.HideMath;
 import helper.NBTWrapper;
 import hideMod.HideMod;
@@ -22,7 +27,6 @@ import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 
 import item.ItemGun;
 import item.ItemMagazine;
-import item.LoadedMagazine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.PositionedSoundRecord;
@@ -33,6 +37,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.Vec2f;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
@@ -46,8 +51,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import newwork.PacketInput;
 import newwork.PacketPlaySound;
-import playerdata.HidePlayerData;
-import playerdata.HidePlayerData.ServerPlayerData;
 import scala.actors.threadpool.Arrays;
 import types.BulletData;
 import types.GunData;
@@ -91,6 +94,15 @@ public class PlayerHandler {
 	private static boolean lastRightMouse = false;
 	private static boolean leftMouseHold = false;
 	private static boolean lastLeftMouse = false;
+	private static GunState mainState = new GunState();
+	private static GunState offState = new GunState();
+	private static long idMain = 0;
+	private static long idOff = 0;
+
+	private static boolean dualToggle = false;
+
+	public static float lastyaw = 0;
+	public static float lastpitch = 0;
 
 	/** 入力処理 */
 	@SideOnly(Side.CLIENT)
@@ -98,7 +110,7 @@ public class PlayerHandler {
 		// 死んでたらマウスを離す
 		if (player.isDead) {
 			rightMouseHold = leftMouseHold = false;
-			PacketHandler.INSTANCE.sendToServer(new PacketInput(leftMouseHold,rightMouseHold));
+			PacketHandler.INSTANCE.sendToServer(new PacketInput(leftMouseHold, rightMouseHold));
 		}
 		// キー入力の取得 押された変化を取得
 		ArrayList<KeyBind> pushKeys = new ArrayList<KeyBind>();
@@ -118,13 +130,58 @@ public class PlayerHandler {
 		}
 		// マウス
 		if (lastLeftMouse != leftMouseHold || lastRightMouse != rightMouseHold) {
-			PacketHandler.INSTANCE.sendToServer(new PacketInput(leftMouseHold,rightMouseHold));
+			PacketHandler.INSTANCE.sendToServer(new PacketInput(leftMouseHold, rightMouseHold));
 			lastLeftMouse = leftMouseHold;
 			lastRightMouse = rightMouseHold;
 		}
-		// リコイルアップデート
+		// 射撃処理
+		EquipMode em = EquipMode.getEqipMode(player);
+		ItemStack main = player.getHeldItemMainhand();
+		ItemStack off = player.getHeldItemOffhand();
+		boolean ads = HideEntityDataManager.getADSState(player) == 1f;
+		// 持ち替え検知
+		if (idMain != NBTWrapper.getHideID(main) || idOff != NBTWrapper.getHideID(off)) {
+			idMain = NBTWrapper.getHideID(main);
+			idOff = NBTWrapper.getHideID(off);
+			// 持ち替えでキャンセルするもの
+			mainState.clear();
+			offState.clear();
+		}
+		// 射撃処理
+		if (em == EquipMode.Main) {
+			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), mainState, ads, leftMouseHold);
+		} else if (em == EquipMode.Off) {
+			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(off), offState, ads, leftMouseHold);
+		} else if (em == EquipMode.OtherDual) {
+			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), mainState, ads, leftMouseHold);
+			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(off), offState, ads, rightMouseHold);
+		} else if (em == EquipMode.Dual) {
+			boolean mainTrigger = false;
+			boolean offTrigger = false;
+			GunFireMode mode = NBTWrapper.getGunFireMode(main);
+			if (mode == GunFireMode.BURST || mode == GunFireMode.SEMIAUTO) {
+				if (leftMouseHold != lastLeftMouse && leftMouseHold) {
+					if ((dualToggle || offState.shootDelay > 0 || !ItemGun.canShoot(off)) && !mainState.stopshoot) {
+						mainTrigger = true;
+						dualToggle = false;
+					} else if ((!dualToggle || mainState.shootDelay > 0 || !ItemGun.canShoot(main))
+							&& !offState.stopshoot) {
+						offTrigger = true;
+						dualToggle = true;
+					}
+				}
+			} else {
+				mainTrigger = offTrigger = leftMouseHold;
+			}
+			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), mainState, ads, mainTrigger);
+			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(main), offState, ads, offTrigger);
+		}
+		// アップデート
+		mainState.update();
+		offState.update();
 		RecoilHandler.updateRecoil();
-
+		lastyaw = player.rotationYaw;
+		lastpitch = player.rotationPitch;
 	}
 
 	/** マウスイベント */
@@ -165,6 +222,15 @@ public class PlayerHandler {
 				return None;
 			}
 		}
+	}
+
+	/***/
+	public static Gun getMainGun() {
+
+	}
+
+	public static Gun getOffGun() {
+
 	}
 
 	/** サーバーTick処理 プログレスを進める */
@@ -214,6 +280,9 @@ public class PlayerHandler {
 			}
 			data.reloadstate--;
 		}
+		if (0 <= data.adsstate) {
+
+		}
 		// 持ち替え検知
 		if (data.idMain != NBTWrapper.getHideID(main) || data.idOff != NBTWrapper.getHideID(off)) {
 			data.idMain = NBTWrapper.getHideID(main);
@@ -222,44 +291,8 @@ public class PlayerHandler {
 			data.reloadstate = -1;
 			data.ads = false;
 			data.adsstate = 0;
-			data.mainState.clear();
-			data.offState.clear();
-		}
-		// 射撃処理
-		if (em == EquipMode.Main) {
-			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), data.mainState, data.ads, data.leftMouse);
-		} else if (em == EquipMode.Off) {
-			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(off), data.offState, data.ads, data.leftMouse);
-		} else if (em == EquipMode.OtherDual) {
-			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), data.mainState, data.ads, data.leftMouse);
-			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(off), data.offState, data.ads, data.rightMouse);
-		} else if (em == EquipMode.Dual) {
-			boolean mainTrigger = false;
-			boolean offTrigger = false;
-			GunFireMode mode = NBTWrapper.getGunFireMode(main);
-			if (mode == GunFireMode.BURST || mode == GunFireMode.SEMIAUTO) {
-				if (data.leftClick) {
-					if ((data.dualToggle || data.offState.shootDelay > 0 || !ItemGun.canShoot(off))
-							&& !data.mainState.stopshoot) {
-						mainTrigger = true;
-						data.dualToggle = false;
-					} else if ((!data.dualToggle || data.mainState.shootDelay > 0 || !ItemGun.canShoot(main))
-							&& !data.offState.stopshoot) {
-						offTrigger = true;
-						data.dualToggle = true;
-					}
-				}
-			}else{
-				mainTrigger = offTrigger = data.leftMouse;
-			}
-			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), data.mainState, data.ads, mainTrigger);
-			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(main), data.offState, data.ads, offTrigger);
 		}
 		// アップデート
-		//data.
-		data.mainState.update();
-		data.offState.update();
-		data.rightClick = data.leftClick = false;
 	}
 
 	/** 接続時にサーバーサイドで呼ばれる */

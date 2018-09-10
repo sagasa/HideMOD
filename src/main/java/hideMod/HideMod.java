@@ -6,6 +6,7 @@ import org.lwjgl.input.Keyboard;
 
 import entity.EntityBullet;
 import entity.render.RenderBullet;
+import gamedata.HideDamage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.entity.Render;
@@ -37,7 +38,6 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.RegistryManager;
-import playerdata.HideDamage;
 import handler.HideEventHandler;
 import handler.PacketHandler;
 import io.PackLoader;

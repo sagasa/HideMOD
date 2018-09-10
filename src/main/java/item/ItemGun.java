@@ -11,7 +11,10 @@ import java.util.UUID;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 
+import gamedata.GunState;
+import gamedata.LoadedMagazine;
 import handler.GunManager;
+import handler.PlayerHandler;
 import handler.RecoilHandler;
 import helper.HideMath;
 import helper.NBTWrapper;
@@ -33,7 +36,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import playerdata.GunState;
 import types.BulletData;
 import types.GunData;
 import types.GunFireMode;
@@ -180,7 +182,8 @@ public class ItemGun extends Item {
 	/** 射撃 */
 	public static void shootUpdate(ItemStack gun, Entity shooter, GunFireMode mode, GunState state, boolean isADS,
 			boolean trigger) {
-		GunManager.gunUpdate(shooter, getGunData(gun), NBTWrapper.getHideTag(gun), mode, state, isADS, trigger);
+		GunManager.gunUpdateDefaultPos(shooter, getGunData(gun), NBTWrapper.getHideTag(gun), mode, state, isADS,
+				trigger, PlayerHandler.lastyaw, PlayerHandler.lastpitch);
 	}
 
 	/** 弾が1つでも入っているか */
@@ -188,7 +191,7 @@ public class ItemGun extends Item {
 		if (!isGun(gun)) {
 			return false;
 		}
-		if(LoadedMagazine.getLoadedNum(NBTWrapper.getGunLoadedMagazines(gun))>0){
+		if (LoadedMagazine.getLoadedNum(NBTWrapper.getGunLoadedMagazines(gun)) > 0) {
 			return true;
 		}
 		return false;
@@ -307,13 +310,14 @@ public class ItemGun extends Item {
 		}
 		return modes.get(index);
 	}
-	/**銃で使用中の弾薬の所持数を返す*/
-	public static int getCanUseingBulletNum(ItemStack gun,EntityPlayer player){
+
+	/** 銃で使用中の弾薬の所持数を返す */
+	public static int getCanUseingBulletNum(ItemStack gun, EntityPlayer player) {
 		int num = 0;
 		String bulletName = NBTWrapper.getGunUseingBullet(gun);
-		for(ItemStack item : player.inventory.mainInventory){
-			if(ItemMagazine.isMagazine(item, bulletName)){
-				num += NBTWrapper.getMagazineBulletNum(item)*item.getCount();
+		for (ItemStack item : player.inventory.mainInventory) {
+			if (ItemMagazine.isMagazine(item, bulletName)) {
+				num += NBTWrapper.getMagazineBulletNum(item) * item.getCount();
 			}
 		}
 		return num;
