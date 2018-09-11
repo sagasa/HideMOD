@@ -94,8 +94,6 @@ public class PlayerHandler {
 	private static boolean lastRightMouse = false;
 	private static boolean leftMouseHold = false;
 	private static boolean lastLeftMouse = false;
-	private static GunState mainState = new GunState();
-	private static GunState offState = new GunState();
 	private static long idMain = 0;
 	private static long idOff = 0;
 
