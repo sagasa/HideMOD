@@ -3,6 +3,7 @@ package newwork;
 import com.jcraft.jogg.Packet;
 
 import entity.EntityBullet;
+import handler.GunManager;
 import handler.PacketHandler;
 import handler.SoundHandler;
 import hideMod.PackData;
@@ -31,8 +32,11 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 	boolean isADS;
 	double worldTime;
 
+	public PacketShoot() {
+	}
+
 	public PacketShoot(GunData gun, BulletData bullet, Entity shooter, double x, double y, double z, float yaw,
-			float pitch, float offset, boolean isADS,double worldTime) {
+			float pitch, float offset, boolean isADS,long uid) {
 		this.gun = gun;
 		this.bullet = bullet;
 		this.shooterID = shooter.getEntityId();
@@ -43,7 +47,7 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 		this.pitch = pitch;
 		this.offset = offset;
 		this.isADS = isADS;
-		this.worldTime = worldTime;
+		this.worldTime = shooter.world.getTotalWorldTime();
 	}
 
 	@Override // ByteBufからデータを読み取る。
@@ -90,12 +94,18 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 				public void run() {
 					processMessage(m);
 				}
+
 				private void processMessage(PacketShoot m) {
 					EntityPlayer player = ctx.getServerHandler().player;
 					Entity shooter = player.world.getEntityByID(shooterID);
-					SoundHandler.broadcastSound(shooter.world, x, y, z, gun.SOUND_SHOOT);
-					EntityBullet bulletentity = new EntityBullet(gun, bullet, shooter, x, y, z, yaw, pitch, offset + (float)(shooter.world.getTotalWorldTime()-worldTime), isADS);
-					shooter.world.spawnEntity(bulletentity);
+					if (shooter == null) {
+						return;
+					}
+					double lag = shooter.world.getTotalWorldTime() - worldTime;
+					lag = lag < 0 ? 0 : lag;
+					System.out.println("射撃パケット受信"+m.offset + (float) lag);
+					GunManager.shoot(m.gun, m.bullet, shooter, m.x, m.y, m.z, m.yaw, m.pitch, m.offset + (float) lag,
+							m.isADS);
 				}
 			});
 		}

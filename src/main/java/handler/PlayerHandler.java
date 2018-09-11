@@ -14,7 +14,6 @@ import org.lwjgl.opengl.GL11;
 
 import entity.EntityBullet;
 import gamedata.Gun;
-import gamedata.GunState;
 import gamedata.HidePlayerData;
 import gamedata.LoadedMagazine;
 import gamedata.HidePlayerData.ServerPlayerData;
@@ -96,6 +95,8 @@ public class PlayerHandler {
 	private static boolean lastLeftMouse = false;
 	private static long idMain = 0;
 	private static long idOff = 0;
+	private static Gun gunMain = null;
+	private static Gun gunOff = null;
 
 	private static boolean dualToggle = false;
 
@@ -119,64 +120,68 @@ public class PlayerHandler {
 				pushKeys.add(bind);
 			}
 		}
-		if (pushKeys.contains(KeyBind.GUN_FIREMODE)) {
-			PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_MODE));
-		} else if (pushKeys.contains(KeyBind.GUN_RELOAD)) {
-			PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_RELOAD));
-		} else if (pushKeys.contains(KeyBind.GUN_USEBULLET)) {
-			PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_BULLET));
-		}
-		// マウス
-		if (lastLeftMouse != leftMouseHold || lastRightMouse != rightMouseHold) {
-			PacketHandler.INSTANCE.sendToServer(new PacketInput(leftMouseHold, rightMouseHold));
-			lastLeftMouse = leftMouseHold;
-			lastRightMouse = rightMouseHold;
-		}
-		// 射撃処理
-		EquipMode em = EquipMode.getEqipMode(player);
-		ItemStack main = player.getHeldItemMainhand();
-		ItemStack off = player.getHeldItemOffhand();
-		boolean ads = HideEntityDataManager.getADSState(player) == 1f;
-		// 持ち替え検知
-		if (idMain != NBTWrapper.getHideID(main) || idOff != NBTWrapper.getHideID(off)) {
-			idMain = NBTWrapper.getHideID(main);
-			idOff = NBTWrapper.getHideID(off);
-			// 持ち替えでキャンセルするもの
-			mainState.clear();
-			offState.clear();
-		}
-		// 射撃処理
-		if (em == EquipMode.Main) {
-			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), mainState, ads, leftMouseHold);
-		} else if (em == EquipMode.Off) {
-			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(off), offState, ads, leftMouseHold);
-		} else if (em == EquipMode.OtherDual) {
-			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), mainState, ads, leftMouseHold);
-			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(off), offState, ads, rightMouseHold);
-		} else if (em == EquipMode.Dual) {
-			boolean mainTrigger = false;
-			boolean offTrigger = false;
-			GunFireMode mode = NBTWrapper.getGunFireMode(main);
-			if (mode == GunFireMode.BURST || mode == GunFireMode.SEMIAUTO) {
-				if (leftMouseHold != lastLeftMouse && leftMouseHold) {
-					if ((dualToggle || offState.shootDelay > 0 || !ItemGun.canShoot(off)) && !mainState.stopshoot) {
-						mainTrigger = true;
-						dualToggle = false;
-					} else if ((!dualToggle || mainState.shootDelay > 0 || !ItemGun.canShoot(main))
-							&& !offState.stopshoot) {
-						offTrigger = true;
-						dualToggle = true;
-					}
-				}
-			} else {
-				mainTrigger = offTrigger = leftMouseHold;
+		//兵器に乗っているか
+		if (true) {
+			// アイテムの銃の処理
+			if (pushKeys.contains(KeyBind.GUN_FIREMODE)) {
+				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_MODE));
+			} else if (pushKeys.contains(KeyBind.GUN_RELOAD)) {
+				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_RELOAD));
+			} else if (pushKeys.contains(KeyBind.GUN_USEBULLET)) {
+				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_BULLET));
 			}
-			ItemGun.shootUpdate(main, player, NBTWrapper.getGunFireMode(main), mainState, ads, mainTrigger);
-			ItemGun.shootUpdate(off, player, NBTWrapper.getGunFireMode(main), offState, ads, offTrigger);
+			// マウス
+			if (lastLeftMouse != leftMouseHold || lastRightMouse != rightMouseHold) {
+				PacketHandler.INSTANCE.sendToServer(new PacketInput(leftMouseHold, rightMouseHold));
+				lastLeftMouse = leftMouseHold;
+				lastRightMouse = rightMouseHold;
+			}
+			// 射撃処理
+			EquipMode em = EquipMode.getEqipMode(player);
+			ItemStack main = player.getHeldItemMainhand();
+			ItemStack off = player.getHeldItemOffhand();
+			boolean ads = HideEntityDataManager.getADSState(player) == 1f;
+			// 持ち替え検知
+			if (idMain != NBTWrapper.getHideID(main) || idOff != NBTWrapper.getHideID(off)) {
+				idMain = NBTWrapper.getHideID(main);
+				idOff = NBTWrapper.getHideID(off);
+
+				gunMain = new Gun(main);
+				gunOff = new Gun(off);
+			}
+			// 射撃処理
+			if (em == EquipMode.Main) {
+				ItemGun.shootUpdate(player, gunMain, ads, leftMouseHold);
+			} else if (em == EquipMode.Off) {
+				ItemGun.shootUpdate(player, gunOff, ads, leftMouseHold);
+			} else if (em == EquipMode.OtherDual) {
+				ItemGun.shootUpdate(player, gunMain, ads, leftMouseHold);
+				ItemGun.shootUpdate(player, gunOff, ads, rightMouseHold);
+			} else if (em == EquipMode.Dual) {
+				boolean mainTrigger = false;
+				boolean offTrigger = false;
+				GunFireMode mode = NBTWrapper.getGunFireMode(main);
+				if (mode == GunFireMode.BURST || mode == GunFireMode.SEMIAUTO) {
+					if (leftMouseHold != lastLeftMouse && leftMouseHold) {
+						if ((dualToggle || gunOff.shootDelay > 0 || !ItemGun.canShoot(off)) && !gunMain.stopshoot) {
+							mainTrigger = true;
+							dualToggle = false;
+						} else if ((!dualToggle || gunMain.shootDelay > 0 || !ItemGun.canShoot(main))
+								&& !gunOff.stopshoot) {
+							offTrigger = true;
+							dualToggle = true;
+						}
+					}
+				} else {
+					mainTrigger = offTrigger = leftMouseHold;
+				}
+				ItemGun.shootUpdate(player, gunMain, ads, mainTrigger);
+				ItemGun.shootUpdate(player, gunOff, ads, offTrigger);
+			}
+			// アップデート
+			gunMain.update();
+			gunOff.update();
 		}
-		// アップデート
-		mainState.update();
-		offState.update();
 		RecoilHandler.updateRecoil();
 		lastyaw = player.rotationYaw;
 		lastpitch = player.rotationPitch;
@@ -222,14 +227,6 @@ public class PlayerHandler {
 		}
 	}
 
-	/***/
-	public static Gun getMainGun() {
-
-	}
-
-	public static Gun getOffGun() {
-
-	}
 
 	/** サーバーTick処理 プログレスを進める */
 	private static void ServerTick(EntityPlayer player) {

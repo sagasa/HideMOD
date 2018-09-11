@@ -6,6 +6,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 import gamedata.LoadedMagazine;
+import gamedata.LoadedMagazine.Magazine;
 import handler.PlayerHandler.EquipMode;
 import helper.NBTWrapper;
 import item.ItemGun;
@@ -79,14 +80,14 @@ public class RenderHandler {
 
 		if (EquipMode.getEqipMode(mc.player) == EquipMode.Main) {
 			writeGunInfo(x, y, mc.player.getHeldItemMainhand());
-		}else if (EquipMode.getEqipMode(mc.player) == EquipMode.Off) {
+		} else if (EquipMode.getEqipMode(mc.player) == EquipMode.Off) {
 			writeGunInfo(x, y, mc.player.getHeldItemOffhand());
-		}else if (EquipMode.getEqipMode(mc.player) == EquipMode.Dual) {
+		} else if (EquipMode.getEqipMode(mc.player) == EquipMode.Dual) {
 			writeGunInfo(x, y, mc.player.getHeldItemMainhand());
-			writeGunInfo(x-120, y, mc.player.getHeldItemOffhand());
-		}else if (EquipMode.getEqipMode(mc.player) == EquipMode.OtherDual) {
+			writeGunInfo(x - 120, y, mc.player.getHeldItemOffhand());
+		} else if (EquipMode.getEqipMode(mc.player) == EquipMode.OtherDual) {
 			writeGunInfo(x, y, mc.player.getHeldItemMainhand());
-			writeGunInfo(x-120, y, mc.player.getHeldItemOffhand());
+			writeGunInfo(x - 120, y, mc.player.getHeldItemOffhand());
 		}
 
 	}
@@ -111,7 +112,7 @@ public class RenderHandler {
 
 		// マガジン
 		int offset = 0;
-		for (LoadedMagazine magazine : NBTWrapper.getGunLoadedMagazines(gun)) {
+		for (Magazine magazine ; NBTWrapper.getGunLoadedMagazines(gun).Iterator()) {
 			if (magazine != null) {
 				RenderHelper.enableGUIStandardItemLighting();
 				GL11.glEnable(GL12.GL_RESCALE_NORMAL);
@@ -131,13 +132,14 @@ public class RenderHandler {
 		float fontSize = 1.8f;
 		GlStateManager.scale(fontSize, fontSize, fontSize);
 		mc.fontRenderer.drawString(
-				LoadedMagazine.getLoadedNum(NBTWrapper.getGunLoadedMagazines(gun)) + "/"
+				NBTWrapper.getGunLoadedMagazines(gun).getLoadedNum() + "/"
 						+ ItemGun.getCanUseingBulletNum(gun, mc.player),
 				(x + 5) / fontSize, (y + 21) / fontSize, 0xFFFFFF, false);
 		GlStateManager.scale(1 / fontSize, 1 / fontSize, 1 / fontSize);
 		// 使用する弾
-		mc.fontRenderer.drawString(ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(gun)).ITEM_INFO.NAME_DISPLAY,
-				x + 40, y + 50, 0xFFFFFF);
+		mc.fontRenderer.drawString(
+				ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(gun)).ITEM_INFO.NAME_DISPLAY, x + 40, y + 50,
+				0xFFFFFF);
 
 		GlStateManager.disableBlend();
 	}

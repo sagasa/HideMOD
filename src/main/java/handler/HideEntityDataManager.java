@@ -2,6 +2,7 @@ package handler;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
@@ -10,20 +11,18 @@ import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 /** 銃火器の状態をサーバー・クライアント間で同期するためのマネージャー */
 public class HideEntityDataManager {
 
-	private static final DataParameter<Float> ADS_KEY = EntityDataManager.<Float> createKey(Entity.class,
+	private static final DataParameter<Float> ADS_KEY = EntityDataManager.<Float> createKey(EntityPlayer.class,
 			DataSerializers.FLOAT);
-	private static final DataParameter<Float> RELOAD_KEY = EntityDataManager.<Float> createKey(Entity.class,
+	private static final DataParameter<Float> RELOAD_KEY = EntityDataManager.<Float> createKey(EntityPlayer.class,
 			DataSerializers.FLOAT);
-
-	private static final Class[] AddStateClass = new Class[] { EntityLivingBase.class };
 
 	public static void onEntityInit(EntityConstructing event) {
 		Entity e = event.getEntity();
-		for (Class clazz : AddStateClass) {
-			if (clazz.isInstance(e)) {
-				e.getDataManager().register(RELOAD_KEY, -1f);
-				e.getDataManager().register(ADS_KEY, 0f);
-			}
+		if (e instanceof EntityPlayer) {
+			System.out.println("DataManager書き込みたい");
+			e.getDataManager().register(RELOAD_KEY, -1f);
+			e.getDataManager().register(ADS_KEY, 0f);
+
 		}
 	}
 

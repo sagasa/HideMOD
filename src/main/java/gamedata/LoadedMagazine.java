@@ -1,6 +1,7 @@
 package gamedata;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -41,20 +42,40 @@ public class LoadedMagazine {
 			return false;
 		}
 	}
+	
+	/** 次に撃つ弾を取得 */
+	public BulletData getNextBullet() {
+		Magazine mag = getNextMagazine();
+		if (mag == null) {
+			return null;
+		} else {
+			return PackData.getBulletData(mag.name);
+		}
+	}
 
 	/** 次に撃つ弾を取得 消費する */
-	public BulletData getNextBullet() {
-		if (magazineList.size() > 0 && magazineList.get(0).num > 0) {
-			if (PackData.getBulletData(magazineList.get(0).name) == null) {
-				magazineList.remove(0);
-				return getNextBullet();
-			}
+	public BulletData useNextBullet() {
+		Magazine mag = getNextMagazine();
+		if (mag == null) {
+			return null;
+		} else {
 			// 通知
 			if (lisner != null) {
 				lisner.MagazineUse(this);
 			}
-			magazineList.get(0).num--;
-			return PackData.getBulletData(magazineList.get(0).name);
+			mag.num--;
+
+			return PackData.getBulletData(mag.name);
+		}
+	}
+
+	private Magazine getNextMagazine() {
+		if (magazineList.size() > 0 && magazineList.get(0).num > 0) {
+			if (PackData.getBulletData(magazineList.get(0).name) == null) {
+				magazineList.remove(0);
+				return getNextMagazine();
+			}
+			return magazineList.get(0);
 		}
 		return null;
 	}
@@ -71,8 +92,8 @@ public class LoadedMagazine {
 		magazineList.add(mag);
 	}
 
-	public List<Magazine> getList() {
-		return magazineList;
+	public Iterator<Magazine> Iterator() {
+		return magazineList.iterator();
 	}
 
 	@Override
