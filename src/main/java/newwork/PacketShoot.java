@@ -3,7 +3,7 @@ package newwork;
 import com.jcraft.jogg.Packet;
 
 import entity.EntityBullet;
-import handler.GunManager;
+import gamedata.Gun;
 import handler.PacketHandler;
 import handler.SoundHandler;
 import hideMod.PackData;
@@ -32,11 +32,23 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 	boolean isADS;
 	double worldTime;
 
+	private byte mode;
+	private static final byte ItemGun = 0;
+	long uid;
+
 	public PacketShoot() {
 	}
 
-	public PacketShoot(GunData gun, BulletData bullet, Entity shooter, double x, double y, double z, float yaw,
-			float pitch, float offset, boolean isADS,long uid) {
+	/** ItemGunからの発射 */
+	public PacketShoot(GunData gun, BulletData bullet, Entity shooter, boolean isADS, float offset, double x, double y,
+			double z, float yaw, float pitch, long uid) {
+		this(gun, bullet, shooter, isADS, offset, x, y, z, yaw, pitch);
+		mode = ItemGun;
+		this.uid = uid;
+	}
+
+	private PacketShoot(GunData gun, BulletData bullet, Entity shooter, boolean isADS, float offset, double x, double y,
+			double z, float yaw, float pitch) {
 		this.gun = gun;
 		this.bullet = bullet;
 		this.shooterID = shooter.getEntityId();
@@ -63,6 +75,10 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 		offset = buf.readFloat();
 		isADS = buf.readBoolean();
 		worldTime = buf.readDouble();
+		mode = buf.readByte();
+		if (mode == ItemGun) {
+			uid = buf.readLong();
+		}
 	}
 
 	@Override // ByteBufにデータを書き込む。
@@ -78,6 +94,10 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 		buf.writeFloat(offset);
 		buf.writeBoolean(isADS);
 		buf.writeDouble(worldTime);
+		buf.writeByte(mode);
+		if (mode == ItemGun) {
+			buf.writeLong(uid);
+		}
 	}
 
 	// 受信イベント
@@ -101,11 +121,14 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 					if (shooter == null) {
 						return;
 					}
+					if (!Gun.useBullet(player, m.uid)) {
+						return;
+					}
 					double lag = shooter.world.getTotalWorldTime() - worldTime;
 					lag = lag < 0 ? 0 : lag;
-					System.out.println("射撃パケット受信"+m.offset + (float) lag);
-					GunManager.shoot(m.gun, m.bullet, shooter, m.x, m.y, m.z, m.yaw, m.pitch, m.offset + (float) lag,
-							m.isADS);
+					System.out.println("射撃パケット受信" + m.offset + (float) lag);
+					Gun.shoot(m.gun, m.bullet, shooter, m.isADS, m.offset + (float) lag, m.x, m.y, m.z, m.yaw, m.pitch);
+
 				}
 			});
 		}

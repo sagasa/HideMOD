@@ -120,7 +120,7 @@ public class PlayerHandler {
 				pushKeys.add(bind);
 			}
 		}
-		//兵器に乗っているか
+		// 兵器に乗っているか
 		if (true) {
 			// アイテムの銃の処理
 			if (pushKeys.contains(KeyBind.GUN_FIREMODE)) {
@@ -149,25 +149,30 @@ public class PlayerHandler {
 				gunMain = new Gun(main);
 				gunOff = new Gun(off);
 			}
+			// Pos代入
+			gunMain.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ)
+					.setRotate(player.rotationYaw, player.rotationPitch).setLastRotate(lastyaw, lastpitch);
+			gunOff.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ)
+					.setRotate(player.rotationYaw, player.rotationPitch).setLastRotate(lastyaw, lastpitch);
+
 			// 射撃処理
 			if (em == EquipMode.Main) {
-				ItemGun.shootUpdate(player, gunMain, ads, leftMouseHold);
+				gunMain.gunUpdate(player, NBTWrapper.getGunFireMode(main), leftMouseHold);
 			} else if (em == EquipMode.Off) {
-				ItemGun.shootUpdate(player, gunOff, ads, leftMouseHold);
+				gunOff.gunUpdate(player, NBTWrapper.getGunFireMode(off), leftMouseHold);
 			} else if (em == EquipMode.OtherDual) {
-				ItemGun.shootUpdate(player, gunMain, ads, leftMouseHold);
-				ItemGun.shootUpdate(player, gunOff, ads, rightMouseHold);
+				gunMain.gunUpdate(player, NBTWrapper.getGunFireMode(main), leftMouseHold);
+				gunOff.gunUpdate(player, NBTWrapper.getGunFireMode(off), rightMouseHold);
 			} else if (em == EquipMode.Dual) {
 				boolean mainTrigger = false;
 				boolean offTrigger = false;
 				GunFireMode mode = NBTWrapper.getGunFireMode(main);
 				if (mode == GunFireMode.BURST || mode == GunFireMode.SEMIAUTO) {
 					if (leftMouseHold != lastLeftMouse && leftMouseHold) {
-						if ((dualToggle || gunOff.shootDelay > 0 || !ItemGun.canShoot(off)) && !gunMain.stopshoot) {
+						if ((dualToggle || !gunOff.canShoot()) && gunMain.canShoot()) {
 							mainTrigger = true;
 							dualToggle = false;
-						} else if ((!dualToggle || gunMain.shootDelay > 0 || !ItemGun.canShoot(main))
-								&& !gunOff.stopshoot) {
+						} else if ((!dualToggle || !gunMain.canShoot()) && gunOff.canShoot()) {
 							offTrigger = true;
 							dualToggle = true;
 						}
@@ -175,8 +180,8 @@ public class PlayerHandler {
 				} else {
 					mainTrigger = offTrigger = leftMouseHold;
 				}
-				ItemGun.shootUpdate(player, gunMain, ads, mainTrigger);
-				ItemGun.shootUpdate(player, gunOff, ads, offTrigger);
+				gunMain.gunUpdate(player, NBTWrapper.getGunFireMode(main), mainTrigger);
+				gunOff.gunUpdate(player, NBTWrapper.getGunFireMode(off), offTrigger);
 			}
 			// アップデート
 			gunMain.update();
@@ -226,7 +231,6 @@ public class PlayerHandler {
 			}
 		}
 	}
-
 
 	/** サーバーTick処理 プログレスを進める */
 	private static void ServerTick(EntityPlayer player) {

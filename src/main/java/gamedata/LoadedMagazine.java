@@ -42,7 +42,7 @@ public class LoadedMagazine {
 			return false;
 		}
 	}
-	
+
 	/** 次に撃つ弾を取得 */
 	public BulletData getNextBullet() {
 		Magazine mag = getNextMagazine();
@@ -92,8 +92,8 @@ public class LoadedMagazine {
 		magazineList.add(mag);
 	}
 
-	public Iterator<Magazine> Iterator() {
-		return magazineList.iterator();
+	public List<Magazine> getList() {
+		return magazineList;
 	}
 
 	@Override

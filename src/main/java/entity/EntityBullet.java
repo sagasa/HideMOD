@@ -117,8 +117,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	private static final byte FLAG_DEATH_TYPE_GROUND = 0b0000010;
 	private static final byte FLAG_DEATH_TYPE_ENTITY = 0b0000100;
 
-	public EntityBullet(GunData gun, BulletData bullet, Entity shooter, double x, double y, double z, float yaw,
-			float pitch, float offset, boolean isADS) {
+	public EntityBullet(GunData gun, BulletData bullet, Entity shooter, boolean isADS, float offset, double x, double y,
+			double z, float yaw, float pitch) {
 		this(shooter.world);
 		this.addtick = offset;
 		this.gunData = gun;
@@ -275,7 +275,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		if (bulletPower == 0 || isHittoBlock || bulletData.BULLET_LIFE < life) {
 			EntityDataManager dm = getDataManager();
 			Vec3d exppos = endPos.add(lvt.subtract(lvo).normalize().scale(-0.2));
-			System.out.println(endPos+" "+exppos);
+			System.out.println(endPos + " " + exppos);
 			if (bulletPower == 0) {
 				deathNaxtTick = FLAG_DEATH_NEXT_TICK | FLAG_DEATH_TYPE_ENTITY;
 				// エンティティに当たって爆発するなら

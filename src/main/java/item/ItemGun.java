@@ -14,7 +14,6 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 import gamedata.Gun;
 import gamedata.LoadedMagazine;
 import gamedata.LoadedMagazine.Magazine;
-import handler.GunManager;
 import handler.PlayerHandler;
 import handler.RecoilHandler;
 import helper.HideMath;
@@ -166,22 +165,6 @@ public class ItemGun extends Item {
 		return ((ItemGun) item.getItem()).GunData;
 	}
 
-	// 銃火器の処理
-	/** 射撃 */
-	public static void shootUpdate(Entity shooter, Gun gun, boolean isADS, boolean trigger) {
-		GunManager.gunUpdateDefaultPos(shooter, gun, NBTWrapper.getGunFireMode(gun.itemGun), isADS, trigger);
-	}
-
-	/** 弾が1つでも入っているか */
-	public static boolean canShoot(ItemStack gun) {
-		if (!isGun(gun)) {
-			return false;
-		}
-		if (NBTWrapper.getGunLoadedMagazines(gun).getLoadedNum() > 0) {
-			return true;
-		}
-		return false;
-	}
 
 	/**
 	 * リロード まだリロード処理が残ればtrue サーバーサイド
@@ -245,7 +228,7 @@ public class ItemGun extends Item {
 	/** インベントリから指定の弾を回収 取得した数を返す */
 	private static int getMag(String name, int value, EntityPlayer player, boolean isBreak) {
 		int c = value;
-		for (ItemStack item : player.inventory.mainInventory) {
+		for (ItemStack item : player.inventoryContainer.inventoryItemStacks) {
 			if (ItemMagazine.isMagazine(item, name)) {
 				int n = NBTWrapper.getMagazineBulletNum(item);
 				if (n <= c) {

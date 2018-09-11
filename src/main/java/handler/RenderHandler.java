@@ -112,7 +112,7 @@ public class RenderHandler {
 
 		// マガジン
 		int offset = 0;
-		for (Magazine magazine ; NBTWrapper.getGunLoadedMagazines(gun).Iterator()) {
+		for (Magazine magazine : NBTWrapper.getGunLoadedMagazines(gun).getList()) {
 			if (magazine != null) {
 				RenderHelper.enableGUIStandardItemLighting();
 				GL11.glEnable(GL12.GL_RESCALE_NORMAL);
