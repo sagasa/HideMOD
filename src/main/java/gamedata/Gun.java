@@ -68,6 +68,22 @@ public class Gun {
 
 	/**ItemGunから弾を消費する*/
 	public static boolean useBullet(EntityPlayer player,long uid){
+		for(ItemStack item : player.inventory.offHandInventory){
+			if(ItemGun.isGun(item)&&NBTWrapper.getHideID(item)==uid&&NBTWrapper.getGunLoadedMagazines(item).getLoadedNum()>0){
+				LoadedMagazine newmagazine = NBTWrapper.getGunLoadedMagazines(item);
+				newmagazine.useNextBullet();
+				NBTWrapper.setGunLoadedMagazines(item, newmagazine);
+				return true;
+			}
+		}
+		for(ItemStack item : player.inventory.mainInventory){
+			if(ItemGun.isGun(item)&&NBTWrapper.getHideID(item)==uid&&NBTWrapper.getGunLoadedMagazines(item).getLoadedNum()>0){
+				LoadedMagazine newmagazine = NBTWrapper.getGunLoadedMagazines(item);
+				newmagazine.useNextBullet();
+				NBTWrapper.setGunLoadedMagazines(item, newmagazine);
+				return true;
+			}
+		}
 		return false;
 	}
 

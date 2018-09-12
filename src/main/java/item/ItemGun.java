@@ -228,7 +228,7 @@ public class ItemGun extends Item {
 	/** インベントリから指定の弾を回収 取得した数を返す */
 	private static int getMag(String name, int value, EntityPlayer player, boolean isBreak) {
 		int c = value;
-		for (ItemStack item : player.inventoryContainer.inventoryItemStacks) {
+		for (ItemStack item : player.inventory.mainInventory) {
 			if (ItemMagazine.isMagazine(item, name)) {
 				int n = NBTWrapper.getMagazineBulletNum(item);
 				if (n <= c) {
