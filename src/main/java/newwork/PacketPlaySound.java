@@ -38,7 +38,7 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 	public PacketPlaySound() {
 	}
 
-	/**サーバー→クライアント 指定位置で再生*/
+	/** サーバー→クライアント 指定位置で再生 */
 	public PacketPlaySound(String soundName, double x, double y, double z, float vol, float pitch, int delay) {
 		Mode = CLIENT_PLAYSOUND;
 		Name = soundName;
@@ -49,12 +49,15 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 		Pitch = pitch;
 		Delay = delay;
 	}
-	/**クライアント→クライアント 指定位置で再生*/
+
+	/** クライアント→クライアント 指定位置で再生 */
 	public PacketPlaySound(Sound sound, double x, double y, double z) {
 		this(sound.NAME, x, y, z, sound.VOL, sound.PITCH, sound.RANGE, sound.USE_DELAY, sound.USE_DECAY);
 	}
-	/**クライアント→クライアント 指定位置で再生*/
-	public PacketPlaySound(String soundName, double x, double y, double z, float vol, float pitch, float range,boolean delay,boolean decay) {
+
+	/** クライアント→クライアント 指定位置で再生 */
+	public PacketPlaySound(String soundName, double x, double y, double z, float vol, float pitch, float range,
+			boolean delay, boolean decay) {
 		Mode = SERVER_PLAYREQ;
 		Name = soundName;
 		X = x;
@@ -66,6 +69,7 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 		UseDelay = delay;
 		UseDecay = decay;
 	}
+
 	@Override
 	public void fromBytes(ByteBuf buf) {
 		Mode = buf.readByte();
@@ -75,11 +79,11 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 		Z = buf.readDouble();
 		Vol = buf.readFloat();
 		Pitch = buf.readFloat();
-		if(Mode==SERVER_PLAYREQ){
+		if (Mode == SERVER_PLAYREQ) {
 			Range = buf.readFloat();
 			UseDelay = buf.readBoolean();
 			UseDecay = buf.readBoolean();
-		}else{
+		} else {
 			Delay = buf.readInt();
 		}
 	}
@@ -93,14 +97,15 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 		buf.writeDouble(Z);
 		buf.writeFloat(Vol);
 		buf.writeFloat(Pitch);
-		if(Mode==SERVER_PLAYREQ){
+		if (Mode == SERVER_PLAYREQ) {
 			buf.writeFloat(Range);
 			buf.writeBoolean(UseDelay);
 			buf.writeBoolean(UseDecay);
-		}else{
+		} else {
 			buf.writeInt(Delay);
 		}
 	}
+
 	@Override
 	public IMessage onMessage(final PacketPlaySound m, final MessageContext ctx) {
 		if (ctx.side == Side.SERVER) {
@@ -108,20 +113,29 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 				public void run() {
 					processMessage(m);
 				}
+
 				private void processMessage(PacketPlaySound m) {
 					EntityPlayer player = ctx.getServerHandler().player;
-					SoundHandler.broadcastSound(player.world, m.Name, m.X, m.Y, m.Z, m.Range, m.Vol, m.Pitch, m.UseDelay, m.UseDecay);
+					SoundHandler.broadcastSound(player.world, m.Name, m.X, m.Y, m.Z, m.Range, m.Vol, m.Pitch,
+							m.UseDelay, m.UseDecay);
 				}
 			});
-		}else{
-			//再生
-			playSound(m);
+		} else {
+			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
+				@Override
+				public void run() {
+					// 再生
+					playSound(m);
+				}
+			});
+
 		}
 		return null;
 	}
+
 	@SideOnly(Side.CLIENT)
-	private void playSound(PacketPlaySound m){
-		HideSound sound = new HideSound(m.Name, m.Vol, m.Pitch, (float)m.X, (float)m.Y, (float)m.Z);
+	private void playSound(PacketPlaySound m) {
+		HideSound sound = new HideSound(m.Name, m.Vol, m.Pitch, (float) m.X, (float) m.Y, (float) m.Z);
 		Minecraft.getMinecraft().getSoundHandler().playDelayedSound(sound, m.Delay);
 	}
 }

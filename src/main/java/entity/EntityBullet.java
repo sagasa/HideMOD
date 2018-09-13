@@ -159,8 +159,10 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	public void onUpdate() {
-		onUpdate(world.getTotalWorldTime() - lastWorldTick);
-		lastWorldTick = world.getTotalWorldTime();
+		if (lastWorldTick != 0) {
+			onUpdate(world.getTotalWorldTime() - lastWorldTick);
+			lastWorldTick = world.getTotalWorldTime();
+		}
 	}
 
 	private void onUpdate(float tick) {
@@ -275,7 +277,6 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		if (bulletPower == 0 || isHittoBlock || bulletData.BULLET_LIFE < life) {
 			EntityDataManager dm = getDataManager();
 			Vec3d exppos = endPos.add(lvt.subtract(lvo).normalize().scale(-0.2));
-			System.out.println(endPos + " " + exppos);
 			if (bulletPower == 0) {
 				deathNaxtTick = FLAG_DEATH_NEXT_TICK | FLAG_DEATH_TYPE_ENTITY;
 				// エンティティに当たって爆発するなら
@@ -412,6 +413,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		PacketHandler.writeString(buffer, bulletData.ITEM_INFO.NAME_SHORT);
 		PacketHandler.writeString(buffer, gunData.ITEM_INFO.NAME_SHORT);
 		onUpdate(addtick);
+		lastWorldTick = world.getTotalWorldTime();
 	}
 
 	/** サーバーからの情報を変数に書き込む */
@@ -431,9 +433,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		bulletData = ItemMagazine.getBulletData(PacketHandler.readString(buf));
 		gunData = ItemGun.getGunData(PacketHandler.readString(buf));
 		onUpdate(tickt);
-		// オーナーならリコイルを追加
-		RecoilHandler.addRecoil(gunData, Shooter);
-
+		lastWorldTick = world.getTotalWorldTime();
 	}
 
 	@Override

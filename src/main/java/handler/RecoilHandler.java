@@ -69,11 +69,7 @@ public class RecoilHandler {
 
 	/** 反動を与える
 	 * @param shooter */
-	public static void addRecoil(GunData data, Entity shooter) {
-		//オーナーか
-		if(!Minecraft.getMinecraft().player.isEntityEqual(shooter)){
-			return;
-		}
+	public static void addRecoil(GunData data) {
 		// 銃が変わったならリコイルの適応を解除
 		if (!data.equals(nowGun)) {
 			yawShakeTo = pitchShakeTo = 0;

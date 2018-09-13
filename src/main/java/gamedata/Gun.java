@@ -3,6 +3,7 @@ package gamedata;
 import entity.EntityBullet;
 import handler.HideEntityDataManager;
 import handler.PacketHandler;
+import handler.RecoilHandler;
 import handler.SoundHandler;
 import helper.NBTWrapper;
 import item.ItemGun;
@@ -32,29 +33,6 @@ public class Gun {
 		gundata = ItemGun.getGunData(itemGun);
 		magazine = NBTWrapper.getGunLoadedMagazines(itemGun);
 		uid =  NBTWrapper.getHideID(itemGun);
-		init();
-	}
-
-	/** 通知系の初期化 */
-	private void init() {
-
-	}
-
-	private int amount = 0;
-
-	/** tick処理 */
-	public void update() {
-
-		// NBTの読み取り Itemモードなら増えた場合のみ適応
-		if (Mode == GunItem) {
-			LoadedMagazine now = NBTWrapper.getGunLoadedMagazines(itemGun);
-			if (now.getLoadedNum() > amount) {
-				// 読み取って適応
-				magazine = now;
-			}
-		} else if (Mode == GunVehicle) {
-
-		}
 	}
 
 	// ============================================================================================
@@ -121,12 +99,33 @@ public class Gun {
 		lastPitch = pitch;
 		return this;
 	}
-
-	public void gunUpdate(Entity shooter, GunFireMode mode, boolean trigger) {
+	//
+	public void gunUpdate(Entity shooter, ItemStack item, boolean trigger) {
 		Shooter = shooter;
-		gunUpdate(mode, trigger);
+		itemGun = item;
+		update();
+		gunUpdate(NBTWrapper.getGunFireMode(item), trigger);
 	}
 
+	private int amount = 0;
+
+	/** アップデート リロードチェック系 */
+	private void update() {
+		// NBTの読み取り Itemモードなら増えた場合のみ適応
+		if (Mode == GunItem) {
+			LoadedMagazine now = NBTWrapper.getGunLoadedMagazines(itemGun);
+			if (now.getLoadedNum() > amount) {
+				// 読み取って適応
+				magazine = now;
+				System.out.println("Magazine更新");
+			}
+			amount = now.getLoadedNum();
+		} else if (Mode == GunVehicle) {
+
+		}
+	}
+
+	
 	private boolean stopshoot = false;
 	private float shootDelay = 0;
 	private int shootNum = 0;
@@ -189,15 +188,15 @@ public class Gun {
 			float pitch = lastPitch == null ? Pitch : lastPitch + (Pitch - lastPitch) * offset;
 			if (Shooter.world.isRemote) {
 				// クライアントなら
+				RecoilHandler.addRecoil(gundata);
 				PacketHandler.INSTANCE
-						.sendToServer(new PacketShoot(gundata, bullet, Shooter, isADS, offset, X, Y, Z, yaw, pitch, 0));
+						.sendToServer(new PacketShoot(gundata, bullet, Shooter, isADS, offset, X, Y, Z, yaw, pitch, uid));
 			} else {
 				shoot(gundata, bullet, Shooter, isADS, offset, X, Y, Z, yaw, pitch);
 			}
 		} else {
 			stopshoot = true;
 		}
-
 	}
 
 	/** エンティティを生成 ShootNumに応じた数弾を出す */

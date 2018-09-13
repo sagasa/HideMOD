@@ -95,8 +95,8 @@ public class PlayerHandler {
 	private static boolean lastLeftMouse = false;
 	private static long idMain = 0;
 	private static long idOff = 0;
-	private static Gun gunMain = null;
-	private static Gun gunOff = null;
+	public static Gun gunMain = null;
+	public static Gun gunOff = null;
 
 	private static boolean dualToggle = false;
 
@@ -157,12 +157,12 @@ public class PlayerHandler {
 
 			// 射撃処理
 			if (em == EquipMode.Main) {
-				gunMain.gunUpdate(player, NBTWrapper.getGunFireMode(main), leftMouseHold);
+				gunMain.gunUpdate(player, main, leftMouseHold);
 			} else if (em == EquipMode.Off) {
-				gunOff.gunUpdate(player, NBTWrapper.getGunFireMode(off), leftMouseHold);
+				gunOff.gunUpdate(player, off, leftMouseHold);
 			} else if (em == EquipMode.OtherDual) {
-				gunMain.gunUpdate(player, NBTWrapper.getGunFireMode(main), leftMouseHold);
-				gunOff.gunUpdate(player, NBTWrapper.getGunFireMode(off), rightMouseHold);
+				gunMain.gunUpdate(player, main, leftMouseHold);
+				gunOff.gunUpdate(player, off, rightMouseHold);
 			} else if (em == EquipMode.Dual) {
 				boolean mainTrigger = false;
 				boolean offTrigger = false;
@@ -180,12 +180,9 @@ public class PlayerHandler {
 				} else {
 					mainTrigger = offTrigger = leftMouseHold;
 				}
-				gunMain.gunUpdate(player, NBTWrapper.getGunFireMode(main), mainTrigger);
-				gunOff.gunUpdate(player, NBTWrapper.getGunFireMode(off), offTrigger);
+				gunMain.gunUpdate(player, main, mainTrigger);
+				gunOff.gunUpdate(player, off, offTrigger);
 			}
-			// アップデート
-			gunMain.update();
-			gunOff.update();
 		}
 		RecoilHandler.updateRecoil();
 		lastyaw = player.rotationYaw;

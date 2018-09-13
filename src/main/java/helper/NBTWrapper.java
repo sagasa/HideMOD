@@ -61,7 +61,7 @@ public class NBTWrapper {
 		while(magazines.hasKey(i + "")){
 			NBTTagCompound magData = magazines.getCompoundTag(i + "");
 			if(magData.getInteger(GUN_NBT_Magazine_Number) > 0){
-				loadedMagazines.addMagazinetoNext(loadedMagazines.new Magazine(magData.getString(GUN_NBT_Magazine_Name),
+				loadedMagazines.addMagazinetoFast(loadedMagazines.new Magazine(magData.getString(GUN_NBT_Magazine_Name),
 						magData.getInteger(GUN_NBT_Magazine_Number)));
 			}
 			i++;

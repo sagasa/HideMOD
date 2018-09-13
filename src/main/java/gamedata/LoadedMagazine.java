@@ -12,11 +12,6 @@ import types.BulletData;
 /** 装填済みのマガジン管理用 変更通知機能付き */
 public class LoadedMagazine {
 	private List<Magazine> magazineList = new ArrayList<>();
-	private MagazineLisner lisner;
-
-	public interface MagazineLisner {
-		abstract public void MagazineUse(LoadedMagazine magazines);
-	}
 
 	/** 単体のマガジン */
 	public class Magazine {
@@ -59,12 +54,7 @@ public class LoadedMagazine {
 		if (mag == null) {
 			return null;
 		} else {
-			// 通知
-			if (lisner != null) {
-				lisner.MagazineUse(this);
-			}
 			mag.num--;
-
 			return PackData.getBulletData(mag.name);
 		}
 	}
@@ -80,11 +70,7 @@ public class LoadedMagazine {
 		return null;
 	}
 
-	public void setLisner(MagazineLisner lisner) {
-		this.lisner = lisner;
-	}
-
-	public void addMagazinetoNext(@Nonnull Magazine mag) {
+	public void addMagazinetoFast(@Nonnull Magazine mag) {
 		magazineList.add(0, mag);
 	}
 

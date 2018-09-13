@@ -122,11 +122,12 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 						return;
 					}
 					if (!Gun.useBullet(player, m.uid)) {
+						System.out.println("銃が見つからないのでキャンセル");
 						return;
 					}
-					double lag = shooter.world.getTotalWorldTime() - worldTime;
+					double lag = shooter.world.getTotalWorldTime() - m.worldTime;
 					lag = lag < 0 ? 0 : lag;
-					System.out.println("射撃パケット受信" + m.offset + (float) lag);
+					System.out.println("射撃パケット受信" + (m.offset + (float) lag));
 					Gun.shoot(m.gun, m.bullet, shooter, m.isADS, m.offset + (float) lag, m.x, m.y, m.z, m.yaw, m.pitch);
 
 				}
