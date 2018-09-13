@@ -117,7 +117,7 @@ public class Gun {
 			if (now.getLoadedNum() > amount) {
 				// 読み取って適応
 				magazine = now;
-				System.out.println("Magazine更新");
+		//		System.out.println("Magazine更新");
 			}
 			amount = now.getLoadedNum();
 		} else if (Mode == GunVehicle) {
@@ -125,7 +125,7 @@ public class Gun {
 		}
 	}
 
-	
+
 	private boolean stopshoot = false;
 	private float shootDelay = 0;
 	private int shootNum = 0;
@@ -188,9 +188,13 @@ public class Gun {
 			float pitch = lastPitch == null ? Pitch : lastPitch + (Pitch - lastPitch) * offset;
 			if (Shooter.world.isRemote) {
 				// クライアントなら
+				//シューターがプレイヤー以外ならエラー
+				if(!(Shooter instanceof EntityPlayer)){
+					System.err.println("プレイヤー以外のクライアントからの発射メゾットの実行はできません");
+				}
 				RecoilHandler.addRecoil(gundata);
 				PacketHandler.INSTANCE
-						.sendToServer(new PacketShoot(gundata, bullet, Shooter, isADS, offset, X, Y, Z, yaw, pitch, uid));
+						.sendToServer(new PacketShoot(gundata, bullet, isADS, offset, X, Y, Z, yaw, pitch, uid));
 			} else {
 				shoot(gundata, bullet, Shooter, isADS, offset, X, Y, Z, yaw, pitch);
 			}

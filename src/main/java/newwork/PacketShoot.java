@@ -22,7 +22,6 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 
 	GunData gun;
 	BulletData bullet;
-	int shooterID;
 	double x;
 	double y;
 	double z;
@@ -40,18 +39,17 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 	}
 
 	/** ItemGunからの発射 */
-	public PacketShoot(GunData gun, BulletData bullet, Entity shooter, boolean isADS, float offset, double x, double y,
+	public PacketShoot(GunData gun, BulletData bullet, boolean isADS, float offset, double x, double y,
 			double z, float yaw, float pitch, long uid) {
-		this(gun, bullet, shooter, isADS, offset, x, y, z, yaw, pitch);
+		this(gun, bullet, isADS, offset, x, y, z, yaw, pitch);
 		mode = ItemGun;
 		this.uid = uid;
 	}
 
-	private PacketShoot(GunData gun, BulletData bullet, Entity shooter, boolean isADS, float offset, double x, double y,
+	private PacketShoot(GunData gun, BulletData bullet, boolean isADS, float offset, double x, double y,
 			double z, float yaw, float pitch) {
 		this.gun = gun;
 		this.bullet = bullet;
-		this.shooterID = shooter.getEntityId();
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -59,14 +57,13 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 		this.pitch = pitch;
 		this.offset = offset;
 		this.isADS = isADS;
-		this.worldTime = shooter.world.getTotalWorldTime();
+		this.worldTime = Minecraft.getMinecraft().player.world.getTotalWorldTime();
 	}
 
 	@Override // ByteBufからデータを読み取る。
 	public void fromBytes(ByteBuf buf) {
 		gun = PackData.getGunData(PacketHandler.readString(buf));
 		bullet = PackData.getBulletData(PacketHandler.readString(buf));
-		shooterID = buf.readInt();
 		x = buf.readDouble();
 		y = buf.readDouble();
 		z = buf.readDouble();
@@ -85,7 +82,6 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 	public void toBytes(ByteBuf buf) {
 		PacketHandler.writeString(buf, gun.ITEM_INFO.NAME_SHORT);
 		PacketHandler.writeString(buf, bullet.ITEM_INFO.NAME_SHORT);
-		buf.writeInt(shooterID);
 		buf.writeDouble(x);
 		buf.writeDouble(y);
 		buf.writeDouble(z);
@@ -117,18 +113,14 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 
 				private void processMessage(PacketShoot m) {
 					EntityPlayer player = ctx.getServerHandler().player;
-					Entity shooter = player.world.getEntityByID(shooterID);
-					if (shooter == null) {
-						return;
-					}
 					if (!Gun.useBullet(player, m.uid)) {
 						System.out.println("銃が見つからないのでキャンセル");
 						return;
 					}
-					double lag = shooter.world.getTotalWorldTime() - m.worldTime;
+					double lag = player.world.getTotalWorldTime() - m.worldTime;
 					lag = lag < 0 ? 0 : lag;
-					System.out.println("射撃パケット受信" + (m.offset + (float) lag));
-					Gun.shoot(m.gun, m.bullet, shooter, m.isADS, m.offset + (float) lag, m.x, m.y, m.z, m.yaw, m.pitch);
+					//System.out.println("射撃パケット受信" + (m.offset + (float) lag));
+					Gun.shoot(m.gun, m.bullet, player, m.isADS, m.offset + (float) lag, m.x, m.y, m.z, m.yaw, m.pitch);
 
 				}
 			});

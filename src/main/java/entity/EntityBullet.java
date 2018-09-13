@@ -234,7 +234,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			// 多段ヒット防止
 			if (!AlreadyHit.contains(e)) {
 				// ダメージが与えられる対象なら
-				if (e instanceof EntityLivingBase && ((EntityLivingBase) e).deathTime == 0 && !(e == Shooter)) {
+				if (e instanceof EntityLivingBase && ((EntityLivingBase) e).deathTime == 0 && !(e.equals(Shooter))) {
+					//System.out.println("Shooter "+Shooter+" HitEntity "+e);
 					// ダメージを算出
 					FlyingDistance += lvo.distanceTo(hit.hitVec);
 					float damage = getFinalLivingDamage((EntityLivingBase) e, FlyingDistance);

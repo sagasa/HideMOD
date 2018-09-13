@@ -170,7 +170,7 @@ public class ItemGun extends Item {
 	 * リロード まだリロード処理が残ればtrue サーバーサイド
 	 */
 	public static boolean reload(EntityPlayer player, ItemStack gun, boolean isexit) {
-		System.out.println("開始");
+	//	System.out.println("開始");
 		// リスト化
 		LoadedMagazine magazines = NBTWrapper.getGunLoadedMagazines(gun);
 		// 排出
@@ -183,7 +183,7 @@ public class ItemGun extends Item {
 			magazines.getList().clear();
 		}
 		GunData data = getGunData(gun);
-		System.out.println("start" + magazines.getList());
+	//	System.out.println("start" + magazines.getList());
 		if (data.RELOAD_ALL) {
 			while (reload(player, gun, magazines))
 				;
@@ -191,7 +191,7 @@ public class ItemGun extends Item {
 			return false;
 		} else {
 			reload(player, gun, magazines);
-			System.out.println("end" + magazines.getList());
+	//		System.out.println("end" + magazines.getList());
 			NBTWrapper.setGunLoadedMagazines(gun, magazines);
 			return reload(player, gun, magazines);
 		}

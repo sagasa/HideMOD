@@ -145,16 +145,20 @@ public class PlayerHandler {
 			if (idMain != NBTWrapper.getHideID(main) || idOff != NBTWrapper.getHideID(off)) {
 				idMain = NBTWrapper.getHideID(main);
 				idOff = NBTWrapper.getHideID(off);
+				// 使う銃だけ代入
+				gunMain = em.hasMain() ? new Gun(main) : null;
+				gunOff = em.hasOff() ? new Gun(off) : null;
 
-				gunMain = new Gun(main);
-				gunOff = new Gun(off);
 			}
 			// Pos代入
-			gunMain.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ)
-					.setRotate(player.rotationYaw, player.rotationPitch).setLastRotate(lastyaw, lastpitch);
-			gunOff.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ)
-					.setRotate(player.rotationYaw, player.rotationPitch).setLastRotate(lastyaw, lastpitch);
-
+			if (gunMain != null) {
+				gunMain.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ)
+						.setRotate(player.rotationYaw, player.rotationPitch).setLastRotate(lastyaw, lastpitch);
+			}
+			if (gunOff != null) {
+				gunOff.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ)
+						.setRotate(player.rotationYaw, player.rotationPitch).setLastRotate(lastyaw, lastpitch);
+			}
 			// 射撃処理
 			if (em == EquipMode.Main) {
 				gunMain.gunUpdate(player, main, leftMouseHold);
@@ -201,7 +205,15 @@ public class PlayerHandler {
 
 	/** 装備の状態 */
 	public enum EquipMode {
-		Main, Off, Dual, OtherDual, None;
+		Main(true, false), Off(false, true), Dual(true, true), OtherDual(true, true), None(false, false);
+		private boolean hasMain;
+		private boolean hasOff;
+
+		private EquipMode(boolean main, boolean off) {
+			hasMain = main;
+			hasOff = off;
+		}
+
 		/** プレイヤーから装備の状態を取得 */
 		public static EquipMode getEqipMode(EntityPlayer player) {
 			GunData main = ItemGun.getGunData(player.getHeldItemMainhand());
@@ -226,6 +238,16 @@ public class PlayerHandler {
 				// 何も持っていないなら
 				return None;
 			}
+		}
+
+		/** メインを使っているか */
+		public boolean hasMain() {
+			return hasMain;
+		}
+
+		/** オフを使っているか */
+		public boolean hasOff() {
+			return hasOff;
 		}
 	}
 

@@ -55,10 +55,13 @@ public class LoadedMagazine {
 			return null;
 		} else {
 			mag.num--;
+			if(magazineList.size()>0&&mag.num<=0){
+	//			magazineList.remove(0);
+			}
 			return PackData.getBulletData(mag.name);
 		}
 	}
-
+	/**初めの弾が入ったマガジンを返す*/
 	private Magazine getNextMagazine() {
 		if (magazineList.size() > 0 && magazineList.get(0).num > 0) {
 			if (PackData.getBulletData(magazineList.get(0).name) == null) {
@@ -66,6 +69,9 @@ public class LoadedMagazine {
 				return getNextMagazine();
 			}
 			return magazineList.get(0);
+		}else if(magazineList.size()>0&&magazineList.get(0).num <=0){
+	//		System.out.println("Size "+ magazineList.size());
+			magazineList.remove(0);
 		}
 		return null;
 	}
