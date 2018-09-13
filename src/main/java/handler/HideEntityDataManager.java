@@ -48,15 +48,13 @@ public class HideEntityDataManager {
 	/** ADSステートを取得 無ければ初期値0 */
 	public static float getADSState(Entity entity) {
 		EntityDataManager dm = entity.getDataManager();
-		if (dm.getAll().contains(ADS_KEY)) {
-			return dm.get(ADS_KEY);
-		}
-		return 0;
+		return dm.get(ADS_KEY);
 	}
 
 	/** ADSステートを書き込み 無ければfalse */
 	public static boolean setADSState(Entity entity, float value) {
 		EntityDataManager dm = entity.getDataManager();
+		dm.set(ADS_KEY, value);
 		if (dm.getAll().contains(ADS_KEY)) {
 			dm.set(ADS_KEY, value);
 			return true;

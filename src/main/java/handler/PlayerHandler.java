@@ -29,6 +29,7 @@ import item.ItemMagazine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.audio.SoundManager;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -106,6 +107,7 @@ public class PlayerHandler {
 	/** 入力処理 */
 	@SideOnly(Side.CLIENT)
 	private static void ClientTick(EntityPlayerSP player) {
+		System.out.println(HideEntityDataManager.getADSState(player));
 		// 死んでたらマウスを離す
 		if (player.isDead) {
 			rightMouseHold = leftMouseHold = false;
@@ -284,10 +286,12 @@ public class PlayerHandler {
 				int time = 0;
 				for (ItemStack item : items) {
 					time += ItemGun.getGunData(item).RELOAD_TICK;
+					// 音
+					SoundHandler.broadcastSound(player.world, player.posX, player.posY, player.posZ,
+							ItemGun.getGunData(item).SOUND_RELOAD);
 				}
 				data.reloadall = false;
 				data.reloadstate = time;
-				System.out.println("reload");
 			}
 		}
 		if (0 <= data.reloadstate) {
@@ -298,7 +302,34 @@ public class PlayerHandler {
 			}
 			data.reloadstate--;
 		}
-		if (0 <= data.adsstate) {
+		// のぞき込み処理
+		if (em == EquipMode.Dual || em == EquipMode.Main || em == EquipMode.Off) {
+			int adsTick = 0;
+			for (ItemStack item : items) {
+				adsTick += ItemGun.getGunData(item).ADS_TICK;
+			}
+			// クリックされているなら
+			if (data.rightMouse) {
+				if (data.adsstate < adsTick) {
+					data.adsstate++;
+				} else if (data.adsstate > adsTick) {
+					data.adsstate = adsTick;
+				}
+			} else if (0 < data.adsstate) {
+				data.adsstate--;
+			}
+			// ノータイムか
+			float ads_res;
+			if (adsTick <= 0) {
+				ads_res = data.rightMouse ? 1 : 0;
+			} else {
+				ads_res = data.adsstate / adsTick;
+			}
+			//変化があったか
+			if(data.adsRes != ads_res){
+				data.adsRes = ads_res;
+				HideEntityDataManager.setADSState(player, ads_res);
+			}
 
 		}
 		// 持ち替え検知
@@ -307,7 +338,6 @@ public class PlayerHandler {
 			data.idOff = NBTWrapper.getHideID(off);
 			// 持ち替えでキャンセルするもの
 			data.reloadstate = -1;
-			data.ads = false;
 			data.adsstate = 0;
 		}
 		// アップデート

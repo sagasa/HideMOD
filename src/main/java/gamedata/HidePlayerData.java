@@ -14,7 +14,7 @@ public class HidePlayerData {
 	public class ServerPlayerData {
 		public boolean leftMouse = false;
 		public boolean rightMouse;
-		
+
 		public boolean reload = false;
 		public boolean changeAmmo = false;
 		public boolean changeFiremode = false;
@@ -25,8 +25,8 @@ public class HidePlayerData {
 		public boolean reloadall = false;
 
 		public int adsstate = 0;
-		public boolean ads = false;
-		
+		public float adsRes = 0f;
+
 		public long idMain = 0;
 		public long idOff = 0;
 	}
