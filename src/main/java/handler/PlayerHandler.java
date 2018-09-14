@@ -31,6 +31,7 @@ import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.audio.SoundManager;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -66,12 +67,42 @@ public class PlayerHandler {
 	public static int HitMarkerTime_H = 0;
 
 	public static boolean isADS = false;
-	private static boolean ADSChanged = false;
-	private static int defaultFOV;
+	private static float defaultFOV;
+	private static float defaultMS;
 	public static String ScopeName;
+	private static int adsstate;
 
 	// サーバー側変数
 	private static Map<UUID, HidePlayerData> PlayerDataMap = new HashMap<>();
+
+	/** ADSの切り替え クライアント側 */
+	public static void setADS(String scope, float dia) {
+		if (isADS) {
+			clearADS();
+		}
+		//
+		ScopeName = scope;
+		GameSettings setting = Minecraft.getMinecraft().gameSettings;
+		//FOV
+		defaultFOV = setting.fovSetting;
+		setting.fovSetting = defaultFOV / dia;
+		//マウス感度
+		defaultMS = setting.mouseSensitivity;
+		setting.mouseSensitivity = defaultMS / dia;
+		isADS = true;
+	}
+
+	/** ADS解除 クライアント側 */
+	public static void clearADS() {
+		if (isADS) {
+			GameSettings setting = Minecraft.getMinecraft().gameSettings;
+			//FOV
+			setting.fovSetting = defaultFOV;
+			//マウス感度
+			setting.mouseSensitivity = defaultMS;
+			isADS = false;
+		}
+	}
 
 	/** プレイヤーのTick処理 */
 	public static void PlayerTick(PlayerTickEvent event) {
@@ -107,7 +138,6 @@ public class PlayerHandler {
 	/** 入力処理 */
 	@SideOnly(Side.CLIENT)
 	private static void ClientTick(EntityPlayerSP player) {
-		System.out.println(HideEntityDataManager.getADSState(player));
 		// 死んでたらマウスを離す
 		if (player.isDead) {
 			rightMouseHold = leftMouseHold = false;
@@ -161,15 +191,24 @@ public class PlayerHandler {
 				gunOff.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ)
 						.setRotate(player.rotationYaw, player.rotationPitch).setLastRotate(lastyaw, lastpitch);
 			}
+
+			String scope = null;
+			float dia = 1f;
 			// 射撃処理
 			if (em == EquipMode.Main) {
 				gunMain.gunUpdate(player, main, leftMouseHold);
+				scope = gunMain.gundata.SCOPE_NAME;
+				dia = gunMain.gundata.SCOPE_DIA;
 			} else if (em == EquipMode.Off) {
 				gunOff.gunUpdate(player, off, leftMouseHold);
+				scope = gunOff.gundata.SCOPE_NAME;
+				dia = gunOff.gundata.SCOPE_DIA;
 			} else if (em == EquipMode.OtherDual) {
 				gunMain.gunUpdate(player, main, leftMouseHold);
 				gunOff.gunUpdate(player, off, rightMouseHold);
 			} else if (em == EquipMode.Dual) {
+				scope = "";
+				dia = gunMain.gundata.SCOPE_DIA;
 				boolean mainTrigger = false;
 				boolean offTrigger = false;
 				GunFireMode mode = NBTWrapper.getGunFireMode(main);
@@ -188,6 +227,43 @@ public class PlayerHandler {
 				}
 				gunMain.gunUpdate(player, main, mainTrigger);
 				gunOff.gunUpdate(player, off, offTrigger);
+			}
+			// 銃ののぞき込み処理
+			if (scope != null) {
+				boolean ads_res = false;
+				int adsTick = 0;
+				if (em.hasMain()) {
+					adsTick += ItemGun.getGunData(main).ADS_TICK;
+				}
+				if (em.hasOff()) {
+					adsTick += ItemGun.getGunData(off).ADS_TICK;
+				}
+				// クリックされているなら
+				if (rightMouseHold) {
+					if (adsstate < adsTick) {
+						adsstate++;
+					} else if (adsstate > adsTick) {
+						adsstate = adsTick;
+					}
+				} else if (0 < adsstate) {
+					adsstate--;
+				}
+				// ノータイムか
+				if (adsTick <= 0) {
+					ads_res = rightMouseHold;
+				} else {
+					ads_res = adsstate == adsTick;
+				}
+				// 適応
+				if (ads_res) {
+					if (!isADS) {
+						setADS(scope, dia);
+					}
+				} else {
+					if (isADS) {
+						clearADS();
+					}
+				}
 			}
 		}
 		RecoilHandler.updateRecoil();
@@ -302,36 +378,7 @@ public class PlayerHandler {
 			}
 			data.reloadstate--;
 		}
-		// のぞき込み処理
-		if (em == EquipMode.Dual || em == EquipMode.Main || em == EquipMode.Off) {
-			int adsTick = 0;
-			for (ItemStack item : items) {
-				adsTick += ItemGun.getGunData(item).ADS_TICK;
-			}
-			// クリックされているなら
-			if (data.rightMouse) {
-				if (data.adsstate < adsTick) {
-					data.adsstate++;
-				} else if (data.adsstate > adsTick) {
-					data.adsstate = adsTick;
-				}
-			} else if (0 < data.adsstate) {
-				data.adsstate--;
-			}
-			// ノータイムか
-			float ads_res;
-			if (adsTick <= 0) {
-				ads_res = data.rightMouse ? 1 : 0;
-			} else {
-				ads_res = data.adsstate / adsTick;
-			}
-			//変化があったか
-			if(data.adsRes != ads_res){
-				data.adsRes = ads_res;
-				HideEntityDataManager.setADSState(player, ads_res);
-			}
 
-		}
 		// 持ち替え検知
 		if (data.idMain != NBTWrapper.getHideID(main) || data.idOff != NBTWrapper.getHideID(off)) {
 			data.idMain = NBTWrapper.getHideID(main);

@@ -17,6 +17,10 @@ public class GunData extends DataBase {
 	public int PREPARE_TICK = 0;
 	/** ADSへの切り替え時間 ; tickかかる : int型 **/
 	public int ADS_TICK = 0;
+	/**スコープ名 : String型*/
+	public String SCOPE_NAME = "";
+	/**ズーム倍率 float型*/
+	public float SCOPE_DIA = 2f;
 	/** リロード ; リロードにtickかかる : int型 **/
 	public int RELOAD_TICK= 20;
 	/**まとめてリロードできるか : boolean型*/

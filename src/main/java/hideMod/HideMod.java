@@ -2,6 +2,8 @@ package hideMod;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 
 import entity.EntityBullet;
@@ -58,6 +60,8 @@ public class HideMod {
 	/** 起動出来るMinecraft本体のバージョン。記法はMavenのVersion Range Specificationを検索すること。 */
 	public static final String MOD_ACCEPTED_MC_VERSIONS = "[1.12,1.12.2]";
 
+	private static final Logger LOGGER = LogManager.getLogger();
+	
 	/* イニシャライズ */
 	@EventHandler
 	public void construct(FMLConstructionEvent event) {
