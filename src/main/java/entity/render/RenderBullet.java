@@ -4,6 +4,7 @@ import org.lwjgl.opengl.GL11;
 
 import entity.EntityBullet;
 import entity.model.ModelBullet;
+import hideMod.HideMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.entity.Render;
@@ -13,7 +14,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class RenderBullet extends Render {
 
-	public static final ResourceLocation texture = new ResourceLocation("hidemod", "skins/defaultBullet.png");
+	public static final ResourceLocation texture = new ResourceLocation(HideMod.MOD_ID, "skins/defaultBullet.png");
 
 	public RenderBullet(RenderManager renderManager)
 	{

@@ -35,9 +35,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class RenderHandler {
 
 	/** ヒットマーク 色は描画時に */
-	static final ResourceLocation HitMarker = new ResourceLocation("hidemod", "gui/hitMarker.png");
+	static final ResourceLocation HitMarker = new ResourceLocation("hidemod", "gui/hitmarker.png");
 	/** 銃のステータス表示の背景 */
-	static final ResourceLocation GunInfoGUI = new ResourceLocation("hidemod", "gui/gunInfo.png");
+	static final ResourceLocation GunInfoGUI = new ResourceLocation("hidemod", "gui/guninfo.png");
 
 	/** float型のより詳細なTick */
 	static float RenderTick;
@@ -158,7 +158,7 @@ public class RenderHandler {
 		} else {
 			GlStateManager.color(1f, 1f, 1f, (float) Math.max(Math.min(0.4, PlayerHandler.HitMarkerTime / 10), 0f));
 		}
-
+		GlStateManager.color(1f, 1f, 1f, 1f);
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder buf = tessellator.getBuffer();
 		buf.begin(7, DefaultVertexFormats.OLDMODEL_POSITION_TEX_NORMAL);

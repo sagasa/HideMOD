@@ -61,7 +61,7 @@ public class HideMod {
 	public static final String MOD_ACCEPTED_MC_VERSIONS = "[1.12,1.12.2]";
 
 	private static final Logger LOGGER = LogManager.getLogger();
-	
+
 	/* イニシャライズ */
 	@EventHandler
 	public void construct(FMLConstructionEvent event) {
