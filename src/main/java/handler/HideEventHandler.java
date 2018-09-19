@@ -2,6 +2,7 @@ package handler;
 
 import hideMod.PackData;
 import item.ItemGun;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelRegistryEvent;
@@ -138,9 +139,9 @@ public class HideEventHandler {
 	}
 	/*
 	 * Fog削除できるぞ
-	 * 
+	 *
 	 * @SubscribeEvent
-	 * 
+	 *
 	 * @SideOnly(Side.CLIENT) public void onEvent(FogDensity event) {
 	 * System.out.println(event.density); event.setCanceled(true); }
 	 */

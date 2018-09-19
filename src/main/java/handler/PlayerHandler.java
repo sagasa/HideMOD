@@ -64,7 +64,7 @@ public class PlayerHandler {
 	private static Random Random = new Random();
 	// クライアント側変数
 	public static int HitMarkerTime = 0;
-	public static int HitMarkerTime_H = 0;
+	public static boolean HitMarker_H = false;
 
 	public static boolean isADS = false;
 	private static float defaultFOV;
@@ -165,8 +165,6 @@ public class PlayerHandler {
 			// マウス
 			if (lastLeftMouse != leftMouseHold || lastRightMouse != rightMouseHold) {
 				PacketHandler.INSTANCE.sendToServer(new PacketInput(leftMouseHold, rightMouseHold));
-				lastLeftMouse = leftMouseHold;
-				lastRightMouse = rightMouseHold;
 			}
 			// 射撃処理
 			EquipMode em = EquipMode.getEqipMode(player);
@@ -266,9 +264,15 @@ public class PlayerHandler {
 				}
 			}
 		}
+		//アップデート
 		RecoilHandler.updateRecoil();
 		lastyaw = player.rotationYaw;
 		lastpitch = player.rotationPitch;
+		lastLeftMouse = leftMouseHold;
+		lastRightMouse = rightMouseHold;
+		if(HitMarkerTime >0){
+			HitMarkerTime --;
+		}
 	}
 
 	/** マウスイベント */

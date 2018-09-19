@@ -53,13 +53,8 @@ public class PacketHit implements IMessage, IMessageHandler<PacketHit, IMessage>
 		// SamplePacketMod.proxy.getEntityPlayerInstance();
 		// サーバーへ送った際に、EntityPlayerインスタンス（EntityPlayerMPインスタンス）はこのように取れる。
 		// EntityPlayer Player = ctx.getServerHandler().playerEntity;
-		if(m.HitType==GUN_SHOT){
-			PlayerHandler.HitMarkerTime = 15;
-		}
-		if(m.HitType==GUN_HEADSHOT){
-			PlayerHandler.HitMarkerTime = 15;
-			PlayerHandler.HitMarkerTime_H = 5;
-		}
+		PlayerHandler.HitMarkerTime = 15;
+		PlayerHandler.HitMarker_H = m.HitType==GUN_HEADSHOT;
 		return null;
 	}
 }

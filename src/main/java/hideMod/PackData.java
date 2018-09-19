@@ -35,35 +35,39 @@ public class PackData {
 	/** サウンド 登録名 - byte[] MAP */
 	public static HashMap<String, byte[]> SOUND_MAP = new HashMap<String, byte[]>();
 
-	/**登録名からGunData取得*/
-	public static GunData getGunData(String name){
+	/** 登録名からGunData取得 */
+	public static GunData getGunData(String name) {
 		return GUN_DATA_MAP.get(name);
 	}
-	/**登録名からBulletData取得*/
-	public static BulletData getBulletData(String name){
+
+	/** 登録名からBulletData取得 */
+	public static BulletData getBulletData(String name) {
 		return BULLET_DATA_MAP.get(name);
 	}
 
-	/**アイテム登録*/
+	/** アイテム登録 */
 	public static void registerItems(Register<Item> event) {
 		IForgeRegistry<Item> register = event.getRegistry();
 		System.out.println("アイテム登録中！！！");
-		for(GunData data:GUN_DATA_MAP.values()){
+		for (GunData data : GUN_DATA_MAP.values()) {
 			Item item = new ItemGun(data);
 			register.register(item);
 		}
-		for(BulletData data:BULLET_DATA_MAP.values()){
+		for (BulletData data : BULLET_DATA_MAP.values()) {
 			register.register(new ItemMagazine(data));
 		}
 	}
-	/**モデル登録*/
+
+	/** モデル登録 */
 	@SideOnly(Side.CLIENT)
-	public static void registerModel(){
-		for(Item item : ItemGun.INSTANCE_MAP.values()){
-			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(new ResourceLocation(HideMod.MOD_ID, "gun"), "inventory"));
+	public static void registerModel() {
+		for (ItemGun item : ItemGun.INSTANCE_MAP.values()) {
+			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(
+					new ResourceLocation(HideMod.MOD_ID, item.GunData.ITEM_INFO.NAME_SHORT), "inventory"));
 		}
-		for(Item item : ItemMagazine.INSTANCE_MAP.values()){
-			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(new ResourceLocation(HideMod.MOD_ID, "magazine"), "inventory"));
+		for (ItemMagazine item : ItemMagazine.INSTANCE_MAP.values()) {
+			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(
+					new ResourceLocation(HideMod.MOD_ID, item.BulletData.ITEM_INFO.NAME_SHORT), "inventory"));
 		}
 		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new IRenderFactory() {
 			@Override

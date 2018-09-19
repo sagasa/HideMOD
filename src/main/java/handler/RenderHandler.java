@@ -104,14 +104,16 @@ public class RenderHandler {
 		Tessellator tessellator = Tessellator.getInstance();
 		Rectangle size = new Rectangle(x, y, 115, 60);
 		int Zlevel = 0;
+		GL11.glPushMatrix();
 		mc.renderEngine.bindTexture(GunInfoGUI);
 		BufferBuilder buf = tessellator.getBuffer();
-		buf.begin(7, DefaultVertexFormats.OLDMODEL_POSITION_TEX_NORMAL);
-		buf.pos(size.x, size.y, Zlevel).tex(0, 0);
-		buf.pos(size.x, size.y + size.height, Zlevel).tex(0, 1);
-		buf.pos(size.x + size.width, size.y + size.height, Zlevel).tex(1, 1);
-		buf.pos(size.x + size.width, size.y, Zlevel).tex(1, 0);
+		buf.begin(7, DefaultVertexFormats.POSITION_TEX);
+		buf.pos(size.x, size.y, Zlevel).tex(0, 0).endVertex();
+		buf.pos(size.x, size.y + size.height, Zlevel).tex(0, 1).endVertex();
+		buf.pos(size.x + size.width, size.y + size.height, Zlevel).tex(1, 1).endVertex();
+		buf.pos(size.x + size.width, size.y, Zlevel).tex(1, 0).endVertex();
 		tessellator.draw();
+		GL11.glPopMatrix();
 		GlStateManager.disableAlpha();
 
 		// マガジン
@@ -150,24 +152,23 @@ public class RenderHandler {
 
 	/** プレイヤーハンドラを参照してヒットマーク描画 */
 	static void writeHitMarker(int x, int y) {
-		mc.renderEngine.bindTexture(HitMarker);
 		GlStateManager.enableAlpha();
 		GlStateManager.enableBlend();
-		if (PlayerHandler.HitMarkerTime_H > 0) {
+		mc.renderEngine.bindTexture(HitMarker);
+
+		if (PlayerHandler.HitMarker_H) {
 			GlStateManager.color(1f, 0.0f, 0.0f, (float) Math.max(Math.min(0.4, PlayerHandler.HitMarkerTime / 10), 0f));
 		} else {
 			GlStateManager.color(1f, 1f, 1f, (float) Math.max(Math.min(0.4, PlayerHandler.HitMarkerTime / 10), 0f));
 		}
-		GlStateManager.color(1f, 1f, 1f, 1f);
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder buf = tessellator.getBuffer();
-		buf.begin(7, DefaultVertexFormats.OLDMODEL_POSITION_TEX_NORMAL);
-		buf.pos(x / 2 - 6d, y / 2 + 7d, 0d).tex(0D / 16D, 9D / 16D);
-		buf.pos(x / 2 + 7d, y / 2 + 7d, 0d).tex(9D / 16D, 9D / 16D);
-		buf.pos(x / 2 + 7d, y / 2 - 6d, 0d).tex(9D / 16D, 0D / 16D);
-		buf.pos(x / 2 - 6d, y / 2 - 6d, 0d).tex(0D / 16D, 0D / 16D);
+		buf.begin(7, DefaultVertexFormats.POSITION_TEX);
+		buf.pos(x / 2 - 6d, y / 2 + 7d, 0d).tex(0D / 16D, 9D / 16D).endVertex();
+		buf.pos(x / 2 + 7d, y / 2 + 7d, 0d).tex(9D / 16D, 9D / 16D).endVertex();
+		buf.pos(x / 2 + 7d, y / 2 - 6d, 0d).tex(9D / 16D, 0D / 16D).endVertex();
+		buf.pos(x / 2 - 6d, y / 2 - 6d, 0d).tex(0D / 16D, 0D / 16D).endVertex();
 		tessellator.draw();
-
 		GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
 		GlStateManager.disableAlpha();
 		GlStateManager.disableBlend();
