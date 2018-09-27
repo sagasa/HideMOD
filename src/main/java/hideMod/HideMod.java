@@ -40,10 +40,13 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.RegistryManager;
+import types.model.Polygon;
 import handler.HideEventHandler;
 import handler.PacketHandler;
+import helper.ObjLoader;
 import io.PackLoader;
 import io.ResourceLoader;
+import it.unimi.dsi.fastutil.Arrays;
 
 @Mod(modid = HideMod.MOD_ID, name = HideMod.MOD_NAME, version = HideMod.MOD_VERSION, dependencies = HideMod.MOD_DEPENDENCIES, acceptedMinecraftVersions = HideMod.MOD_ACCEPTED_MC_VERSIONS, useMetadata = true)
 
@@ -73,6 +76,10 @@ public class HideMod {
 	// アイテム登録
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
+		System.out.println("モデル読み込みテスト");
+		for (List<Polygon> poly : new ObjLoader().LoadModel(new ResourceLocation(MOD_ID, "model/StG44.obj")).values()) {
+			System.out.println(poly);
+		}
 		// パック読み込み
 		PackLoader.load(event);
 		// パケットの初期設定

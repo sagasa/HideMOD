@@ -44,7 +44,7 @@ public class RenderHideGun extends RenderHideModel {
 		// 0.0F);
 		// GlStateManager.rotate((player.rotationYaw - f6) * 0.1F, 0.0F, 1.0F,
 		// 0.0F);
-		dorender(Model.Body);
+		
 		// GlStateManager.enableCull();
 		GlStateManager.popMatrix();
 	}
