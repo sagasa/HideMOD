@@ -15,8 +15,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
-import types.BulletData;
-import types.GunData;
+import types.guns.BulletData;
+import types.guns.GunData;
 
 public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMessage> {
 

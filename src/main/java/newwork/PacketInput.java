@@ -32,10 +32,10 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import scala.actors.threadpool.Arrays;
-import types.BulletData;
-import types.GunData;
-import types.GunFireMode;
-import types.Sound;
+import types.effect.Sound;
+import types.guns.BulletData;
+import types.guns.GunData;
+import types.guns.GunFireMode;
 
 /** 入力をサーバーに送る */
 public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMessage> {

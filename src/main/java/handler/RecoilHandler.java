@@ -6,8 +6,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import types.GunData;
-import types.Recoil;
+import types.effect.Recoil;
+import types.guns.GunData;
 
 public class RecoilHandler {
 	private static int recoilPower = 0;

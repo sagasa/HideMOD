@@ -36,9 +36,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import types.BulletData;
-import types.GunData;
-import types.GunFireMode;
+import types.guns.BulletData;
+import types.guns.GunData;
+import types.guns.GunFireMode;
 
 public class ItemGun extends Item {
 
@@ -54,7 +54,7 @@ public class ItemGun extends Item {
 	public ItemGun(GunData data) {
 		super();
 		this.setCreativeTab(CreativeTabs.COMBAT);
-		String name = data.ITEM_INFO.NAME_SHORT;
+		String name = data.ITEM_SHORTNAME;
 		this.setUnlocalizedName(name);
 		this.setRegistryName(name);
 		this.setMaxStackSize(1);
@@ -81,7 +81,7 @@ public class ItemGun extends Item {
 
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
-		return getGunData(stack).ITEM_INFO.NAME_DISPLAY;
+		return getGunData(stack).ITEM_DISPLAYNAME;
 	}
 
 	/** どのような状態からでも有効なNBTを書き込む */
@@ -128,10 +128,10 @@ public class ItemGun extends Item {
 		}
 		tooltip.add(ChatFormatting.GRAY + "FireMode : " + NBTWrapper.getGunFireMode(stack));
 		tooltip.add(ChatFormatting.GRAY + "UseBullet : "
-				+ ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(stack)).ITEM_INFO.NAME_DISPLAY);
+				+ ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(stack)).ITEM_DISPLAYNAME);
 		for (Magazine magazine : NBTWrapper.getGunLoadedMagazines(stack).getList()) {
 			if (magazine != null) {
-				tooltip.add(ItemMagazine.getBulletData(magazine.name).ITEM_INFO.NAME_DISPLAY + "x" + magazine.num);
+				tooltip.add(ItemMagazine.getBulletData(magazine.name).ITEM_DISPLAYNAME + "x" + magazine.num);
 			} else {
 				tooltip.add("empty");
 			}
@@ -149,7 +149,7 @@ public class ItemGun extends Item {
 
 	/** スタックから銃の登録名を取得 */
 	public static String getGunName(ItemStack item) {
-		return getGunData(item).ITEM_INFO.NAME_SHORT;
+		return getGunData(item).ITEM_SHORTNAME;
 	}
 
 	/** GunData取得 */

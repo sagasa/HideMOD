@@ -1,16 +1,17 @@
-package types;
+package types.guns;
 
-import types.ItemInfo;
-import types.Sound;
 import types.base.DataBase;
+import types.base.ItemData;
+import types.effect.Recoil;
+import types.effect.Sound;
 
-public class GunData extends DataBase {
-	public GunData() {
-		super();
-	}
+public class GunData extends ItemData{
 
-	/** アイテムの名前 : ItemInfo型 */
-	public ItemInfo ITEM_INFO =  new ItemInfo("sample", "Sample", "sample");
+	public float ITEM_MAX_HEALTH = 0f;
+	public float ITEM_MOVE_SPEED = 0f;
+	public float ITEM_KNOCKBACK_RESISTANCE = 0f;
+	public float ITEM_ATTACK_DAMAGE = 0f;
+	
 	/** 弾速 1秒の移動距離(m)=弾速 : float型 **/
 	public float BULLET_SPEED = 5f;
 	/** 持ってから撃てるまで ; tickかかる : int型 **/

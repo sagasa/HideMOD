@@ -1,5 +1,7 @@
 package hideMod.model;
 
+import java.util.Map;
+
 import javax.script.Compilable;
 import javax.script.CompiledScript;
 import javax.script.ScriptException;
@@ -16,31 +18,43 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import types.model.DisplayPart;
+import types.model.ModelGroup;
+import types.model.ModelParameter;
+import types.model.ModelPart;
 import types.model.Polygon;
 import types.model.VertexUV;
 
 @SideOnly(Side.CLIENT)
 public class ModelGun extends ModelBase {
 
-	public DisplayPart Body;
-	public DisplayPart Magazine;
-	public DisplayPart Barrel;
-	public DisplayPart Leaver;
+	public DisplayPart ModelBody;
+	public DisplayPart ModelLeaver;
+	public DisplayPart ModelDefaultBarrel;
+	public DisplayPart ModelDefaultScope;
+	public DisplayPart ModelDefaultMagazine;
+	
+	public ModelGroup Body;
+	public ModelGroup Leaver;
+	public ModelGroup Barrel;
+	public ModelGroup Magazine;
+	
+	private static final String BodyName = "Body";
+	private static final String MagazineName = "Magazine";
+	private static final String BarrelName = "Barrel";
+	private static final String LeaverName = "Leaver";
 
 	private CompiledScript RenderScript;
 
-	public ModelGun() {
-		int TextureX = 64;
-		int TextureY = 64;
-
-		Polygon GunModel = new Polygon();
-		VertexUV ver1 = new VertexUV(0, 0, 0, 0 / TextureX, 0 / TextureY);
-		VertexUV ver2 = new VertexUV(0, 1, 0, 64 / TextureX, 0 / TextureY);
-		VertexUV ver3 = new VertexUV(0, 1, 1, 64 / TextureX, 64 / TextureY);
-		VertexUV ver4 = new VertexUV(0, 0, 1, 0 / TextureX, 64 / TextureY);
-		GunModel.Vertex = new VertexUV[] { ver1, ver2, ver3, ver4 };
-		Body = new DisplayPart();
-		Body.Polygon = new Polygon[] { GunModel };
+	public ModelGun(Map<String,ModelPart> model) {
+		if(model.containsKey(BodyName)){
+			Body = (DisplayPart) model.get(BodyName);
+		}else if(model.containsKey(MagazineName)){
+			Body = (DisplayPart) model.get(MagazineName);
+		}else if(model.containsKey(BarrelName)){
+			Body = (DisplayPart) model.get(BarrelName);
+		}else if(model.containsKey(LeaverName)){
+			Body = (DisplayPart) model.get(LeaverName);
+		}
 	}
 
 	/**

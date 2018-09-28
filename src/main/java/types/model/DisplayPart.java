@@ -8,6 +8,10 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
 public class DisplayPart extends ModelPart{
+	public DisplayPart(Polygon[] array) {
+		super(array);
+	}
+
 	private int displayList;
 	private boolean compiled;
 
@@ -15,16 +19,7 @@ public class DisplayPart extends ModelPart{
 		if (!compiled) {
 			compileDisplayList();
 		}
-		GL11.glPushMatrix();
-		GL11.glTranslatef(translateX, translateY, translateZ);
-
-		GL11.glTranslatef(rotatepointX, rotatepointY, rotatepointZ);
-		GL11.glRotatef(rotateYaw, 0, 1, 0);
-		GL11.glRotatef(rotatePitch, 1, 0, 0);
-		GL11.glTranslatef(-rotatepointX, -rotatepointY, -rotatepointZ);
-
 		GL11.glCallList(displayList);
-		GL11.glPopMatrix();
 	}
 
 	private void compileDisplayList() {

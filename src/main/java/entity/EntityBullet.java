@@ -61,10 +61,10 @@ import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import newwork.PacketHit;
-import types.BulletData;
-import types.Explosion;
-import types.GunData;
-import types.Sound;
+import types.effect.Explosion;
+import types.effect.Sound;
+import types.guns.BulletData;
+import types.guns.GunData;
 import types.model.HideCollision;
 
 /** 銃弾・砲弾・爆弾など投擲系以外の全てこのクラスで追加 */
@@ -411,7 +411,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		buffer.writeDouble(world.getTotalWorldTime());
 		buffer.writeFloat(addtick);
 		buffer.writeInt(Shooter.getEntityId());
-		PacketHandler.writeString(buffer, bulletData.ITEM_INFO.NAME_SHORT);
+		PacketHandler.writeString(buffer, bulletData.ITEM_SHORTNAME);
 		PacketHandler.writeString(buffer, gunData.ITEM_INFO.NAME_SHORT);
 		onUpdate(addtick);
 		lastWorldTick = world.getTotalWorldTime();

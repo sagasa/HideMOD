@@ -17,7 +17,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import scala.actors.threadpool.Arrays;
-import types.BulletData;
+import types.guns.BulletData;
 
 public class ItemMagazine extends Item {
 
@@ -30,7 +30,7 @@ public class ItemMagazine extends Item {
 	public ItemMagazine(BulletData data) {
 		super();
 		this.setCreativeTab(CreativeTabs.COMBAT);
-		String name = data.ITEM_INFO.NAME_SHORT;
+		String name = data.ITEM_SHORTNAME;
 		this.setUnlocalizedName(name);
 		this.setRegistryName(name);
 		this.setMaxStackSize(data.STACK_SIZE);
@@ -74,7 +74,7 @@ public class ItemMagazine extends Item {
 
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
-		return getBulletData(stack).ITEM_INFO.NAME_DISPLAY;
+		return getBulletData(stack).ITEM_DISPLAYNAME;
 	}
 
 	// =========================================================
@@ -101,7 +101,7 @@ public class ItemMagazine extends Item {
 
 	public static boolean isMagazine(ItemStack item, String str) {
 		if (item != null && item.getItem() instanceof ItemMagazine
-				&&ItemMagazine.getBulletData(item).ITEM_INFO.NAME_SHORT.equals(str)) {
+				&&ItemMagazine.getBulletData(item).ITEM_SHORTNAME.equals(str)) {
 			return true;
 		}
 		return false;
@@ -149,7 +149,7 @@ public class ItemMagazine extends Item {
 
 	/** スタックから弾の登録名を取得 */
 	public static String getBulletName(ItemStack item) {
-		return ItemMagazine.getBulletData(item).ITEM_INFO.NAME_SHORT;
+		return ItemMagazine.getBulletData(item).ITEM_SHORTNAME;
 	}
 
 	/** その名前の弾は存在するか */

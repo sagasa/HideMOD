@@ -53,10 +53,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import newwork.PacketInput;
 import newwork.PacketPlaySound;
 import scala.actors.threadpool.Arrays;
-import types.BulletData;
-import types.GunData;
-import types.GunFireMode;
-import types.Sound;
+import types.effect.Sound;
+import types.guns.BulletData;
+import types.guns.GunData;
+import types.guns.GunFireMode;
 
 /***/
 public class PlayerHandler {

@@ -6,8 +6,8 @@ import hideMod.PackData;
 import item.ItemGun;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import types.BulletData;
-import types.GunFireMode;
+import types.guns.BulletData;
+import types.guns.GunFireMode;
 
 /** NBTの読み書きを集約 Nullチェック完備 */
 public class NBTWrapper {

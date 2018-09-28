@@ -39,11 +39,11 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import types.BulletData;
-import types.GunData;
 import types.ItemInfo;
 import types.PackInfo;
-import types.Sound;
+import types.effect.Sound;
+import types.guns.BulletData;
+import types.guns.GunData;
 import types.model.ModelPart;
 
 /** パックの読み取り */
