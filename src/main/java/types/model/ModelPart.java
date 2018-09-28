@@ -26,6 +26,9 @@ public class ModelPart {
 	/**縮尺の数値*/
 	public  float scaleZ;
 
+	public ModelPart(Polygon[] array) {
+		Polygon = array;
+	}
 	public void rotatePoint(float x, float y, float z) {
 		rotatepointX = x;
 		rotatepointY = y;

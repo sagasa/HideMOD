@@ -1,5 +1,6 @@
 package io;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,10 +11,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -22,6 +27,7 @@ import com.google.gson.reflect.TypeToken;
 import com.ibm.icu.impl.locale.BaseLocale;
 
 import helper.ArrayEditor;
+import helper.ObjLoader;
 import hideMod.HideMod;
 import hideMod.PackData;
 import item.ItemGun;
@@ -38,9 +44,12 @@ import types.GunData;
 import types.ItemInfo;
 import types.PackInfo;
 import types.Sound;
+import types.model.ModelPart;
 
 /** パックの読み取り */
 public class PackLoader {
+	private static final Logger LOGGER = LogManager.getLogger();
+
 	/** パックを置くディレクトリ */
 	public static File HideDir;
 
@@ -56,6 +65,10 @@ public class PackLoader {
 	private List<GunData> cashGunData;
 	private List<BulletData> cashBulletData;
 	private PackInfo cashPack;
+	private Map<String, byte[]> cashIcon;
+	private Map<String, byte[]> cashTexture;
+	private Map<String, byte[]> cashSound;
+	private Map<String, Map<String, ModelPart>> cashModel;
 
 	/** gson オプションはなし */
 	private static Gson gson = new Gson();
@@ -79,12 +92,12 @@ public class PackLoader {
 			System.out.println(file.getName());
 			if (zip.matcher(file.getName()).matches()) {
 				// Add the directory to the content pack list
-				System.out.println("Loading content pack : " + file.getName() + "...");
+				LOGGER.info("Loading content pack : " + file.getName() + "...");
 				try {
 					PackLoader reader = new PackLoader();
 					reader.PackRead(file);
 				} catch (IOException e) {
-					System.out.println("error : IOException");
+					LOGGER.error("error : IOException");
 				}
 			}
 		}
@@ -92,8 +105,14 @@ public class PackLoader {
 
 	/** ZIPからデータを読み込む 中身の分岐は別 */
 	private void PackRead(File file) throws IOException {
+		// 初期値
+		cashPack = null;
 		cashGunData = new ArrayList<GunData>();
 		cashBulletData = new ArrayList<BulletData>();
+		cashIcon = new HashMap<>();
+		cashTexture = new HashMap<>();
+		cashSound = new HashMap<>();
+		cashModel = new HashMap<>();
 		// 読み込むファイル
 		FileInputStream in = new FileInputStream(file);
 
@@ -121,40 +140,86 @@ public class PackLoader {
 		in.close();
 
 		// このタイミングでデータチェック
-		if (cashPack != null) {
-			for (GunData data : cashGunData) {
-				// ショートネームを登録名に書き換え
-				setGunDomain(cashPack.PACK_ROOTNAME, data);
-				String name = data.ITEM_INFO.NAME_SHORT;
-				ItemGun gun = new ItemGun(data);
-				// 重複しないかどうか
-				if (PackData.GUN_DATA_MAP.containsKey(name)) {
-					System.out.println("Item has already been added :" + name);
-					continue;
-				}
-				// データが破損していないか
-				if (!ItemGun.isNormalData(data)) {
-					System.out.println("GunData is damaged :" + name);
-					continue;
-				}
-				PackData.GUN_DATA_MAP.put(name, data);
-			}
-			for (BulletData data : cashBulletData) {
-				// ショートネームを登録名に書き換え
-				setMagazineDomain(cashPack.PACK_ROOTNAME, data);
-				String name = data.ITEM_INFO.NAME_SHORT;
-				ItemMagazine gun = new ItemMagazine(data);
-				// 重複しないかどうか
-				if (PackData.BULLET_DATA_MAP.containsKey(name)) {
-					System.out.println("Item has already been added :" + name);
-					continue;
-				}
-				PackData.BULLET_DATA_MAP.put(name, data);
-			}
-			System.out.println("Load Successful!");
-		} else {
-			System.out.println("error : Missing PackInfo");
+		if (cashPack == null) {
+			LOGGER.error("error : Missing PackInfo");
+			return;
 		}
+		// 銃登録
+		for (GunData data : cashGunData) {
+			// ショートネームを登録名に書き換え
+			setGunDomain(cashPack.PACK_ROOTNAME, data);
+			String name = data.ITEM_INFO.NAME_SHORT;
+			ItemGun gun = new ItemGun(data);
+			// 重複しないかどうか
+			if (PackData.GUN_DATA_MAP.containsKey(name)) {
+				LOGGER.warn("Duplicate name :" + name);
+				continue;
+			}
+			// データが破損していないか
+			if (!ItemGun.isNormalData(data)) {
+				LOGGER.warn("GunData is damaged :" + name);
+				continue;
+			}
+			PackData.GUN_DATA_MAP.put(name, data);
+		}
+		// 弾登録
+		for (BulletData data : cashBulletData) {
+			// ショートネームを登録名に書き換え
+			setMagazineDomain(cashPack.PACK_ROOTNAME, data);
+			String name = data.ITEM_INFO.NAME_SHORT;
+			ItemMagazine gun = new ItemMagazine(data);
+			// 重複しないかどうか
+			if (PackData.BULLET_DATA_MAP.containsKey(name)) {
+				LOGGER.warn("Duplicate name :" + name);
+				continue;
+			}
+			PackData.BULLET_DATA_MAP.put(name, data);
+		}
+		// Icon登録
+		for (String name : cashIcon.keySet()) {
+			// ショートネームを登録名に書き換え
+			String newname = addDomain(name, cashPack.PACK_ROOTNAME);
+			// 重複しないかどうか
+			if (PackData.ICON_MAP.containsKey(name)) {
+				LOGGER.warn("Duplicate name :" + newname);
+				continue;
+			}
+			PackData.ICON_MAP.put(newname, cashIcon.get(name));
+		}
+		// Texture登録
+		for (String name : cashTexture.keySet()) {
+			// ショートネームを登録名に書き換え
+			String newname = addDomain(name, cashPack.PACK_ROOTNAME);
+			// 重複しないかどうか
+			if (PackData.TEXTURE_MAP.containsKey(name)) {
+				LOGGER.warn("Duplicate name :" + newname);
+				continue;
+			}
+			PackData.TEXTURE_MAP.put(newname, cashTexture.get(name));
+		}
+		// Sound登録
+		for (String name : cashSound.keySet()) {
+			// ショートネームを登録名に書き換え
+			String newname = addDomain(name, cashPack.PACK_ROOTNAME);
+			// 重複しないかどうか
+			if (PackData.SOUND_MAP.containsKey(name)) {
+				LOGGER.warn("Duplicate name :" + newname);
+				continue;
+			}
+			PackData.SOUND_MAP.put(newname, cashSound.get(name));
+		}
+		// Model登録
+		for (String name : cashModel.keySet()) {
+			// ショートネームを登録名に書き換え
+			String newname = addDomain(name, cashPack.PACK_ROOTNAME);
+			// 重複しないかどうか
+			if (PackData.MODEL_MAP.containsKey(name)) {
+				LOGGER.warn("Duplicate name :" + newname);
+				continue;
+			}
+			PackData.MODEL_MAP.put(newname, cashModel.get(name));
+		}
+		LOGGER.info("Load Successful!");
 	}
 
 	/**
@@ -180,21 +245,19 @@ public class PackLoader {
 		else if (Pattern.compile("^(.*)pack.json").matcher(name).matches()) {
 			cashPack = gson.fromJson(new String(data, Charset.forName("UTF-8")), PackInfo.class);
 		}
-
 		// Resources認識
 		// Icon
 		if (Pattern.compile("^(.*)icon/(.*).png").matcher(name).matches()) {
 			String n = Pattern.compile(".png$").matcher(Pattern.compile("^(.*)icon/").matcher(name).replaceAll(""))
 					.replaceAll("").toLowerCase();
-			if (PackData.ICON_MAP.containsKey(n)) {
-				System.out.println("error : Resource is Already exists Name:" + n);
-			} else {
-				PackData.ICON_MAP.put(n, data);
-			}
+			cashIcon.put(n, data);
 		}
 		// model
-		if (Pattern.compile("^(.*)model/(.*).json").matcher(name).matches()) {
+		if (Pattern.compile("^(.*)model/(.*).obj").matcher(name).matches()) {
 			System.out.println("model");
+			String n = Pattern.compile(".obj$").matcher(Pattern.compile("^(.*)models/").matcher(name).replaceAll(""))
+					.replaceAll("").toLowerCase();
+			cashModel.put(n, ObjLoader.LoadModel(new ByteArrayInputStream(data)));
 		}
 		// texture
 		if (Pattern.compile("^(.*)texture/(.*).png").matcher(name).matches()) {
@@ -205,45 +268,47 @@ public class PackLoader {
 			System.out.println("sounds");
 			String n = Pattern.compile(".ogg$").matcher(Pattern.compile("^(.*)sounds/").matcher(name).replaceAll(""))
 					.replaceAll("").toLowerCase();
-			if (PackData.SOUND_MAP.containsKey(n)) {
-				System.out.println("error : Resource is Already exists Name:" + n);
-			} else {
-				PackData.SOUND_MAP.put(n, data);
-			}
+			cashSound.put(n, data);
 		}
-
 	}
 
 	/** 使用マガジンやアタッチメントなどの名前を更新 */
 	private void setMagazineDomain(String Domain, BulletData data) {
 		ItemInfo item = data.ITEM_INFO;
 		item.NAME_SHORT = item.NAME_SHORT + PackLoader.DOMAIN_MAGAZINE + Domain;
+		item.NAME_ICON = item.NAME_ICON + addDomain(item.NAME_ICON, Domain);
 
 		// 音のドメインがなければ定義
-		checkSoundDomain(data.SOUND_HIT_ENTITY);
-		checkSoundDomain(data.SOUND_HIT_GROUND);
-		checkSoundDomain(data.SOUND_PASSING);
+		checkSoundDomain(data.SOUND_HIT_ENTITY, Domain);
+		checkSoundDomain(data.SOUND_HIT_GROUND, Domain);
+		checkSoundDomain(data.SOUND_PASSING, Domain);
 	}
 
 	/** 使用マガジンやアタッチメントなどの名前を更新 */
 	private void setGunDomain(String Domain, GunData data) {
 		ItemInfo item = data.ITEM_INFO;
 		item.NAME_SHORT = item.NAME_SHORT + PackLoader.DOMAIN_GUN + Domain;
+		item.NAME_ICON = item.NAME_ICON + addDomain(item.NAME_ICON, Domain);
 
 		String[] bullets = (String[]) data.BULLET_USE;
 		for (int i = 0; i < bullets.length; i++) {
 			bullets[i] = bullets[i] + PackLoader.DOMAIN_MAGAZINE + Domain;
 		}
 		// 音のドメインがなければ定義
-		checkSoundDomain(data.SOUND_RELOAD);
-		checkSoundDomain(data.SOUND_SHOOT);
+		checkSoundDomain(data.SOUND_RELOAD, Domain);
+		checkSoundDomain(data.SOUND_SHOOT, Domain);
 	}
 
 	/** 音のドメインをチェック */
-	private void checkSoundDomain(Sound sound) {
-		String name = sound.NAME;
+	private void checkSoundDomain(Sound sound, String domain) {
+		String name = addDomain(sound.NAME, domain);
 		if (!name.contains(":")) {
-			sound.NAME = HideMod.MOD_ID + ":" + name;
+			name = HideMod.MOD_ID + ":" + name;
 		}
+		sound.NAME = name;
+	}
+
+	private String addDomain(String name, String domain) {
+		return domain + "_" + name;
 	}
 }
