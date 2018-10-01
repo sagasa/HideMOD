@@ -1,4 +1,4 @@
-package types.model;
+package hideMod.model;
 
 public class ModelPart {
 	public Polygon[] Polygon;

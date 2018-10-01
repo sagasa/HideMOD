@@ -30,6 +30,7 @@ import helper.ArrayEditor;
 import helper.ObjLoader;
 import hideMod.HideMod;
 import hideMod.PackData;
+import hideMod.model.ModelPart;
 import item.ItemGun;
 import item.ItemMagazine;
 import net.minecraft.client.Minecraft;
@@ -39,12 +40,10 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import types.ItemInfo;
 import types.PackInfo;
 import types.effect.Sound;
 import types.guns.BulletData;
 import types.guns.GunData;
-import types.model.ModelPart;
 
 /** パックの読み取り */
 public class PackLoader {
@@ -148,7 +147,7 @@ public class PackLoader {
 		for (GunData data : cashGunData) {
 			// ショートネームを登録名に書き換え
 			setGunDomain(cashPack.PACK_ROOTNAME, data);
-			String name = data.ITEM_INFO.NAME_SHORT;
+			String name = data.ITEM_SHORTNAME;
 			ItemGun gun = new ItemGun(data);
 			// 重複しないかどうか
 			if (PackData.GUN_DATA_MAP.containsKey(name)) {
@@ -166,7 +165,7 @@ public class PackLoader {
 		for (BulletData data : cashBulletData) {
 			// ショートネームを登録名に書き換え
 			setMagazineDomain(cashPack.PACK_ROOTNAME, data);
-			String name = data.ITEM_INFO.NAME_SHORT;
+			String name = data.ITEM_SHORTNAME;
 			ItemMagazine gun = new ItemMagazine(data);
 			// 重複しないかどうか
 			if (PackData.BULLET_DATA_MAP.containsKey(name)) {
@@ -253,7 +252,7 @@ public class PackLoader {
 			cashIcon.put(n, data);
 		}
 		// model
-		if (Pattern.compile("^(.*)model/(.*).obj").matcher(name).matches()) {
+		if (Pattern.compile("^(.*)models/(.*).obj").matcher(name).matches()) {
 			System.out.println("model");
 			String n = Pattern.compile(".obj$").matcher(Pattern.compile("^(.*)models/").matcher(name).replaceAll(""))
 					.replaceAll("").toLowerCase();
@@ -274,9 +273,8 @@ public class PackLoader {
 
 	/** 使用マガジンやアタッチメントなどの名前を更新 */
 	private void setMagazineDomain(String Domain, BulletData data) {
-		ItemInfo item = data.ITEM_INFO;
-		item.NAME_SHORT = item.NAME_SHORT + PackLoader.DOMAIN_MAGAZINE + Domain;
-		item.NAME_ICON = item.NAME_ICON + addDomain(item.NAME_ICON, Domain);
+		data.ITEM_SHORTNAME = data.ITEM_SHORTNAME + PackLoader.DOMAIN_MAGAZINE + Domain;
+		data.ITEM_ICONNAME = addDomain(data.ITEM_ICONNAME, Domain);
 
 		// 音のドメインがなければ定義
 		checkSoundDomain(data.SOUND_HIT_ENTITY, Domain);
@@ -286,9 +284,8 @@ public class PackLoader {
 
 	/** 使用マガジンやアタッチメントなどの名前を更新 */
 	private void setGunDomain(String Domain, GunData data) {
-		ItemInfo item = data.ITEM_INFO;
-		item.NAME_SHORT = item.NAME_SHORT + PackLoader.DOMAIN_GUN + Domain;
-		item.NAME_ICON = item.NAME_ICON + addDomain(item.NAME_ICON, Domain);
+		data.ITEM_SHORTNAME = data.ITEM_SHORTNAME + PackLoader.DOMAIN_GUN + Domain;
+		data.ITEM_ICONNAME = addDomain(data.ITEM_ICONNAME, Domain);
 
 		String[] bullets = (String[]) data.BULLET_USE;
 		for (int i = 0; i < bullets.length; i++) {

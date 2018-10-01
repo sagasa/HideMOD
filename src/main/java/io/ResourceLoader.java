@@ -52,11 +52,11 @@ public class ResourceLoader implements IResourcePack {
 					.replaceAll("");
 			// 銃なら
 			if (PackData.GUN_DATA_MAP.containsKey(registerName)) {
-				return makeItemModel(PackData.GUN_DATA_MAP.get(registerName).ITEM_INFO.NAME_ICON, true);
+				return makeItemModel(PackData.GUN_DATA_MAP.get(registerName).ITEM_ICONNAME, true);
 			}
 			// 弾なら
 			if (PackData.BULLET_DATA_MAP.containsKey(registerName)) {
-				return makeItemModel(PackData.BULLET_DATA_MAP.get(registerName).ITEM_INFO.NAME_ICON, true);
+				return makeItemModel(PackData.BULLET_DATA_MAP.get(registerName).ITEM_ICONNAME, true);
 			}
 		}
 		Pattern itemTexture = Pattern.compile("^textures\\/items\\/");

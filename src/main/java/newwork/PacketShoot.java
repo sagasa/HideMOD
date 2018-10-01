@@ -80,8 +80,8 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 
 	@Override // ByteBufにデータを書き込む。
 	public void toBytes(ByteBuf buf) {
-		PacketHandler.writeString(buf, gun.ITEM_INFO.NAME_SHORT);
-		PacketHandler.writeString(buf, bullet.ITEM_INFO.NAME_SHORT);
+		PacketHandler.writeString(buf, gun.ITEM_ICONNAME);
+		PacketHandler.writeString(buf, bullet.ITEM_ICONNAME);
 		buf.writeDouble(x);
 		buf.writeDouble(y);
 		buf.writeDouble(z);

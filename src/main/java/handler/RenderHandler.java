@@ -144,7 +144,7 @@ public class RenderHandler {
 		GlStateManager.scale(1 / fontSize, 1 / fontSize, 1 / fontSize);
 		// 使用する弾
 		mc.fontRenderer.drawString(
-				ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(gun.itemGun)).ITEM_INFO.NAME_DISPLAY, x + 40, y + 50,
+				ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(gun.itemGun)).ITEM_DISPLAYNAME, x + 40, y + 50,
 				0xFFFFFF);
 
 		GlStateManager.disableBlend();

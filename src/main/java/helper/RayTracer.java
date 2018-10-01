@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import entity.EntityBullet;
+import hideMod.model.HideCollision;
+import hideMod.model.HideCollision.HideCollisionPoly;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -19,8 +21,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import types.model.HideCollision;
-import types.model.HideCollision.HideCollisionPoly;
 
 public class RayTracer {
 	/** 比較用の数値とベクトルのクラス */

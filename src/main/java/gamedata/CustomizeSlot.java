@@ -1,4 +1,4 @@
-package hideMod.customize;
+package gamedata;
 
 public class CustomizeSlot {
 

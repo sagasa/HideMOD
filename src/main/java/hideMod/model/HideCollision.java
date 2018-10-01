@@ -1,4 +1,4 @@
-package types.model;
+package hideMod.model;
 
 import net.minecraft.util.math.Vec3d;
 

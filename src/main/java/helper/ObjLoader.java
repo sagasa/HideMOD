@@ -17,6 +17,9 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Strings;
 
+import hideMod.model.ModelPart;
+import hideMod.model.Polygon;
+import hideMod.model.VertexUV;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec2f;
@@ -24,9 +27,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.client.model.obj.OBJModel;
 import net.minecraftforge.client.model.obj.OBJModel.OBJBakedModel;
-import types.model.ModelPart;
-import types.model.Polygon;
-import types.model.VertexUV;
 
 public class ObjLoader {
 	private static final Pattern WHITE_SPACE = Pattern.compile("\\s+");

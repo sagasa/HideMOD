@@ -1,4 +1,4 @@
-package types.model;
+package hideMod.model;
 
 import org.lwjgl.opengl.GL11;
 

@@ -1,4 +1,4 @@
-package types.model;
+package hideMod.model;
 
 public class VertexUV {
 	public VertexUV(float x, float y, float z, float u, float v) {

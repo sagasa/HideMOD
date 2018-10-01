@@ -5,6 +5,7 @@ import java.util.Map;
 
 import entity.EntityBullet;
 import entity.render.RenderBullet;
+import hideMod.model.ModelPart;
 import item.ItemGun;
 import item.ItemMagazine;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -22,7 +23,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
 import types.guns.BulletData;
 import types.guns.GunData;
-import types.model.ModelPart;
 
 public class PackData {
 	/** 弾 ショートネーム - BulletData MAP */
@@ -70,11 +70,11 @@ public class PackData {
 	public static void registerModel() {
 		for (ItemGun item : ItemGun.INSTANCE_MAP.values()) {
 			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(
-					new ResourceLocation(HideMod.MOD_ID, item.GunData.ITEM_INFO.NAME_SHORT), "inventory"));
+					new ResourceLocation(HideMod.MOD_ID, item.GunData.ITEM_SHORTNAME), "inventory"));
 		}
 		for (ItemMagazine item : ItemMagazine.INSTANCE_MAP.values()) {
 			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(
-					new ResourceLocation(HideMod.MOD_ID, item.BulletData.ITEM_INFO.NAME_SHORT), "inventory"));
+					new ResourceLocation(HideMod.MOD_ID, item.BulletData.ITEM_SHORTNAME), "inventory"));
 		}
 		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new IRenderFactory() {
 			@Override

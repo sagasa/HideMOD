@@ -18,6 +18,7 @@ import handler.PacketHandler;
 import handler.RecoilHandler;
 import handler.SoundHandler;
 import hideMod.HideMod;
+import hideMod.model.HideCollision;
 import helper.RayTracer;
 import helper.RayTracer.Hit;
 import io.netty.buffer.ByteBuf;
@@ -65,7 +66,6 @@ import types.effect.Explosion;
 import types.effect.Sound;
 import types.guns.BulletData;
 import types.guns.GunData;
-import types.model.HideCollision;
 
 /** 銃弾・砲弾・爆弾など投擲系以外の全てこのクラスで追加 */
 public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
@@ -412,7 +412,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		buffer.writeFloat(addtick);
 		buffer.writeInt(Shooter.getEntityId());
 		PacketHandler.writeString(buffer, bulletData.ITEM_SHORTNAME);
-		PacketHandler.writeString(buffer, gunData.ITEM_INFO.NAME_SHORT);
+		PacketHandler.writeString(buffer, gunData.ITEM_SHORTNAME);
 		onUpdate(addtick);
 		lastWorldTick = world.getTotalWorldTime();
 	}
