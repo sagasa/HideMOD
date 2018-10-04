@@ -8,8 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import entity.EntityBullet;
-import hideMod.model.HideCollision;
-import hideMod.model.HideCollision.HideCollisionPoly;
+import hideMod.model.CollisionPart;
+import hideMod.model.CollisionPart;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -21,6 +21,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import hideMod.model.Polygon;
 
 public class RayTracer {
 	/** 比較用の数値とベクトルのクラス */
@@ -111,21 +112,21 @@ public class RayTracer {
 	}
 
 	/**コリジョンとベクトルが接触するか*/
-	public Hit getHit(HideCollision collision,Vec3d lv0,Vec3d lvt){
+	public Hit getHit(CollisionPart collision,Vec3d lv0,Vec3d lvt){
 		List<Hit> hits = new ArrayList<Hit>();
-		for(HideCollisionPoly poly:collision.Collision){
+		for(Polygon poly:collision.Polygon){
 			hits.add(getHit(poly, lv0, lvt));
 		}
 		Collections.sort(hits);
 
 		return hits.iterator().next();
 	}
-	private Hit getHit(HideCollisionPoly collision,Vec3d lv0,Vec3d lvt){
-		if(collision.vertex.length <3){
+	private Hit getHit(Polygon collision,Vec3d lv0,Vec3d lvt){
+		if(collision.Vertex.length <3){
 			return null;
 		}
-		for (int i = 0; i < collision.vertex.length-2; i++) {
-			Hit hit = getHit(collision.vertex[0], collision.vertex[i+1], collision.vertex[i+2], lv0, lvt);
+		for (int i = 0; i < collision.Vertex.length-2; i++) {
+			Hit hit = getHit(collision.Vertex[0], collision.Vertex[i+1], collision.Vertex[i+2], lv0, lvt);
 			if(hit!=null){
 				return hit;
 			}

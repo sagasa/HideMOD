@@ -39,7 +39,7 @@ public class DisplayPart extends ModelPart{
 			}
 			//頂点を呼ぶ
 			for(VertexUV vert:surface.Vertex){
-				bb.pos(vert.X, vert.Y, vert.Z).tex(vert.U,vert.V).endVertex();
+				bb.pos(vert.x, vert.y, vert.z).tex(vert.U,vert.V).endVertex();
 			}
 			Tessellator.getInstance().draw();
 		}

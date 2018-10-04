@@ -1,9 +1,11 @@
 package hideMod.model;
 
+import java.util.ArrayList;
+
 import org.lwjgl.opengl.GL11;
 
 /** 複数のModelPartをまとめたグループ */
-public class ModelGroup {
+public class DisplayGroup {
 
 	/** 回転の基準 */
 	public float rotatepointX = 0;
@@ -53,7 +55,10 @@ public class ModelGroup {
 		scaleZ = z;
 	}
 	
-	
+	/**描画するPartを設定*/
+	public void setDisplayPart(DisplayPart... parts){
+		new ArrayList<>(2);
+	}
 
 	/**位置を調整してグループを描画する*/
 	public void render() {
@@ -65,8 +70,6 @@ public class ModelGroup {
 		GL11.glRotatef(rotatePitch, 1, 0, 0);
 		GL11.glTranslatef(-rotatepointX, -rotatepointY, -rotatepointZ);
 
-		
-		
 		GL11.glPopMatrix();
 	}
 }

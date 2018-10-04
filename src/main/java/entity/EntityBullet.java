@@ -18,7 +18,6 @@ import handler.PacketHandler;
 import handler.RecoilHandler;
 import handler.SoundHandler;
 import hideMod.HideMod;
-import hideMod.model.HideCollision;
 import helper.RayTracer;
 import helper.RayTracer.Hit;
 import io.netty.buffer.ByteBuf;
