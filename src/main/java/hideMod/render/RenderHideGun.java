@@ -8,7 +8,6 @@ import javax.script.ScriptException;
 
 import org.lwjgl.opengl.GL11;
 
-import hideMod.model.DisplayGroup;
 import hideMod.model.ModelGun;
 import hideMod.model.Polygon;
 import net.minecraft.client.Minecraft;
@@ -23,16 +22,15 @@ public class RenderHideGun extends RenderHideModel {
 	protected ScriptEngine scriptEngine = EngineManager.getEngineByName("JavaScript");
 
 	private CompiledScript RenderScript;
-	
+
 	public DisplayGroup Body;
 	public DisplayGroup Leaver;
 	public DisplayGroup Barrel;
 	public DisplayGroup Magazine;
-	
+
 	public RenderHideGun(ModelGun model) {
 		Model = model;
 	}
-	
 
 	private ResourceLocation Textur;
 	private ModelGun Model;
@@ -53,33 +51,34 @@ public class RenderHideGun extends RenderHideModel {
 		Compilable compilingEngine = (Compilable) scriptEngine;
 		RenderScript = compilingEngine.compile(script);
 	}
-	
-	/** モデルを描画 */
-	public void render(double x,double y,double z,float yaw,float pitch,float scale){
-		
-	}
-	
-	public void render(float partialTicks, EntityPlayerSP player) {
-		Minecraft.getMinecraft().renderEngine.bindTexture(Textur);
 
+	/** モデルを描画 */
+	public void render(double x, double y, double z, float yaw, float pitch, float scale) {
 		GlStateManager.pushMatrix();
 		// GlStateManager.disableCull();
-
-		// 高さを合わせる
-		GlStateManager.translate(0, player.getEyeHeight(), 0);
+		// 位置を合わせる
+		GlStateManager.translate(x, y, z);
 		// 角度を視線に合わせる
-		float pitch = player.prevRotationPitch + (player.rotationPitch - player.prevRotationPitch) * partialTicks;
-		float yaw = player.prevRotationYaw + (player.rotationYaw - player.prevRotationYaw) * partialTicks;
 		GlStateManager.rotate(pitch, (float) Math.cos(Math.toRadians(yaw)), 0.0F,
 				(float) Math.sin(Math.toRadians(yaw)));
 		GlStateManager.rotate(yaw + 90, 0.0F, -1.0F, 0.0F);
-
-		// GlStateManager.rotate((player.rotationPitch - f5) * 0.1F, 1.0F, 0.0F,
-		// 0.0F);
-		// GlStateManager.rotate((player.rotationYaw - f6) * 0.1F, 0.0F, 1.0F,
-		// 0.0F);
-		
+		//スケール調整
+		GlStateManager.scale(scale, scale, scale);
+		// スクリプト実行
+		try {
+			RenderScript.eval();
+		} catch (ScriptException e) {
+			e.printStackTrace();
+		}
 		// GlStateManager.enableCull();
 		GlStateManager.popMatrix();
+	}
+
+	public void render(float partialTicks, EntityPlayerSP player) {
+		Minecraft.getMinecraft().renderEngine.bindTexture(Textur);
+		GlStateManager.translate(0, player.getEyeHeight(), 0);
+		float pitch = player.prevRotationPitch + (player.rotationPitch - player.prevRotationPitch) * partialTicks;
+		float yaw = player.prevRotationYaw + (player.rotationYaw - player.prevRotationYaw) * partialTicks;
+		render(player.posX, player.posY, player.posZ, yaw, pitch, 1);
 	}
 }

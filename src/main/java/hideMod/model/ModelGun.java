@@ -18,10 +18,9 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+/** 読み込んだままのモデル
+ * 描画、アニメーションはRenderで */
 @SideOnly(Side.CLIENT)
-/**
- * モデル内容 本体 マガジン スライド バレル 弾
- */
 public class ModelGun extends ModelBase {
 
 	public DisplayPart ModelBody;

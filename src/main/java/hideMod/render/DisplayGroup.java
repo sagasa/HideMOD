@@ -1,8 +1,11 @@
-package hideMod.model;
+package hideMod.render;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.lwjgl.opengl.GL11;
+
+import hideMod.model.DisplayPart;
 
 /** 複数のModelPartをまとめたグループ */
 public class DisplayGroup {
@@ -31,6 +34,8 @@ public class DisplayGroup {
 	public float scaleZ = 1;
 	/** 表示の可否 */
 	public boolean Visibility = true;
+	/**表示リスト*/
+	private List<DisplayPart> DisplayList = new ArrayList<>(2);
 
 	public void rotatePoint(float x, float y, float z) {
 		rotatepointX = x;
@@ -56,8 +61,13 @@ public class DisplayGroup {
 	}
 	
 	/**描画するPartを設定*/
-	public void setDisplayPart(DisplayPart... parts){
-		new ArrayList<>(2);
+	public void addDisplayPart(DisplayPart part){
+		DisplayList.add(part);
+	}
+	
+	/**PartListをクリア*/
+	public void clearDisplayList(){
+		DisplayList.clear();
 	}
 
 	/**位置を調整してグループを描画する*/
@@ -70,6 +80,8 @@ public class DisplayGroup {
 		GL11.glRotatef(rotatePitch, 1, 0, 0);
 		GL11.glTranslatef(-rotatepointX, -rotatepointY, -rotatepointZ);
 
+		DisplayList.forEach(part->part.render());
+		
 		GL11.glPopMatrix();
 	}
 }
