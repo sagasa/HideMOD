@@ -11,7 +11,7 @@ public class GunData extends ItemData{
 	public float ITEM_MOVE_SPEED = 0f;
 	public float ITEM_KNOCKBACK_RESISTANCE = 0f;
 	public float ITEM_ATTACK_DAMAGE = 0f;
-	
+
 	/** 弾速 1秒の移動距離(m)=弾速 : float型 **/
 	public float BULLET_SPEED = 5f;
 	/** 持ってから撃てるまで ; tickかかる : int型 **/
@@ -76,16 +76,5 @@ public class GunData extends ItemData{
 	public boolean USE_SECONDARY = false;
 	/** 両手持ちできるか*/
 	public boolean USE_DUALWIELD = false;
-
-	/**使用マガジンやアタッチメントなどの名前を更新*//**
-	public void setDomain(String Domain) {
-		ItemInfo item = getItemInfo();
-		item.shortName = item.shortName+PackLoader.DOMAIN_GUN+Domain;
-
-		String[] bullets = (String[]) getDataObject(GunDataList.BULLET_USE);
-		for (int i = 0; i < bullets.length; i++) {
-			bullets[i] = bullets[i]+PackLoader.DOMAIN_MAGAZINE+Domain;
-		}
-	}*/
 
 }
