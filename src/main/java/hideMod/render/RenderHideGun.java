@@ -9,7 +9,6 @@ import javax.script.ScriptException;
 import org.lwjgl.opengl.GL11;
 
 import hideMod.model.ModelGun;
-import hideMod.model.Polygon;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.GLAllocation;

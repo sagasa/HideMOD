@@ -9,6 +9,7 @@ import java.util.List;
 
 import entity.EntityBullet;
 import hideMod.model.CollisionPart;
+import hideMod.model.ModelPart.Polygon;
 import hideMod.model.CollisionPart;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -21,7 +22,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import hideMod.model.Polygon;
 
 public class RayTracer {
 	/** 比較用の数値とベクトルのクラス */

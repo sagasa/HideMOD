@@ -18,8 +18,8 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.base.Strings;
 
 import hideMod.model.ModelPart;
-import hideMod.model.Polygon;
-import hideMod.model.VertexUV;
+import hideMod.model.ModelPart.Polygon;
+import hideMod.model.ModelPart.VertexUV;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec2f;

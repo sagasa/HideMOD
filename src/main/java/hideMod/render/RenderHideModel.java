@@ -3,8 +3,6 @@ package hideMod.render;
 import org.lwjgl.opengl.GL11;
 
 import hideMod.model.DisplayPart;
-import hideMod.model.Polygon;
-import hideMod.model.VertexUV;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.Tessellator;

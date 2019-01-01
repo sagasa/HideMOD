@@ -43,7 +43,6 @@ import net.minecraftforge.registries.RegistryManager;
 import handler.HideEventHandler;
 import handler.PacketHandler;
 import helper.ObjLoader;
-import hideMod.model.Polygon;
 import io.PackLoader;
 import io.ResourceLoader;
 import it.unimi.dsi.fastutil.Arrays;
