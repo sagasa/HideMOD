@@ -1,8 +1,14 @@
 package handler;
 
+import org.lwjgl.opengl.GL11;
+
 import hideMod.PackData;
 import item.ItemGun;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.EntityRenderer;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelRegistryEvent;
@@ -11,6 +17,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderItemInFrameEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
@@ -40,7 +47,7 @@ public class HideEventHandler {
 		PackData.registerModel();
 	}
 
-	/**型に応じてデータマネージャーを添付する*/
+	/** 型に応じてデータマネージャーを添付する */
 	@SubscribeEvent
 	public void onEvent(EntityEvent.EntityConstructing event) {
 		HideEntityDataManager.onEntityInit(event);
@@ -98,6 +105,13 @@ public class HideEventHandler {
 
 	}
 	// ======レンダー関連========
+
+	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
+	public void onEvent(RenderWorldLastEvent event) {
+		// Minecraft.getMinecraft().entityRenderer.setupOverlayRendering();
+
+	}
 
 	// partialTicks取得
 	@SubscribeEvent

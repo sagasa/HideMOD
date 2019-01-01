@@ -4,12 +4,15 @@ import java.awt.Rectangle;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL14;
 
 import gamedata.Gun;
 import gamedata.LoadedMagazine;
 import gamedata.LoadedMagazine.Magazine;
 import handler.PlayerHandler.EquipMode;
 import helper.NBTWrapper;
+import hideMod.render.HideScope;
 import item.ItemGun;
 import item.ItemMagazine;
 import net.minecraft.client.Minecraft;
@@ -59,6 +62,7 @@ public class RenderHandler {
 
 		if (event.isCancelable() && event.getType() == ElementType.CROSSHAIRS) {
 			writeHitMarker(x, y);
+			writeScope(x, y);
 		}
 		if (!event.isCancelable() && event.getType() == ElementType.HOTBAR) {
 			// 開始位置
@@ -66,8 +70,8 @@ public class RenderHandler {
 		}
 		//
 		/*
-		 * RenderHelper.enableGUIStandardItemLighting(); GL11.glColor4f(1.0F,
-		 * 1.0F, 1.0F, 1.0F); GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+		 * RenderHelper.enableGUIStandardItemLighting(); GL11.glColor4f(1.0F, 1.0F,
+		 * 1.0F, 1.0F); GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 		 * Minecraft.getMinecraft().getRenderItem().renderItemIntoGUI(new
 		 * ItemStack(Item.getByNameOrId("hidemod:gun_ar"),1) , i, j);
 		 * RenderHelper.disableStandardItemLighting();
@@ -76,11 +80,21 @@ public class RenderHandler {
 		// System.out.println("render");
 	}
 
+ 	public static HideScope test;
+
+	/** スコープ */
+	private static void writeScope(int x, int y) {
+		if (test == null) {
+			test = new HideScope();
+		}
+		test.renderOnGUI();
+	}
+
 	/** 画面右下に 残弾 射撃モード 使用する弾を描画 */
 	private static void writeGunInfo(int x, int y) {
 
 		if (EquipMode.getEqipMode(mc.player) == EquipMode.Main) {
-			writeGunInfo(x, y,PlayerHandler.gunMain);
+			writeGunInfo(x, y, PlayerHandler.gunMain);
 		} else if (EquipMode.getEqipMode(mc.player) == EquipMode.Off) {
 			writeGunInfo(x, y, PlayerHandler.gunOff);
 		} else if (EquipMode.getEqipMode(mc.player) == EquipMode.Dual) {
@@ -94,8 +108,8 @@ public class RenderHandler {
 	}
 
 	/** 銃のステータスGUI描画 */
-	private static void writeGunInfo(int x, int y,Gun gun) {
-		if(gun == null){
+	private static void writeGunInfo(int x, int y, Gun gun) {
+		if (gun == null) {
 			return;
 		}
 		// インフォの枠
@@ -133,13 +147,13 @@ public class RenderHandler {
 			offset += 16;
 		}
 		// 射撃モードを描画
-		mc.fontRenderer.drawString(NBTWrapper.getGunFireMode(gun.itemGun).toString().toUpperCase(), x + 40, y + 39, 0xFFFFFF);
+		mc.fontRenderer.drawString(NBTWrapper.getGunFireMode(gun.itemGun).toString().toUpperCase(), x + 40, y + 39,
+				0xFFFFFF);
 		// 残弾
 		float fontSize = 1.8f;
 		GlStateManager.scale(fontSize, fontSize, fontSize);
 		mc.fontRenderer.drawString(
-				gun.magazine.getLoadedNum() + "/"
-						+ ItemGun.getCanUseingBulletNum(gun.itemGun, mc.player),
+				gun.magazine.getLoadedNum() + "/" + ItemGun.getCanUseingBulletNum(gun.itemGun, mc.player),
 				(x + 5) / fontSize, (y + 21) / fontSize, 0xFFFFFF, false);
 		GlStateManager.scale(1 / fontSize, 1 / fontSize, 1 / fontSize);
 		// 使用する弾
