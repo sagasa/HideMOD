@@ -3,6 +3,7 @@ package handler;
 import org.lwjgl.opengl.GL11;
 
 import hideMod.PackData;
+import hideMod.render.HideScope;
 import item.ItemGun;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -10,6 +11,8 @@ import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.IProjectile;
+import net.minecraft.entity.projectile.EntityPotion;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.MouseEvent;
@@ -109,8 +112,7 @@ public class HideEventHandler {
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onEvent(RenderWorldLastEvent event) {
-		// Minecraft.getMinecraft().entityRenderer.setupOverlayRendering();
-
+		HideScope.updateImage();
 	}
 
 	// partialTicks取得
