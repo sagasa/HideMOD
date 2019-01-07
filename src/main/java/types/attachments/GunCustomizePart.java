@@ -1,7 +1,7 @@
 package types.attachments;
 
-import types.base.ItemData;
-import types.guns.GunData;
+import types.items.GunData;
+import types.items.ItemData;
 
 public class GunCustomizePart extends ItemData {
 

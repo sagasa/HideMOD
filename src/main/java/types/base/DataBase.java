@@ -85,7 +85,8 @@ public abstract class DataBase implements Cloneable {
 		return true;
 	}
 
-	/** 全てのパブリックフィールドに引数の各フィールドの値を設定 */
+	/** 全ての数値のパブリックフィールドに引数の値を設定
+	 * ネストしたDataBase内も含む*/
 	public boolean setValue(int value) {
 		Class<? extends DataBase> clazz = this.getClass();
 		// フィールドが数値型なら加算 DataBaseならoveradd実行

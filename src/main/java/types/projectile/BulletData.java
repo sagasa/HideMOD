@@ -1,16 +1,11 @@
-package types.guns;
+package types.projectile;
 
 import types.base.DataBase;
-import types.base.ItemData;
 import types.effect.Explosion;
 import types.effect.Sound;
+import types.items.ItemData;
 
-public class BulletData extends ItemData{
-	/** 装弾数 : int型 **/
-	public int MAGAZINE_SIZE = 10;
-
-	/** スタックサイズ : int型 **/
-	public int STACK_SIZE = 4;
+public class BulletData extends ProjectileData{
 
 	/**弾の寿命 (tick) : int型**/
 	public int BULLET_LIFE = 600;
@@ -21,11 +16,8 @@ public class BulletData extends ItemData{
 	/** 発射数 : int型 **/
 	public int SHOOT_NUM = 1;
 
-	/**リロード時にマガジンが破棄されるか : boolean型**/
-	public boolean MAGAZINE_BREAK = true;
-
-	/**防具貫通 : boolean型**/
-	public boolean HIT_IGNORING_ARMOR = false;
+	/**防具貫通 : float型**/
+	public float HIT_IGNORING_ARMOR = 0F;
 	/**直撃のHSダメージ : float型**/
 	public float HIT_DAMAGE_HEAD = 1F;
 	/**直撃の対人ダメージ : float型**/

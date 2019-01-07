@@ -42,8 +42,8 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import types.PackInfo;
 import types.effect.Sound;
-import types.guns.BulletData;
-import types.guns.GunData;
+import types.items.GunData;
+import types.items.MagazineData;
 
 /** パックの読み取り */
 public class PackLoader {
@@ -63,7 +63,7 @@ public class PackLoader {
 	/** ファイルから読み込むモジュール */
 	private static class PackReader {
 		private List<GunData> Guns = new ArrayList<>();
-		private List<BulletData> Bullets = new ArrayList<>();
+		private List<MagazineData> Bullets = new ArrayList<>();
 		private PackInfo Pack = null;
 		private Map<String, byte[]> Icons = new HashMap<>();
 		private Map<String, byte[]> Textures = new HashMap<>();
@@ -113,7 +113,7 @@ public class PackLoader {
 			}
 			// bullet認識
 			else if (Pattern.compile("^(.*)bullets/(.*).json").matcher(name).matches()) {
-				BulletData newBullet = gson.fromJson(new String(data, Charset.forName("UTF-8")), BulletData.class);
+				MagazineData newBullet = gson.fromJson(new String(data, Charset.forName("UTF-8")), MagazineData.class);
 				Bullets.add(newBullet);
 				LOGGER.debug("add bullet[" + newBullet.ITEM_DISPLAYNAME + "] to PackReader");
 			}

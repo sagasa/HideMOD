@@ -1,17 +1,10 @@
-package types.guns;
+package types.items;
 
 import types.base.DataBase;
-import types.base.ItemData;
 import types.effect.Recoil;
 import types.effect.Sound;
 
 public class GunData extends ItemData{
-
-	public float ITEM_MAX_HEALTH = 0f;
-	public float ITEM_MOVE_SPEED = 0f;
-	public float ITEM_KNOCKBACK_RESISTANCE = 0f;
-	public float ITEM_ATTACK_DAMAGE = 0f;
-
 	/** 弾速 1秒の移動距離(m)=弾速 : float型 **/
 	public float BULLET_SPEED = 5f;
 	/** 持ってから撃てるまで ; tickかかる : int型 **/
@@ -71,10 +64,10 @@ public class GunData extends ItemData{
 	/** リロード音 : Sound型 **/
 	public Sound SOUND_RELOAD=new Sound("sample", 10);
 	/** 使用する弾 : StringArray型 */
-	public String[] BULLET_USE=new String[0];
-	/** セカンダリにできるか*/
-	public boolean USE_SECONDARY = false;
-	/** 両手持ちできるか*/
-	public boolean USE_DUALWIELD = false;
+	public String[] MAGAZINE_USE=new String[0];
 
+	/** セカンダリにできるか アイテムのみ*/
+	public boolean USE_SECONDARY = false;
+	/** 両手持ちできるか アイテムのみ*/
+	public boolean USE_DUALWIELD = false;
 }

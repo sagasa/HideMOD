@@ -1,4 +1,6 @@
-package types.base;
+package types.attachments;
+
+import types.items.ItemData;
 
 public abstract class AttachmentsData extends ItemData{
 	/**アタッチメントの装備部位*/

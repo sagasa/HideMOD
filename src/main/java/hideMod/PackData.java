@@ -22,7 +22,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
 import types.guns.BulletData;
-import types.guns.GunData;
+import types.items.GunData;
 
 public class PackData {
 	/** 弾 ショートネーム - BulletData MAP */
