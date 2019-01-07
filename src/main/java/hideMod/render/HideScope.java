@@ -7,16 +7,38 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
+@SideOnly(Side.CLIENT)
 public class HideScope {
-	public Framebuffer framebufferOut = new Framebuffer(0, 0, false);
-	private float Zoom = 1;
+	/** カレントフレームバッファ */
+	private static Framebuffer framebufferOut = new Framebuffer(0, 0, false);
+	/** カレントスコープ */
+	public static HideScope Scope = null;
+
+	/** ズーム倍率 */
+	private float Zoom = 2;
+	/** 画面上の占有範囲 短いほうの辺に掛けて算出 */
 	private float Scale = 0.7f;
+	/** サイトのマスク */
 	private ScopeMask Mask = new ScopeMask();
+
+	public static void setScope(float zoom, float scale, ScopeMask mask) {
+		Scope = new HideScope();
+		Scope.Zoom = zoom;
+		Scope.Scale = scale;
+		Scope.Mask = mask;
+	}
+
+	public static void clearScope() {
+		Scope = null;
+	}
 
 	/** 1<=zoom */
 	public void setZoom(float zoom) {
@@ -30,14 +52,16 @@ public class HideScope {
 		Mask = mask;
 	}
 
-	public void renderOnGUI() {
+	public static void renderOnGUI() {
+		if (Scope == null)
+			return;
 
 		Minecraft mc = Minecraft.getMinecraft();
 
-		int y = mc.displayHeight;
-		int x = mc.displayWidth;
+		float y = mc.displayHeight;
+		float x = mc.displayWidth;
 
-		float r = (float) Math.min(y, x) * Scale / 2;
+		float r = (float) Math.min(y, x) * Scope.Scale / 2;
 
 		float scopeCenterX = 0.5f;
 		float scopeCenterY = 0.5f;
@@ -45,57 +69,52 @@ public class HideScope {
 		float textureX = (x * scopeCenterX) - r;
 		float textureY = (y * scopeCenterY) - r;
 
-		textureX += 2 * r * Mask.X;
-		textureY += 2 * r * Mask.Y;
+		textureX += 2 * r * Scope.Mask.X;
+		textureY += 2 * r * Scope.Mask.Y;
 
-		updateImage(mc.getFramebuffer());
+		framebufferOut.bindFramebufferTexture();
+		BufferBuilder bb = Tessellator.getInstance().getBuffer();
+		// 座標系をスケーリングする
+		ScaledResolution sl = new ScaledResolution(mc);
+		float x2 = x / sl.getScaleFactor();
+		float y2 = y / sl.getScaleFactor();
+		float r2 = r / sl.getScaleFactor();
+		bb.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+		bb.pos(x2 * scopeCenterX - r2, y2 * scopeCenterY + r2, 0d)
+				.tex((textureX - r / Scope.Zoom) / x, (textureY - r / Scope.Zoom) / y).endVertex();
+		bb.pos(x2 * scopeCenterX + r2, y2 * scopeCenterY + r2, 0d)
+				.tex((textureX + r / Scope.Zoom) / x, (textureY - r / Scope.Zoom) / y).endVertex();
+		bb.pos(x2 * scopeCenterX + r2, y2 * scopeCenterY - r2, 0d)
+				.tex((textureX + r / Scope.Zoom) / x, (textureY + r / Scope.Zoom) / y).endVertex();
+		bb.pos(x2 * scopeCenterX - r2, y2 * scopeCenterY - r2, 0d)
+				.tex((textureX - r / Scope.Zoom) / x, (textureY + r / Scope.Zoom) / y).endVertex();
+		Tessellator.getInstance().draw();
+	}
 
-		// framebufferOut.bindFramebufferTexture();
+	public static void updateImage() {
+		updateImage(Minecraft.getMinecraft().getFramebuffer());
+	}
 
-
-		// バッファに投げ込む
-		Framebuffer fb = mc.getFramebuffer();
+	/** フレームバッファからイメージを更新 */
+	public static void updateImage(Framebuffer fb) {
+		if (Scope == null)
+			return;
+		int x = fb.framebufferWidth;
+		int y = fb.framebufferHeight;
 		fb.unbindFramebuffer();
 		fb.bindFramebufferTexture();
 		updateSize(x, y);
 		framebufferOut.framebufferClear();
-		framebufferOut.bindFramebuffer(false);
-		BufferBuilder bb = Tessellator.getInstance().getBuffer();
-		bb.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-		bb.pos(0, y, 0d).tex((textureX - r * Zoom) / x, (textureY - r * Zoom) / y).endVertex();
-		bb.pos(x, y, 0d).tex((textureX + r * Zoom) / x, (textureY - r * Zoom) / y).endVertex();
-		bb.pos(x, 0, 0d).tex((textureX + r * Zoom) / x, (textureY + r * Zoom) / y).endVertex();
-		bb.pos(0, 0, 0d).tex((textureX - r * Zoom) / x, (textureY + r * Zoom) / y).endVertex();
-		Tessellator.getInstance().draw();
+		framebufferOut.bindFramebuffer(true);
+		fb.framebufferRender(x, y);
 		framebufferOut.unbindFramebuffer();
 		framebufferOut.bindFramebufferTexture();
 		fb.bindFramebuffer(true);
-		//座標系をスケーリングする
-		ScaledResolution sl = new ScaledResolution(mc);
-		x /= sl.getScaleFactor();
-		y /= sl.getScaleFactor();
-		r /= sl.getScaleFactor();
-		bb.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-		bb.pos(x * scopeCenterX - r, y * scopeCenterY + r, 0d).tex(0, 0).endVertex();
-		bb.pos(x * scopeCenterX + r, y * scopeCenterY + r, 0d).tex(1, 0).endVertex();
-		bb.pos(x * scopeCenterX + r, y * scopeCenterY - r, 0d).tex(1, 1).endVertex();
-		bb.pos(x * scopeCenterX - r, y * scopeCenterY - r, 0d).tex(0, 1).endVertex();
-		Tessellator.getInstance().draw();
-
 	}
 
-	/** フレームバッファからイメージを更新 */
-	public void updateImage(Framebuffer fb) {
-
-
-
-
-	}
-
-	private void updateSize(int x, int y) {
+	private static void updateSize(int x, int y) {
 		if (x != framebufferOut.framebufferWidth || y != framebufferOut.framebufferHeight) {
 			framebufferOut.createFramebuffer(x, y);
-			System.out.println(x+" "+y);
 		}
 	}
 

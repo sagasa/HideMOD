@@ -13,6 +13,7 @@ import gamedata.LoadedMagazine.Magazine;
 import handler.PlayerHandler.EquipMode;
 import helper.NBTWrapper;
 import hideMod.render.HideScope;
+import hideMod.render.HideScope.ScopeMask;
 import item.ItemGun;
 import item.ItemMagazine;
 import net.minecraft.client.Minecraft;
@@ -80,14 +81,13 @@ public class RenderHandler {
 		// System.out.println("render");
 	}
 
- 	public static HideScope test;
 
 	/** スコープ */
 	private static void writeScope(int x, int y) {
-		if (test == null) {
-			test = new HideScope();
+		if (HideScope.Scope == null) {
+			HideScope.setScope(8f, 0.8f, new ScopeMask());
 		}
-		test.renderOnGUI();
+		HideScope.renderOnGUI();//TODO そのうち統合
 	}
 
 	/** 画面右下に 残弾 射撃モード 使用する弾を描画 */
