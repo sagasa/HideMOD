@@ -1,0 +1,16 @@
+[
+{
+  "modid": "hidemod",
+  "name": "HideMod",
+  "description": "Guns for PvP in Minecraft.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["SAGASA"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
