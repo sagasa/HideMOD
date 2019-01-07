@@ -61,14 +61,14 @@ public abstract class DataBase implements Cloneable {
 		return true;
 	}
 
-	/** 全てのパブリックフィールドに引数の各フィールドの値を加算 */
-	public boolean overcoe(DataBase data) {
+	/** 全てのパブリックフィールドに引数の各フィールドの値を乗算 */
+	public boolean overdia(DataBase data) {
 		// 型を比較
 		if (!data.getClass().isAssignableFrom(this.getClass())) {
 			return false;
 		}
 		Class<? extends DataBase> clazz = data.getClass();
-		// フィールドが数値型なら加算 DataBaseならoveradd実行
+		// フィールドが数値型なら加算 DataBaseならoverdia実行
 		try {
 			for (Field f : clazz.getFields()) {
 				if (f.getType().isAssignableFrom(float.class) || f.getType().isAssignableFrom(Float.class)) {
@@ -76,7 +76,27 @@ public abstract class DataBase implements Cloneable {
 				} else if (f.getType().isAssignableFrom(int.class) || f.getType().isAssignableFrom(Integer.class)) {
 					f.set(this, f.getInt(data) + f.getInt(this));
 				} else if (f.getType().isAssignableFrom(DataBase.class)) {
-					((DataBase) f.get(this)).overcoe((DataBase) f.get(data));
+					((DataBase) f.get(this)).overdia((DataBase) f.get(data));
+				}
+			}
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			return false;
+		}
+		return true;
+	}
+
+	/** 全てのパブリックフィールドに引数の各フィールドの値を設定 */
+	public boolean setValue(int value) {
+		Class<? extends DataBase> clazz = this.getClass();
+		// フィールドが数値型なら加算 DataBaseならsetValue実行
+		try {
+			for (Field f : clazz.getFields()) {
+				if (f.getType().isAssignableFrom(float.class) || f.getType().isAssignableFrom(Float.class)) {
+					f.set(this, value);
+				} else if (f.getType().isAssignableFrom(int.class) || f.getType().isAssignableFrom(Integer.class)) {
+					f.set(this, value);
+				} else if (f.getType().isAssignableFrom(DataBase.class)) {
+					((DataBase) f.get(this)).setValue(value);
 				}
 			}
 		} catch (IllegalArgumentException | IllegalAccessException e) {
@@ -86,17 +106,24 @@ public abstract class DataBase implements Cloneable {
 	}
 
 	@Override
-	public Object clone() throws CloneNotSupportedException {
-		DataBase clone = (DataBase) super.clone();
-		for (Field f : super.getClass().getFields()) {
-			if (!f.getType().isPrimitive()) {
-				try {
-					f.set(clone, f.get(this));
-				} catch (IllegalArgumentException | IllegalAccessException e) {
-					e.printStackTrace();
+	public DataBase clone() {
+		DataBase clone;
+		try {
+			clone = (DataBase) super.clone();
+			for (Field f : super.getClass().getFields()) {
+				if (!f.getType().isPrimitive()) {
+					try {
+						f.set(clone, f.get(this));
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						e.printStackTrace();
+					}
 				}
 			}
+			return clone;
+		} catch (CloneNotSupportedException e1) {
+			e1.printStackTrace();
+			return null;
 		}
-		return clone;
+
 	}
 }
