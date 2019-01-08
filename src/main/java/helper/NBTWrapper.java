@@ -6,8 +6,8 @@ import hideMod.PackData;
 import item.ItemGun;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import types.guns.BulletData;
-import types.guns.GunFireMode;
+import types.items.MagazineData;
+import types.base.GunFireMode;
 
 /** NBTの読み書きを集約 Nullチェック完備 */
 public class NBTWrapper {
@@ -86,7 +86,7 @@ public class NBTWrapper {
 	}
 
 	/** HideTagのマガジンから弾を取り出す */
-	public static BulletData getNextBullet(NBTTagCompound tag) {
+	public static MagazineData getNextBullet(NBTTagCompound tag) {
 		NBTTagCompound magazines = getTag(tag, GUN_NBT_Magazines);
 
 		int i = 0;

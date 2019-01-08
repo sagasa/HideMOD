@@ -36,9 +36,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import types.guns.BulletData;
-import types.guns.GunData;
-import types.guns.GunFireMode;
+import types.items.GunData;
+import types.base.GunFireMode;
 
 public class ItemGun extends Item {
 

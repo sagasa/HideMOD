@@ -1,6 +1,8 @@
 package types.base;
 
 import java.lang.reflect.Field;
+import java.util.List;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -9,11 +11,36 @@ import com.google.gson.GsonBuilder;
  */
 public abstract class DataBase implements Cloneable {
 
-
 	/** JsonObjectを作成 */
 	public String MakeJsonData() {
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		return gson.toJson(this);
+	}
+
+	/**
+	 * 指定されたデータベースクラスから指定された型のフィールドをリストに追加する
+	 *
+	 * @param target
+	 *            検索元
+	 * @param key
+	 *            検索対象
+	 * @param list
+	 *            結果
+	 * @param deep
+	 *            データベース型のフィールド内も検索するか
+	 */
+	public static List<Field> getFieldsByType(Class<? extends DataBase> target, Class<?> key, List<Field> list,
+			boolean deep) {
+		try {
+			for (Field f : target.getFields()) {
+				if (key.isAssignableFrom(f.getType()))
+					list.add(f);
+				if (DataBase.class.isAssignableFrom(f.getType())&&deep)
+					getFieldsByType((Class<? extends DataBase>) f.getType(), key, list, deep);
+			}
+		} catch (IllegalArgumentException e) {
+		}
+		return list;
 	}
 
 	/**
@@ -29,7 +56,7 @@ public abstract class DataBase implements Cloneable {
 		try {
 			for (Field f : clazz.getFields()) {
 				f.set(this, f.get(data));
-				System.out.println("overwrite"+f.getName());
+				System.out.println("overwrite" + f.getName());
 			}
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			return false;
@@ -85,8 +112,9 @@ public abstract class DataBase implements Cloneable {
 		return true;
 	}
 
-	/** 全ての数値のパブリックフィールドに引数の値を設定
-	 * ネストしたDataBase内も含む*/
+	/**
+	 * 全ての数値のパブリックフィールドに引数の値を設定 ネストしたDataBase内も含む
+	 */
 	public boolean setValue(int value) {
 		Class<? extends DataBase> clazz = this.getClass();
 		// フィールドが数値型なら加算 DataBaseならoveradd実行

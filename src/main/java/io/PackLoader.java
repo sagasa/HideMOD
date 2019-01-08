@@ -41,6 +41,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import types.PackInfo;
+import types.base.DataBase;
 import types.effect.Sound;
 import types.items.GunData;
 import types.items.MagazineData;
@@ -71,7 +72,7 @@ public class PackLoader {
 		private Map<String, Map<String, ModelPart>> Models = new HashMap<>();
 
 		public PackReader(File file) throws IOException {
-			LOGGER.debug("start read pack["+file.getName()+"] to PackCash");
+			LOGGER.debug("start read pack[" + file.getName() + "] to PackCash");
 			// 読み込むファイル
 			FileInputStream in = new FileInputStream(file);
 			ZipInputStream zipIn = new ZipInputStream(in, Charset.forName("Shift_JIS"));
@@ -96,7 +97,7 @@ public class PackLoader {
 			}
 			zipIn.close();
 			in.close();
-			LOGGER.debug("end read pack["+file.getName()+"] to PackCash");
+			LOGGER.debug("end read pack[" + file.getName() + "] to PackCash");
 		}
 
 		/**
@@ -173,14 +174,14 @@ public class PackLoader {
 		for (File file : HideDir.listFiles()) {
 			if (zip.matcher(file.getName()).matches()) {
 				try {
-					LOGGER.info("Start read file["+file.getName()+"]");
+					LOGGER.info("Start read file[" + file.getName() + "]");
 					PackReader cash = new PackReader(file);
 					// キャッシュを検証して追加
 					if (cash.Pack == null) {
 						LOGGER.error("error : Missing PackInfo");
 						return;
 					}
-					LOGGER.info("Start check and add pack["+cash.Pack.PACK_NAME+"]");
+					LOGGER.info("Start check and add pack[" + cash.Pack.PACK_NAME + "]");
 					String packDomain = cash.Pack.PACK_ROOTNAME;
 					// 銃登録
 					for (GunData data : cash.Guns) {
@@ -201,7 +202,7 @@ public class PackLoader {
 						PackData.GUN_DATA_MAP.put(name, data);
 					}
 					// 弾登録
-					for (BulletData data : cash.Bullets) {
+					for (MagazineData data : cash.Bullets) {
 						// ショートネームを登録名に書き換え
 						setMagazineDomain(packDomain, data);
 						String name = data.ITEM_SHORTNAME;
@@ -257,7 +258,7 @@ public class PackLoader {
 						}
 						PackData.MODEL_MAP.put(newname, cash.Models.get(name));
 					}
-					LOGGER.info("End read file["+file.getName()+"]");
+					LOGGER.info("End read file[" + file.getName() + "]");
 				} catch (IOException e1) {
 					LOGGER.error("error : IOException");
 				}
@@ -270,18 +271,21 @@ public class PackLoader {
 
 		// このタイミングでデータチェック
 
-
 	}
 
 	/** 使用マガジンやアタッチメントなどの名前を更新 */
-	private static void setMagazineDomain(String Domain, BulletData data) {
+	private static void setMagazineDomain(String Domain, MagazineData data) {
 		data.ITEM_SHORTNAME = data.ITEM_SHORTNAME + PackLoader.DOMAIN_MAGAZINE + Domain;
 		data.ITEM_ICONNAME = addDomain(data.ITEM_ICONNAME, Domain);
 
-		// 音のドメインがなければ定義
-		checkSoundDomain(data.SOUND_HIT_ENTITY, Domain);
-		checkSoundDomain(data.SOUND_HIT_GROUND, Domain);
-		checkSoundDomain(data.SOUND_PASSING, Domain);
+		// 音のドメインを定義
+		data.getFieldsByType(data.getClass(), Sound.class, new ArrayList<>(), true).forEach(field -> {
+			try {
+				field.get(data);
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		});
 	}
 
 	/** 使用マガジンやアタッチメントなどの名前を更新 */
@@ -289,25 +293,25 @@ public class PackLoader {
 		data.ITEM_SHORTNAME = data.ITEM_SHORTNAME + PackLoader.DOMAIN_GUN + Domain;
 		data.ITEM_ICONNAME = addDomain(data.ITEM_ICONNAME, Domain);
 
-		String[] bullets = (String[]) data.BULLET_USE;
+		String[] bullets = (String[]) data.MAGAZINE_USE;
 		for (int i = 0; i < bullets.length; i++) {
 			bullets[i] = bullets[i] + PackLoader.DOMAIN_MAGAZINE + Domain;
 		}
 		// 音のドメインがなければ定義
-		checkSoundDomain(data.SOUND_RELOAD, Domain);
-		checkSoundDomain(data.SOUND_SHOOT, Domain);
+		checkResourceDomain(data.SOUND_RELOAD, Domain);
+		checkResourceDomain(data.SOUND_SHOOT, Domain);
 	}
 
-	/** 音のドメインをチェック */
-	private static void checkSoundDomain(Sound sound, String domain) {
-		String name = addDomain(sound.NAME, domain);
+	/** ドメインを追加 */
+	private static String setDomain(String name, String domain) {
+		return domain + "_" + name;
+	}
+
+	/** ドメインを追加(リソース用) */
+	private static String setResourceDomain(String name, String domain) {
 		if (!name.contains(":")) {
 			name = HideMod.MOD_ID + ":" + name;
 		}
-		sound.NAME = name;
-	}
-
-	private static String addDomain(String name, String domain) {
-		return domain + "_" + name;
+		return setDomain(name, domain);
 	}
 }
