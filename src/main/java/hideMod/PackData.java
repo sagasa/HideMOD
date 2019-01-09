@@ -21,12 +21,12 @@ import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
-import types.guns.BulletData;
+import types.items.MagazineData;
 import types.items.GunData;
 
 public class PackData {
-	/** 弾 ショートネーム - BulletData MAP */
-	public static Map<String, BulletData> BULLET_DATA_MAP = new HashMap<String, BulletData>();
+	/** 弾 ショートネーム - MagazineData MAP */
+	public static Map<String, MagazineData> MAGAZINE_DATA_MAP = new HashMap<String, MagazineData>();
 
 	/** 銃 ショートネーム - BulletData MAP */
 	public static Map<String, GunData> GUN_DATA_MAP = new HashMap<String, GunData>();
@@ -49,8 +49,8 @@ public class PackData {
 	}
 
 	/** 登録名からBulletData取得 */
-	public static BulletData getBulletData(String name) {
-		return BULLET_DATA_MAP.get(name);
+	public static MagazineData getBulletData(String name) {
+		return MAGAZINE_DATA_MAP.get(name);
 	}
 
 	/** アイテム登録 */
@@ -60,7 +60,7 @@ public class PackData {
 			Item item = new ItemGun(data);
 			register.register(item);
 		}
-		for (BulletData data : BULLET_DATA_MAP.values()) {
+		for (MagazineData data : MAGAZINE_DATA_MAP.values()) {
 			register.register(new ItemMagazine(data));
 		}
 	}
@@ -74,7 +74,7 @@ public class PackData {
 		}
 		for (ItemMagazine item : ItemMagazine.INSTANCE_MAP.values()) {
 			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(
-					new ResourceLocation(HideMod.MOD_ID, item.BulletData.ITEM_SHORTNAME), "inventory"));
+					new ResourceLocation(HideMod.MOD_ID, item.MagazineData.ITEM_SHORTNAME), "inventory"));
 		}
 		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new IRenderFactory() {
 			@Override

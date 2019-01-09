@@ -11,9 +11,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import newwork.PacketShoot;
-import types.guns.BulletData;
-import types.guns.GunData;
-import types.guns.GunFireMode;
+import types.items.GunData;
 
 /** 銃の制御系 NBTからアップデートで読み取り */
 public class Gun {

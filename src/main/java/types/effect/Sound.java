@@ -1,9 +1,11 @@
 package types.effect;
 
+import types.Info;
 import types.base.DataBase;
 
 public class Sound extends DataBase {
 
+	@Info(Cate = 0,isResourceName = true)
 	public String NAME = "sample";
 	public float RANGE = 50f;
 	public float VOL = 1f;

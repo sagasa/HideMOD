@@ -14,5 +14,5 @@ public class MagazineData extends ItemData{
 	public boolean MAGAZINE_BREAK = true;
 
 	/**内容*/
-	public ProjectileData PROJECTILE = new BulletData();
+	public BulletData BULLET = new BulletData();
 }
