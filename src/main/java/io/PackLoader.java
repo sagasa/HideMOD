@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -33,6 +34,7 @@ import hideMod.PackData;
 import hideMod.model.ModelPart;
 import item.ItemGun;
 import item.ItemMagazine;
+import jline.internal.Log;
 import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -40,10 +42,12 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import types.Info;
 import types.PackInfo;
 import types.base.DataBase;
 import types.effect.Sound;
 import types.items.GunData;
+import types.items.ItemData;
 import types.items.MagazineData;
 
 /** パックの読み取り */
@@ -53,24 +57,70 @@ public class PackLoader {
 	/** パックを置くディレクトリ */
 	public static File HideDir;
 
-	/** 追加するクリエイティブタブのリスト */
-	public static List<String> newCreativeTabs = new ArrayList<String>();
-
 	/** ドメイン 銃 */
 	public static final String DOMAIN_GUN = "_gun_";
 	/** ドメイン 弾 */
 	public static final String DOMAIN_MAGAZINE = "_magazine_";
+	/** gson オプションはなし */
+	private static Gson gson = new Gson();
+
+	/**
+	 * ディレクトリからパックを検索し読み込む アイテム登録はしていないので注意
+	 */
+	public static void load(FMLPreInitializationEvent event) {
+		// パックのディレクトリを参照作成
+		HideDir = new File(event.getModConfigurationDirectory().getParentFile(), "/Hide/");
+
+		if (!HideDir.exists()) {
+			HideDir.mkdirs();
+		}
+		// 使うパターン
+		Pattern zip = Pattern.compile("(.+).zip$");
+
+		// パックを読む
+		for (File file : HideDir.listFiles()) {
+			if (zip.matcher(file.getName()).matches()) {
+				try {
+					LOGGER.info("Start read file[" + file.getName() + "]");
+					PackReader cash = new PackReader(file);
+					// キャッシュを検証して追加
+					if (cash.Pack == null) {
+						LOGGER.error("error : Missing PackInfo");
+						return;
+					}
+					LOGGER.info("Start check and add pack[" + cash.Pack.PACK_NAME + "]");
+					String packDomain = cash.Pack.PACK_ROOTNAME;
+					// 銃登録
+					cash.Guns.forEach(data -> checkAndAddToMap(PackData.GUN_DATA_MAP, data, packDomain));
+					// 弾登録
+					cash.Magazines.forEach(data -> checkAndAddToMap(PackData.MAGAZINE_DATA_MAP, data, packDomain));
+					// Icon登録
+					checkAndAddToMap(cash.Icons, PackData.ICON_MAP, packDomain);
+					// Texture登録
+					checkAndAddToMap(cash.Textures, PackData.TEXTURE_MAP, packDomain);
+					// Sound登録
+					checkAndAddToMap(cash.Sounds, PackData.SOUND_MAP, packDomain);
+					// Model登録
+					checkAndAddToMap(cash.Models, PackData.MODEL_MAP, packDomain);
+					LOGGER.info("End read file[" + file.getName() + "]");
+				} catch (IOException e1) {
+					LOGGER.error("error : IOException");
+				}
+			}
+		}
+	}
 
 	/** ファイルから読み込むモジュール */
 	private static class PackReader {
 		private List<GunData> Guns = new ArrayList<>();
-		private List<MagazineData> Bullets = new ArrayList<>();
+		private List<MagazineData> Magazines = new ArrayList<>();
 		private PackInfo Pack = null;
 		private Map<String, byte[]> Icons = new HashMap<>();
 		private Map<String, byte[]> Textures = new HashMap<>();
 		private Map<String, byte[]> Sounds = new HashMap<>();
 		private Map<String, Map<String, ModelPart>> Models = new HashMap<>();
 
+		/** ファイルからパックのキャッシュを作成する */
 		public PackReader(File file) throws IOException {
 			LOGGER.debug("start read pack[" + file.getName() + "] to PackCash");
 			// 読み込むファイル
@@ -107,199 +157,148 @@ public class PackLoader {
 		 */
 		private void addToPack(byte[] data, String name) throws IOException {
 			// Gun認識
-			if (Pattern.compile("^(.*)guns/(.*).json").matcher(name).matches()) {
+			if (PackPattern.GUN.mache(name)) {
 				GunData newGun = gson.fromJson(new String(data, Charset.forName("UTF-8")), GunData.class);
 				Guns.add(newGun);
 				LOGGER.debug("add gun[" + newGun.ITEM_DISPLAYNAME + "] to PackReader");
 			}
-			// bullet認識
-			else if (Pattern.compile("^(.*)bullets/(.*).json").matcher(name).matches()) {
+			// magazine認識
+			else if (PackPattern.MAGAZINE.mache(name)) {
 				MagazineData newBullet = gson.fromJson(new String(data, Charset.forName("UTF-8")), MagazineData.class);
-				Bullets.add(newBullet);
+				Magazines.add(newBullet);
 				LOGGER.debug("add bullet[" + newBullet.ITEM_DISPLAYNAME + "] to PackReader");
 			}
 			// packInfo認識
-			else if (Pattern.compile("^(.*)pack.json").matcher(name).matches()) {
+			else if (PackPattern.PACKINFO.mache(name)) {
 				Pack = gson.fromJson(new String(data, Charset.forName("UTF-8")), PackInfo.class);
 				LOGGER.debug("set pack[" + Pack.PACK_NAME + "] to PackReader");
 			}
 			// Resources認識
 			// Icon
-			if (Pattern.compile("^(.*)icon/(.*).png").matcher(name).matches()) {
-				String n = Pattern.compile(".png$").matcher(Pattern.compile("^(.*)icon/").matcher(name).replaceAll(""))
-						.replaceAll("").toLowerCase();
+			if (PackPattern.ICON.mache(name)) {
+				String n = PackPattern.ICON.trim(name);
 				Icons.put(n, data);
 				LOGGER.debug("add icon[" + n + "] to PackReader");
 			}
 			// model
-			if (Pattern.compile("^(.*)models/(.*).obj").matcher(name).matches()) {
-				String n = Pattern.compile(".obj$")
-						.matcher(Pattern.compile("^(.*)models/").matcher(name).replaceAll("")).replaceAll("")
-						.toLowerCase();
+			if (PackPattern.MODEL.mache(name)) {
+				String n = PackPattern.MODEL.trim(name);
 				Models.put(n, ObjLoader.LoadModel(new ByteArrayInputStream(data)));
 				LOGGER.debug("add model[" + n + "] to PackReader");
 			}
 			// texture
-			if (Pattern.compile("^(.*)texture/(.*).png").matcher(name).matches()) {
-
+			if (PackPattern.TEXTURE.mache(name)) {
+				// TODO
 			}
 			// sounds
-			if (Pattern.compile("^(.*)sounds/(.*).ogg").matcher(name).matches()) {
-				String n = Pattern.compile(".ogg$")
-						.matcher(Pattern.compile("^(.*)sounds/").matcher(name).replaceAll("")).replaceAll("")
-						.toLowerCase();
+			if (PackPattern.SOUND.mache(name)) {
+				String n = PackPattern.SOUND.trim(name);
 				Sounds.put(n, data);
 				LOGGER.debug("add sound[" + n + "] to PackReader");
 			}
 		}
+
+		/** パック認識用パターン エディター側と完全互換 */
+		private enum PackPattern {
+			GUN("guns", "json"), MAGAZINE("magazines", "json"), PACKINFO("pack", "json"), ICON("icons", "png"), SCOPE(
+					"scopes", "png"), TEXTURE("textures", "png"), SOUND("soubds", "ogg"), MODEL("models", "obj");
+			private PackPattern(String start, String end) {
+				mache = Pattern.compile("^(.*)" + start + "/(.*)\\." + end + "$");
+				rep_start = Pattern.compile("^(.*)" + start + "/");
+				rep_end = Pattern.compile("\\." + end + "$");
+				this.start = start;
+				this.end = end;
+			}
+
+			boolean mache(String path) {
+				return mache.matcher(path).matches();
+			}
+
+			String trim(String path) {
+				return rep_start.matcher(rep_end.matcher(path).replaceFirst("")).replaceFirst("");
+			}
+
+			String toPath(String name) {
+				return start + "/" + name + "." + end;
+			}
+
+			private Pattern mache;
+			private Pattern rep_start;
+			private Pattern rep_end;
+			private String start;
+			private String end;
+		}
 	}
 
-	/** gson オプションはなし */
-	private static Gson gson = new Gson();
-
-	/**
-	 * ディレクトリからパックを検索し読み込む アイテム登録はしていないので注意
-	 */
-	public static void load(FMLPreInitializationEvent event) {
-		// パックのディレクトリを参照作成
-		HideDir = new File(event.getModConfigurationDirectory().getParentFile(), "/Hide/");
-
-		if (!HideDir.exists()) {
-			HideDir.mkdirs();
+	/** Itemチェックモジュール */
+	private static <T extends ItemData> void checkAndAddToMap(Map<String, T> map, T data, String packDomain) {
+		// ショートネームを登録名に書き換え
+		setDomain(packDomain, data);
+		String name = data.ITEM_SHORTNAME;
+		// 重複しないかどうか
+		if (map.containsKey(name)) {
+			LOGGER.error("Duplicate name : " + name + ",Type : " + data.getClass().getSimpleName());
+			return;
 		}
-		// 使うパターン
-		Pattern zip = Pattern.compile("(.+).zip$");
+		// データが破損していないか
+		if (!checkData(data)) {
+			LOGGER.error("GunData is damaged :" + name + ",Type : " + data.getClass().getSimpleName());
+			return;
+		}
+		map.put(name, data);
+	}
 
-		// パックを読む
-		for (File file : HideDir.listFiles()) {
-			if (zip.matcher(file.getName()).matches()) {
-				try {
-					LOGGER.info("Start read file[" + file.getName() + "]");
-					PackReader cash = new PackReader(file);
-					// キャッシュを検証して追加
-					if (cash.Pack == null) {
-						LOGGER.error("error : Missing PackInfo");
-						return;
+	/** Resourceチェックモジュール */
+	private static <T> void checkAndAddToMap(Map<String, T> to, Map<String, T> from, String packDomain) {
+		for (String name : from.keySet()) {
+			// ショートネームを登録名に書き換え
+			String newname = setResourceDomain(name, packDomain);
+			// 重複しないかどうか
+			if (to.containsKey(name)) {
+				LOGGER.warn("Duplicate name :" + newname + ",Typr : Resource");
+				return;
+			}
+			to.put(newname, from.get(name));
+		}
+	}
+
+	/** アノテーションをもとにデータチェック */
+	private static boolean checkData(DataBase data) {
+		try {
+			for (Field field : data.getFieldsByType(data.getClass(), null, new ArrayList<>(), true)) {
+				// 空リストの判別部分
+				if (field.getAnnotation(Info.class).noEmpty()) {
+					if (field.getType().isArray() && ((String[]) field.get(data)).length == 0) {
+						Log.error(
+								"emply list is not allow at" + data.getClass().getSimpleName() + "." + field.getName());
+						return false;
+					} else if (List.class.isAssignableFrom(field.getType()) && ((List) field.get(data)).size() == 0) {
+						Log.error(
+								"emply list is not allow at" + data.getClass().getSimpleName() + "." + field.getName());
+						return false;
 					}
-					LOGGER.info("Start check and add pack[" + cash.Pack.PACK_NAME + "]");
-					String packDomain = cash.Pack.PACK_ROOTNAME;
-					// 銃登録
-					for (GunData data : cash.Guns) {
-						// ショートネームを登録名に書き換え
-						setGunDomain(packDomain, data);
-						String name = data.ITEM_SHORTNAME;
-						ItemGun gun = new ItemGun(data);
-						// 重複しないかどうか
-						if (PackData.GUN_DATA_MAP.containsKey(name)) {
-							LOGGER.warn("Duplicate name :" + name);
-							continue;
-						}
-						// データが破損していないか
-						if (!ItemGun.isNormalData(data)) {
-							LOGGER.warn("GunData is damaged :" + name);
-							continue;
-						}
-						PackData.GUN_DATA_MAP.put(name, data);
-					}
-					// 弾登録
-					for (MagazineData data : cash.Bullets) {
-						// ショートネームを登録名に書き換え
-						setMagazineDomain(packDomain, data);
-						String name = data.ITEM_SHORTNAME;
-						ItemMagazine gun = new ItemMagazine(data);
-						// 重複しないかどうか
-						if (PackData.BULLET_DATA_MAP.containsKey(name)) {
-							LOGGER.warn("Duplicate name :" + name);
-							continue;
-						}
-						PackData.BULLET_DATA_MAP.put(name, data);
-					}
-					// Icon登録
-					for (String name : cash.Icons.keySet()) {
-						// ショートネームを登録名に書き換え
-						String newname = addDomain(name, packDomain);
-						// 重複しないかどうか
-						if (PackData.ICON_MAP.containsKey(name)) {
-							LOGGER.warn("Duplicate name :" + newname);
-							continue;
-						}
-						PackData.ICON_MAP.put(newname, cash.Icons.get(name));
-					}
-					// Texture登録
-					for (String name : cash.Textures.keySet()) {
-						// ショートネームを登録名に書き換え
-						String newname = addDomain(name, packDomain);
-						// 重複しないかどうか
-						if (PackData.TEXTURE_MAP.containsKey(name)) {
-							LOGGER.warn("Duplicate name :" + newname);
-							continue;
-						}
-						PackData.TEXTURE_MAP.put(newname, cash.Textures.get(name));
-					}
-					// Sound登録
-					for (String name : cash.Sounds.keySet()) {
-						// ショートネームを登録名に書き換え
-						String newname = addDomain(name, packDomain);
-						// 重複しないかどうか
-						if (PackData.SOUND_MAP.containsKey(name)) {
-							LOGGER.warn("Duplicate name :" + newname);
-							continue;
-						}
-						PackData.SOUND_MAP.put(newname, cash.Sounds.get(name));
-					}
-					// Model登録
-					for (String name : cash.Models.keySet()) {
-						// ショートネームを登録名に書き換え
-						String newname = addDomain(name, packDomain);
-						// 重複しないかどうか
-						if (PackData.MODEL_MAP.containsKey(name)) {
-							LOGGER.warn("Duplicate name :" + newname);
-							continue;
-						}
-						PackData.MODEL_MAP.put(newname, cash.Models.get(name));
-					}
-					LOGGER.info("End read file[" + file.getName() + "]");
-				} catch (IOException e1) {
-					LOGGER.error("error : IOException");
 				}
 			}
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+			return false;
 		}
+		return true;
 	}
 
-	/** ZIPからデータを読み込む 中身の分岐は別 */
-	private void PackRead(File file) throws IOException {
-
-		// このタイミングでデータチェック
-
-	}
-
-	/** 使用マガジンやアタッチメントなどの名前を更新 */
-	private static void setMagazineDomain(String Domain, MagazineData data) {
-		data.ITEM_SHORTNAME = data.ITEM_SHORTNAME + PackLoader.DOMAIN_MAGAZINE + Domain;
-		data.ITEM_ICONNAME = addDomain(data.ITEM_ICONNAME, Domain);
-
-		// 音のドメインを定義
-		data.getFieldsByType(data.getClass(), Sound.class, new ArrayList<>(), true).forEach(field -> {
+	/** アノテーションをもとに名前を更新 */
+	private static void setDomain(String Domain, DataBase data) {
+		// アノテーションが付いたフィールドの値を更新
+		data.getFieldsByType(data.getClass(), String.class, new ArrayList<>(), true).forEach(field -> {
 			try {
-				field.get(data);
+				if (field.getAnnotation(Info.class).isResourceName())
+					field.set(data, setResourceDomain((String) field.get(data), Domain));
+				if (field.getAnnotation(Info.class).isName())
+					field.set(data, setDomain((String) field.get(data), Domain));
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
 			}
 		});
-	}
-
-	/** 使用マガジンやアタッチメントなどの名前を更新 */
-	private static void setGunDomain(String Domain, GunData data) {
-		data.ITEM_SHORTNAME = data.ITEM_SHORTNAME + PackLoader.DOMAIN_GUN + Domain;
-		data.ITEM_ICONNAME = addDomain(data.ITEM_ICONNAME, Domain);
-
-		String[] bullets = (String[]) data.MAGAZINE_USE;
-		for (int i = 0; i < bullets.length; i++) {
-			bullets[i] = bullets[i] + PackLoader.DOMAIN_MAGAZINE + Domain;
-		}
-		// 音のドメインがなければ定義
-		checkResourceDomain(data.SOUND_RELOAD, Domain);
-		checkResourceDomain(data.SOUND_SHOOT, Domain);
 	}
 
 	/** ドメインを追加 */

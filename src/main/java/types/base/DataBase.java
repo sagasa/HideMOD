@@ -1,5 +1,9 @@
 package types.base;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -24,6 +28,7 @@ public abstract class DataBase implements Cloneable {
 	 *            検索元
 	 * @param key
 	 *            検索対象
+	 *            nullの場合全フィールドを対象に
 	 * @param list
 	 *            結果
 	 * @param deep
@@ -33,7 +38,7 @@ public abstract class DataBase implements Cloneable {
 			boolean deep) {
 		try {
 			for (Field f : target.getFields()) {
-				if (key.isAssignableFrom(f.getType()))
+				if (key==null||key.isAssignableFrom(f.getType()))
 					list.add(f);
 				if (DataBase.class.isAssignableFrom(f.getType())&&deep)
 					getFieldsByType((Class<? extends DataBase>) f.getType(), key, list, deep);
