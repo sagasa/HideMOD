@@ -1,5 +1,7 @@
 package gamedata;
 
+import java.util.List;
+
 import entity.EntityBullet;
 import handler.HideEntityDataManager;
 import handler.PacketHandler;
@@ -11,29 +13,37 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import newwork.PacketShoot;
+import types.attachments.GunCustomizePart;
+import types.base.GunFireMode;
 import types.items.GunData;
+import types.items.MagazineData;
+import types.projectile.BulletData;
 
-/** 銃の制御系 NBTからアップデートで読み取り */
+/** 銃の制御系 */
 public class Gun {
-	public GunData gundata;
-	public LoadedMagazine magazine;
+	// ===============クライアント,サーバー共通部分==================
+	private GunData originalData = null;
+	private List<GunCustomizePart> customize = null;
+	private GunData modifyData = null;
 
-	private byte Mode;
-	private static final byte GunItem = 0;
-	private static final byte GunVehicle = 1;
-
-	public ItemStack itemGun;
-	private long uid;
-	/** アイテムの銃から作成 */
-	public Gun(ItemStack gun) {
-		Mode = GunItem;
-		itemGun = gun;
-		gundata = ItemGun.getGunData(itemGun);
-		magazine = NBTWrapper.getGunLoadedMagazines(itemGun);
-		uid =  NBTWrapper.getHideID(itemGun);
+	/** カスタムとオリジナルから修正版のGunDataを作成 */
+	private void updateCustomize() {
+		if (customize != null && originalData != null) {
+			modifyData = (GunData) originalData.clone();
+			customize.forEach(part -> {
+				modifyData.multiplyFloat(part.FLOAT_DIA_MAP);
+				modifyData.addFloat(part.FLOAT_ADD_MAP);
+				modifyData.setFloat(part.FLOAT_SET_MAP);
+				modifyData.setString(part.STRING_SET_MAP);
+			});
+		}
 	}
 
-	// ============================================================================================
+	public void setGun(GunData data) {
+		originalData = data;
+		updateCustomize();
+	}
+
 	/** このTickで射撃可能かどうか */
 	public boolean canShoot() {
 		if (magazine.getLoadedNum() > 0 && !stopshoot && shootDelay <= 0 & shootNum <= 0) {
@@ -42,18 +52,20 @@ public class Gun {
 		return false;
 	}
 
-	/**ItemGunから弾を消費する*/
-	public static boolean useBullet(EntityPlayer player,long uid){
-		for(ItemStack item : player.inventory.offHandInventory){
-			if(ItemGun.isGun(item)&&NBTWrapper.getHideID(item)==uid&&NBTWrapper.getGunLoadedMagazines(item).getLoadedNum()>0){
+	/** ItemGunから弾を消費する */
+	public static boolean useBullet(EntityPlayer player, long uid) {
+		for (ItemStack item : player.inventory.offHandInventory) {
+			if (ItemGun.isGun(item) && NBTWrapper.getHideID(item) == uid
+					&& NBTWrapper.getGunLoadedMagazines(item).getLoadedNum() > 0) {
 				LoadedMagazine newmagazine = NBTWrapper.getGunLoadedMagazines(item);
 				newmagazine.useNextBullet();
 				NBTWrapper.setGunLoadedMagazines(item, newmagazine);
 				return true;
 			}
 		}
-		for(ItemStack item : player.inventory.mainInventory){
-			if(ItemGun.isGun(item)&&NBTWrapper.getHideID(item)==uid&&NBTWrapper.getGunLoadedMagazines(item).getLoadedNum()>0){
+		for (ItemStack item : player.inventory.mainInventory) {
+			if (ItemGun.isGun(item) && NBTWrapper.getHideID(item) == uid
+					&& NBTWrapper.getGunLoadedMagazines(item).getLoadedNum() > 0) {
 				LoadedMagazine newmagazine = NBTWrapper.getGunLoadedMagazines(item);
 				newmagazine.useNextBullet();
 				NBTWrapper.setGunLoadedMagazines(item, newmagazine);
@@ -63,9 +75,9 @@ public class Gun {
 		return false;
 	}
 
-
 	// ============================================================================================
 
+	// ==================クライアント側入力系========================
 	private double X;
 	private double Y;
 	private double Z;
@@ -97,6 +109,7 @@ public class Gun {
 		lastPitch = pitch;
 		return this;
 	}
+
 	//
 	public void gunUpdate(Entity shooter, ItemStack item, boolean trigger) {
 		Shooter = shooter;
@@ -115,14 +128,13 @@ public class Gun {
 			if (now.getLoadedNum() > amount) {
 				// 読み取って適応
 				magazine = now;
-		//		System.out.println("Magazine更新");
+				// System.out.println("Magazine更新");
 			}
 			amount = now.getLoadedNum();
 		} else if (Mode == GunVehicle) {
 
 		}
 	}
-
 
 	private boolean stopshoot = false;
 	private float shootDelay = 0;
@@ -135,28 +147,28 @@ public class Gun {
 				shootDelay = 0;
 			}
 			shoot(shootDelay + 1f);
-			shootDelay += toTick(gundata.RPM);
+			shootDelay += toTick(modifyData.RPM);
 			stopshoot = true;
 		} else if (mode == GunFireMode.FULLAUTO && !stopshoot && shootDelay <= 0 && trigger) {
 			while (shootDelay <= 0 && !stopshoot) {
 				shoot(shootDelay + 1f);
-				shootDelay += toTick(gundata.RPM);
+				shootDelay += toTick(modifyData.RPM);
 			}
 		} else if (mode == GunFireMode.BURST && !stopshoot) {
 			// 射撃開始
 			if (trigger && shootNum == -1 && shootDelay <= 0 && !stopshoot) {
-				shootNum = gundata.BURST_BULLET_NUM;
+				shootNum = modifyData.BURST_BULLET_NUM;
 			}
 			while (shootNum > 0 && shootDelay <= 0 && !stopshoot) {
 				shoot(shootDelay + 1f);
-				shootDelay += toTick(gundata.BURST_RPM);
+				shootDelay += toTick(modifyData.BURST_RPM);
 				;
 				shootNum--;
 			}
 			if (shootNum == 0) {
 				stopshoot = true;
 				shootNum = -1;
-				shootDelay += toTick(gundata.RPM);
+				shootDelay += toTick(modifyData.RPM);
 			}
 			if (stopshoot) {
 				shootNum = -1;
@@ -165,7 +177,7 @@ public class Gun {
 		} else if (mode == GunFireMode.MINIGUN && !stopshoot && shootDelay <= 0 && trigger) {
 			while (shootDelay <= 0 && !stopshoot) {
 				shoot(shootDelay + 1f);
-				shootDelay += toTick(gundata.RPM);
+				shootDelay += toTick(modifyData.RPM);
 			}
 		}
 		if (!trigger) {
@@ -186,8 +198,8 @@ public class Gun {
 			float pitch = lastPitch == null ? Pitch : lastPitch + (Pitch - lastPitch) * offset;
 			if (Shooter.world.isRemote) {
 				// クライアントなら
-				//シューターがプレイヤー以外ならエラー
-				if(!(Shooter instanceof EntityPlayer)){
+				// シューターがプレイヤー以外ならエラー
+				if (!(Shooter instanceof EntityPlayer)) {
 					System.err.println("プレイヤー以外のクライアントからの発射メゾットの実行はできません");
 				}
 				RecoilHandler.addRecoil(gundata);
@@ -202,12 +214,15 @@ public class Gun {
 	}
 
 	/** エンティティを生成 ShootNumに応じた数弾を出す */
-	public static void shoot(GunData gundata, BulletData bulletdata, Entity shooter, boolean isADS, float offset,
+	public static void shoot(GunData gundata, MagazineData bulletdata, Entity shooter, boolean isADS, float offset,
 			double x, double y, double z, float yaw, float pitch) {
-		for (int i = 0; i < bulletdata.SHOOT_NUM; i++) {
-			SoundHandler.broadcastSound(shooter.world, x, y, z, gundata.SOUND_SHOOT);
-			EntityBullet bullet = new EntityBullet(gundata, bulletdata, shooter, isADS, offset, x, y, z, yaw, pitch);
-			shooter.world.spawnEntity(bullet);
+		if (bulletdata.BULLET != null) {
+			for (int i = 0; i < bulletdata.BULLET.SHOOT_NUM; i++) {
+				SoundHandler.broadcastSound(shooter.world, x, y, z, gundata.SOUND_SHOOT);
+				EntityBullet bullet = new EntityBullet(gundata, bulletdata, shooter, isADS, offset, x, y, z, yaw,
+						pitch);
+				shooter.world.spawnEntity(bullet);
+			}
 		}
 	}
 

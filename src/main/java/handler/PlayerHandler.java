@@ -53,10 +53,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import newwork.PacketInput;
 import newwork.PacketPlaySound;
 import scala.actors.threadpool.Arrays;
+import types.base.GunFireMode;
 import types.effect.Sound;
-import types.guns.BulletData;
-import types.guns.GunData;
-import types.guns.GunFireMode;
+import types.items.GunData;
 
 /***/
 public class PlayerHandler {
@@ -176,8 +175,8 @@ public class PlayerHandler {
 				idMain = NBTWrapper.getHideID(main);
 				idOff = NBTWrapper.getHideID(off);
 				// 使う銃だけ代入
-				gunMain = em.hasMain() ? new Gun(main) : null;
-				gunOff = em.hasOff() ? new Gun(off) : null;
+				//TODO		gunMain = em.hasMain() ? new Gun(main) : null;
+		//TODO		gunOff = em.hasOff() ? new Gun(off) : null;
 
 			}
 			// Pos代入
@@ -189,25 +188,15 @@ public class PlayerHandler {
 				gunOff.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ)
 						.setRotate(player.rotationYaw, player.rotationPitch).setLastRotate(lastyaw, lastpitch);
 			}
-
-			String scope = null;
-			float dia = 1f;
 			// 射撃処理
 			if (em == EquipMode.Main) {
 				gunMain.gunUpdate(player, main, leftMouseHold);
-				scope = gunMain.gundata.SCOPE_NAME;
-				dia = gunMain.gundata.SCOPE_DIA;
 			} else if (em == EquipMode.Off) {
 				gunOff.gunUpdate(player, off, leftMouseHold);
-				scope = gunOff.gundata.SCOPE_NAME;
-				dia = gunOff.gundata.SCOPE_DIA;
 			} else if (em == EquipMode.OtherDual) {
 				gunMain.gunUpdate(player, main, leftMouseHold);
 				gunOff.gunUpdate(player, off, rightMouseHold);
-			} else if (em == EquipMode.Dual) {
-				scope = "";
-				dia = gunMain.gundata.SCOPE_DIA;
-				boolean mainTrigger = false;
+			} else if (em == EquipMode.Dual) {		boolean mainTrigger = false;
 				boolean offTrigger = false;
 				GunFireMode mode = NBTWrapper.getGunFireMode(main);
 				if (mode == GunFireMode.BURST || mode == GunFireMode.SEMIAUTO) {
@@ -227,7 +216,7 @@ public class PlayerHandler {
 				gunOff.gunUpdate(player, off, offTrigger);
 			}
 			// 銃ののぞき込み処理
-			if (scope != null) {
+			if (false) {//TODO
 				boolean ads_res = false;
 				int adsTick = 0;
 				if (em.hasMain()) {
@@ -255,7 +244,7 @@ public class PlayerHandler {
 				// 適応
 				if (ads_res) {
 					if (!isADS) {
-						setADS(scope, dia);
+						//setADS(scope, dia);
 					}
 				} else {
 					if (isADS) {

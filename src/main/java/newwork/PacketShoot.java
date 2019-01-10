@@ -15,13 +15,13 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
-import types.guns.BulletData;
-import types.guns.GunData;
+import types.items.GunData;
+import types.items.MagazineData;
 
 public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMessage> {
 
 	GunData gun;
-	BulletData bullet;
+	MagazineData bullet;
 	double x;
 	double y;
 	double z;
@@ -39,14 +39,14 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 	}
 
 	/** ItemGunからの発射 */
-	public PacketShoot(GunData gun, BulletData bullet, boolean isADS, float offset, double x, double y,
+	public PacketShoot(GunData gun, MagazineData bullet, boolean isADS, float offset, double x, double y,
 			double z, float yaw, float pitch, long uid) {
 		this(gun, bullet, isADS, offset, x, y, z, yaw, pitch);
 		mode = ItemGun;
 		this.uid = uid;
 	}
 
-	private PacketShoot(GunData gun, BulletData bullet, boolean isADS, float offset, double x, double y,
+	private PacketShoot(GunData gun, MagazineData bullet, boolean isADS, float offset, double x, double y,
 			double z, float yaw, float pitch) {
 		this.gun = gun;
 		this.bullet = bullet;

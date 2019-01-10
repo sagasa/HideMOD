@@ -1,5 +1,6 @@
 package handler;
 
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import hideMod.PackData;
@@ -59,7 +60,7 @@ public class HideEventHandler {
 	/* プレイヤーイベント */
 	@SubscribeEvent
 	public void onEvent(PlayerTickEvent event) {
-		PlayerHandler.PlayerTick(event);
+	//TODO	PlayerHandler.PlayerTick(event);
 	}
 
 	@SubscribeEvent

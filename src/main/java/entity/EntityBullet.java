@@ -18,11 +18,10 @@ import handler.PacketHandler;
 import handler.RecoilHandler;
 import handler.SoundHandler;
 import hideMod.HideMod;
+import hideMod.PackData;
 import helper.RayTracer;
 import helper.RayTracer.Hit;
 import io.netty.buffer.ByteBuf;
-import item.ItemGun;
-import item.ItemMagazine;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBush;
 import net.minecraft.block.BlockReed;
@@ -63,8 +62,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import newwork.PacketHit;
 import types.effect.Explosion;
 import types.effect.Sound;
-import types.guns.BulletData;
-import types.guns.GunData;
+import types.items.GunData;
+import types.items.MagazineData;
+import types.projectile.BulletData;
 
 /** 銃弾・砲弾・爆弾など投擲系以外の全てこのクラスで追加 */
 public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
@@ -90,6 +90,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	private float addtick;
 	// サーバー・クライアント両方で代入されているべき
 	private GunData gunData;
+	private MagazineData magazineData;
 	private BulletData bulletData;
 	public Entity Shooter;
 
@@ -116,12 +117,13 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	private static final byte FLAG_DEATH_TYPE_GROUND = 0b0000010;
 	private static final byte FLAG_DEATH_TYPE_ENTITY = 0b0000100;
 
-	public EntityBullet(GunData gun, BulletData bullet, Entity shooter, boolean isADS, float offset, double x, double y,
-			double z, float yaw, float pitch) {
+	public EntityBullet(GunData gun, MagazineData magazine, Entity shooter, boolean isADS, float offset, double x,
+			double y, double z, float yaw, float pitch) {
 		this(shooter.world);
 		this.addtick = offset;
 		this.gunData = gun;
-		this.bulletData = bullet;
+		this.bulletData = magazine.BULLET;
+		this.magazineData = magazine;
 		Shooter = shooter;
 		AlreadyHit = new ArrayList<Entity>();
 		bulletPower = gunData.BULLET_POWER + bulletData.BULLET_POWER;
@@ -234,7 +236,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			if (!AlreadyHit.contains(e)) {
 				// ダメージが与えられる対象なら
 				if (e instanceof EntityLivingBase && ((EntityLivingBase) e).deathTime == 0 && !(e.equals(Shooter))) {
-					//System.out.println("Shooter "+Shooter+" HitEntity "+e);
+					// System.out.println("Shooter "+Shooter+" HitEntity "+e);
 					// ダメージを算出
 					FlyingDistance += lvo.distanceTo(hit.hitVec);
 					float damage = getFinalLivingDamage((EntityLivingBase) e, FlyingDistance);
@@ -410,7 +412,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		buffer.writeDouble(world.getTotalWorldTime());
 		buffer.writeFloat(addtick);
 		buffer.writeInt(Shooter.getEntityId());
-		PacketHandler.writeString(buffer, bulletData.ITEM_SHORTNAME);
+		PacketHandler.writeString(buffer, magazineData.ITEM_SHORTNAME);
 		PacketHandler.writeString(buffer, gunData.ITEM_SHORTNAME);
 		onUpdate(addtick);
 		lastWorldTick = world.getTotalWorldTime();
@@ -430,8 +432,9 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		tickt = tickt < 0 ? 0 : tickt;
 		tickt += buf.readFloat();
 		Shooter = world.getEntityByID(buf.readInt());
-		bulletData = ItemMagazine.getBulletData(PacketHandler.readString(buf));
-		gunData = ItemGun.getGunData(PacketHandler.readString(buf));
+		magazineData = PackData.getBulletData(PacketHandler.readString(buf));
+		bulletData = magazineData.BULLET;
+		gunData = PackData.getGunData(PacketHandler.readString(buf));
 		onUpdate(tickt);
 		lastWorldTick = world.getTotalWorldTime();
 	}

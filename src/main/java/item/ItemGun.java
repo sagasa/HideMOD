@@ -95,14 +95,14 @@ public class ItemGun extends Item {
 		NBTWrapper.setGunShootDelay(item, 0);
 		NBTWrapper.setGunFireMode(item,
 				GunFireMode.getFireMode(Arrays.asList(data.FIREMODE).iterator().next().toString()));
-		NBTWrapper.setGunUseingBullet(item, Arrays.asList((String[]) data.BULLET_USE).iterator().next().toString());
+		NBTWrapper.setGunUseingBullet(item, Arrays.asList((String[]) data.MAGAZINE_USE).iterator().next().toString());
 		return item;
 	}
 
 	/** データ破損チェック */
 	public static boolean isNormalData(GunData data) {
 		// 弾が登録されているか
-		if (((String[]) data.BULLET_USE).length == 0) {
+		if (((String[]) data.MAGAZINE_USE).length == 0) {
 			return false;
 		}
 		return true;
@@ -268,7 +268,7 @@ public class ItemGun extends Item {
 	public static String getNextUseMagazine(ItemStack gun) {
 		GunData data = getGunData(gun);
 		String now = NBTWrapper.getGunUseingBullet(gun);
-		List<String> modes = Arrays.asList(data.BULLET_USE);
+		List<String> modes = Arrays.asList(data.MAGAZINE_USE);
 		int index = modes.indexOf(now.toString()) + 1;
 		if (index > modes.size() - 1) {
 			index = 0;

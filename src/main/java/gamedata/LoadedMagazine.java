@@ -7,7 +7,6 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import hideMod.PackData;
-import types.guns.BulletData;
 
 /** 装填済みのマガジン管理用 変更通知機能付き */
 public class LoadedMagazine {

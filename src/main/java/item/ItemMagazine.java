@@ -17,24 +17,24 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import scala.actors.threadpool.Arrays;
-import types.guns.BulletData;
+import types.items.MagazineData;
 
 public class ItemMagazine extends Item {
 
 	public static Map<String, ItemMagazine> INSTANCE_MAP = new HashMap<String, ItemMagazine>();
 
-	public BulletData BulletData;
+	public MagazineData MagazineData;
 
 	// ========================================================================
 	// 登録
-	public ItemMagazine(BulletData data) {
+	public ItemMagazine(MagazineData data) {
 		super();
 		this.setCreativeTab(CreativeTabs.COMBAT);
 		String name = data.ITEM_SHORTNAME;
 		this.setUnlocalizedName(name);
 		this.setRegistryName(name);
-		this.setMaxStackSize(data.STACK_SIZE);
-		this.BulletData = data;
+		this.setMaxStackSize(data.ITEM_STACK_SIZE);
+		this.MagazineData = data;
 		INSTANCE_MAP.put(name, this);
 	}
 
@@ -54,7 +54,7 @@ public class ItemMagazine extends Item {
 
 	/** アイテムスタックを作成 */
 	public static ItemStack makeMagazine(String name) {
-		if (PackData.BULLET_DATA_MAP.containsKey(name)) {
+		if (PackData.MAGAZINE_DATA_MAP.containsKey(name)) {
 			ItemStack stack = new ItemStack(INSTANCE_MAP.get(name));
 			stack.setTagCompound(new NBTTagCompound());
 			return setBulletNBT(stack);
@@ -67,7 +67,7 @@ public class ItemMagazine extends Item {
 		if (!(item.getItem() instanceof ItemMagazine)) {
 			return item;
 		}
-		BulletData data = getBulletData(item);
+		MagazineData data = getBulletData(item);
 		NBTWrapper.setMagazineBulletNum(item, data.MAGAZINE_SIZE);
 		return item;
 	}
@@ -135,16 +135,16 @@ public class ItemMagazine extends Item {
 
 
 	/** BulletData取得 */
-	public static BulletData getBulletData(String name) {
-		return PackData.BULLET_DATA_MAP.get(name);
+	public static MagazineData getBulletData(String name) {
+		return PackData.MAGAZINE_DATA_MAP.get(name);
 	}
 
 	/** BulletData取得 */
-	public static BulletData getBulletData(ItemStack item) {
+	public static MagazineData getBulletData(ItemStack item) {
 		if (!(item.getItem() instanceof ItemMagazine)) {
 			return null;
 		}
-		return ((ItemMagazine) item.getItem()).BulletData;
+		return ((ItemMagazine) item.getItem()).MagazineData;
 	}
 
 	/** スタックから弾の登録名を取得 */
@@ -154,6 +154,6 @@ public class ItemMagazine extends Item {
 
 	/** その名前の弾は存在するか */
 	public static boolean isMagazineExist(String name) {
-		return PackData.BULLET_DATA_MAP.containsKey(name);
+		return PackData.MAGAZINE_DATA_MAP.containsKey(name);
 	}
 }

@@ -41,6 +41,14 @@ public class PacketHandler {
 		INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 4, Side.SERVER);
 	}
 
+	/***/
+	public static void syncToClient() {
+//TODO
+	}
+	public static void syncFromServer(byte cate) {
+//TODO
+	}
+
 	/** バッファに文字列を書き込む */
 	public static void writeString(ByteBuf buf, String str) {
 		buf.writeInt(str.length());

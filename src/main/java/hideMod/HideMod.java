@@ -78,12 +78,12 @@ public class HideMod {
 		// パック読み込み
 		PackLoader.load(event);
 		// パケットの初期設定
-		PacketHandler.init();
+	//	PacketHandler.init();TODO
 		// ダメージの初期設定
 		HideDamage.init();
 		// エンティティ登録
-		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,
-				"entity_bullet", 1, MOD_ID, 512, 1, false);
+	//	EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,
+	//TODO			"entity_bullet", 1, MOD_ID, 512, 1, false);
 
 		if (FMLCommonHandler.instance().getSide().isClient()) {
 			// リソースローダーを追加

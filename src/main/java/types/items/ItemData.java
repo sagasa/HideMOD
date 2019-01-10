@@ -14,6 +14,8 @@ public abstract class ItemData extends DataBase {
 	/** アイコン名 */
 	@Info(isResourceName = true)
 	public String ITEM_ICONNAME = "sample";
+	/**スタックサイズ*/
+	public int ITEM_STACK_SIZE = 1;
 	/** 所持しているときのHP増加量 */
 	@Info(Cate = 3)
 	public float ITEM_MAX_HEALTH = 0f;
