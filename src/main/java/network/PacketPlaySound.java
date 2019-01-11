@@ -1,4 +1,4 @@
-package newwork;
+package network;
 
 import handler.PacketHandler;
 import handler.SoundHandler;

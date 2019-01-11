@@ -13,7 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import newwork.PacketShoot;
+import network.PacketShoot;
 import types.attachments.GunCustomizePart;
 import types.base.GunFireMode;
 import types.items.GunData;

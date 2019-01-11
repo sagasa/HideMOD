@@ -59,7 +59,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import newwork.PacketHit;
+import network.PacketHit;
 import types.effect.Explosion;
 import types.effect.Sound;
 import types.items.GunData;

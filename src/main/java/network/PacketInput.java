@@ -1,4 +1,4 @@
-package newwork;
+package network;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;

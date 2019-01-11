@@ -15,10 +15,10 @@ import net.minecraft.util.math.Vec2f;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
-import newwork.PacketHit;
-import newwork.PacketInput;
-import newwork.PacketPlaySound;
-import newwork.PacketShoot;
+import network.PacketHit;
+import network.PacketInput;
+import network.PacketPlaySound;
+import network.PacketShoot;
 
 public class PacketHandler {
 
