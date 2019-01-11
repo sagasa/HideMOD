@@ -9,6 +9,7 @@ import handler.RecoilHandler;
 import handler.SoundHandler;
 import helper.NBTWrapper;
 import item.ItemGun;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -136,8 +137,10 @@ public class Gun {
 		}
 	}
 
+	//射撃アップデート
+	private long lastTime = Minecraft.getSystemTime();
 	private boolean stopshoot = false;
-	private float shootDelay = 0;
+	private int shootDelay = 0;
 	private int shootNum = 0;
 
 	/** 銃のアップデート処理 トリガー関連 */
@@ -147,12 +150,12 @@ public class Gun {
 				shootDelay = 0;
 			}
 			shoot(shootDelay + 1f);
-			shootDelay += toTick(modifyData.RPM);
+			shootDelay += RPMtoMillis(modifyData.RPM);
 			stopshoot = true;
 		} else if (mode == GunFireMode.FULLAUTO && !stopshoot && shootDelay <= 0 && trigger) {
 			while (shootDelay <= 0 && !stopshoot) {
 				shoot(shootDelay + 1f);
-				shootDelay += toTick(modifyData.RPM);
+				shootDelay += RPMtoMillis(modifyData.RPM);
 			}
 		} else if (mode == GunFireMode.BURST && !stopshoot) {
 			// 射撃開始
@@ -161,14 +164,13 @@ public class Gun {
 			}
 			while (shootNum > 0 && shootDelay <= 0 && !stopshoot) {
 				shoot(shootDelay + 1f);
-				shootDelay += toTick(modifyData.BURST_RPM);
-				;
+				shootDelay += RPMtoMillis(modifyData.BURST_RPM);
 				shootNum--;
 			}
 			if (shootNum == 0) {
 				stopshoot = true;
 				shootNum = -1;
-				shootDelay += toTick(modifyData.RPM);
+				shootDelay += RPMtoMillis(modifyData.RPM);
 			}
 			if (stopshoot) {
 				shootNum = -1;
@@ -177,7 +179,7 @@ public class Gun {
 		} else if (mode == GunFireMode.MINIGUN && !stopshoot && shootDelay <= 0 && trigger) {
 			while (shootDelay <= 0 && !stopshoot) {
 				shoot(shootDelay + 1f);
-				shootDelay += toTick(modifyData.RPM);
+				shootDelay += RPMtoMillis(modifyData.RPM);
 			}
 		}
 		if (!trigger) {
@@ -185,7 +187,7 @@ public class Gun {
 		}
 
 		if (0 < shootDelay) {
-			shootDelay -= 1f;
+			shootDelay -= Minecraft.getSystemTime() - lastTime;
 		}
 	}
 
@@ -226,8 +228,12 @@ public class Gun {
 		}
 	}
 
-	/** RPMをTickに変換 */
-	private static float toTick(int rpm) {
-		return 1200f / rpm;
+	/** RPMをミリ秒に変換 */
+	private static int RPMtoMillis(int rpm) {
+		return 60000 / rpm;
+	}
+	/** ミリ秒をTickに変換 */
+	private static float MillistoTick(int millis) {
+		return millis/50;
 	}
 }

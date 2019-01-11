@@ -82,10 +82,10 @@ public class PlayerHandler {
 		//
 		ScopeName = scope;
 		GameSettings setting = Minecraft.getMinecraft().gameSettings;
-		//FOV
+		// FOV
 		defaultFOV = setting.fovSetting;
 		setting.fovSetting = defaultFOV / dia;
-		//マウス感度
+		// マウス感度
 		defaultMS = setting.mouseSensitivity;
 		setting.mouseSensitivity = defaultMS / dia;
 		isADS = true;
@@ -95,9 +95,9 @@ public class PlayerHandler {
 	public static void clearADS() {
 		if (isADS) {
 			GameSettings setting = Minecraft.getMinecraft().gameSettings;
-			//FOV
+			// FOV
 			setting.fovSetting = defaultFOV;
-			//マウス感度
+			// マウス感度
 			setting.mouseSensitivity = defaultMS;
 			isADS = false;
 		}
@@ -175,8 +175,8 @@ public class PlayerHandler {
 				idMain = NBTWrapper.getHideID(main);
 				idOff = NBTWrapper.getHideID(off);
 				// 使う銃だけ代入
-				//TODO		gunMain = em.hasMain() ? new Gun(main) : null;
-		//TODO		gunOff = em.hasOff() ? new Gun(off) : null;
+				// TODO gunMain = em.hasMain() ? new Gun(main) : null;
+				// TODO gunOff = em.hasOff() ? new Gun(off) : null;
 
 			}
 			// Pos代入
@@ -196,7 +196,8 @@ public class PlayerHandler {
 			} else if (em == EquipMode.OtherDual) {
 				gunMain.gunUpdate(player, main, leftMouseHold);
 				gunOff.gunUpdate(player, off, rightMouseHold);
-			} else if (em == EquipMode.Dual) {		boolean mainTrigger = false;
+			} else if (em == EquipMode.Dual) {
+				boolean mainTrigger = false;
 				boolean offTrigger = false;
 				GunFireMode mode = NBTWrapper.getGunFireMode(main);
 				if (mode == GunFireMode.BURST || mode == GunFireMode.SEMIAUTO) {
@@ -216,7 +217,7 @@ public class PlayerHandler {
 				gunOff.gunUpdate(player, off, offTrigger);
 			}
 			// 銃ののぞき込み処理
-			if (false) {//TODO
+			if (false) {// TODO
 				boolean ads_res = false;
 				int adsTick = 0;
 				if (em.hasMain()) {
@@ -244,7 +245,7 @@ public class PlayerHandler {
 				// 適応
 				if (ads_res) {
 					if (!isADS) {
-						//setADS(scope, dia);
+						// setADS(scope, dia);
 					}
 				} else {
 					if (isADS) {
@@ -253,14 +254,14 @@ public class PlayerHandler {
 				}
 			}
 		}
-		//アップデート
+		// アップデート
 		RecoilHandler.updateRecoil();
 		lastyaw = player.rotationYaw;
 		lastpitch = player.rotationPitch;
 		lastLeftMouse = leftMouseHold;
 		lastRightMouse = rightMouseHold;
-		if(HitMarkerTime >0){
-			HitMarkerTime --;
+		if (HitMarkerTime > 0) {
+			HitMarkerTime--;
 		}
 	}
 
@@ -276,7 +277,8 @@ public class PlayerHandler {
 
 	/** 装備の状態 */
 	public enum EquipMode {
-		Main(true, false), Off(false, true), Dual(true, true), OtherDual(true, true), None(false, false);
+		Main(true, false), Off(false, true), Dual(true, true), OtherDual(true, true), None(false, false), DRIVABLE(true,
+				false);
 		private boolean hasMain;
 		private boolean hasOff;
 
@@ -290,6 +292,7 @@ public class PlayerHandler {
 			GunData main = ItemGun.getGunData(player.getHeldItemMainhand());
 			GunData off = ItemGun.getGunData(player.getHeldItemOffhand());
 			// 状態検知
+			// TODO 兵器の場合の検出をここで
 			if (main != null && off != null && main.USE_DUALWIELD && off.USE_DUALWIELD && off.USE_SECONDARY) {
 				// 両手持ち可能な状態かつ両手に銃を持っている
 				if (main.equals(off)) {
@@ -399,25 +402,5 @@ public class PlayerHandler {
 	}
 
 	/** クライアントサイドでのみ動作 */
-	enum KeyBind {
-		GUN_RELOAD(Keyboard.KEY_R), GUN_FIREMODE(Keyboard.KEY_V), GUN_USEBULLET(Keyboard.KEY_B), DEBUG(Keyboard.KEY_G);
 
-		HashMap<String, Integer> keyConfig = new HashMap<String, Integer>();
-
-		KeyBind(int defaultKeyBind) {
-			keyConfig.put(this.toString(), defaultKeyBind);
-		}
-
-		public String getBindName() {
-			return this.toString();
-		}
-
-		public boolean getKeyDown() {
-			return Keyboard.isKeyDown(keyConfig.get(this.toString()));
-		}
-
-		public void setKeyBind(int keyCord) {
-			keyConfig.put(this.toString(), keyCord);
-		}
-	}
 }
