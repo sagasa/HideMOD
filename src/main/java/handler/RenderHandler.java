@@ -93,14 +93,14 @@ public class RenderHandler {
 	/** 画面右下に 残弾 射撃モード 使用する弾を描画 */
 	private static void writeGunInfo(int x, int y) {
 
-		if (EquipMode.getEqipMode(mc.player) == EquipMode.Main) {
+		if (EquipMode.getEquipMode(mc.player) == EquipMode.Main) {
 			writeGunInfo(x, y, PlayerHandler.gunMain);
-		} else if (EquipMode.getEqipMode(mc.player) == EquipMode.Off) {
+		} else if (EquipMode.getEquipMode(mc.player) == EquipMode.Off) {
 			writeGunInfo(x, y, PlayerHandler.gunOff);
-		} else if (EquipMode.getEqipMode(mc.player) == EquipMode.Dual) {
+		} else if (EquipMode.getEquipMode(mc.player) == EquipMode.Dual) {
 			writeGunInfo(x, y, PlayerHandler.gunMain);
 			writeGunInfo(x - 120, y, PlayerHandler.gunOff);
-		} else if (EquipMode.getEqipMode(mc.player) == EquipMode.OtherDual) {
+		} else if (EquipMode.getEquipMode(mc.player) == EquipMode.OtherDual) {
 			writeGunInfo(x, y, PlayerHandler.gunMain);
 			writeGunInfo(x - 120, y, PlayerHandler.gunOff);
 		}

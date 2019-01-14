@@ -11,7 +11,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import types.guns.BulletData;
 
 /** ヒットマーク用パケット */
 public class PacketHit implements IMessage, IMessageHandler<PacketHit, IMessage> {

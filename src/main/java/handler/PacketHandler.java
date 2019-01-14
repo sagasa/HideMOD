@@ -19,6 +19,7 @@ import network.PacketHit;
 import network.PacketInput;
 import network.PacketPlaySound;
 import network.PacketShoot;
+import network.PacketSync;
 
 public class PacketHandler {
 
@@ -39,6 +40,8 @@ public class PacketHandler {
 		INSTANCE.registerMessage(PacketHit.class, PacketHit.class, 2, Side.CLIENT);
 		INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 3, Side.CLIENT);
 		INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 4, Side.SERVER);
+
+		INSTANCE.registerMessage(PacketSync.class, PacketSync.class, 5, Side.SERVER);
 	}
 
 	/***/

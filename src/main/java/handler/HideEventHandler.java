@@ -3,6 +3,7 @@ package handler;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
+import hideMod.InputWatcher;
 import hideMod.PackData;
 import hideMod.render.HideScope;
 import item.ItemGun;
@@ -27,6 +28,7 @@ import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerEvent.StopTracking;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
@@ -60,7 +62,7 @@ public class HideEventHandler {
 	/* プレイヤーイベント */
 	@SubscribeEvent
 	public void onEvent(PlayerTickEvent event) {
-	//TODO	PlayerHandler.PlayerTick(event);
+		PlayerHandler.PlayerTick(event);
 	}
 
 	@SubscribeEvent
@@ -85,6 +87,28 @@ public class HideEventHandler {
 		// System.out.println(event.target+"Start");
 	}
 
+	/** クライアント側でのワールド読み込み時に入力監視スレッドを立ち上げる */
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onEvent(WorldEvent.Load event) {
+		InputWatcher.startWatcher();
+	}
+
+	/** 入力監視スレッドを停止する */
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onEvent(WorldEvent.Unload event) {
+		InputWatcher.stopWatcher();
+	}
+
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onEvent(TickEvent.ClientTickEvent event) {
+		if (event.phase == Phase.START) {
+			InputWatcher.tickUpdate();
+		}
+	}
+
 	@SubscribeEvent
 	public void onEvent(StopTracking event) {
 		// System.out.println(event.target+"Stop");
@@ -101,11 +125,6 @@ public class HideEventHandler {
 	// ======アップデート=========
 	@SubscribeEvent
 	public void onEvent(TickEvent.ServerTickEvent event) {
-
-	}
-
-	@SubscribeEvent
-	public void onEvent(TickEvent.ClientTickEvent event) {
 
 	}
 	// ======レンダー関連========
@@ -144,7 +163,6 @@ public class HideEventHandler {
 	public void onEvent(RenderGameOverlayEvent event) {
 		// System.out.println(event.target+"Stop");
 		RenderHandler.writeGameOverlay(event);
-		// System.out.println(event.type);
 	}
 
 	// 額縁描画

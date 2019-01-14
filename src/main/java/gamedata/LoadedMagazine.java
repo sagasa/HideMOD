@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import hideMod.PackData;
+import types.items.MagazineData;
 
 /** 装填済みのマガジン管理用 変更通知機能付き */
 public class LoadedMagazine {
@@ -38,7 +39,7 @@ public class LoadedMagazine {
 	}
 
 	/** 次に撃つ弾を取得 */
-	public BulletData getNextBullet() {
+	public MagazineData getNextBullet() {
 		Magazine mag = getNextMagazine();
 		if (mag == null) {
 			return null;
@@ -48,7 +49,7 @@ public class LoadedMagazine {
 	}
 
 	/** 次に撃つ弾を取得 消費する */
-	public BulletData useNextBullet() {
+	public MagazineData useNextBullet() {
 		Magazine mag = getNextMagazine();
 		if (mag == null) {
 			return null;

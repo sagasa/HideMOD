@@ -69,7 +69,6 @@ public class HideMod {
 	public void construct(FMLConstructionEvent event) {
 		MinecraftForge.EVENT_BUS.register(new HideEventHandler());
 	}
-
 	//
 
 	// アイテム登録
@@ -78,7 +77,8 @@ public class HideMod {
 		// パック読み込み
 		PackLoader.load(event);
 		// パケットの初期設定
-	//	PacketHandler.init();TODO
+		PacketHandler.init();
+
 		// ダメージの初期設定
 		HideDamage.init();
 		// エンティティ登録
