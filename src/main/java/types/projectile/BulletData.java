@@ -1,9 +1,7 @@
 package types.projectile;
 
-import types.base.DataBase;
 import types.effect.Explosion;
 import types.effect.Sound;
-import types.items.ItemData;
 
 public class BulletData extends ProjectileData {
 	/** 弾の名前 **/

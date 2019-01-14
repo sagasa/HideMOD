@@ -10,18 +10,16 @@ import helper.NBTWrapper;
 import hideMod.PackData;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import scala.actors.threadpool.Arrays;
 import types.items.MagazineData;
 
 public class ItemMagazine extends Item {
 
-	public static Map<String, ItemMagazine> INSTANCE_MAP = new HashMap<String, ItemMagazine>();
+	public static Map<String, ItemMagazine> INSTANCE_MAP = new HashMap<>();
 
 	public MagazineData MagazineData;
 

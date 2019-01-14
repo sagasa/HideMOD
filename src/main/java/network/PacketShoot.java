@@ -1,27 +1,17 @@
 package network;
 
-import com.jcraft.jogg.Packet;
-
-import entity.EntityBullet;
 import gamedata.Gun;
-import handler.PacketHandler;
-import handler.SoundHandler;
-import hideMod.PackData;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
-import types.items.GunData;
-import types.items.MagazineData;
 
+/** プレイヤーによるクライアントからの射撃リクエスト */
 public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMessage> {
 
-	GunData gun;
-	MagazineData bullet;
 	double x;
 	double y;
 	double z;
@@ -29,27 +19,13 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 	float pitch;
 	float offset;
 	boolean isADS;
-	double worldTime;
-
-	private byte mode;
-	private static final byte ItemGun = 0;
 	long uid;
+	double worldTime;
 
 	public PacketShoot() {
 	}
 
-	/** ItemGunからの発射 */
-	public PacketShoot(GunData gun, MagazineData bullet, boolean isADS, float offset, double x, double y,
-			double z, float yaw, float pitch, long uid) {
-		this(gun, bullet, isADS, offset, x, y, z, yaw, pitch);
-		mode = ItemGun;
-		this.uid = uid;
-	}
-
-	private PacketShoot(GunData gun, MagazineData bullet, boolean isADS, float offset, double x, double y,
-			double z, float yaw, float pitch) {
-		this.gun = gun;
-		this.bullet = bullet;
+	public PacketShoot(boolean isADS, float offset, double x, double y, double z, float yaw, float pitch, long hideID) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -57,13 +33,12 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 		this.pitch = pitch;
 		this.offset = offset;
 		this.isADS = isADS;
+		this.uid = hideID;
 		this.worldTime = Minecraft.getMinecraft().player.world.getTotalWorldTime();
 	}
 
 	@Override // ByteBufからデータを読み取る。
 	public void fromBytes(ByteBuf buf) {
-		gun = PackData.getGunData(PacketHandler.readString(buf));
-		bullet = PackData.getBulletData(PacketHandler.readString(buf));
 		x = buf.readDouble();
 		y = buf.readDouble();
 		z = buf.readDouble();
@@ -72,16 +47,11 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 		offset = buf.readFloat();
 		isADS = buf.readBoolean();
 		worldTime = buf.readDouble();
-		mode = buf.readByte();
-		if (mode == ItemGun) {
-			uid = buf.readLong();
-		}
+		uid = buf.readLong();
 	}
 
 	@Override // ByteBufにデータを書き込む。
 	public void toBytes(ByteBuf buf) {
-		PacketHandler.writeString(buf, gun.ITEM_ICONNAME);
-		PacketHandler.writeString(buf, bullet.ITEM_ICONNAME);
 		buf.writeDouble(x);
 		buf.writeDouble(y);
 		buf.writeDouble(z);
@@ -90,10 +60,7 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 		buf.writeFloat(offset);
 		buf.writeBoolean(isADS);
 		buf.writeDouble(worldTime);
-		buf.writeByte(mode);
-		if (mode == ItemGun) {
-			buf.writeLong(uid);
-		}
+		buf.writeLong(uid);
 	}
 
 	// 受信イベント
@@ -110,18 +77,13 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 				public void run() {
 					processMessage(m);
 				}
-
 				private void processMessage(PacketShoot m) {
 					EntityPlayer player = ctx.getServerHandler().player;
-					if (!Gun.useBullet(player, m.uid)) {
-						System.out.println("銃が見つからないのでキャンセル");
-						return;
-					}
 					double lag = player.world.getTotalWorldTime() - m.worldTime;
 					lag = lag < 0 ? 0 : lag;
-					//System.out.println("射撃パケット受信" + (m.offset + (float) lag));
-					Gun.shoot(m.gun, m.bullet, player, m.isADS, m.offset + (float) lag, m.x, m.y, m.z, m.yaw, m.pitch);
-
+					System.out.println("lag = " + lag);
+					// System.out.println("射撃パケット受信" + (m.offset + (float) lag));
+					Gun.shoot(player, m.uid, m.offset + (float) lag, m.isADS, m.x, m.y, m.z, m.yaw, m.pitch);
 				}
 			});
 		}

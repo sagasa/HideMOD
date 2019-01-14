@@ -1,22 +1,15 @@
 package helper;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import entity.EntityBullet;
 import hideMod.model.CollisionPart;
 import hideMod.model.ModelPart.Polygon;
-import hideMod.model.CollisionPart;
-import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.entity.projectile.EntityThrowable;
-import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -57,7 +50,7 @@ public class RayTracer {
 
 	/** 当たったブロックを取得*/
 	public Hit[] getHitBlock(Entity owner, World w, Vec3d lv0, Vec3d lvt){
-		ArrayList<Hit> hitBlocks = new ArrayList<Hit>();
+		ArrayList<Hit> hitBlocks = new ArrayList<>();
 
 		Vec3d vm = lvt.subtract(lv0).normalize();
 		RayTraceResult lmop1 = w.rayTraceBlocks(lv0, lvt);
@@ -85,7 +78,7 @@ public class RayTracer {
 	public List<Hit> getHitEntity(Entity owner, World w, Vec3d lv0, Vec3d lvt) {
 		AxisAlignedBB aabb = new AxisAlignedBB(lv0.x, lv0.y, lv0.z, lvt.x, lvt.y, lvt.z)
 				.expand(1, 1, 1);
-		List<Hit> allInterceptEntity = new ArrayList<Hit>();
+		List<Hit> allInterceptEntity = new ArrayList<>();
 		for (Object e : w.getEntitiesWithinAABBExcludingEntity(owner, aabb)) {
 			Entity entity = (Entity) e;
 			// 例外なら戻る
@@ -113,7 +106,7 @@ public class RayTracer {
 
 	/**コリジョンとベクトルが接触するか*/
 	public Hit getHit(CollisionPart collision,Vec3d lv0,Vec3d lvt){
-		List<Hit> hits = new ArrayList<Hit>();
+		List<Hit> hits = new ArrayList<>();
 		for(Polygon poly:collision.Polygon){
 			hits.add(getHit(poly, lv0, lvt));
 		}

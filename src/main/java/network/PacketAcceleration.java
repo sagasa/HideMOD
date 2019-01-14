@@ -1,8 +1,6 @@
 package network;
 
 import entity.EntityDrivable;
-import gamedata.HidePlayerData;
-import handler.PlayerHandler;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;

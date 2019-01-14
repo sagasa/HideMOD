@@ -1,16 +1,12 @@
 package handler;
 
-import java.awt.List;
 import java.util.ArrayList;
 
-import hideMod.HideMod;
 import hideMod.sound.HideSound;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SoundList;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;

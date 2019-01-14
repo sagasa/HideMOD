@@ -14,13 +14,13 @@ public class ArrayEditor {
 	}
 	/**配列から要素を削除*/
 	static public String[] RemoveFromArray(String[] array ,String data){
-		ArrayList<String> Array = new ArrayList<String>(Arrays.asList(array));
+		ArrayList<String> Array = new ArrayList<>(Arrays.asList(array));
 		Array.remove(data);
 		return Array.toArray(new String[Array.size()]);
 	}
 	/**配列に要素を追加*/
 	static public String[] AddToArray(String[] array ,String data){
-		ArrayList<String> Array = new ArrayList<String>(Arrays.asList(array));
+		ArrayList<String> Array = new ArrayList<>(Arrays.asList(array));
 		Array.add(data);
 		return Array.toArray(new String[Array.size()]);
 	}

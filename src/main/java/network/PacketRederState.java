@@ -1,8 +1,5 @@
 package network;
 
-import handler.PacketHandler;
-import handler.PlayerHandler;
-import handler.PlayerHandler.EquipMode;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;

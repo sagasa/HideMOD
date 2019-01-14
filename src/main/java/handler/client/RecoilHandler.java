@@ -1,14 +1,15 @@
-package handler;
+package handler.client;
 
+import handler.PlayerHandler;
 import helper.HideMath;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import types.effect.Recoil;
 import types.items.GunData;
 
+@SideOnly(Side.CLIENT)
 public class RecoilHandler {
 	private static int recoilPower = 0;
 
@@ -29,7 +30,7 @@ public class RecoilHandler {
 		return recoilPower;
 	}
 	/** プレイヤーの状態から使用するリコイルを取得 */
-	@SideOnly(Side.CLIENT)
+
 	private static Recoil getRecoil(GunData data) {
 		EntityPlayer player = Minecraft.getMinecraft().player;
 		return getRecoil(data, player.isSneaking(), PlayerHandler.isADS);
@@ -39,13 +40,13 @@ public class RecoilHandler {
 	private static Recoil getRecoil(GunData data, boolean isSneak, boolean isADS) {
 		if (!isSneak) {
 			if (isADS) {
-				Recoil recoil = (Recoil) data.RECOIL_ADS;
+				Recoil recoil = data.RECOIL_ADS;
 				if (recoil.USE) {
 					return recoil;
 				}
 				return getRecoil(data, false, false);
 			} else {
-				Recoil recoil = (Recoil) data.RECOIL_DEFAULT;
+				Recoil recoil = data.RECOIL_DEFAULT;
 				if (recoil.USE) {
 					return recoil;
 				}
@@ -53,12 +54,12 @@ public class RecoilHandler {
 			}
 		} else {
 			if (isADS) {
-				Recoil recoil = (Recoil) data.RECOIL_SNEAK_ADS;
+				Recoil recoil = data.RECOIL_SNEAK_ADS;
 				if (recoil.USE) {
 					return recoil;
 				}
 			} else {
-				Recoil recoil = (Recoil) data.RECOIL_SNEAK;
+				Recoil recoil = data.RECOIL_SNEAK;
 				if (recoil.USE) {
 					return recoil;
 				}
@@ -94,7 +95,6 @@ public class RecoilHandler {
 	}
 
 	/** Tick毎の変化 */
-	@SideOnly(Side.CLIENT)
 	static public void updateRecoil() {
 		// 撃ってなければ戻る
 		if (nowGun == null) {

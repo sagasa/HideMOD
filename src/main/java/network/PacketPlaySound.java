@@ -2,14 +2,10 @@ package network;
 
 import handler.PacketHandler;
 import handler.SoundHandler;
-import hideMod.HideMod;
 import hideMod.sound.HideSound;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.ISound;
-import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -22,18 +18,18 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 	private static final byte CLIENT_PLAYSOUND = 0;
 	private static final byte SERVER_PLAYREQ = 1;
 	private byte Mode;
-	private String Name;
-	private double X;
-	private double Y;
-	private double Z;
-	private float Vol;
-	private float Pitch;
+	String Name;
+	double X;
+	double Y;
+	double Z;
+	float Vol;
+	float Pitch;
 
-	private int Delay;
+	int Delay;
 
-	private float Range;
-	private boolean UseDelay;
-	private boolean UseDecay;
+	float Range;
+	boolean UseDelay;
+	boolean UseDecay;
 
 	public PacketPlaySound() {
 	}
@@ -134,7 +130,7 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 	}
 
 	@SideOnly(Side.CLIENT)
-	private void playSound(PacketPlaySound m) {
+	static void playSound(PacketPlaySound m) {
 		HideSound sound = new HideSound(m.Name, m.Vol, m.Pitch, (float) m.X, (float) m.Y, (float) m.Z);
 		Minecraft.getMinecraft().getSoundHandler().playDelayedSound(sound, m.Delay);
 	}

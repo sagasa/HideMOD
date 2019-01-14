@@ -1,38 +1,12 @@
 package network;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-
-import entity.EntityBullet;
 import gamedata.HidePlayerData;
-import gamedata.LoadedMagazine;
-import handler.PacketHandler;
 import handler.PlayerHandler;
 import handler.PlayerHandler.EquipMode;
-import handler.SoundHandler;
-import helper.NBTWrapper;
-import hideMod.HideMod;
-import hideMod.PackData;
 import io.netty.buffer.ByteBuf;
-import item.ItemGun;
-import item.ItemMagazine;
-import net.minecraft.block.BlockStone;
-import net.minecraft.block.BlockStoneBrick;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemAnvilBlock;
-import net.minecraft.item.ItemBow;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
-import scala.actors.threadpool.Arrays;
-import types.effect.Sound;
 
 /** 入力をサーバーに送る */
 public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMessage> {
@@ -111,7 +85,7 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 		}else if(m.mode == GUN_BULLET){
 			data.Server.changeAmmo = true;
 		}else if(m.mode == GUN_MODE){
-			data.Server.changeFiremode = true;
+			data.Server.changeFireMode = true;
 		}else if(m.mode == GUN_RELOAD){
 			data.Server.reload = true;
 		}

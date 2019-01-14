@@ -1,13 +1,9 @@
 package hideMod.render;
 
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL14;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.shader.Framebuffer;
@@ -61,7 +57,7 @@ public class HideScope {
 		float y = mc.displayHeight;
 		float x = mc.displayWidth;
 
-		float r = (float) Math.min(y, x) * Scope.Scale / 2;
+		float r = Math.min(y, x) * Scope.Scale / 2;
 
 		float scopeCenterX = 0.5f;
 		float scopeCenterY = 0.5f;

@@ -11,7 +11,6 @@ import item.ItemMagazine;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoader;
@@ -26,22 +25,22 @@ import types.items.GunData;
 
 public class PackData {
 	/** 弾 ショートネーム - MagazineData MAP */
-	public static Map<String, MagazineData> MAGAZINE_DATA_MAP = new HashMap<String, MagazineData>();
+	public static Map<String, MagazineData> MAGAZINE_DATA_MAP = new HashMap<>();
 
 	/** 銃 ショートネーム - BulletData MAP */
-	public static Map<String, GunData> GUN_DATA_MAP = new HashMap<String, GunData>();
+	public static Map<String, GunData> GUN_DATA_MAP = new HashMap<>();
 
 	/** アイコン 登録名 - byte[] MAP */
-	public static Map<String, byte[]> ICON_MAP = new HashMap<String, byte[]>();
+	public static Map<String, byte[]> ICON_MAP = new HashMap<>();
 
 	/** サウンド 登録名 - byte[] MAP */
-	public static Map<String, byte[]> SOUND_MAP = new HashMap<String, byte[]>();
+	public static Map<String, byte[]> SOUND_MAP = new HashMap<>();
 
 	/** テクスチャ 登録名 - byte[] MAP */
-	public static Map<String, byte[]> TEXTURE_MAP = new HashMap<String, byte[]>();
+	public static Map<String, byte[]> TEXTURE_MAP = new HashMap<>();
 
 	/** モデル 登録名 - Map<String,ModelPart> MAP */
-	public static Map<String, Map<String, ModelPart>> MODEL_MAP = new HashMap<String, Map<String, ModelPart>>();
+	public static Map<String, Map<String, ModelPart>> MODEL_MAP = new HashMap<>();
 
 	/** 登録名からGunData取得 */
 	public static GunData getGunData(String name) {

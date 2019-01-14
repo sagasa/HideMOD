@@ -36,8 +36,8 @@ public class HideScope_back {
 		updateSize(fb);
 		fb.unbindFramebuffer();
 		fb.bindFramebufferTexture();
-		float x = (float) this.framebufferOut.framebufferTextureWidth;
-		float y = (float) this.framebufferOut.framebufferTextureHeight;
+		float x = this.framebufferOut.framebufferTextureWidth;
+		float y = this.framebufferOut.framebufferTextureHeight;
 
 		framebufferOut.framebufferClear();
 		framebufferOut.bindFramebuffer(false);
@@ -49,9 +49,9 @@ public class HideScope_back {
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder bufferbuilder = tessellator.getBuffer();
 		bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
-		bufferbuilder.pos(0.0D, (double) y, 500.0D).tex(0, 0).endVertex();
-		bufferbuilder.pos((double) x, (double) y, 500.0D).tex(1, 0).endVertex();
-		bufferbuilder.pos((double) x, 0.0D, 500.0D).tex(1, 1).endVertex();
+		bufferbuilder.pos(0.0D, y, 500.0D).tex(0, 0).endVertex();
+		bufferbuilder.pos(x, y, 500.0D).tex(1, 0).endVertex();
+		bufferbuilder.pos(x, 0.0D, 500.0D).tex(1, 1).endVertex();
 		bufferbuilder.pos(0.0D, 0.0D, 500.0D).tex(0, 1).endVertex();
 		tessellator.draw();
 
@@ -93,7 +93,7 @@ public class HideScope_back {
 		int y = scaledresolution.getScaledHeight();
 		int x = scaledresolution.getScaledWidth();
 
-		float r = (float) Math.min(y, x) * Scale / 2;
+		float r = Math.min(y, x) * Scale / 2;
 
 		//framebufferOut.bindFramebufferTexture();
 		Minecraft.getMinecraft().getFramebuffer().bindFramebufferTexture();

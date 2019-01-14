@@ -107,7 +107,7 @@ public class PacketHandler {
 		}
 
 		public DataParameter<Vec3d> createKey(int id) {
-			return new DataParameter<Vec3d>(id, this);
+			return new DataParameter<>(id, this);
 		}
 
 		public Vec3d copyValue(Vec3d value) {
@@ -126,7 +126,7 @@ public class PacketHandler {
 		}
 
 		public DataParameter<Vec2f> createKey(int id) {
-			return new DataParameter<Vec2f>(id, this);
+			return new DataParameter<>(id, this);
 		}
 
 		public Vec2f copyValue(Vec2f value) {

@@ -1,7 +1,6 @@
 package gamedata;
 
 import handler.PlayerHandler.EquipMode;
-import net.minecraft.util.EnumHand;
 
 public class HidePlayerData {
 	public CommonPlayerData Common = new CommonPlayerData();
@@ -11,13 +10,16 @@ public class HidePlayerData {
 		EquipMode equipMode;
 	}
 
+	public Gun gunMain = null;
+	public Gun gunOff = null;
+
 	public class ServerPlayerData {
 		public boolean leftMouse = false;
 		public boolean rightMouse;
 
 		public boolean reload = false;
 		public boolean changeAmmo = false;
-		public boolean changeFiremode = false;
+		public boolean changeFireMode = false;
 
 		public boolean dualToggle = true;
 
@@ -26,8 +28,9 @@ public class HidePlayerData {
 
 		public int adsstate = 0;
 		public float adsRes = 0f;
+		public boolean reloadAll;
+		public int reloadState;
 
-		public long idMain = 0;
-		public long idOff = 0;
+
 	}
 }

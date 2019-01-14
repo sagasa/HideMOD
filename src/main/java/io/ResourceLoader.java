@@ -4,15 +4,10 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
 import hideMod.HideMod;
 import hideMod.PackData;
 import net.minecraft.client.resources.IResourcePack;
@@ -80,7 +75,7 @@ public class ResourceLoader implements IResourcePack {
 	}
 
 	/** sounds.jsonの内容 */
-	private InputStream makeSoundJson() {
+	private static InputStream makeSoundJson() {
 		StringBuilder sb = new StringBuilder("{");
 		for (String name : PackData.SOUND_MAP.keySet()) {
 			sb.append("\"" + name + "\": {\"category\" : \"player\",\"sounds\" : [ \"" + HideMod.MOD_ID + ":" + name
@@ -92,7 +87,7 @@ public class ResourceLoader implements IResourcePack {
 	}
 
 	/** Jsonの内容！！！ */
-	private InputStream makeItemModel(String texture, boolean hasModel) {
+	private static InputStream makeItemModel(String texture, boolean hasModel) {
 		String data;
 		if (hasModel) {
 			data = HasModelJson.replace("TEXTURE", texture);

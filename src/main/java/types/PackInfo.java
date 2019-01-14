@@ -1,8 +1,5 @@
 package types;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import types.base.DataBase;
 
 public class PackInfo extends DataBase{

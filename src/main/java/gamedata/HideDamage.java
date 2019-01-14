@@ -64,7 +64,7 @@ public class HideDamage extends DamageSource {
 		try {
 			// 攻撃時と同じ処理を組み込む TODO タレットなどの処理の追記がいるかも
 			if (damageSource.Attacker instanceof EntityPlayer) {
-				attackingPlayer.set(victim, (EntityPlayer) damageSource.Attacker);
+				attackingPlayer.set(victim, damageSource.Attacker);
 				recentlyHit.set(victim, 100);
 			}
 			recentlySetRevenge.invoke(victim, damageSource.Attacker);

@@ -1,23 +1,12 @@
 package entity;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-
-import org.apache.logging.log4j.core.net.DatagramSocketManager;
-
 import gamedata.HideDamage;
 import gamedata.HideDamage.HideDamageCase;
 import handler.PacketHandler;
-import handler.RecoilHandler;
 import handler.SoundHandler;
-import hideMod.HideMod;
 import hideMod.PackData;
 import helper.RayTracer;
 import helper.RayTracer.Hit;
@@ -27,7 +16,6 @@ import net.minecraft.block.BlockBush;
 import net.minecraft.block.BlockReed;
 import net.minecraft.block.BlockSign;
 import net.minecraft.block.BlockVine;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -37,31 +25,18 @@ import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializer;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EntityDamageSource;
-import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider.WorldSleepResult;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import network.PacketHit;
 import types.effect.Explosion;
-import types.effect.Sound;
 import types.items.GunData;
 import types.items.MagazineData;
 import types.projectile.BulletData;
@@ -125,7 +100,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		this.bulletData = magazine.BULLET;
 		this.magazineData = magazine;
 		Shooter = shooter;
-		AlreadyHit = new ArrayList<Entity>();
+		AlreadyHit = new ArrayList<>();
 		bulletPower = gunData.BULLET_POWER + bulletData.BULLET_POWER;
 
 		setLocationAndAngles(x, y, z, yaw, pitch);
@@ -254,7 +229,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 					boolean isDamaged = HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 
 					// 爆発があるなら
-					explode(endPos, (Explosion) bulletData.EXP_ON_HIT_ENTITY);
+					explode(endPos, bulletData.EXP_ON_HIT_ENTITY);
 
 					// パケット
 					if (Shooter instanceof EntityPlayerMP && isDamaged && damage > 0.5) {
@@ -282,17 +257,17 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			if (bulletPower == 0) {
 				deathNaxtTick = FLAG_DEATH_NEXT_TICK | FLAG_DEATH_TYPE_ENTITY;
 				// エンティティに当たって爆発するなら
-				explode(exppos, (Explosion) bulletData.EXP_ON_HIT_ENTITY);
+				explode(exppos, bulletData.EXP_ON_HIT_ENTITY);
 			}
 			if (bulletData.BULLET_LIFE < life) {
 				deathNaxtTick = FLAG_DEATH_NEXT_TICK;
 				// 時間経過で爆発するなら
-				explode(exppos, (Explosion) bulletData.EXP_ON_TIMEOUT);
+				explode(exppos, bulletData.EXP_ON_TIMEOUT);
 			}
 			if (isHittoBlock) {
 				deathNaxtTick = FLAG_DEATH_NEXT_TICK | FLAG_DEATH_TYPE_GROUND;
 				// 地面に当たったなら
-				explode(exppos, (Explosion) bulletData.EXP_ON_HIT_GROUND);
+				explode(exppos, bulletData.EXP_ON_HIT_GROUND);
 			}
 			dm.set(Vec3d, endPos);
 			dm.set(Flag, deathNaxtTick);

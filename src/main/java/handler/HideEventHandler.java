@@ -1,20 +1,9 @@
 package handler;
 
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
-
-import hideMod.InputWatcher;
+import handler.client.InputHandler;
 import hideMod.PackData;
 import hideMod.render.HideScope;
 import item.ItemGun;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.EntityRenderer;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.IProjectile;
-import net.minecraft.entity.projectile.EntityPotion;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.MouseEvent;
@@ -29,13 +18,14 @@ import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerEvent.StopTracking;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -77,9 +67,18 @@ public class HideEventHandler {
 		PlayerHandler.PlayerLeft(event);
 	}
 
+	/** クライアント側でのワールド読み込み時に入力監視スレッドを立ち上げる */
 	@SubscribeEvent
-	public void onEvent(MouseEvent event) {
-		PlayerHandler.MouseEvent(event);
+	public void onEvent(ClientConnectedToServerEvent event) {
+		System.out.println("LOGIN");
+		InputHandler.startWatcher();
+	}
+
+	/** 入力監視スレッドを停止する */
+	@SubscribeEvent
+	public void onEvent(ClientDisconnectionFromServerEvent event) {
+		System.out.println("LOGOUT");
+		InputHandler.stopWatcher();
 	}
 
 	@SubscribeEvent
@@ -87,25 +86,11 @@ public class HideEventHandler {
 		// System.out.println(event.target+"Start");
 	}
 
-	/** クライアント側でのワールド読み込み時に入力監視スレッドを立ち上げる */
-	@SideOnly(Side.CLIENT)
-	@SubscribeEvent
-	public void onEvent(WorldEvent.Load event) {
-		InputWatcher.startWatcher();
-	}
-
-	/** 入力監視スレッドを停止する */
-	@SideOnly(Side.CLIENT)
-	@SubscribeEvent
-	public void onEvent(WorldEvent.Unload event) {
-		InputWatcher.stopWatcher();
-	}
-
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public void onEvent(TickEvent.ClientTickEvent event) {
 		if (event.phase == Phase.START) {
-			InputWatcher.tickUpdate();
+			InputHandler.tickUpdate();
 		}
 	}
 

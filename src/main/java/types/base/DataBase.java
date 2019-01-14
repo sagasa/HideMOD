@@ -1,9 +1,5 @@
 package types.base;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +58,7 @@ public abstract class DataBase implements Cloneable {
 			if (int.class.isAssignableFrom(clazz) || Integer.class.isAssignableFrom(clazz)) {
 				setValue(this, key, (int) ((int) getValue(this, key) + valueMap.get(key)));
 			} else if (float.class.isAssignableFrom(clazz) || Float.class.isAssignableFrom(clazz)) {
-				setValue(this, key, (float) ((float) getValue(this, key) + valueMap.get(key)));
+				setValue(this, key, (float) getValue(this, key) + valueMap.get(key));
 			} else {
 				log.error(key + " is not int,float field");
 			}
@@ -77,7 +73,7 @@ public abstract class DataBase implements Cloneable {
 			if (int.class.isAssignableFrom(clazz) || Integer.class.isAssignableFrom(clazz)) {
 				setValue(this, key, (int) ((int) getValue(this, key) * valueMap.get(key)));
 			} else if (float.class.isAssignableFrom(clazz) || Float.class.isAssignableFrom(clazz)) {
-				setValue(this, key, (float) ((float) getValue(this, key) * valueMap.get(key)));
+				setValue(this, key, (float) getValue(this, key) * valueMap.get(key));
 			} else {
 				log.error(key + " is not int,float field");
 			}

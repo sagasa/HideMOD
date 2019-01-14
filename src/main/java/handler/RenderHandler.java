@@ -4,14 +4,10 @@ import java.awt.Rectangle;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GL14;
-
 import gamedata.Gun;
-import gamedata.LoadedMagazine;
+import gamedata.HidePlayerData;
 import gamedata.LoadedMagazine.Magazine;
 import handler.PlayerHandler.EquipMode;
-import helper.NBTWrapper;
 import hideMod.render.HideScope;
 import hideMod.render.HideScope.ScopeMask;
 import item.ItemGun;
@@ -23,14 +19,12 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderLivingEvent.Post;
-import net.minecraftforge.client.event.RenderPlayerEvent.Pre;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -81,28 +75,28 @@ public class RenderHandler {
 		// System.out.println("render");
 	}
 
-
 	/** スコープ */
 	private static void writeScope(int x, int y) {
 		if (HideScope.Scope == null) {
 			HideScope.setScope(8f, 0.8f, new ScopeMask());
 		}
-		HideScope.renderOnGUI();//TODO そのうち統合
+		HideScope.renderOnGUI();// TODO そのうち統合
 	}
 
 	/** 画面右下に 残弾 射撃モード 使用する弾を描画 */
 	private static void writeGunInfo(int x, int y) {
-
-		if (EquipMode.getEquipMode(mc.player) == EquipMode.Main) {
-			writeGunInfo(x, y, PlayerHandler.gunMain);
-		} else if (EquipMode.getEquipMode(mc.player) == EquipMode.Off) {
-			writeGunInfo(x, y, PlayerHandler.gunOff);
-		} else if (EquipMode.getEquipMode(mc.player) == EquipMode.Dual) {
-			writeGunInfo(x, y, PlayerHandler.gunMain);
-			writeGunInfo(x - 120, y, PlayerHandler.gunOff);
-		} else if (EquipMode.getEquipMode(mc.player) == EquipMode.OtherDual) {
-			writeGunInfo(x, y, PlayerHandler.gunMain);
-			writeGunInfo(x - 120, y, PlayerHandler.gunOff);
+		HidePlayerData data = PlayerHandler.getPlayerData();
+		EquipMode em = EquipMode.getEquipMode(data.gunMain, data.gunOff);
+		if (em == EquipMode.Main) {
+			writeGunInfo(x, y, PlayerHandler.getPlayerData().gunMain);
+		} else if (em == EquipMode.Off) {
+			writeGunInfo(x, y, PlayerHandler.getPlayerData().gunOff);
+		} else if (em == EquipMode.Dual) {
+			writeGunInfo(x, y, PlayerHandler.getPlayerData().gunMain);
+			writeGunInfo(x - 120, y, PlayerHandler.getPlayerData().gunOff);
+		} else if (em == EquipMode.OtherDual) {
+			writeGunInfo(x, y, PlayerHandler.getPlayerData().gunMain);
+			writeGunInfo(x - 120, y, PlayerHandler.getPlayerData().gunOff);
 		}
 
 	}
@@ -147,19 +141,16 @@ public class RenderHandler {
 			offset += 16;
 		}
 		// 射撃モードを描画
-		mc.fontRenderer.drawString(NBTWrapper.getGunFireMode(gun.itemGun).toString().toUpperCase(), x + 40, y + 39,
-				0xFFFFFF);
+		mc.fontRenderer.drawString(gun.getFireMode().toString().toUpperCase(), x + 40, y + 39, 0xFFFFFF);
 		// 残弾
 		float fontSize = 1.8f;
 		GlStateManager.scale(fontSize, fontSize, fontSize);
-		mc.fontRenderer.drawString(
-				gun.magazine.getLoadedNum() + "/" + ItemGun.getCanUseingBulletNum(gun.itemGun, mc.player),
+		mc.fontRenderer.drawString(gun.magazine.getLoadedNum() + "/" + gun.getCanUseBulletNum(mc.player),
 				(x + 5) / fontSize, (y + 21) / fontSize, 0xFFFFFF, false);
 		GlStateManager.scale(1 / fontSize, 1 / fontSize, 1 / fontSize);
 		// 使用する弾
-		mc.fontRenderer.drawString(
-				ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(gun.itemGun)).ITEM_DISPLAYNAME, x + 40, y + 50,
-				0xFFFFFF);
+		mc.fontRenderer.drawString(ItemMagazine.getBulletData(gun.getGunUseingBullet()).ITEM_DISPLAYNAME, x + 40,
+				y + 50, 0xFFFFFF);
 
 		GlStateManager.disableBlend();
 	}

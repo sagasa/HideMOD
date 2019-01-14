@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,13 +19,8 @@ import com.google.common.base.Strings;
 import hideMod.model.ModelPart;
 import hideMod.model.ModelPart.Polygon;
 import hideMod.model.ModelPart.VertexUV;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.client.model.obj.OBJLoader;
-import net.minecraftforge.client.model.obj.OBJModel;
-import net.minecraftforge.client.model.obj.OBJModel.OBJBakedModel;
 
 public class ObjLoader {
 	private static final Pattern WHITE_SPACE = Pattern.compile("\\s+");

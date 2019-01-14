@@ -1,6 +1,5 @@
 package entity;
 
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -11,9 +10,18 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import handler.PlayerHandler;
+
+import java.util.List;
+
+import gamedata.Gun;
 
 public class EntityDrivable extends Entity {
+
+	//=======================
+	// 実装してほしいです
+
+	public List<Gun> guns;
+	//=======================
 
     private static final DataParameter<Float> DAMAGE = EntityDataManager.createKey(EntityDrivable.class, DataSerializers.FLOAT);
 
