@@ -4,9 +4,12 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import entity.EntityBullet;
 import gamedata.HideDamage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResourcePack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -15,6 +18,7 @@ import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import handler.HideEventHandler;
@@ -57,13 +61,13 @@ public class HideMod {
 		// ダメージの初期設定
 		HideDamage.init();
 		// エンティティ登録
-	//	EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,
-	//TODO			"entity_bullet", 1, MOD_ID, 512, 1, false);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,
+				"entity_bullet", 1, MOD_ID, 512, 1, false);
 
 		if (FMLCommonHandler.instance().getSide().isClient()) {
 			// リソースローダーを追加
 			List<IResourcePack> defaultResourcePacks = ObfuscationReflectionHelper.getPrivateValue(Minecraft.class,
-					Minecraft.getMinecraft(), "defaultResourcePacks","field_110449_ao");
+					Minecraft.getMinecraft(), "defaultResourcePacks", "field_110449_ao");
 			defaultResourcePacks.add(new ResourceLoader());
 
 			Minecraft.getMinecraft().refreshResources();

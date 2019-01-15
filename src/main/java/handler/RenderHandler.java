@@ -103,7 +103,7 @@ public class RenderHandler {
 
 	/** 銃のステータスGUI描画 */
 	private static void writeGunInfo(int x, int y, Gun gun) {
-		if (gun == null) {
+		if (gun == null||!gun.isGun()) {
 			return;
 		}
 		// インフォの枠

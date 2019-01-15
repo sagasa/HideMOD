@@ -29,6 +29,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import types.Info;
 import types.PackInfo;
 import types.base.DataBase;
+import types.base.DataBase.DataPath;
 import types.items.GunData;
 import types.items.ItemData;
 import types.items.MagazineData;
@@ -85,6 +86,7 @@ public class PackLoader {
 					checkAndAddToMap(cash.Sounds, PackData.SOUND_MAP, packDomain);
 					// Model登録
 					checkAndAddToMap(cash.Models, PackData.MODEL_MAP, packDomain);
+					LOGGER.info("End check and add pack[" + cash.Pack.PACK_NAME + "]");
 					LOGGER.info("End read file[" + file.getName() + "]");
 				} catch (IOException e1) {
 					LOGGER.error("error : IOException");
@@ -183,8 +185,16 @@ public class PackLoader {
 
 		/** パック認識用パターン エディター側と完全互換 */
 		private enum PackPattern {
-			GUN("guns", "json"), MAGAZINE("magazines", "json"), PACKINFO("pack", "json"), ICON("icons", "png"), SCOPE(
-					"scopes", "png"), TEXTURE("textures", "png"), SOUND("soubds", "ogg"), MODEL("models", "obj");
+			GUN("guns", "json"), MAGAZINE("magazines", "json"), PACKINFO(Pattern.compile("^(.*)pack\\.json$"),
+					"json"), ICON("icons", "png"), SCOPE("scopes",
+							"png"), TEXTURE("textures", "png"), SOUND("soubds", "ogg"), MODEL("models", "obj");
+
+			private PackPattern(Pattern mache, String end) {
+				this.mache = mache;
+				this.end = end;
+				this.start = "\\.";
+			}
+
 			private PackPattern(String start, String end) {
 				mache = Pattern.compile("^(.*)" + start + "/(.*)\\." + end + "$");
 				rep_start = Pattern.compile("^(.*)" + start + "/");
@@ -248,16 +258,16 @@ public class PackLoader {
 	/** アノテーションをもとにデータチェック */
 	private static boolean checkData(DataBase data) {
 		try {
-			for (Field field : data.getFieldsByType(data.getClass(), null, new ArrayList<>(), true)) {
+			for (DataPath path : data.getFieldsByType(data.getClass(), null, new ArrayList<>(), true)) {
 				// 空リストの判別部分
-				if (field.getAnnotation(Info.class).noEmpty()) {
-					if (field.getType().isArray() && ((String[]) field.get(data)).length == 0) {
+				if (path.field.getAnnotation(Info.class)!=null&&path.field.getAnnotation(Info.class).noEmpty()) {
+					if (path.field.getType().isArray() && ((String[]) path.field.get(data)).length == 0) {
 						Log.error(
-								"emply list is not allow at" + data.getClass().getSimpleName() + "." + field.getName());
+								"emply list is not allow at" + data.getClass().getSimpleName() + "." + path.field.getName());
 						return false;
-					} else if (List.class.isAssignableFrom(field.getType()) && ((List) field.get(data)).size() == 0) {
+					} else if (List.class.isAssignableFrom(path.field.getType()) && ((List) path.field.get(data)).size() == 0) {
 						Log.error(
-								"emply list is not allow at" + data.getClass().getSimpleName() + "." + field.getName());
+								"emply list is not allow at" + data.getClass().getSimpleName() + "." + path.field.getName());
 						return false;
 					}
 				}
@@ -272,13 +282,15 @@ public class PackLoader {
 	/** アノテーションをもとに名前を更新 */
 	private static void setDomain(String Domain, DataBase data) {
 		// アノテーションが付いたフィールドの値を更新
-		data.getFieldsByType(data.getClass(), String.class, new ArrayList<>(), true).forEach(field -> {
+		DataBase.getFieldsByType(data.getClass(), String.class, new ArrayList<>(), true).forEach(path -> {
 			try {
-				if (field.getAnnotation(Info.class).isResourceName())
-					field.set(data, setResourceDomain((String) field.get(data), Domain));
-				if (field.getAnnotation(Info.class).isName())
-					field.set(data, setDomain((String) field.get(data), Domain));
-			} catch (IllegalArgumentException | IllegalAccessException e) {
+				if(path.field.getAnnotation(Info.class)==null)
+					return;
+				if (path.field.getAnnotation(Info.class).isResourceName())
+				DataBase.setValue(data, path.path, setResourceDomain((String) DataBase.getValue(data, path.path), Domain));
+				if (path.field.getAnnotation(Info.class).isName())
+					DataBase.setValue(data, path.path, setDomain((String) DataBase.getValue(data, path.path), Domain));
+			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
 			}
 		});

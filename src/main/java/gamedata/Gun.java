@@ -79,6 +79,10 @@ public class Gun {
 		magazine = new LoadedMagazine();
 	}
 
+	public boolean isGun() {
+		return originalData != null;
+	}
+
 	/** このTickで射撃可能かどうか */
 	public boolean canShoot() {
 		if (magazine.getLoadedNum() > 0 && !stopshoot && shootDelay <= 0 & shootNum <= 0) {
@@ -143,6 +147,8 @@ public class Gun {
 
 	/** tickイベントからのアップデート */
 	public void tickUpdate(Side side) {
+		if (!isGun())
+			return;
 		if (side == Side.CLIENT) {
 			// magazine
 			LoadedMagazine now = NBTWrapper.getGunLoadedMagazines(gunTag.get());
@@ -175,6 +181,9 @@ public class Gun {
 
 	/** 銃のアップデート処理 トリガー関連 */
 	public void gunUpdate(boolean trigger) {
+		if (!isGun())
+			return;
+
 		if (lastTime == -1)
 			lastTime = Minecraft.getSystemTime();
 		if (0 < shootDelay)
@@ -282,6 +291,8 @@ public class Gun {
 	 * リロード まだリロード処理が残ればtrue サーバーサイド
 	 */
 	public boolean reload(EntityPlayer player, boolean isexit) {
+		if (!isGun())
+			return false;
 		// 排出
 		if (isexit) {
 			for (Magazine magazine : magazine.getList()) {
@@ -362,6 +373,8 @@ public class Gun {
 
 	/** 次の射撃モードを取得 */
 	public GunFireMode getNextFireMode() {
+		if (!isGun())
+			return null;
 		GunFireMode now = NBTWrapper.getGunFireMode(gunTag.get());
 		List<String> modes = Arrays.asList(modifyData.FIREMODE);
 		int index = modes.indexOf(now.toString()) + 1;
@@ -373,6 +386,8 @@ public class Gun {
 
 	/** 次の使用する弾を取得 */
 	public String getNextUseMagazine() {
+		if (!isGun())
+			return null;
 		String now = NBTWrapper.getGunUseingBullet(gunTag.get());
 		List<String> modes = Arrays.asList(modifyData.MAGAZINE_USE);
 		int index = modes.indexOf(now.toString()) + 1;

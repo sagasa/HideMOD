@@ -167,17 +167,34 @@ public abstract class DataBase implements Cloneable {
 	 * @param deep
 	 *            データベース型のフィールド内も検索するか
 	 */
-	public static List<Field> getFieldsByType(Class<? extends DataBase> target, Class<?> key, List<Field> list,
+	public static List<DataPath> getFieldsByType(Class<? extends DataBase> target, Class<?> key, List<DataPath> list,
 			boolean deep) {
+		getFieldsByType(target, "", key, list, deep);
+		return list;
+	}
+
+	private static List<DataPath> getFieldsByType(Class<? extends DataBase> target, String path, Class<?> key,
+			List<DataPath> list, boolean deep) {
 		try {
 			for (Field f : target.getFields()) {
 				if (key == null || key.isAssignableFrom(f.getType()))
-					list.add(f);
+					list.add(new DataPath(f, path + f.getName()));
 				if (DataBase.class.isAssignableFrom(f.getType()) && deep)
-					getFieldsByType((Class<? extends DataBase>) f.getType(), key, list, deep);
+					getFieldsByType((Class<? extends DataBase>) f.getType(), path + f.getName() + ".", key, list, deep);
 			}
 		} catch (IllegalArgumentException e) {
 		}
 		return list;
+	}
+
+	/***/
+	public static class DataPath {
+		public DataPath(Field field, String path) {
+			this.field = field;
+			this.path = path;
+		}
+
+		public Field field;
+		public String path;
 	}
 }
