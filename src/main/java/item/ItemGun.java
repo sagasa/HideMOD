@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 
+import gamedata.HidePlayerData;
 import gamedata.LoadedMagazine.Magazine;
 import helper.NBTWrapper;
 import hideMod.PackData;
@@ -111,6 +112,7 @@ public class ItemGun extends Item {
 			return;
 		}
 		NBTTagCompound hideTag = NBTWrapper.getHideTag(stack);
+		System.out.println(NBTWrapper.getGunUseingBullet(hideTag)+" "+PackData.MAGAZINE_DATA_MAP.keySet());
 		tooltip.add(ChatFormatting.GRAY + "FireMode : " + NBTWrapper.getGunFireMode(hideTag));
 		tooltip.add(ChatFormatting.GRAY + "UseBullet : "
 				+ ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(hideTag)).ITEM_DISPLAYNAME);

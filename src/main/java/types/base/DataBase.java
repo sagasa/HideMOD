@@ -3,6 +3,8 @@ package types.base;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -185,6 +187,19 @@ public abstract class DataBase implements Cloneable {
 		} catch (IllegalArgumentException e) {
 		}
 		return list;
+	}
+
+	public static <V> void changeFieldsByType(DataBase target, Class<V> key, BiFunction<V, Field, V> change,
+			boolean deep) {
+		try {
+			for (Field f : target.getClass().getFields()) {
+				if (key == null || key.isAssignableFrom(f.getType()))
+					f.set(target, change.apply((V) f.get(target), f));
+				if (DataBase.class.isAssignableFrom(f.getType()) && deep)
+					changeFieldsByType((DataBase) f.get(target), key, change, deep);
+			}
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+		}
 	}
 
 	/***/

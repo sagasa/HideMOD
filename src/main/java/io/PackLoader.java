@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -145,13 +146,13 @@ public class PackLoader {
 			if (PackPattern.GUN.mache(name)) {
 				GunData newGun = gson.fromJson(new String(data, Charset.forName("UTF-8")), GunData.class);
 				Guns.add(newGun);
-				LOGGER.debug("add gun[" + newGun.ITEM_DISPLAYNAME + "] to PackReader");
+				LOGGER.info("add gun[" + newGun.ITEM_DISPLAYNAME + "] to PackReader");
 			}
 			// magazine認識
 			else if (PackPattern.MAGAZINE.mache(name)) {
 				MagazineData newBullet = gson.fromJson(new String(data, Charset.forName("UTF-8")), MagazineData.class);
 				Magazines.add(newBullet);
-				LOGGER.debug("add bullet[" + newBullet.ITEM_DISPLAYNAME + "] to PackReader");
+				LOGGER.info("add bullet[" + newBullet.ITEM_DISPLAYNAME + "] to PackReader");
 			}
 			// packInfo認識
 			else if (PackPattern.PACKINFO.mache(name)) {
@@ -260,14 +261,15 @@ public class PackLoader {
 		try {
 			for (DataPath path : data.getFieldsByType(data.getClass(), null, new ArrayList<>(), true)) {
 				// 空リストの判別部分
-				if (path.field.getAnnotation(Info.class)!=null&&path.field.getAnnotation(Info.class).noEmpty()) {
+				if (path.field.getAnnotation(Info.class) != null && path.field.getAnnotation(Info.class).noEmpty()) {
 					if (path.field.getType().isArray() && ((String[]) path.field.get(data)).length == 0) {
-						Log.error(
-								"emply list is not allow at" + data.getClass().getSimpleName() + "." + path.field.getName());
+						Log.error("emply list is not allow at" + data.getClass().getSimpleName() + "."
+								+ path.field.getName());
 						return false;
-					} else if (List.class.isAssignableFrom(path.field.getType()) && ((List) path.field.get(data)).size() == 0) {
-						Log.error(
-								"emply list is not allow at" + data.getClass().getSimpleName() + "." + path.field.getName());
+					} else if (List.class.isAssignableFrom(path.field.getType())
+							&& ((List) path.field.get(data)).size() == 0) {
+						Log.error("emply list is not allow at" + data.getClass().getSimpleName() + "."
+								+ path.field.getName());
 						return false;
 					}
 				}
@@ -282,18 +284,28 @@ public class PackLoader {
 	/** アノテーションをもとに名前を更新 */
 	private static void setDomain(String Domain, DataBase data) {
 		// アノテーションが付いたフィールドの値を更新
-		DataBase.getFieldsByType(data.getClass(), String.class, new ArrayList<>(), true).forEach(path -> {
-			try {
-				if(path.field.getAnnotation(Info.class)==null)
-					return;
-				if (path.field.getAnnotation(Info.class).isResourceName())
-				DataBase.setValue(data, path.path, setResourceDomain((String) DataBase.getValue(data, path.path), Domain));
-				if (path.field.getAnnotation(Info.class).isName())
-					DataBase.setValue(data, path.path, setDomain((String) DataBase.getValue(data, path.path), Domain));
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			}
-		});
+		DataBase.changeFieldsByType(data, String.class, (v, f) -> {
+			Info info = f.getAnnotation(Info.class);
+			if (info == null)
+				return v;
+			if (info.isResourceName())
+				return setResourceDomain(v, Domain);
+			if (info.isName())
+				return setDomain(v, Domain);
+			return v;
+		}, true);
+		DataBase.changeFieldsByType(data, String[].class, (v, f) -> {
+			Info info = f.getAnnotation(Info.class);
+			if (info == null)
+				return v;
+			if (info.isResourceName())
+				return Arrays.asList(v).stream().map(name -> setResourceDomain(name, Domain))
+						.collect(Collectors.toList()).toArray(v);
+			if (info.isName())
+				return Arrays.asList(v).stream().map(name -> setDomain(name, Domain)).collect(Collectors.toList())
+						.toArray(v);
+			return v;
+		}, true);
 	}
 
 	/** ドメインを追加 */
