@@ -10,8 +10,8 @@ public class HidePlayerData {
 		EquipMode equipMode;
 	}
 
-	public Gun gunMain = null;
-	public Gun gunOff = null;
+	public Gun gunMain = new Gun();
+	public Gun gunOff = new Gun();
 
 	public class ServerPlayerData {
 		public boolean leftMouse = false;
@@ -23,14 +23,10 @@ public class HidePlayerData {
 
 		public boolean dualToggle = true;
 
-		public int reloadstate = -1;
-		public boolean reloadall = false;
+		public int reloadState = -1;
+		public boolean reloadAll = false;
 
 		public int adsstate = 0;
 		public float adsRes = 0f;
-		public boolean reloadAll;
-		public int reloadState;
-
-
 	}
 }

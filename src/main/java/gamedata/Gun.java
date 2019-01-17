@@ -113,6 +113,12 @@ public class Gun {
 		return this;
 	}
 
+	/** シューターを設定 */
+	public Gun setShooter(Entity shooter) {
+		Shooter = shooter;
+		return this;
+	}
+
 	public boolean idEquals(long id) {
 		return NBTWrapper.getHideID(gunTag.get()) == id;
 	}
@@ -236,7 +242,7 @@ public class Gun {
 		MagazineData bullet = magazine.useNextBullet();
 		if (bullet != null) {
 			// クライアントなら
-			boolean isADS = HideEntityDataManager.getADSState(Shooter) == 1;
+			boolean isADS = Shooter == null ? false : HideEntityDataManager.getADSState(Shooter) == 1;
 			if (Shooter.world.isRemote) {
 				// シューターがプレイヤー以外ならエラー
 				if (!(Shooter instanceof EntityPlayer)) {
@@ -261,7 +267,7 @@ public class Gun {
 	/** サーバーサイドで射撃パケットからの射撃処理 */
 	public static void shoot(EntityPlayer player, long uid, float offset, boolean isADS, double x, double y, double z,
 			float yaw, float pitch) {
-
+		System.out.println(offset);
 	}
 
 	/** エンティティを生成 ShootNumに応じた数弾を出す */
@@ -348,7 +354,7 @@ public class Gun {
 		int c = value;
 		for (ItemStack item : player.inventory.mainInventory) {
 			if (ItemMagazine.isMagazine(item, name)) {
-				int n = NBTWrapper.getMagazineBulletNum(gunTag.get());
+				int n = NBTWrapper.getMagazineBulletNum(item);
 				if (n <= c) {
 					if (item.getCount() > 0) {
 						c -= n;

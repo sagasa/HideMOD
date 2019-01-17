@@ -104,11 +104,13 @@ public class PlayerHandler {
 		} else {
 			ItemStack main = player.getHeldItemMainhand();
 			ItemStack off = player.getHeldItemOffhand();
-			if (data.gunMain == null || !data.gunMain.idEquals(NBTWrapper.getHideID(main))) {
+			if (!data.gunMain.isGun() || !data.gunMain.idEquals(NBTWrapper.getHideID(main))) {
 				data.gunMain = new Gun(ItemGun.getGunData(main), () -> NBTWrapper.getHideTag(main));
+				data.gunMain.setShooter(player);
 			}
-			if (data.gunOff == null || !data.gunOff.idEquals(NBTWrapper.getHideID(off))) {
-				data.gunMain = new Gun(ItemGun.getGunData(off), () -> NBTWrapper.getHideTag(off));
+			if (!data.gunOff.isGun() || !data.gunOff.idEquals(NBTWrapper.getHideID(off))) {
+				data.gunOff = new Gun(ItemGun.getGunData(off), () -> NBTWrapper.getHideTag(off));
+				data.gunOff.setShooter(player);
 			}
 		}
 	}
@@ -142,7 +144,7 @@ public class PlayerHandler {
 		/** プレイヤーから装備の状態を取得 */
 		public static EquipMode getEquipMode(Gun main, Gun off) {
 			// 状態検知
-			if (main != null && off != null && main.getGunData().USE_DUALWIELD && off.getGunData().USE_DUALWIELD
+			if (main.isGun() && off.isGun() && main.getGunData().USE_DUALWIELD && off.getGunData().USE_DUALWIELD
 					&& off.getGunData().USE_SECONDARY) {
 				// 両手持ち可能な状態かつ両手に銃を持っている
 				if (main.stateEquals(off)) {
@@ -152,10 +154,10 @@ public class PlayerHandler {
 					// 違ったら
 					return OtherDual;
 				}
-			} else if (main == null && off != null && off.getGunData().USE_SECONDARY) {
+			} else if (!main.isGun() && off.isGun() && off.getGunData().USE_SECONDARY) {
 				// サブだけに銃を持っているなら
 				return Off;
-			} else if (main != null) {
+			} else if (main.isGun()) {
 				// メインに銃を持っているなら
 				return Main;
 			} else {
@@ -179,12 +181,12 @@ public class PlayerHandler {
 	private static void ServerTick(EntityPlayer player) {
 		// if(player.getRidingEntity() instanceof )
 		HidePlayerData data = getPlayerData(player);
-
 		List<Gun> guns = new ArrayList<>();
 		// 変更対象をリストに
-		if (data.gunMain != null)
+		EquipMode em = EquipMode.getEquipMode(data.gunMain, data.gunOff);
+		if (em.hasMain())
 			guns.add(data.gunMain);
-		if (data.gunOff != null)
+		if (em.hasOff())
 			guns.add(data.gunOff);
 		if (data.Server.changeAmmo) {
 			data.Server.changeAmmo = false;

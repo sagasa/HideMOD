@@ -81,7 +81,7 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 					EntityPlayer player = ctx.getServerHandler().player;
 					double lag = player.world.getTotalWorldTime() - m.worldTime;
 					lag = lag < 0 ? 0 : lag;
-					System.out.println("lag = " + lag);
+					//	System.out.println("lag = " + lag);
 					// System.out.println("射撃パケット受信" + (m.offset + (float) lag));
 					Gun.shoot(player, m.uid, m.offset + (float) lag, m.isADS, m.x, m.y, m.z, m.yaw, m.pitch);
 				}

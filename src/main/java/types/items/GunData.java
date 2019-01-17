@@ -105,6 +105,7 @@ public class GunData extends ItemData{
 	/** リロード音 : Sound型 **/
 	public Sound SOUND_RELOAD = new Sound("sample", 10);
 	/** 使用する弾 : StringArray型 */
+	@Info(isName=true)
 	public String[] MAGAZINE_USE = new String[0];
 	/** セカンダリにできるか */
 	@Info(Cate = 0)
