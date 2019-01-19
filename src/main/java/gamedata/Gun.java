@@ -12,6 +12,7 @@ import entity.EntityBullet;
 import gamedata.LoadedMagazine.Magazine;
 import handler.HideEntityDataManager;
 import handler.PacketHandler;
+import handler.PlayerHandler;
 import handler.SoundHandler;
 import handler.client.RecoilHandler;
 import helper.NBTWrapper;
@@ -243,6 +244,7 @@ public class Gun {
 		if (bullet != null) {
 			// クライアントなら
 			boolean isADS = Shooter == null ? false : HideEntityDataManager.getADSState(Shooter) == 1;
+			System.out.println("shootFromC "+Shooter.world.isRemote);
 			if (Shooter.world.isRemote) {
 				// シューターがプレイヤー以外ならエラー
 				if (!(Shooter instanceof EntityPlayer)) {
@@ -267,7 +269,20 @@ public class Gun {
 	/** サーバーサイドで射撃パケットからの射撃処理 */
 	public static void shoot(EntityPlayer player, long uid, float offset, boolean isADS, double x, double y, double z,
 			float yaw, float pitch) {
+		Gun gun = PlayerHandler.getGun(player, uid);
+		if (gun == null) {
+			LOGGER.warn("cant make bullet by cant find gun: player = " + player.getName());
+		}
+		gun.setPos(x, y, z);
+		gun.setRotate(yaw, pitch);
+		gun.setShooter(player);
+		gun.shoot(isADS, offset);
 		System.out.println(offset);
+	}
+
+	/** サーバーサイド */
+	public void shoot(boolean isADS, float offset) {
+		shoot(modifyData, magazine.getNextBullet(), Shooter, isADS, offset, X, Y, Z, Yaw, Pitch);
 	}
 
 	/** エンティティを生成 ShootNumに応じた数弾を出す */

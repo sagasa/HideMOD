@@ -79,6 +79,17 @@ public class PlayerHandler {
 		}
 	}
 
+	//TODO 将来的にはIDが被ったら修正するようにしたい
+	public static Gun getGun(EntityPlayer player,long id) {
+		HidePlayerData data = getPlayerData(player);
+		if(data.gunMain.idEquals(id)) {
+			return data.gunMain;
+		}else if(data.gunOff.idEquals(id)) {
+			return data.gunOff;
+		}
+		return null;
+	}
+
 	/** プレイヤーのTick処理 */
 	public static void PlayerTick(PlayerTickEvent event) {
 		if (event.phase == Phase.START) {

@@ -12,6 +12,7 @@ import handler.PlayerHandler;
 import handler.PlayerHandler.EquipMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraftforge.fml.common.MinecraftDummyContainer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import network.PacketAcceleration;
@@ -101,8 +102,6 @@ public class InputHandler {
 	private static boolean dualToggle = false;
 	private static boolean lastTrigger = false;
 
-	/** 別スレッドから呼ばれる */
-	@SideOnly(Side.CLIENT)
 	public static void clientGunUpdate(float completion) {
 		EntityPlayerSP player = Minecraft.getMinecraft().player;
 		if (player == null)

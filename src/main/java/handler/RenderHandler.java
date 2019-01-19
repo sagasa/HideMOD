@@ -78,7 +78,7 @@ public class RenderHandler {
 	/** スコープ */
 	private static void writeScope(int x, int y) {
 		if (HideScope.Scope == null) {
-			HideScope.setScope(8f, 0.8f, new ScopeMask());
+		//	HideScope.setScope(8f, 0.8f, new ScopeMask());
 		}
 		HideScope.renderOnGUI();// TODO そのうち統合
 	}
