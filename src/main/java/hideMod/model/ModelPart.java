@@ -3,18 +3,18 @@ package hideMod.model;
 import net.minecraft.util.math.Vec3d;
 
 public class ModelPart {
-	public Polygon[] Polygon;
+	public HidePolygon[] Polygon;
 
-	public ModelPart(Polygon[] array) {
+	public ModelPart(HidePolygon[] array) {
 		Polygon = array;
 	}
 
-	static public class Polygon {
-		public Polygon() {
+	static public class HidePolygon {
+		public HidePolygon() {
 
 		}
 
-		public Polygon(VertexUV[] vert) {
+		public HidePolygon(VertexUV[] vert) {
 			Vertex = vert;
 		}
 

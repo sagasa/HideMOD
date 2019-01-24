@@ -4,7 +4,7 @@ import hideMod.model.ModelPart;
 
 public class CollisionPart extends ModelPart{
 
-	public CollisionPart(Polygon[] array) {
+	public CollisionPart(HidePolygon[] array) {
 		super(array);
 	}
 }

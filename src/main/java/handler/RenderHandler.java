@@ -6,14 +6,17 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import gamedata.Gun;
 import gamedata.HidePlayerData;
+import gamedata.HidePlayerData.ClientPlayerData;
 import gamedata.LoadedMagazine.Magazine;
 import handler.PlayerHandler.EquipMode;
+import hideMod.HideMod;
 import hideMod.render.HideScope;
 import hideMod.render.HideScope.ScopeMask;
 import item.ItemGun;
 import item.ItemMagazine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -78,32 +81,34 @@ public class RenderHandler {
 	/** スコープ */
 	private static void writeScope(int x, int y) {
 		if (HideScope.Scope == null) {
-		//	HideScope.setScope(8f, 0.8f, new ScopeMask());
+			// HideScope.setScope(8f, 0.8f, new ScopeMask());
 		}
 		HideScope.renderOnGUI();// TODO そのうち統合
 	}
 
 	/** 画面右下に 残弾 射撃モード 使用する弾を描画 */
 	private static void writeGunInfo(int x, int y) {
-		HidePlayerData data = PlayerHandler.getPlayerData();
+		ClientPlayerData data = HidePlayerData.getClientData(HideMod.getPlayer());
+		if (data == null)
+			return;
 		EquipMode em = EquipMode.getEquipMode(data.gunMain, data.gunOff);
 		if (em == EquipMode.Main) {
-			writeGunInfo(x, y, PlayerHandler.getPlayerData().gunMain);
+			writeGunInfo(x, y, data.gunMain);
 		} else if (em == EquipMode.Off) {
-			writeGunInfo(x, y, PlayerHandler.getPlayerData().gunOff);
+			writeGunInfo(x, y, data.gunOff);
 		} else if (em == EquipMode.Dual) {
-			writeGunInfo(x, y, PlayerHandler.getPlayerData().gunMain);
-			writeGunInfo(x - 120, y, PlayerHandler.getPlayerData().gunOff);
+			writeGunInfo(x, y, data.gunMain);
+			writeGunInfo(x - 120, y, data.gunOff);
 		} else if (em == EquipMode.OtherDual) {
-			writeGunInfo(x, y, PlayerHandler.getPlayerData().gunMain);
-			writeGunInfo(x - 120, y, PlayerHandler.getPlayerData().gunOff);
+			writeGunInfo(x, y, data.gunMain);
+			writeGunInfo(x - 120, y, data.gunOff);
 		}
 
 	}
 
 	/** 銃のステータスGUI描画 */
 	private static void writeGunInfo(int x, int y, Gun gun) {
-		if (gun == null||!gun.isGun()) {
+		if (gun == null || !gun.isGun()) {
 			return;
 		}
 		// インフォの枠
@@ -179,9 +184,20 @@ public class RenderHandler {
 		GlStateManager.disableBlend();
 	}
 
+	static ModelPlayer model = new ModelPlayer(0, false);
+
 	/** 自分以外の持ってる銃の描画 */
 	public static void RenderEntityEvent(Post event) {
-
+		model.isChild = false;
+		GlStateManager.pushMatrix();
+		GlStateManager.enableRescaleNormal();
+        GlStateManager.scale(-0.9F, -0.9F, 0.9F);
+        float f = 0.0625F;
+        GlStateManager.translate(0.0F, -1.501F, 0.0F);
+	//	model.render(HideMod.getPlayer(), 0f, 0f, 0f, 0f, 0f, 0.0625F);
+		GlStateManager.popMatrix();
+	
+		
 	}
 
 	/** 自分の持ってる銃の描画 アニメーションとパーツの稼働はこのメゾットのみ */

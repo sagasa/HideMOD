@@ -1,9 +1,11 @@
 package handler;
 
+import gamedata.HidePlayerData;
 import handler.client.InputHandler;
 import hideMod.PackData;
 import hideMod.render.HideScope;
 import item.ItemGun;
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.MouseEvent;
@@ -55,29 +57,26 @@ public class HideEventHandler {
 		PlayerHandler.PlayerTick(event);
 	}
 
+	// ========接続イベント=========
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedInEvent event) {
-		System.out.println("LOGIN");
-		PlayerHandler.PlayerJoin(event);
+
 	}
 
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedOutEvent event) {
-		System.out.println("LOGOUT");
-		PlayerHandler.PlayerLeft(event);
+
 	}
 
 	/** クライアント側でのワールド読み込み時に入力監視スレッドを立ち上げる */
 	@SubscribeEvent
 	public void onEvent(ClientConnectedToServerEvent event) {
-		System.out.println("LOGIN");
 		InputHandler.startWatcher();
 	}
 
 	/** 入力監視スレッドを停止する */
 	@SubscribeEvent
 	public void onEvent(ClientDisconnectionFromServerEvent event) {
-		System.out.println("LOGOUT");
 		InputHandler.stopWatcher();
 	}
 

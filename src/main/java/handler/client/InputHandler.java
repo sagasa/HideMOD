@@ -7,6 +7,8 @@ import org.lwjgl.input.Mouse;
 
 import entity.EntityDrivable;
 import gamedata.Gun;
+import gamedata.HidePlayerData;
+import gamedata.HidePlayerData.ClientPlayerData;
 import handler.PacketHandler;
 import handler.PlayerHandler;
 import handler.PlayerHandler.EquipMode;
@@ -107,8 +109,9 @@ public class InputHandler {
 		if (player == null)
 			return;
 		boolean trigger = player.isDead ? false : InputBind.GUN_FIRE.isButtonDown();
-		Gun gunMain = PlayerHandler.getPlayerData(player).gunMain;
-		Gun gunOff = PlayerHandler.getPlayerData(player).gunOff;
+		ClientPlayerData data = HidePlayerData.getClientData(player);
+		Gun gunMain = data.gunMain;
+		Gun gunOff = data.gunOff;
 		// Pos代入
 		if (gunMain != null) {
 			gunMain.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ).setRotate(player.rotationYaw,

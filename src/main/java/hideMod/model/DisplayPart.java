@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
 public class DisplayPart extends ModelPart{
-	public DisplayPart(Polygon[] array) {
+	public DisplayPart(HidePolygon[] array) {
 		super(array);
 	}
 
@@ -27,7 +27,7 @@ public class DisplayPart extends ModelPart{
 		GL11.glNewList(displayList, GL11.GL_COMPILE);
 		BufferBuilder bb = Tessellator.getInstance().getBuffer();
 		// 面を全部呼ぶ
-		for (Polygon surface : Polygon) {
+		for (HidePolygon surface : Polygon) {
 			if (surface.Vertex.length == 3) {
 				bb.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX);
 

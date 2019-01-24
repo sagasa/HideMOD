@@ -16,7 +16,7 @@ public class BulletData extends ProjectileData {
 	public int SHOOT_NUM = 1;
 
 	/** 防具貫通 : float型 **/
-	public float HIT_IGNORING_ARMOR = 0F;
+	public boolean HIT_IGNORING_ARMOR = false;
 	/** 直撃のHSダメージ : float型 **/
 	public float HIT_DAMAGE_HEAD = 1F;
 	/** 直撃の対人ダメージ : float型 **/

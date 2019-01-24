@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.base.Strings;
 
 import hideMod.model.ModelPart;
-import hideMod.model.ModelPart.Polygon;
+import hideMod.model.ModelPart.HidePolygon;
 import hideMod.model.ModelPart.VertexUV;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
@@ -29,7 +29,7 @@ public class ObjLoader {
 	private List<Vec3d> vertices = new ArrayList<>();
 	private List<Vec2f> texCoords = new ArrayList<>();
 	private List<Vec3d> normals = new ArrayList<>();
-	private Map<String, List<Polygon>> poly = new HashMap<>();
+	private Map<String, List<HidePolygon>> poly = new HashMap<>();
 
 
 	/** リソースロケーションからグループ名-ポリゴン配列のMapを返す */
@@ -94,13 +94,13 @@ public class ObjLoader {
 				if (!poly.containsKey(group)) {
 					poly.put(group, new ArrayList<>());
 				}
-				poly.get(group).add(new Polygon(verts.toArray(new VertexUV[verts.size()])));
+				poly.get(group).add(new HidePolygon(verts.toArray(new VertexUV[verts.size()])));
 			}
 		}
 		// フォーマットをまとめる
 		Map<String, ModelPart> res = new HashMap<>();
 		for (String str : poly.keySet()) {
-			res.put(str, new ModelPart(poly.get(str).toArray(new Polygon[poly.get(str).size()])));
+			res.put(str, new ModelPart(poly.get(str).toArray(new HidePolygon[poly.get(str).size()])));
 		}
 		return res;
 	}

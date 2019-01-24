@@ -32,6 +32,7 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
@@ -97,7 +98,7 @@ public class EntityBullet_back extends Entity implements IEntityAdditionalSpawnD
 		this(shooter.world);
 		this.addtick = offset;
 		this.gunData = gun;
-		this.bulletData = magazine.BULLET;
+		this.bulletData = magazine.BULLETDATA;
 		this.magazineData = magazine;
 		Shooter = shooter;
 		AlreadyHit = new ArrayList<>();
@@ -185,7 +186,7 @@ public class EntityBullet_back extends Entity implements IEntityAdditionalSpawnD
 		/** レイトレーサーの終点の位置ベクトル */
 		Vec3d lvend = lvt;
 
-		for (Hit pos : RayTracer.getHitBlock(this, world, lvo, lvt)) {
+		for (RayTraceResult pos : RayTracer.getHitBlocks(world, lvo, lvt)) {
 			Block block = world.getBlockState(pos.getBlockPos()).getBlock();
 			// 透過するブロック
 			if (!(block instanceof BlockBush || block instanceof BlockReed || block instanceof BlockSign
@@ -229,7 +230,7 @@ public class EntityBullet_back extends Entity implements IEntityAdditionalSpawnD
 					boolean isDamaged = HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 
 					// 爆発があるなら
-					explode(endPos, bulletData.EXP_ON_HIT_ENTITY);
+					explode(hit.hitVec, bulletData.EXP_ON_HIT_ENTITY);
 
 					// パケット
 					if (Shooter instanceof EntityPlayerMP && isDamaged && damage > 0.5) {
@@ -338,38 +339,45 @@ public class EntityBullet_back extends Entity implements IEntityAdditionalSpawnD
 		}
 	}
 
-	/** EntityLivingBaseに対するダメージ算出 */
-	private float getFinalLivingDamage(EntityLivingBase target, double distance) {
+	/** 直撃ダメージ算出 */
+	private float getFinalHitDamage(DamageTarget target, double distance) {
 		float damage = 0;
-		// プレイヤーなら
-		if (target instanceof EntityPlayer) {
-			damage = bulletData.HIT_DAMAGE_PLAYER;
-			// 銃による変化
-			damage *= gunData.PLAYER_DAMAGE_DIAMETER;
-			damage += gunData.PLAYER_DAMAGE_ADD;
-			// 減衰開始からの距離を作成
-			float decayStart = bulletData.DECAY_DAMAGE_START_PLAYER;
-			float decayDistance = (float) (distance > decayStart ? distance - decayStart : 0);
-
-			float decayAmount = decayDistance * bulletData.DECAY_DAMAGE_COE_PLAYER;
-			// 最大変化量を超えていないか
-			float maxAmount = bulletData.DECAY_DAMAGE_MAX_PLAYER;
-			decayAmount = Math.abs(decayAmount) < maxAmount ? decayAmount : maxAmount;
-			damage += decayAmount;
-		} else {
+		float decayStart;
+		float decayDistance;
+		float decayAmount;
+		switch (target) {
+		case Living:
 			damage = bulletData.HIT_DAMAGE_LIVING;
 			// 銃による変化
 			damage *= gunData.LIVING_DAMAGE_DIAMETER;
 			damage += gunData.LIVING_DAMAGE_ADD;
 			// 減衰開始からの距離を作成
-			float decayStart = bulletData.DECAY_DAMAGE_START_LIVING;
-			float decayDistance = (float) (distance > decayStart ? distance - decayStart : 0);
-
-			float decayAmount = decayDistance * bulletData.DECAY_DAMAGE_COE_LIVING;
+			decayStart = bulletData.DECAY_DAMAGE_START_LIVING;
+			decayDistance = (float) (distance > decayStart ? distance - decayStart : 0);
+			decayAmount = decayDistance * bulletData.DECAY_DAMAGE_COE_LIVING;
 			// 最大変化量を超えていないか
 			float maxAmount = bulletData.DECAY_DAMAGE_MAX_LIVING;
 			decayAmount = Math.abs(decayAmount) < maxAmount ? decayAmount : maxAmount;
 			damage += decayAmount;
+			break;
+		case Player:
+			damage = bulletData.HIT_DAMAGE_PLAYER;
+			// 銃による変化
+			damage *= gunData.PLAYER_DAMAGE_DIAMETER;
+			damage += gunData.PLAYER_DAMAGE_ADD;
+			// 減衰開始からの距離を作成
+			decayStart = bulletData.DECAY_DAMAGE_START_PLAYER;
+			decayDistance = (float) (distance > decayStart ? distance - decayStart : 0);
+			decayAmount = decayDistance * bulletData.DECAY_DAMAGE_COE_PLAYER;
+			// 最大変化量を超えていないか
+			maxAmount = bulletData.DECAY_DAMAGE_MAX_PLAYER;
+			decayAmount = Math.abs(decayAmount) < maxAmount ? decayAmount : maxAmount;
+			damage += decayAmount;
+			break;
+		case Vehicle:
+			break;
+		case Aircraft:
+			break;
 		}
 		return damage;
 	}
@@ -408,7 +416,7 @@ public class EntityBullet_back extends Entity implements IEntityAdditionalSpawnD
 		tickt += buf.readFloat();
 		Shooter = world.getEntityByID(buf.readInt());
 		magazineData = PackData.getBulletData(PacketHandler.readString(buf));
-		bulletData = magazineData.BULLET;
+		bulletData = magazineData.BULLETDATA;
 		gunData = PackData.getGunData(PacketHandler.readString(buf));
 		onUpdate(tickt);
 		lastWorldTick = world.getTotalWorldTime();
@@ -422,5 +430,6 @@ public class EntityBullet_back extends Entity implements IEntityAdditionalSpawnD
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound tag) {
 	}
+
 
 }

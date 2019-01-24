@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import entity.EntityDrivable;
 import network.PacketAcceleration;
@@ -16,7 +17,10 @@ import org.lwjgl.input.Keyboard;
 
 import gamedata.Gun;
 import gamedata.HidePlayerData;
+import gamedata.HidePlayerData.ClientPlayerData;
+import gamedata.HidePlayerData.CommonPlayerData;
 import gamedata.HidePlayerData.ServerPlayerData;
+import handler.client.InputHandler.InputBind;
 import handler.client.RecoilHandler;
 import helper.NBTWrapper;
 import net.minecraftforge.client.event.MouseEvent;
@@ -26,7 +30,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.play.server.SPacketEntityEquipment;
+import net.minecraft.network.play.server.SPacketHeldItemChange;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
@@ -46,9 +55,6 @@ public class PlayerHandler {
 	private static float defaultFOV;
 	private static float defaultMS;
 	public static String scopeName;
-
-	// サーバー側変数
-	private static Map<UUID, HidePlayerData> PlayerDataMap = new HashMap<>();
 
 	/** ADSの切り替え クライアント側 */
 	public static void setADS(String scope, float dia) {
@@ -79,16 +85,7 @@ public class PlayerHandler {
 		}
 	}
 
-	//TODO 将来的にはIDが被ったら修正するようにしたい
-	public static Gun getGun(EntityPlayer player,long id) {
-		HidePlayerData data = getPlayerData(player);
-		if(data.gunMain.idEquals(id)) {
-			return data.gunMain;
-		}else if(data.gunOff.idEquals(id)) {
-			return data.gunOff;
-		}
-		return null;
-	}
+	// TODO 将来的にはGunIDが被ったら修正するようにしたい
 
 	/** プレイヤーのTick処理 */
 	public static void PlayerTick(PlayerTickEvent event) {
@@ -97,32 +94,48 @@ public class PlayerHandler {
 			if (event.side == Side.CLIENT) {
 				// 自分のキャラクターのみ
 				if (event.player.equals(Minecraft.getMinecraft().player)) {
-					commonPlayerTick(event.player);
+					gunStateUpdate(event.player, event.side);
 					ClientTick(Minecraft.getMinecraft().player);
 				}
 			} else if (event.side == Side.SERVER) {
-				commonPlayerTick(event.player);
-				ServerTick(event.player);
+				gunStateUpdate(event.player, event.side);
+				ServerTick((EntityPlayerMP) event.player);
 			}
 		}
 	}
 
-	private static void commonPlayerTick(EntityPlayer player) {
+	static ItemStack item = null;
+
+	private static void gunStateUpdate(EntityPlayer player, Side side) {
 		// 共通処理
-		HidePlayerData data = getPlayerData(player);
+		CommonPlayerData data = HidePlayerData.getData(player, side);
 		if (isOnEntityDrivable(player)) {
 
 		} else {
 			ItemStack main = player.getHeldItemMainhand();
 			ItemStack off = player.getHeldItemOffhand();
-			if (!data.gunMain.isGun() || !data.gunMain.idEquals(NBTWrapper.getHideID(main))) {
-				data.gunMain = new Gun(ItemGun.getGunData(main), () -> NBTWrapper.getHideTag(main));
+
+			if ((data.gunMain.isGun() ^ ItemGun.isGun(main)) || (data.gunMain.isGun() && ItemGun.isGun(main)
+					&& !data.gunMain.idEquals(NBTWrapper.getHideID(main)))) {
+				// クライアントサイドではインスタンスに連続性がないので仕方なくプレイヤーからのサプライヤーを用意
+				Supplier<NBTTagCompound> gunTag = side == Side.CLIENT
+						? () -> NBTWrapper.getHideTag(player.getHeldItemMainhand())
+						: () -> NBTWrapper.getHideTag(main);
+				data.gunMain.setGun(ItemGun.getGunData(main), gunTag);
 				data.gunMain.setShooter(player);
 			}
-			if (!data.gunOff.isGun() || !data.gunOff.idEquals(NBTWrapper.getHideID(off))) {
-				data.gunOff = new Gun(ItemGun.getGunData(off), () -> NBTWrapper.getHideTag(off));
+			if ((data.gunOff.isGun() ^ ItemGun.isGun(off)) || (data.gunOff.isGun() && ItemGun.isGun(off)
+					&& !data.gunOff.idEquals(NBTWrapper.getHideID(off)))) {
+				// クライアントサイドではインスタンスに連続性がないので仕方なくプレイヤーからのサプライヤーを用意
+				Supplier<NBTTagCompound> gunTag = side == Side.CLIENT
+						? () -> NBTWrapper.getHideTag(player.getHeldItemOffhand())
+						: () -> NBTWrapper.getHideTag(off);
+				data.gunOff.setGun(ItemGun.getGunData(off), gunTag);
 				data.gunOff.setShooter(player);
 			}
+			// アップデート
+			data.gunMain.tickUpdate(side);
+			data.gunOff.tickUpdate(side);
 		}
 	}
 
@@ -189,29 +202,38 @@ public class PlayerHandler {
 	}
 
 	/** サーバーTick処理 プログレスを進める */
-	private static void ServerTick(EntityPlayer player) {
+	private static void ServerTick(EntityPlayerMP player) {
 		// if(player.getRidingEntity() instanceof )
-		HidePlayerData data = getPlayerData(player);
+		ServerPlayerData data = HidePlayerData.getServerData(player);
 		List<Gun> guns = new ArrayList<>();
+		// アイテムの場合同期用
+		if (isOnEntityDrivable(player)) {
+
+		}
 		// 変更対象をリストに
 		EquipMode em = EquipMode.getEquipMode(data.gunMain, data.gunOff);
 		if (em.hasMain())
 			guns.add(data.gunMain);
 		if (em.hasOff())
 			guns.add(data.gunOff);
-		if (data.Server.changeAmmo) {
-			data.Server.changeAmmo = false;
+		if (data.changeAmmo) {
+			data.changeAmmo = false;
 			guns.forEach(gun -> NBTWrapper.setGunUseingBullet(gun.getGunTag(), gun.getNextUseMagazine()));
+			// player.connection.sendPacket(new SPacketEntityEquipment(player.getEntityId(),
+			// EntityEquipmentSlot.MAINHAND, player.getHeldItemMainhand()));
 		}
 
-		if (data.Server.changeFireMode) {
-			data.Server.changeFireMode = false;
+		if (data.changeFireMode) {
+			data.changeFireMode = false;
 			guns.forEach(gun -> NBTWrapper.setGunFireMode(gun.getGunTag(), gun.getNextFireMode()));
+			// player.connection.sendPacket(new SPacketitem);
 		}
-		if (data.Server.reload) {
-			data.Server.reload = false;
-			if (data.Server.reloadState > 0) {
-				data.Server.reloadAll = true;
+		boolean flag = true;
+
+		if (data.reload) {
+			data.reload = false;
+			if (data.reloadState > 0) {
+				data.reloadAll = true;
 			} else {
 				int time = 0;
 				for (Gun gun : guns) {
@@ -219,37 +241,17 @@ public class PlayerHandler {
 					SoundHandler.broadcastSound(player.world, player.posX, player.posY, player.posZ,
 							gun.getGunData().SOUND_RELOAD);
 				}
-				data.Server.reloadAll = false;
-				data.Server.reloadState = time;
+				data.reloadAll = false;
+				data.reloadState = time;
 			}
 		}
-		if (0 <= data.Server.reloadState) {
-			if (data.Server.reloadState == 0) {
+		if (0 <= data.reloadState) {
+			if (data.reloadState == 0) {
 				for (Gun gun : guns) {
-					data.Server.reload = gun.reload(player, data.Server.reloadAll) == true;
+					data.reload = gun.reload(player, data.reloadAll) == true;
 				}
 			}
-			data.Server.reloadState--;
+			data.reloadState--;
 		}
-	}
-
-	/** 接続時にサーバーサイドで呼ばれる */
-	public static void PlayerJoin(PlayerLoggedInEvent event) {
-		PlayerDataMap.put(event.player.getUniqueID(), new HidePlayerData());
-	}
-
-	/** 切断時にサーバーサイドで呼ばれる */
-	public static void PlayerLeft(PlayerLoggedOutEvent event) {
-		PlayerDataMap.remove(event.player.getUniqueID());
-	}
-
-	/** プレイヤーデータを取得 */
-	public static HidePlayerData getPlayerData(EntityPlayer player) {
-		return PlayerDataMap.get(player.getUniqueID());
-	}
-
-	/** プレイヤーデータを取得 */
-	public static HidePlayerData getPlayerData() {
-		return PlayerDataMap.get(Minecraft.getMinecraft().player.getUniqueID());
 	}
 }

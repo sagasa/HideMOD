@@ -51,6 +51,14 @@ public class Gun {
 		setGun(data, guntag);
 	}
 
+	private boolean onClient = false;
+
+	/** クライアント側で動作する場合NBTの書き込みを行わないモードに */
+	public Gun setClientMode(boolean mode) {
+		onClient = mode;
+		return this;
+	}
+
 	/** カスタムとオリジナルから修正版のGunDataを作成 */
 	private void updateCustomize() {
 		if (customize != null && originalData != null) {
@@ -64,20 +72,42 @@ public class Gun {
 		}
 	}
 
+	/** ID保持 */
+	private long uid = 0;
+
 	public void setGun(GunData data, Supplier<NBTTagCompound> guntag) {
+		System.out.println("change " + NBTWrapper.getHideID(guntag.get()));
+		saveAndClear();
 		originalData = data;
 		gunTag = guntag;
+		uid = NBTWrapper.getHideID(gunTag.get());
 		updateCustomize();
 		magazine = NBTWrapper.getGunLoadedMagazines(gunTag.get());
 		shootDelay = NBTWrapper.getGunShootDelay(gunTag.get());
 	}
 
-	public void clearGun() {
+	public void saveAndClear() {
+		// セーブ
+		if (isGun() && !onClient) {
+			NBTWrapper.setGunLoadedMagazines(gunTag.get(), magazine);
+			int shootdelay = (int) MillistoTick(
+					(int) (RPMtoMillis(modifyData.RPM) - (Minecraft.getSystemTime() - lastShootTime)));
+			shootdelay = Math.max(0, shootdelay);
+			NBTWrapper.setGunShootDelay(gunTag.get(), shootdelay);
+			System.out.println(shootdelay);
+		}
+		// 削除
+		uid = 0;
+		gunTag = null;
 		originalData = null;
 		customize.clear();
 		modifyData = null;
 		shootDelay = 0;
 		magazine = new LoadedMagazine();
+		amount = 0;
+		completionTick = 0f;
+		lastTime = 0;
+		lastShootTime = 0;
 	}
 
 	public boolean isGun() {
@@ -121,7 +151,7 @@ public class Gun {
 	}
 
 	public boolean idEquals(long id) {
-		return NBTWrapper.getHideID(gunTag.get()) == id;
+		return isGun() && uid == id;
 	}
 
 	public boolean stateEquals(Gun gun) {
@@ -162,7 +192,7 @@ public class Gun {
 			// リロード検知
 			if (now.getLoadedNum() > amount) {
 				magazine = now;
-				// System.out.println("Magazine更新");
+				System.out.println("Magazine更新");
 			}
 			amount = now.getLoadedNum();
 		} else {
@@ -179,6 +209,9 @@ public class Gun {
 		completionTick = completion;
 		gunUpdate(trigger);
 	}
+
+	/** 保存時のShootDelay補完用 */
+	private long lastShootTime = 0;
 
 	/** NBT保存 */
 	private int shootDelay = 0;
@@ -244,7 +277,6 @@ public class Gun {
 		if (bullet != null) {
 			// クライアントなら
 			boolean isADS = Shooter == null ? false : HideEntityDataManager.getADSState(Shooter) == 1;
-			System.out.println("shootFromC "+Shooter.world.isRemote);
 			if (Shooter.world.isRemote) {
 				// シューターがプレイヤー以外ならエラー
 				if (!(Shooter instanceof EntityPlayer)) {
@@ -266,10 +298,10 @@ public class Gun {
 		}
 	}
 
-	/** サーバーサイドで射撃パケットからの射撃処理 */
+	/** サーバーサイドでパケットからの射撃処理 */
 	public static void shoot(EntityPlayer player, long uid, float offset, boolean isADS, double x, double y, double z,
 			float yaw, float pitch) {
-		Gun gun = PlayerHandler.getGun(player, uid);
+		Gun gun = HidePlayerData.getServerData(player).getGun(uid);
 		if (gun == null) {
 			LOGGER.warn("cant make bullet by cant find gun: player = " + player.getName());
 		}
@@ -277,19 +309,21 @@ public class Gun {
 		gun.setRotate(yaw, pitch);
 		gun.setShooter(player);
 		gun.shoot(isADS, offset);
-		System.out.println(offset);
+		gun.magazine.useNextBullet();
+		System.out.println("offset at shoot" + offset);
 	}
 
 	/** サーバーサイド */
 	public void shoot(boolean isADS, float offset) {
 		shoot(modifyData, magazine.getNextBullet(), Shooter, isADS, offset, X, Y, Z, Yaw, Pitch);
+		lastShootTime = Minecraft.getSystemTime();
 	}
 
 	/** エンティティを生成 ShootNumに応じた数弾を出す */
-	public static void shoot(GunData gundata, MagazineData bulletdata, Entity shooter, boolean isADS, float offset,
+	private static void shoot(GunData gundata, MagazineData bulletdata, Entity shooter, boolean isADS, float offset,
 			double x, double y, double z, float yaw, float pitch) {
-		if (bulletdata.BULLET != null) {
-			for (int i = 0; i < bulletdata.BULLET.SHOOT_NUM; i++) {
+		if (bulletdata.BULLETDATA != null) {
+			for (int i = 0; i < bulletdata.BULLETDATA.SHOOT_NUM; i++) {
 				SoundHandler.broadcastSound(shooter.world, x, y, z, gundata.SOUND_SHOOT);
 				EntityBullet bullet = new EntityBullet(gundata, bulletdata, shooter, isADS, offset, x, y, z, yaw,
 						pitch);
@@ -389,7 +423,10 @@ public class Gun {
 			}
 		}
 		return value - c;
+	}
 
+	public void saveToNBT() {
+		NBTWrapper.setGunLoadedMagazines(gunTag.get(), magazine);
 	}
 
 	/** 次の射撃モードを取得 */

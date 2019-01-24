@@ -9,6 +9,7 @@ import entity.EntityBullet;
 import gamedata.HideDamage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResourcePack;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -90,5 +91,10 @@ public class HideMod {
 		// Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item,
 		// meta, location)
 
+	}
+
+	/** クライアントサイド限定 playerを取得 */
+	public static EntityPlayer getPlayer() {
+		return Minecraft.getMinecraft().player;
 	}
 }

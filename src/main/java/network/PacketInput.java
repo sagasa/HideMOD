@@ -1,7 +1,7 @@
 package network;
 
 import gamedata.HidePlayerData;
-import handler.PlayerHandler;
+import gamedata.HidePlayerData.ServerPlayerData;
 import handler.PlayerHandler.EquipMode;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -78,16 +78,16 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 		// サーバーへ送った際に、EntityPlayerインスタンス（EntityPlayerMPインスタンス）はこのように取れる。
 		// EntityPlayer Player = ctx.getServerHandler().playerEntity;
 		// System.out.println(ctx.side);
-		HidePlayerData data = PlayerHandler.getPlayerData(ctx.getServerHandler().player);
+		ServerPlayerData data = HidePlayerData.getServerData(ctx.getServerHandler().player);
 		if (m.mode == TRIGGER_CHANGE) {
-			data.Server.leftMouse = m.left;
-			data.Server.rightMouse = m.right;
+			data.leftMouse = m.left;
+			data.rightMouse = m.right;
 		}else if(m.mode == GUN_BULLET){
-			data.Server.changeAmmo = true;
+			data.changeAmmo = true;
 		}else if(m.mode == GUN_MODE){
-			data.Server.changeFireMode = true;
+			data.changeFireMode = true;
 		}else if(m.mode == GUN_RELOAD){
-			data.Server.reload = true;
+			data.reload = true;
 		}
 
 		return null;
