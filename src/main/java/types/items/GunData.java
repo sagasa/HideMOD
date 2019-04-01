@@ -5,7 +5,7 @@ import types.base.DataBase;
 import types.effect.Recoil;
 import types.effect.Sound;
 
-public class GunData extends ItemData{
+public class GunData extends ItemData {
 	/** 弾速 1秒の移動距離(m)=弾速 : float型 **/
 	@Info(Cate = 0, Min = 0, Max = 128)
 	public float BULLET_SPEED = 5f;
@@ -45,6 +45,10 @@ public class GunData extends ItemData{
 	/** まとめてリロードできるか : boolean型 */
 	@Info(Cate = 0)
 	public boolean RELOAD_ALL = false;
+	/** リロード時にマガジンの抜き取りを行うかどうか */
+	public boolean UNLOAD_IN_RELOADING = true;// TODO
+	/** マガジンをアンロードできるか */
+	public boolean USE_UNLOAD = true;// TODO
 	/** 分間発射数 : int型 **/
 	@Info(Cate = 0, Min = 0, Scale = "10")
 	public int RPM = 600;
@@ -105,7 +109,7 @@ public class GunData extends ItemData{
 	/** リロード音 : Sound型 **/
 	public Sound SOUND_RELOAD = new Sound("sample", 10);
 	/** 使用する弾 : StringArray型 */
-	@Info(isName=true)
+	@Info(isName = true)
 	public String[] MAGAZINE_USE = new String[0];
 	/** セカンダリにできるか */
 	@Info(Cate = 0)

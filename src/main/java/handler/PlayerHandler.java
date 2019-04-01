@@ -2,6 +2,7 @@ package handler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -15,23 +16,26 @@ import types.items.GunData;
 
 import org.lwjgl.input.Keyboard;
 
-import gamedata.Gun;
+import client.HideViewHandler;
 import gamedata.HidePlayerData;
 import gamedata.HidePlayerData.ClientPlayerData;
 import gamedata.HidePlayerData.CommonPlayerData;
 import gamedata.HidePlayerData.ServerPlayerData;
+import guns.Gun;
+import guns.ItemGun;
 import handler.client.InputHandler.InputBind;
 import handler.client.RecoilHandler;
 import helper.NBTWrapper;
 import net.minecraftforge.client.event.MouseEvent;
-
-import item.ItemGun;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.settings.GameSettings;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketEntityEquipment;
@@ -47,44 +51,6 @@ import network.PacketInput;
 /***/
 public class PlayerHandler {
 
-	// クライアント側変数
-	public static int HitMarkerTime = 0;
-	public static boolean HitMarker_H = false;
-
-	public static boolean isADS = false;
-	private static float defaultFOV;
-	private static float defaultMS;
-	public static String scopeName;
-
-	/** ADSの切り替え クライアント側 */
-	public static void setADS(String scope, float dia) {
-		if (isADS) {
-			clearADS();
-		}
-		//
-		scopeName = scope;
-		GameSettings setting = Minecraft.getMinecraft().gameSettings;
-		// FOV
-		defaultFOV = setting.fovSetting;
-		setting.fovSetting = defaultFOV / dia;
-		// マウス感度
-		defaultMS = setting.mouseSensitivity;
-		setting.mouseSensitivity = defaultMS / dia;
-		isADS = true;
-	}
-
-	/** ADS解除 クライアント側 */
-	public static void clearADS() {
-		if (isADS) {
-			GameSettings setting = Minecraft.getMinecraft().gameSettings;
-			// FOV
-			setting.fovSetting = defaultFOV;
-			// マウス感度
-			setting.mouseSensitivity = defaultMS;
-			isADS = false;
-		}
-	}
-
 	// TODO 将来的にはGunIDが被ったら修正するようにしたい
 
 	/** プレイヤーのTick処理 */
@@ -95,7 +61,7 @@ public class PlayerHandler {
 				// 自分のキャラクターのみ
 				if (event.player.equals(Minecraft.getMinecraft().player)) {
 					gunStateUpdate(event.player, event.side);
-					ClientTick(Minecraft.getMinecraft().player);
+					HideViewHandler.ClientTick(Minecraft.getMinecraft().player);
 				}
 			} else if (event.side == Side.SERVER) {
 				gunStateUpdate(event.player, event.side);
@@ -104,8 +70,9 @@ public class PlayerHandler {
 		}
 	}
 
-	static ItemStack item = null;
-
+	/**
+	 * クライアント・サーバー両方で共通 PlayerData内の銃を更新する
+	 */
 	private static void gunStateUpdate(EntityPlayer player, Side side) {
 		// 共通処理
 		CommonPlayerData data = HidePlayerData.getData(player, side);
@@ -136,18 +103,13 @@ public class PlayerHandler {
 			// アップデート
 			data.gunMain.tickUpdate(side);
 			data.gunOff.tickUpdate(side);
+
+			Entity e;
+			EntityLivingBase entity;
 		}
 	}
 
-	/** 入力処理 */
-	@SideOnly(Side.CLIENT)
-	private static void ClientTick(EntityPlayerSP player) {
-		// アップデート
-		RecoilHandler.updateRecoil();
-		if (HitMarkerTime > 0) {
-			HitMarkerTime--;
-		}
-	}
+
 
 	/** EntityDrivableに乗っているかどうかを取得 */
 	public static boolean isOnEntityDrivable(EntityPlayer player) {
@@ -229,27 +191,32 @@ public class PlayerHandler {
 			// player.connection.sendPacket(new SPacketitem);
 		}
 		boolean flag = true;
-
 		if (data.reload) {
+			System.out.println("inv " + player.inventoryContainer.getInventory());
 			data.reload = false;
 			if (data.reloadState > 0) {
 				data.reloadAll = true;
+				// マガジンの取り外し TODO
 			} else {
 				int time = 0;
 				for (Gun gun : guns) {
 					time += gun.getGunData().RELOAD_TICK; // 音
 					SoundHandler.broadcastSound(player.world, player.posX, player.posY, player.posZ,
 							gun.getGunData().SOUND_RELOAD);
+					// マガジンを取り外し
+					gun.prereload(player);
 				}
 				data.reloadAll = false;
 				data.reloadState = time;
 			}
+
 		}
 		if (0 <= data.reloadState) {
 			if (data.reloadState == 0) {
 				for (Gun gun : guns) {
-					data.reload = gun.reload(player, data.reloadAll) == true;
+					gun.reload(player);
 				}
+				data.reload = true;
 			}
 			data.reloadState--;
 		}

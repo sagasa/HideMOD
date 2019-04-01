@@ -6,9 +6,9 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import entity.EntityDrivable;
-import gamedata.Gun;
 import gamedata.HidePlayerData;
 import gamedata.HidePlayerData.ClientPlayerData;
+import guns.Gun;
 import handler.PacketHandler;
 import handler.PlayerHandler;
 import handler.PlayerHandler.EquipMode;

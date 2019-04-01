@@ -27,10 +27,8 @@ public class LoadedMagazine {
 			return super.toString() + "[name=" + name + ",num=" + num + "]";
 		}
 
-		@Override
-		public boolean equals(Object obj) {
-			if (obj != null && obj instanceof Magazine && name.equals(((Magazine) obj).name)
-					&& num == ((Magazine) obj).num) {
+		public boolean magEquals(Magazine obj) {
+			if (obj != null && name.equals(obj.name) && num == obj.num) {
 				return true;
 			}
 			return false;
@@ -39,7 +37,7 @@ public class LoadedMagazine {
 
 	/** 次に撃つ弾を取得 */
 	public MagazineData getNextBullet() {
-		Magazine mag = getNextMagazine();
+		Magazine mag = getNextMagazine(true);
 		if (mag == null) {
 			return null;
 		} else {
@@ -49,28 +47,36 @@ public class LoadedMagazine {
 
 	/** 次に撃つ弾を取得 消費する */
 	public MagazineData useNextBullet() {
-		Magazine mag = getNextMagazine();
+		Magazine mag = getNextMagazine(true);
 		if (mag == null) {
 			return null;
 		} else {
-			mag.num--;
-			if(magazineList.size()>0&&mag.num<=0&&PackData.getBulletData(mag.name).MAGAZINE_BREAK){
-				magazineList.remove(0);
-			}
 			return PackData.getBulletData(mag.name);
 		}
 	}
-	/**初めの弾が入ったマガジンを返す*/
-	private Magazine getNextMagazine() {
-		if (magazineList.size() > 0 && magazineList.get(0).num > 0) {
-			if (PackData.getBulletData(magazineList.get(0).name) == null) {
-				magazineList.remove(0);
-				return getNextMagazine();
+
+	/** 初めの弾が入ったマガジンを返す */
+	private Magazine getNextMagazine(boolean use) {
+		int last = magazineList.size() - 1;
+		if (last < 0)
+			return null;
+		if (magazineList.get(last).num > 0) {
+			// 存在しない弾の場合の例外処理
+			if (PackData.getBulletData(magazineList.get(last).name) == null) {
+				magazineList.remove(last);
+				return getNextMagazine(use);
 			}
-			return magazineList.get(0);
-		}else if(magazineList.size()>0&&magazineList.get(0).num <=0&&PackData.getBulletData( magazineList.get(0).name).MAGAZINE_BREAK){
-	//		System.out.println("Size "+ magazineList.size());
-			magazineList.remove(0);
+			// 弾の消費処理
+			Magazine mag = magazineList.get(last);
+			mag.num--;
+			if (magazineList.size() > 0 && mag.num <= 0 && PackData.getBulletData(mag.name).MAGAZINE_BREAK) {
+				magazineList.remove(last);
+			}
+			return mag;
+		}
+		if (magazineList.get(last).num <= 0 && PackData.getBulletData(magazineList.get(last).name).MAGAZINE_BREAK) {
+			// System.out.println("Size "+ magazineList.size());
+			magazineList.remove(last);
 		}
 		return null;
 	}
@@ -92,9 +98,11 @@ public class LoadedMagazine {
 		return super.toString() + magazineList;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj != null && obj instanceof LoadedMagazine && magazineList.equals(((LoadedMagazine) obj).magazineList)) {
+	public boolean magEquals(LoadedMagazine loadmag) {
+		if (loadmag != null && magazineList.size() == loadmag.magazineList.size()) {
+			for (int i = 0; i < magazineList.size(); i++)
+				if (magazineList.get(i).magEquals(loadmag.magazineList.get(i)))
+					return false;
 			return true;
 		}
 		return false;

@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 
 import java.util.List;
 
-import gamedata.Gun;
+import guns.Gun;
 
 public class EntityDrivable extends Entity {
 

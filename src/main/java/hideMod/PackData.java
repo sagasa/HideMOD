@@ -5,8 +5,8 @@ import java.util.Map;
 
 import entity.EntityBullet;
 import entity.render.RenderBullet;
+import guns.ItemGun;
 import hideMod.model.ModelPart;
-import item.ItemGun;
 import item.ItemMagazine;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.entity.Render;

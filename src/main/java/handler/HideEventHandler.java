@@ -1,10 +1,11 @@
 package handler;
 
+import client.RenderHandler;
 import gamedata.HidePlayerData;
+import guns.ItemGun;
 import handler.client.InputHandler;
 import hideMod.PackData;
 import hideMod.render.HideScope;
-import item.ItemGun;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelRegistryEvent;

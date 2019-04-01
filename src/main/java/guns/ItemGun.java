@@ -1,4 +1,4 @@
-package item;
+package guns;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,6 +12,7 @@ import gamedata.HidePlayerData;
 import gamedata.LoadedMagazine.Magazine;
 import helper.NBTWrapper;
 import hideMod.PackData;
+import item.ItemMagazine;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -114,10 +115,10 @@ public class ItemGun extends Item {
 		NBTTagCompound hideTag = NBTWrapper.getHideTag(stack);
 		tooltip.add(ChatFormatting.GRAY + "FireMode : " + NBTWrapper.getGunFireMode(hideTag));
 		tooltip.add(ChatFormatting.GRAY + "UseBullet : "
-				+ ItemMagazine.getBulletData(NBTWrapper.getGunUseingBullet(hideTag)).ITEM_DISPLAYNAME);
+				+ ItemMagazine.getMagazineName(NBTWrapper.getGunUseingBullet(hideTag)));
 		for (Magazine magazine : NBTWrapper.getGunLoadedMagazines(hideTag).getList()) {
 			if (magazine != null) {
-				tooltip.add(ItemMagazine.getBulletData(magazine.name).ITEM_DISPLAYNAME + "x" + magazine.num);
+				tooltip.add(ItemMagazine.getMagazineName(magazine.name) + "x" + magazine.num);
 			} else {
 				tooltip.add("empty");
 			}

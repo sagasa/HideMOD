@@ -1,5 +1,6 @@
 package handler.client;
 
+import client.HideViewHandler;
 import handler.PlayerHandler;
 import helper.HideMath;
 import net.minecraft.client.Minecraft;
@@ -25,15 +26,16 @@ public class RecoilHandler {
 
 	private static GunData nowGun = null;
 
-	/**現在のリコイルパワー(0-100)を取得*/
-	public static int getRecoilPower(){
+	/** 現在のリコイルパワー(0-100)を取得 */
+	public static int getRecoilPower() {
 		return recoilPower;
 	}
+
 	/** プレイヤーの状態から使用するリコイルを取得 */
 
 	private static Recoil getRecoil(GunData data) {
 		EntityPlayer player = Minecraft.getMinecraft().player;
-		return getRecoil(data, player.isSneaking(), PlayerHandler.isADS);
+		return getRecoil(data, player.isSneaking(), HideViewHandler.isADS);
 	}
 
 	// 状態から取得 使えなかった場合前を参照
@@ -68,8 +70,11 @@ public class RecoilHandler {
 		}
 	}
 
-	/** 反動を与える
-	 * @param shooter */
+	/**
+	 * 反動を与える
+	 *
+	 * @param shooter
+	 */
 	public static void addRecoil(GunData data) {
 		// 銃が変わったならリコイルの適応を解除
 		if (!data.equals(nowGun)) {

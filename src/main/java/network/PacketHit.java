@@ -1,5 +1,6 @@
 package network;
 
+import client.HideViewHandler;
 import handler.PlayerHandler;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -46,8 +47,8 @@ public class PacketHit implements IMessage, IMessageHandler<PacketHit, IMessage>
 		// SamplePacketMod.proxy.getEntityPlayerInstance();
 		// サーバーへ送った際に、EntityPlayerインスタンス（EntityPlayerMPインスタンス）はこのように取れる。
 		// EntityPlayer Player = ctx.getServerHandler().playerEntity;
-		PlayerHandler.HitMarkerTime = 15;
-		PlayerHandler.HitMarker_H = m.HitType==GUN_HEADSHOT;
+		HideViewHandler.HitMarkerTime = 15;
+		HideViewHandler.HitMarker_H = m.HitType==GUN_HEADSHOT;
 		return null;
 	}
 }

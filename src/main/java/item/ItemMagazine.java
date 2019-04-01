@@ -36,19 +36,17 @@ public class ItemMagazine extends Item {
 		INSTANCE_MAP.put(name, this);
 	}
 
-
 	/** アイテムスタックを作成 残弾指定 */
 	public static ItemStack makeMagazine(String name, int ammoNum) {
 		return NBTWrapper.setMagazineBulletNum(makeMagazine(name), ammoNum);
 	}
 
-	/**アイテムスタック作成時に呼ばれる これの中でNBTを設定する*/
+	/** アイテムスタック作成時に呼ばれる これの中でNBTを設定する */
 	@Override
 	public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
 		setBulletNBT(stack);
 		return super.initCapabilities(stack, nbt);
 	}
-
 
 	/** アイテムスタックを作成 */
 	public static ItemStack makeMagazine(String name) {
@@ -65,14 +63,14 @@ public class ItemMagazine extends Item {
 		if (!(item.getItem() instanceof ItemMagazine)) {
 			return item;
 		}
-		MagazineData data = getBulletData(item);
+		MagazineData data = getMagazineData(item);
 		NBTWrapper.setMagazineBulletNum(item, data.MAGAZINE_SIZE);
 		return item;
 	}
 
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
-		return getBulletData(stack).ITEM_DISPLAYNAME;
+		return getMagazineData(stack).ITEM_DISPLAYNAME;
 	}
 
 	// =========================================================
@@ -99,7 +97,7 @@ public class ItemMagazine extends Item {
 
 	public static boolean isMagazine(ItemStack item, String str) {
 		if (item != null && item.getItem() instanceof ItemMagazine
-				&&ItemMagazine.getBulletData(item).ITEM_SHORTNAME.equals(str)) {
+				&& ItemMagazine.getMagazineData(item).ITEM_SHORTNAME.equals(str)) {
 			return true;
 		}
 		return false;
@@ -118,36 +116,35 @@ public class ItemMagazine extends Item {
 
 	/** 装弾数取得 */
 	public static int getMagazineSize(ItemStack stack) {
-		return getBulletData(stack).MAGAZINE_SIZE;
+		return getMagazineData(stack).MAGAZINE_SIZE;
 	}
 
 	/** アップデート 表示更新など */
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
 		super.addInformation(stack, worldIn, tooltip, flagIn);
-		if(!stack.hasTagCompound()){
+		if (!stack.hasTagCompound()) {
 			return;
 		}
 		tooltip.add(ChatFormatting.GRAY + "Ammo : " + getBulletNum(stack) + "/" + getMagazineSize(stack));
 	}
 
-
+	/** 表示名取得 */
+	public static String getMagazineName(String name) {
+		MagazineData data = PackData.MAGAZINE_DATA_MAP.get(name);
+		return data == null ? "None" : data.ITEM_DISPLAYNAME;
+	}
 
 	/** BulletData取得 */
-	public static MagazineData getBulletData(String name) {
+	public static MagazineData getMagazineData(String name) {
 		return PackData.MAGAZINE_DATA_MAP.get(name);
 	}
 
 	/** BulletData取得 */
-	public static MagazineData getBulletData(ItemStack item) {
+	public static MagazineData getMagazineData(ItemStack item) {
 		if (!(item.getItem() instanceof ItemMagazine)) {
 			return null;
 		}
 		return ((ItemMagazine) item.getItem()).MagazineData;
-	}
-
-	/** スタックから弾の登録名を取得 */
-	public static String getBulletName(ItemStack item) {
-		return ItemMagazine.getBulletData(item).ITEM_SHORTNAME;
 	}
 
 	/** その名前の弾は存在するか */

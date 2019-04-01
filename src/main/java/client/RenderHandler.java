@@ -1,18 +1,20 @@
-package handler;
+package client;
 
 import java.awt.Rectangle;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-import gamedata.Gun;
+
 import gamedata.HidePlayerData;
 import gamedata.HidePlayerData.ClientPlayerData;
 import gamedata.LoadedMagazine.Magazine;
+import guns.Gun;
+import guns.ItemGun;
+import handler.PlayerHandler;
 import handler.PlayerHandler.EquipMode;
 import hideMod.HideMod;
 import hideMod.render.HideScope;
 import hideMod.render.HideScope.ScopeMask;
-import item.ItemGun;
 import item.ItemMagazine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -22,6 +24,8 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -154,8 +158,7 @@ public class RenderHandler {
 				(x + 5) / fontSize, (y + 21) / fontSize, 0xFFFFFF, false);
 		GlStateManager.scale(1 / fontSize, 1 / fontSize, 1 / fontSize);
 		// 使用する弾
-		mc.fontRenderer.drawString(ItemMagazine.getBulletData(gun.getGunUseingBullet()).ITEM_DISPLAYNAME, x + 40,
-				y + 50, 0xFFFFFF);
+		mc.fontRenderer.drawString(ItemMagazine.getMagazineName(gun.getUseMagazine()), x + 40, y + 50, 0xFFFFFF);
 
 		GlStateManager.disableBlend();
 	}
@@ -166,10 +169,11 @@ public class RenderHandler {
 		GlStateManager.enableBlend();
 		mc.renderEngine.bindTexture(HitMarker);
 
-		if (PlayerHandler.HitMarker_H) {
-			GlStateManager.color(1f, 0.0f, 0.0f, (float) Math.max(Math.min(0.4, PlayerHandler.HitMarkerTime / 10), 0f));
+		if (HideViewHandler.HitMarker_H) {
+			GlStateManager.color(1f, 0.0f, 0.0f,
+					(float) Math.max(Math.min(0.4, HideViewHandler.HitMarkerTime / 10), 0f));
 		} else {
-			GlStateManager.color(1f, 1f, 1f, (float) Math.max(Math.min(0.4, PlayerHandler.HitMarkerTime / 10), 0f));
+			GlStateManager.color(1f, 1f, 1f, (float) Math.max(Math.min(0.4, HideViewHandler.HitMarkerTime / 10), 0f));
 		}
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder buf = tessellator.getBuffer();
@@ -182,6 +186,8 @@ public class RenderHandler {
 		GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
 		GlStateManager.disableAlpha();
 		GlStateManager.disableBlend();
+
+		// mc.ingameGUI.drawTexturedModalRect(100, 100, 0, 0, 100, 100);
 	}
 
 	static ModelPlayer model = new ModelPlayer(0, false);
@@ -191,13 +197,17 @@ public class RenderHandler {
 		model.isChild = false;
 		GlStateManager.pushMatrix();
 		GlStateManager.enableRescaleNormal();
-        GlStateManager.scale(-0.9F, -0.9F, 0.9F);
-        float f = 0.0625F;
-        GlStateManager.translate(0.0F, -1.501F, 0.0F);
-	//	model.render(HideMod.getPlayer(), 0f, 0f, 0f, 0f, 0f, 0.0625F);
+		GlStateManager.scale(-0.9F, -0.9F, 0.9F);
+		float f = 0.0625F;
+		GlStateManager.translate(2.0F, -1.501F, 0.0F);
+
+		EntityLivingBase player = event.getEntity();
+
+		model.render(HideMod.getPlayer(), player.limbSwing, player.limbSwingAmount, 0f, player.rotationYaw,
+				player.rotationPitch, 0.0625F);
+
 		GlStateManager.popMatrix();
-	
-		
+
 	}
 
 	/** 自分の持ってる銃の描画 アニメーションとパーツの稼働はこのメゾットのみ */
