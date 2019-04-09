@@ -109,8 +109,6 @@ public class PlayerHandler {
 		}
 	}
 
-
-
 	/** EntityDrivableに乗っているかどうかを取得 */
 	public static boolean isOnEntityDrivable(EntityPlayer player) {
 		return player.getRidingEntity() != null && !(player.getRidingEntity() instanceof EntityDrivable);
@@ -204,7 +202,7 @@ public class PlayerHandler {
 					SoundHandler.broadcastSound(player.world, player.posX, player.posY, player.posZ,
 							gun.getGunData().SOUND_RELOAD);
 					// マガジンを取り外し
-					gun.prereload(player);
+					gun.reloadReq(player, player.inventoryContainer, 0);
 				}
 				data.reloadAll = false;
 				data.reloadState = time;

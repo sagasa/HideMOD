@@ -21,11 +21,16 @@ import handler.client.RecoilHandler;
 import helper.NBTWrapper;
 import hideMod.PackData;
 import item.ItemMagazine;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.InventoryEnderChest;
+import net.minecraft.item.ItemAir;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.relauncher.Side;
@@ -48,6 +53,9 @@ public class Gun implements IGuns {
 	private GunData modifyData = null;
 
 	private Supplier<NBTTagCompound> gunTag = null;
+
+	/** リロードの状況保存0でリロード完了処理 */
+	private int reload = -1;
 
 	public Gun() {
 
@@ -414,9 +422,10 @@ public class Gun implements IGuns {
 	/**
 	 * プレリロード マガジンを外す
 	 */
-	public void prereload(EntityPlayer player) {
+	public void reloadReq(Entity e, Container inv, int addReloadTime) {
 		// ReloadAllの場合リロード可能なマガジンをすべて取り外す
 		// ReloadAll以外ので空スロットがない場合同じ種類で1番少ないマガジンを取り外す
+		// リロードカウントを始める
 		if (!isGun() || !needReload())
 			return;
 		System.out.println("unload ");
@@ -426,7 +435,6 @@ public class Gun implements IGuns {
 				return;
 			}
 		}
-
 		MagazineData magData = ItemMagazine.getMagazineData(getUseMagazine());
 		int c = magData.MAGAZINE_SIZE;
 		int index = -1;
@@ -447,14 +455,43 @@ public class Gun implements IGuns {
 		if (modifyData.RELOAD_ALL) {
 			list.forEach(mag -> {
 				if (!PackData.getBulletData(mag.name).MAGAZINE_BREAK || mag.num > 0)
-					player.addItemStackToInventory(ItemMagazine.makeMagazine(mag.name, mag.num));
+					;
 			});
 			magazine.getList().removeAll(list);
 		} else if (index != -1) {
 			Magazine mag = magazine.getList().get(index);
-			player.addItemStackToInventory(ItemMagazine.makeMagazine(mag.name, mag.num));
+			// player.addItemStackToInventory(ItemMagazine.makeMagazine(mag.name, mag.num));
 			magazine.getList().remove(index);
 		}
+	}
+
+	/**
+	 * インベントリにマガジンを追加 入りきらない場合ドロップ ホットバーに追加しない
+	 */
+	private void addMagazineToInventory(String name, int num, Container inv, Entity entity) {
+		// プレイヤーの場合はホットバーに入れないように
+
+		for (int i = 0; i < inv.inventoryItemStacks.size(); i++) {
+			ItemStack item = inv.inventoryItemStacks.get(i);
+			if (ItemMagazine.isMagazine(item, name, num) && item.getCount() < item.getMaxStackSize()) {
+				item.setCount(item.getCount() + 1);
+				inv.detectAndSendChanges();
+				return;
+			}
+		}
+		int i = 0;
+		// プレイヤーの場合ホットバーを除外
+		if (entity instanceof EntityPlayer)
+			i = 9;
+		for (; i < inv.inventoryItemStacks.size(); i++) {
+			ItemStack item = inv.inventoryItemStacks.get(i);
+			if (item == ItemStack.EMPTY) {
+				inv.inventoryItemStacks.set(i, ItemMagazine.makeMagazine(name, num));
+				inv.detectAndSendChanges();
+				return;
+			}
+		}
+		entity.entityDropItem(ItemMagazine.makeMagazine(name, num), 1);
 	}
 
 	public void saveToNBT() {

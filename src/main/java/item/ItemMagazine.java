@@ -103,6 +103,15 @@ public class ItemMagazine extends Item {
 		return false;
 	}
 
+	public static boolean isMagazine(ItemStack item, String str, int size) {
+		if (item != null && item.getItem() instanceof ItemMagazine
+				&& ItemMagazine.getMagazineData(item).ITEM_SHORTNAME.equals(str)
+				&& NBTWrapper.getMagazineBulletNum(item) == size) {
+			return true;
+		}
+		return false;
+	}
+
 	/** 残弾数取得 */
 	public static int getBulletNum(ItemStack stack) {
 		return NBTWrapper.getMagazineBulletNum(stack);
