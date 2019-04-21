@@ -41,7 +41,7 @@ import types.base.GunFireMode;
 import types.items.GunData;
 import types.items.MagazineData;
 
-/** 銃の制御系 */
+/** 銃の制御系  */
 public class Gun implements IGuns {
 
 	private static final Logger LOGGER = LogManager.getLogger();
@@ -188,10 +188,7 @@ public class Gun implements IGuns {
 
 	private int amount = 0;
 
-	/** tickイベントからのアップデート */
 	public void tickUpdate(Side side) {
-		if (!isGun())
-			return;
 		if (side == Side.CLIENT) {
 			// magazine
 			LoadedMagazine now = NBTWrapper.getGunLoadedMagazines(gunTag.get());
@@ -202,6 +199,13 @@ public class Gun implements IGuns {
 			}
 			amount = now.getLoadedNum();
 		} else {
+			// リロードタイマー
+			if (reload > 0) {
+				reload--;
+			} else if (reload == 0) {
+				reload = -1;
+
+			}
 			NBTWrapper.setGunShootDelay(gunTag.get(), shootDelay);
 			NBTWrapper.setGunLoadedMagazines(gunTag.get(), magazine);
 		}
@@ -363,6 +367,8 @@ public class Gun implements IGuns {
 	 * リロード まだリロード処理が残ればtrue サーバーサイド
 	 */
 	public void reload(EntityPlayer player) {
+		reload = ;
+
 		if (!isGun())
 			return;
 		System.out.println("reloadReq ");
@@ -598,7 +604,8 @@ public class Gun implements IGuns {
 
 	@Override
 	public boolean reload(Container container) {
-		// TODO 自動生成されたメソッド・スタブ
+
+
 		return false;
 	}
 
