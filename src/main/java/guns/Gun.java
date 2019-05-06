@@ -2,7 +2,6 @@ package guns;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -15,22 +14,15 @@ import gamedata.LoadedMagazine;
 import gamedata.LoadedMagazine.Magazine;
 import handler.HideEntityDataManager;
 import handler.PacketHandler;
-import handler.PlayerHandler;
 import handler.SoundHandler;
 import handler.client.RecoilHandler;
 import helper.NBTWrapper;
 import hideMod.PackData;
 import item.ItemMagazine;
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.InventoryEnderChest;
-import net.minecraft.item.ItemAir;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.relauncher.Side;
@@ -45,6 +37,10 @@ import types.items.MagazineData;
 public class Gun implements IGuns {
 
 	private static final Logger LOGGER = LogManager.getLogger();
+
+	/**ロード可能な弾薬のどれかをロードする*/
+	public static final String LOAD_ANY = "ANY";
+
 
 	public ShootPoints shootPoint = ShootPoints.DefaultShootPoint;
 	// ===============クライアント,サーバー共通部分==================
@@ -189,6 +185,8 @@ public class Gun implements IGuns {
 	private int amount = 0;
 
 	public void tickUpdate(Side side) {
+		if(!isGun())
+			return;
 		if (side == Side.CLIENT) {
 			// magazine
 			LoadedMagazine now = NBTWrapper.getGunLoadedMagazines(gunTag.get());
@@ -366,8 +364,7 @@ public class Gun implements IGuns {
 	/**
 	 * リロード まだリロード処理が残ればtrue サーバーサイド
 	 */
-	public void reload(EntityPlayer player) {
-		reload = ;
+	public void reload() {
 
 		if (!isGun())
 			return;
@@ -377,35 +374,11 @@ public class Gun implements IGuns {
 			return;
 		}
 
-		String name = getUseMagazine();
-		int c = 0;
-		ItemStack maxitem = null;
-		for (ItemStack item : player.inventory.mainInventory) {
-			if (ItemMagazine.isMagazine(item, name)) {
-				int bulletNum = NBTWrapper.getMagazineBulletNum(item);
-				System.out.println("find mag " + item + " " + bulletNum);
-				if (bulletNum > c) {
-					maxitem = item;
-					c = bulletNum;
-					if (bulletNum >= PackData.getBulletData(name).MAGAZINE_SIZE)
-						break;
-				}
-			}
-		}
-		if (maxitem != null) {
-			Magazine mag = magazine.new Magazine(name, NBTWrapper.getMagazineBulletNum(maxitem));
-			magazine.addMagazinetoLast(mag);
-			maxitem.setCount(maxitem.getCount() - 1);
-			System.out.println("add  " + mag);
-
-			// 全リロードの場合ループ
-			if (modifyData.RELOAD_ALL)
-				reload(player);
 
 			System.out.println("SAVE");
 			NBTWrapper.setGunLoadedMagazines(gunTag.get(), magazine);
 		}
-	}
+
 
 	/** リロードの必要があるかかチェック */
 	public boolean needReload() {
@@ -604,9 +577,48 @@ public class Gun implements IGuns {
 
 	@Override
 	public boolean reload(Container container) {
+		ItemStack maxitem = getMagazine(container);
+		if (maxitem != null) {
+			Magazine mag = magazine.new Magazine(getUseMagazine(), NBTWrapper.getMagazineBulletNum(maxitem));
+			magazine.addMagazinetoLast(mag);
+			maxitem.setCount(maxitem.getCount() - 1);
+			System.out.println("add  " + mag);
 
+			// 全リロードの場合ループ
+			if (modifyData.RELOAD_ALL)
+				return reload(container);
+
+			System.out.println("SAVE");
+			NBTWrapper.setGunLoadedMagazines(gunTag.get(), magazine);
+
+		}
+		reload = modifyData.RELOAD_TICK;
 
 		return false;
+	}
+
+	/**コンテナから利用するアイテムスタックを取得*/
+	private ItemStack getMagazine(Container container) {
+		//リロード可能かの確認
+		if (magazine.getList().size() >= modifyData.LOAD_NUM) {
+			return null;
+		}
+		String name = getUseMagazine();
+		int c = 0;
+		ItemStack maxitem = null;
+		for (ItemStack item : container.inventoryItemStacks) {
+			if (ItemMagazine.isMagazine(item,name)) {
+				int bulletNum = NBTWrapper.getMagazineBulletNum(item);
+				System.out.println("find mag " + item + " " + bulletNum);
+				if (bulletNum > c) {
+					maxitem = item;
+					c = bulletNum;
+					if (bulletNum >= PackData.getBulletData(name).MAGAZINE_SIZE)
+						break;
+				}
+			}
+		}
+		return maxitem;
 	}
 
 	@Override

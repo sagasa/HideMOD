@@ -1,52 +1,27 @@
 package handler;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.function.Supplier;
 
-import entity.EntityDrivable;
-import network.PacketAcceleration;
-import network.PacketRotate;
-import types.base.GunFireMode;
-import types.items.GunData;
-
-import org.lwjgl.input.Keyboard;
-
 import client.HideViewHandler;
+import entity.EntityDrivable;
 import gamedata.HidePlayerData;
-import gamedata.HidePlayerData.ClientPlayerData;
 import gamedata.HidePlayerData.CommonPlayerData;
 import gamedata.HidePlayerData.ServerPlayerData;
 import guns.Gun;
 import guns.ItemGun;
-import handler.client.InputHandler.InputBind;
-import handler.client.RecoilHandler;
 import helper.NBTWrapper;
-import net.minecraftforge.client.event.MouseEvent;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.play.server.SPacketEntityEquipment;
-import net.minecraft.network.play.server.SPacketHeldItemChange;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import network.PacketInput;
 
 /***/
 public class PlayerHandler {
@@ -212,7 +187,7 @@ public class PlayerHandler {
 		if (0 <= data.reloadState) {
 			if (data.reloadState == 0) {
 				for (Gun gun : guns) {
-					gun.reload(player);
+					gun.reload(player.inventoryContainer);
 				}
 				data.reload = true;
 			}

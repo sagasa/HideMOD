@@ -1,7 +1,6 @@
 package types.items;
 
 import types.Info;
-import types.base.DataBase;
 import types.effect.Recoil;
 import types.effect.Sound;
 
@@ -46,9 +45,11 @@ public class GunData extends ItemData {
 	@Info(Cate = 0)
 	public boolean RELOAD_ALL = false;
 	/** リロード時にマガジンの抜き取りを行うかどうか */
-	public boolean UNLOAD_IN_RELOADING = true;// TODO
+	@Info(Cate = 0)
+	public boolean UNLOAD_IN_RELOADING = true;
 	/** マガジンをアンロードできるか */
-	public boolean USE_UNLOAD = true;// TODO
+	@Info(Cate = 0)
+	public boolean USE_UNLOAD = true;
 	/** 分間発射数 : int型 **/
 	@Info(Cate = 0, Min = 0, Scale = "10")
 	public int RPM = 600;
