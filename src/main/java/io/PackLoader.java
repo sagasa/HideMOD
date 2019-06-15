@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,12 +19,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.gson.Gson;
+
 import helper.ArrayEditor;
 import helper.ObjLoader;
 import hideMod.HideMod;
 import hideMod.PackData;
 import hideMod.model.ModelPart;
-import jline.internal.Log;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import types.Info;
 import types.PackInfo;
@@ -263,12 +262,12 @@ public class PackLoader {
 				// 空リストの判別部分
 				if (path.field.getAnnotation(Info.class) != null && path.field.getAnnotation(Info.class).noEmpty()) {
 					if (path.field.getType().isArray() && ((String[]) path.field.get(data)).length == 0) {
-						Log.error("emply list is not allow at" + data.getClass().getSimpleName() + "."
+						LOGGER.error("emply list is not allow at" + data.getClass().getSimpleName() + "."
 								+ path.field.getName());
 						return false;
 					} else if (List.class.isAssignableFrom(path.field.getType())
 							&& ((List) path.field.get(data)).size() == 0) {
-						Log.error("emply list is not allow at" + data.getClass().getSimpleName() + "."
+						LOGGER.error("emply list is not allow at" + data.getClass().getSimpleName() + "."
 								+ path.field.getName());
 						return false;
 					}
