@@ -2,17 +2,24 @@ package handler.client;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
-
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import entity.EntityDrivable;
 import gamedata.HidePlayerData;
 import gamedata.HidePlayerData.ClientPlayerData;
+import guns.Gun;
 import handler.PacketHandler;
 import handler.PlayerHandler;
 import handler.PlayerHandler.EquipMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraftforge.fml.common.MinecraftDummyContainer;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import network.PacketAcceleration;
+import network.PacketInput;
+import network.PacketRotate;
 import types.base.GunFireMode;
 
 public class InputHandler {

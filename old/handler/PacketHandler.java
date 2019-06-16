@@ -10,10 +10,16 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializer;
 import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec2f;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.relauncher.Side;
+import network.PacketHit;
+import network.PacketInput;
+import network.PacketPlaySound;
+import network.PacketShoot;
+import network.PacketSync;
 
 public class PacketHandler {
 
@@ -29,13 +35,13 @@ public class PacketHandler {
 		 * 第三引数：MessageクラスのMOD内での登録ID。256個登録できる
 		 * 第四引数：送り先指定。クライアントかサーバーか、Side.CLIENT Side.SERVER
 		 */
-//		INSTANCE.registerMessage(PacketInput.class, PacketInput.class, 0, Side.SERVER);
-//		INSTANCE.registerMessage(PacketShoot.class, PacketShoot.class, 1, Side.SERVER);
-//		INSTANCE.registerMessage(PacketHit.class, PacketHit.class, 2, Side.CLIENT);
-//		INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 3, Side.CLIENT);
-//		INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 4, Side.SERVER);
+		INSTANCE.registerMessage(PacketInput.class, PacketInput.class, 0, Side.SERVER);
+		INSTANCE.registerMessage(PacketShoot.class, PacketShoot.class, 1, Side.SERVER);
+		INSTANCE.registerMessage(PacketHit.class, PacketHit.class, 2, Side.CLIENT);
+		INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 3, Side.CLIENT);
+		INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 4, Side.SERVER);
 
-//		INSTANCE.registerMessage(PacketSync.class, PacketSync.class, 5, Side.SERVER);
+		INSTANCE.registerMessage(PacketSync.class, PacketSync.class, 5, Side.SERVER);
 	}
 
 	/***/

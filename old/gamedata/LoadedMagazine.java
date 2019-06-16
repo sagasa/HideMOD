@@ -5,7 +5,7 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import pack.PackData;
+import hideMod.PackData;
 import types.items.MagazineData;
 
 /** 装填済みのマガジン管理用 変更通知機能付き */

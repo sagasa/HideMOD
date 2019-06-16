@@ -5,9 +5,10 @@ import java.util.Collections;
 import java.util.List;
 
 import entity.EntityBullet;
-import model.ModelPart;
-import model.ModelPart.HidePolygon;
+import hideMod.model.CollisionPart;
+import hideMod.model.ModelPart.HidePolygon;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.EntityArrow;
@@ -214,7 +215,7 @@ public class RayTracer {
 	}
 
 	/** コリジョンとベクトルが接触するか */
-	public Hit getHit(ModelPart collision, Vec3d lv0, Vec3d lvt) {
+	public Hit getHit(CollisionPart collision, Vec3d lv0, Vec3d lvt) {
 		List<Hit> hits = new ArrayList<>();
 		for (HidePolygon poly : collision.Polygon) {
 			hits.add(getHit(poly, lv0, lvt));

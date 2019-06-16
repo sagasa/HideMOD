@@ -4,9 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import items.ItemGun;
+import client.HideViewHandler;
+import entity.EntityDrivable;
+import gamedata.HidePlayerData;
+import gamedata.HidePlayerData.CommonPlayerData;
+import gamedata.HidePlayerData.ServerPlayerData;
+import guns.Gun;
+import guns.ItemGun;
+import helper.NBTWrapper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;

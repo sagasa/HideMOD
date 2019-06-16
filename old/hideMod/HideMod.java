@@ -1,14 +1,16 @@
-package hidemod;
+package hideMod;
+
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import handler.HideEventHandler;
-import handler.PacketHandler;
+import entity.EntityBullet;
+import gamedata.HideDamage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -17,10 +19,13 @@ import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import pack.PackLoader;
-import pack.ResourceLoader;
+import handler.HideEventHandler;
+import handler.PacketHandler;
+import io.PackLoader;
+import io.ResourceLoader;
 
 @Mod(modid = HideMod.MOD_ID, name = HideMod.MOD_NAME, version = HideMod.MOD_VERSION, dependencies = HideMod.MOD_DEPENDENCIES, acceptedMinecraftVersions = HideMod.MOD_ACCEPTED_MC_VERSIONS, useMetadata = true)
 
@@ -55,10 +60,10 @@ public class HideMod {
 		PacketHandler.init();
 
 		// ダメージの初期設定
-	//	HideDamage.init();
+		HideDamage.init();
 		// エンティティ登録
-	//	EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,
-	//			"entity_bullet", 1, MOD_ID, 512, 1, false);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,
+				"entity_bullet", 1, MOD_ID, 512, 1, false);
 
 		if (FMLCommonHandler.instance().getSide().isClient()) {
 			// リソースローダーを追加

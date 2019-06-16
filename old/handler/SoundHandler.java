@@ -2,6 +2,7 @@ package handler;
 
 import java.util.ArrayList;
 
+import hideMod.sound.HideSound;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,6 +11,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import network.PacketPlaySound;
 import types.effect.Sound;
 
 /** サーバーからクライアントへサウンドを流すハンドラ */
