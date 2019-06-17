@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import guns.GunController;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -45,7 +46,7 @@ public class HidePlayerData {
 
 	public static class CommonPlayerData {
 		/** MainとOffからID一致を返す */
-		public Gun getGun(long id) {
+		public GunController getGun(long id) {
 			if (gunMain.idEquals(id)) {
 				return gunMain;
 			} else if (gunOff.idEquals(id)) {
@@ -54,8 +55,8 @@ public class HidePlayerData {
 			return null;
 		}
 
-		public Gun gunMain = new Gun();
-		public Gun gunOff = new Gun();
+		public GunController gunMain = new GunController();
+		public GunController gunOff = new GunController();
 	}
 
 	public static class ServerPlayerData extends CommonPlayerData {

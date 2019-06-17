@@ -4,6 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+import entity.EntityDrivable;
+import gamedata.HidePlayerData;
+import gamedata.HidePlayerData.CommonPlayerData;
+import gamedata.HidePlayerData.ServerPlayerData;
+import guns.GunController;
+import handler.client.HideViewHandler;
+import helper.HideNBT;
 import items.ItemGun;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
@@ -52,20 +59,20 @@ public class PlayerHandler {
 			ItemStack off = player.getHeldItemOffhand();
 
 			if ((data.gunMain.isGun() ^ ItemGun.isGun(main)) || (data.gunMain.isGun() && ItemGun.isGun(main)
-					&& !data.gunMain.idEquals(NBTWrapper.getHideID(main)))) {
+					&& !data.gunMain.idEquals(HideNBT.getHideID(HideNBT.getGunTag(main))))) {
 				// クライアントサイドではインスタンスに連続性がないので仕方なくプレイヤーからのサプライヤーを用意
 				Supplier<NBTTagCompound> gunTag = side == Side.CLIENT
-						? () -> NBTWrapper.getHideTag(player.getHeldItemMainhand())
-						: () -> NBTWrapper.getHideTag(main);
+						? () -> HideNBT.getGunTag(player.getHeldItemMainhand())
+						: () -> HideNBT.getGunTag(main);
 				data.gunMain.setGun(ItemGun.getGunData(main), gunTag);
 				data.gunMain.setShooter(player);
 			}
 			if ((data.gunOff.isGun() ^ ItemGun.isGun(off)) || (data.gunOff.isGun() && ItemGun.isGun(off)
-					&& !data.gunOff.idEquals(NBTWrapper.getHideID(off)))) {
+					&& !data.gunOff.idEquals(HideNBT.getHideID(HideNBT.getGunTag(off))))) {
 				// クライアントサイドではインスタンスに連続性がないので仕方なくプレイヤーからのサプライヤーを用意
 				Supplier<NBTTagCompound> gunTag = side == Side.CLIENT
-						? () -> NBTWrapper.getHideTag(player.getHeldItemOffhand())
-						: () -> NBTWrapper.getHideTag(off);
+						? () -> HideNBT.getGunTag(player.getHeldItemOffhand())
+						: () -> HideNBT.getGunTag(off);
 				data.gunOff.setGun(ItemGun.getGunData(off), gunTag);
 				data.gunOff.setShooter(player);
 			}
@@ -95,7 +102,7 @@ public class PlayerHandler {
 		}
 
 		/** プレイヤーから装備の状態を取得 */
-		public static EquipMode getEquipMode(Gun main, Gun off) {
+		public static EquipMode getEquipMode(GunController main, GunController off) {
 			// 状態検知
 			if (main.isGun() && off.isGun() && main.getGunData().USE_DUALWIELD && off.getGunData().USE_DUALWIELD
 					&& off.getGunData().USE_SECONDARY) {
@@ -134,7 +141,7 @@ public class PlayerHandler {
 	private static void ServerTick(EntityPlayerMP player) {
 		// if(player.getRidingEntity() instanceof )
 		ServerPlayerData data = HidePlayerData.getServerData(player);
-		List<Gun> guns = new ArrayList<>();
+		List<GunController> guns = new ArrayList<>();
 		// アイテムの場合同期用
 		if (isOnEntityDrivable(player)) {
 
@@ -147,14 +154,14 @@ public class PlayerHandler {
 			guns.add(data.gunOff);
 		if (data.changeAmmo) {
 			data.changeAmmo = false;
-			guns.forEach(gun -> NBTWrapper.setGunUseingBullet(gun.getGunTag(), gun.getNextUseMagazine()));
+			guns.forEach(gun -> HideNBT.setGunUseingBullet(gun.getGunTag(), gun.getNextUseMagazine()));
 			// player.connection.sendPacket(new SPacketEntityEquipment(player.getEntityId(),
 			// EntityEquipmentSlot.MAINHAND, player.getHeldItemMainhand()));
 		}
 
 		if (data.changeFireMode) {
 			data.changeFireMode = false;
-			guns.forEach(gun -> NBTWrapper.setGunFireMode(gun.getGunTag(), gun.getNextFireMode()));
+			guns.forEach(gun -> HideNBT.setGunFireMode(gun.getGunTag(), gun.getNextFireMode()));
 			// player.connection.sendPacket(new SPacketitem);
 		}
 		boolean flag = true;
@@ -166,7 +173,7 @@ public class PlayerHandler {
 				// マガジンの取り外し TODO
 			} else {
 				int time = 0;
-				for (Gun gun : guns) {
+				for (GunController gun : guns) {
 					time += gun.getGunData().RELOAD_TICK; // 音
 					SoundHandler.broadcastSound(player.world, player.posX, player.posY, player.posZ,
 							gun.getGunData().SOUND_RELOAD);
@@ -180,7 +187,7 @@ public class PlayerHandler {
 		}
 		if (0 <= data.reloadState) {
 			if (data.reloadState == 0) {
-				for (Gun gun : guns) {
+				for (GunController gun : guns) {
 					gun.reload(player.inventoryContainer);
 				}
 				data.reload = true;

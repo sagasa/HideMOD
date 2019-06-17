@@ -1,7 +1,5 @@
 package handler.client;
 
-import client.HideViewHandler;
-import handler.PlayerHandler;
 import helper.HideMath;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;

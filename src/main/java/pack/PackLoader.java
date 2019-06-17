@@ -1,4 +1,4 @@
-package io;
+package pack;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -20,6 +20,8 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.gson.Gson;
 
+import hidemod.HideMod;
+import model.ModelPart;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import types.Info;
 import types.PackInfo;

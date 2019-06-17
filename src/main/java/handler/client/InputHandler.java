@@ -6,13 +6,16 @@ import java.util.EnumMap;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import entity.EntityDrivable;
 import gamedata.HidePlayerData;
 import gamedata.HidePlayerData.ClientPlayerData;
+import guns.GunController;
 import handler.PacketHandler;
 import handler.PlayerHandler;
 import handler.PlayerHandler.EquipMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import network.PacketInput;
 import types.base.GunFireMode;
 
 public class InputHandler {
@@ -103,8 +106,8 @@ public class InputHandler {
 			return;
 		boolean trigger = player.isDead ? false : InputBind.GUN_FIRE.isButtonDown();
 		ClientPlayerData data = HidePlayerData.getClientData(player);
-		Gun gunMain = data.gunMain;
-		Gun gunOff = data.gunOff;
+		GunController gunMain = data.gunMain;
+		GunController gunOff = data.gunOff;
 		// Pos代入
 		if (gunMain != null) {
 			gunMain.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ).setRotate(player.rotationYaw,
