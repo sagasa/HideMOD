@@ -20,6 +20,8 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.gson.Gson;
 
+import helper.ArrayEditor;
+import helper.ObjLoader;
 import hidemod.HideMod;
 import model.ModelPart;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;

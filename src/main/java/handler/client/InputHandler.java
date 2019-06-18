@@ -68,7 +68,7 @@ public class InputHandler {
 			}
 
 			if (acceleration_changed_detector != acceleration) {
-				PacketHandler.INSTANCE.sendToServer(new PacketAcceleration(acceleration));
+			//TODO	PacketHandler.INSTANCE.sendToServer(new PacketAcceleration(acceleration));
 				if (player.getRidingEntity() != null && player.getRidingEntity() instanceof EntityDrivable) {
 					EntityDrivable drivable = (EntityDrivable) player.getRidingEntity();
 					drivable.setAcceleration(acceleration);
@@ -87,7 +87,7 @@ public class InputHandler {
 			}
 
 			if (rotate_changed_detector != rotate) {
-				PacketHandler.INSTANCE.sendToServer(new PacketRotate(rotate));
+			//TODO	PacketHandler.INSTANCE.sendToServer(new PacketRotate(rotate));
 				if (player.getRidingEntity() != null && player.getRidingEntity() instanceof EntityDrivable) {
 					EntityDrivable drivable = (EntityDrivable) player.getRidingEntity();
 					drivable.setRotate(rotate);

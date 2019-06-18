@@ -1,5 +1,8 @@
 package handler;
 
+import handler.client.HideScope;
+import handler.client.InputHandler;
+import handler.client.RenderHandler;
 import items.ItemGun;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelRegistryEvent;

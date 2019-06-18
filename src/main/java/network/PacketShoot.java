@@ -1,6 +1,6 @@
 package network;
 
-import guns.Gun;
+import guns.GunController;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -83,7 +83,7 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 					lag = lag < 0 ? 0 : lag;
 					//	System.out.println("lag = " + lag);
 					// System.out.println("射撃パケット受信" + (m.offset + (float) lag));
-					Gun.shoot(player, m.uid, m.offset + (float) lag, m.isADS, m.x, m.y, m.z, m.yaw, m.pitch);
+					GunController.shoot(player, m.uid, m.offset + (float) lag, m.isADS, m.x, m.y, m.z, m.yaw, m.pitch);
 				}
 			});
 		}

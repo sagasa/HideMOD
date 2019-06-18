@@ -50,7 +50,7 @@ public class ItemMagazine extends Item {
 
 	/** アイテムスタックを作成 */
 	public static ItemStack makeMagazine(String name) {
-		if (PackData.MAGAZINE_DATA_MAP.containsKey(name)) {
+		if (PackData.getBulletData(name) != null) {
 			ItemStack stack = new ItemStack(INSTANCE_MAP.get(name));
 			stack.setTagCompound(new NBTTagCompound());
 			return setBulletNBT(stack);
@@ -106,7 +106,7 @@ public class ItemMagazine extends Item {
 	public static boolean isMagazine(ItemStack item, String str, int size) {
 		if (item != null && item.getItem() instanceof ItemMagazine
 				&& ItemMagazine.getMagazineData(item).ITEM_SHORTNAME.equals(str)
-				&& HideNBT.getBulletNum(item) == size) {
+				&& HideNBT.getMagazineBulletNum(item) == size) {
 			return true;
 		}
 		return false;
@@ -114,7 +114,7 @@ public class ItemMagazine extends Item {
 
 	/** 残弾数取得 */
 	public static int getBulletNum(ItemStack stack) {
-		return HideNBT.getBulletNum(stack);
+		return HideNBT.getMagazineBulletNum(stack);
 	}
 
 	/** 残弾数書き込み */
@@ -139,13 +139,13 @@ public class ItemMagazine extends Item {
 
 	/** 表示名取得 */
 	public static String getMagazineName(String name) {
-		MagazineData data = PackData.MAGAZINE_DATA_MAP.get(name);
+		MagazineData data = PackData.getBulletData(name);
 		return data == null ? "None" : data.ITEM_DISPLAYNAME;
 	}
 
 	/** BulletData取得 */
 	public static MagazineData getMagazineData(String name) {
-		return PackData.MAGAZINE_DATA_MAP.get(name);
+		return PackData.getBulletData(name);
 	}
 
 	/** BulletData取得 */
@@ -158,6 +158,6 @@ public class ItemMagazine extends Item {
 
 	/** その名前の弾は存在するか */
 	public static boolean isMagazineExist(String name) {
-		return PackData.MAGAZINE_DATA_MAP.containsKey(name);
+		return PackData.getBulletData(name) != null;
 	}
 }

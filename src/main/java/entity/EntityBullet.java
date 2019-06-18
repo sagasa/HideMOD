@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import handler.PacketHandler;
+import handler.SoundHandler;
 import helper.HideDamage;
 import helper.HideDamage.HideDamageCase;
 import helper.HideMath;
@@ -16,7 +17,6 @@ import net.minecraft.block.BlockBush;
 import net.minecraft.block.BlockReed;
 import net.minecraft.block.BlockSign;
 import net.minecraft.block.BlockVine;
-import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;

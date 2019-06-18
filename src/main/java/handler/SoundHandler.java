@@ -3,9 +3,13 @@ package handler;
 import java.util.ArrayList;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.ITickableSound;
+import net.minecraft.client.audio.PositionedSound;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -77,11 +81,32 @@ public class SoundHandler {
 			//同期
 			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
 				public void run() {
-					Minecraft.getMinecraft().getSoundHandler().playDelayedSound(
-							new HideSound(soundName, finalVol, pitch, (float) x, (float) y, (float) z), finalDelay);
+					//					Minecraft.getMinecraft().getSoundHandler().playDelayedSound(
+					//							new HideSound(soundName, finalVol, pitch, (float) x, (float) y, (float) z), finalDelay);
 				}
 			});
 
 		}
+	}
+
+	public static class HideEntitySound extends PositionedSound implements ITickableSound {
+		/**トラッキング対象 消えたら再生を終了*/
+		protected Entity entity;
+
+
+		protected HideEntitySound(ResourceLocation soundId, SoundCategory categoryIn) {
+			super(soundId, categoryIn);
+		}
+
+		@Override
+		public void update() {
+Vec3d a;
+		}
+
+		@Override
+		public boolean isDonePlaying() {
+			return false;
+		}
+
 	}
 }
