@@ -79,7 +79,7 @@ public class HideNBT {
 	public static void setGunAttachments(NBTTagCompound gunTag, List<String> list) {
 		NBTTagList tag = new NBTTagList();
 		list.forEach(str->tag.appendTag(new NBTTagString(str)));
-		gunTag.setTag(GUN_USEBULLET, tag);
+		gunTag.setTag(GUN_ATTACHMENTS, tag);
 	}
 
 	/** マガジンの内容を取得 */

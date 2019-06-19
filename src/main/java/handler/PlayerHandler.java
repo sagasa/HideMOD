@@ -13,7 +13,6 @@ import handler.client.HideViewHandler;
 import helper.HideNBT;
 import items.ItemGun;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -152,6 +151,7 @@ public class PlayerHandler {
 			guns.add(data.gunMain);
 		if (em.hasOff())
 			guns.add(data.gunOff);
+
 		if (data.changeAmmo) {
 			data.changeAmmo = false;
 			guns.forEach(gun -> HideNBT.setGunUseingBullet(gun.getGunTag(), gun.getNextUseMagazine()));
@@ -164,6 +164,7 @@ public class PlayerHandler {
 			guns.forEach(gun -> HideNBT.setGunFireMode(gun.getGunTag(), gun.getNextFireMode()));
 			// player.connection.sendPacket(new SPacketitem);
 		}
+
 		boolean flag = true;
 		if (data.reload) {
 			System.out.println("inv " + player.inventoryContainer.getInventory());
@@ -178,7 +179,7 @@ public class PlayerHandler {
 					SoundHandler.broadcastSound(player.world, player.posX, player.posY, player.posZ,
 							gun.getGunData().SOUND_RELOAD);
 					// マガジンを取り外し
-					gun.reloadReq(player, player.inventoryContainer, 0);
+					gun.preReload(player, player.inventoryContainer, 0);
 				}
 				data.reloadAll = false;
 				data.reloadState = time;

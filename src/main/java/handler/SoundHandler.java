@@ -88,24 +88,49 @@ public class SoundHandler {
 
 		}
 	}
+	//TODO サウンドカテゴリ追加したい…にゃあ
 
 	public static class HideEntitySound extends PositionedSound implements ITickableSound {
 		/**トラッキング対象 消えたら再生を終了*/
-		protected Entity entity;
+		final protected Entity entity;
 
+		final protected Vec3d moveVec;
 
-		protected HideEntitySound(ResourceLocation soundId, SoundCategory categoryIn) {
-			super(soundId, categoryIn);
+		protected boolean donePlaying = false;
+
+		/** エンティティに追従する音
+		 * @param e 追従先*/
+		protected HideEntitySound(Sound sound, Entity e, SoundCategory categoryIn) {
+			this(sound, e, Vec3d.ZERO, categoryIn);
+		}
+
+		/** エンティティに追従する音
+		 * @param e 追従先
+		 * @param move エンティティと音源の位置関係*/
+		protected HideEntitySound(Sound sound, Entity e, Vec3d move, SoundCategory categoryIn) {
+			super(new ResourceLocation(sound.NAME), categoryIn);
+			entity = e;
+			moveVec = move;
 		}
 
 		@Override
 		public void update() {
-Vec3d a;
+			if (entity.isDead) {
+				donePlaying = true;
+				return;
+			}
+			//位置更新
+			Vec3d location = entity.getPositionVector();
+			if (moveVec != Vec3d.ZERO)
+				location = location.add(moveVec.rotatePitch(entity.rotationPitch).rotateYaw(entity.rotationYaw));
+			xPosF = (float) location.x;
+			yPosF = (float) location.y;
+			zPosF = (float) location.z;
 		}
 
 		@Override
 		public boolean isDonePlaying() {
-			return false;
+			return donePlaying;
 		}
 
 	}

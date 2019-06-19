@@ -72,11 +72,11 @@ public class PackLoader {
 						return;
 					}
 					LOGGER.info("Start check and add pack[" + cash.Pack.PACK_NAME + "]");
-					String packDomain = cash.Pack.PACK_ROOTNAME;
+					String packDomain = toRegisterName(cash.Pack.PACK_ROOTNAME);
 					// 銃登録
-					cash.Guns.forEach(data -> checkAndAddToMap(PackData.GUN_DATA_MAP, data, packDomain));
+					checkAndAddToMap(PackData.GUN_DATA_MAP, cash.Guns, packDomain);
 					// 弾登録
-					cash.Magazines.forEach(data -> checkAndAddToMap(PackData.MAGAZINE_DATA_MAP, data, packDomain));
+					checkAndAddToMap(PackData.MAGAZINE_DATA_MAP, cash.Magazines, packDomain);
 					// Icon登録
 					checkAndAddToMap(cash.Icons, PackData.ICON_MAP, packDomain);
 					// Texture登録
@@ -223,21 +223,25 @@ public class PackLoader {
 	}
 
 	/** Itemチェックモジュール */
-	private static <T extends ItemData> void checkAndAddToMap(Map<String, T> map, T data, String packDomain) {
-		// ショートネームを登録名に書き換え
-		setDomain(packDomain, data);
-		String name = data.ITEM_SHORTNAME;
-		// 重複しないかどうか
-		if (map.containsKey(name)) {
-			LOGGER.error("Duplicate name : " + name + ",Type : " + data.getClass().getSimpleName());
-			return;
+	private static <T extends ItemData> void checkAndAddToMap(Map<String, T> to, List<T> from,
+			String packDomain) {
+		for (T data : from) {
+			// ショートネームを登録名に書き換え アイテムとリソースで別処理
+			setDomain(packDomain, data);
+			String name = data.ITEM_SHORTNAME;
+
+			// 重複しないかどうか
+			if (to.containsKey(name)) {
+				LOGGER.error("Duplicate name : " + name + ",Type : " + data.getClass().getSimpleName());
+				return;
+			}
+			// データが破損していないか
+			if (!checkData(data)) {
+				LOGGER.error("GunData is damaged :" + name + ",Type : " + data.getClass().getSimpleName());
+				return;
+			}
+			to.put(name, data);
 		}
-		// データが破損していないか
-		if (!checkData(data)) {
-			LOGGER.error("GunData is damaged :" + name + ",Type : " + data.getClass().getSimpleName());
-			return;
-		}
-		map.put(name, data);
 	}
 
 	/** Resourceチェックモジュール */
@@ -308,14 +312,24 @@ public class PackLoader {
 
 	/** ドメインを追加 */
 	private static String setDomain(String name, String domain) {
-		return domain + "_" + name;
+		return domain + "_" + toRegisterName(name);
 	}
 
 	/** ドメインを追加(リソース用) */
 	private static String setResourceDomain(String name, String domain) {
+		name = domain + "_" + toRegisterName(name);
 		if (!name.contains(":")) {
 			name = HideMod.MOD_ID + ":" + name;
 		}
-		return setDomain(name, domain);
+		return name;
+	}
+
+	/**利用可能な登録名に変更*/
+	private static String toRegisterName(String string) {
+		String res = string.toLowerCase().replaceAll("[\\. -]", "_").replaceAll("[^a-z0-9_]", "");
+		if (!string.equals(res))
+			LOGGER.warn("register name [" + string + "] is invalid change to [" + res + "]");
+		;
+		return res;
 	}
 }

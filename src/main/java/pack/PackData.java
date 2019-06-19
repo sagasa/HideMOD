@@ -86,4 +86,8 @@ public class PackData {
 	//	});
 	}
 
+	public static String debug() {
+		return MAGAZINE_DATA_MAP.entrySet().toString();
+	}
+
 }
