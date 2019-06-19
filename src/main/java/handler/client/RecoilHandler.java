@@ -3,6 +3,7 @@ package handler.client;
 import helper.HideMath;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import types.effect.Recoil;
@@ -12,17 +13,106 @@ import types.items.GunData;
 public class RecoilHandler {
 	private static int recoilPower = 0;
 
-	private static float yawReturnTo = 0;
-	private static float pitchReturnTo = 0;
-	private static int yawReturnTick = -1;
-	private static int pitchReturnTick = -1;
+	private static RecoilCash main;
+	private static RecoilCash off;
 
-	private static float yawShakeTo = 0;
-	private static float pitchShakeTo = 0;
-	private static float yawShakeTick = -1;
-	private static float pitchShakeTick = -1;
+	private static class RecoilCash {
+		private float yawReturnTo = 0;
+		private float pitchReturnTo = 0;
+		private int yawReturnTick = -1;
+		private int pitchReturnTick = -1;
 
-	private static GunData nowGun = null;
+		private float yawShakeTo = 0;
+		private float pitchShakeTo = 0;
+		private float yawShakeTick = -1;
+		private float pitchShakeTick = -1;
+
+		private GunData nowGun = null;
+
+		private void clearRecoil() {
+			yawShakeTo = pitchShakeTo = 0;
+			nowGun = null;
+		}
+
+		/**
+		 * 反動を与える
+		 *
+		 * @param shooter
+		 */
+		private void addRecoil(GunData data) {
+			Recoil recoil = getRecoil(data);
+			float yawrecoil = getYawRecoil(recoil);
+			float pitchrecoil = getPitchRecoil(recoil);
+
+			// リコイル戻し
+			yawReturnTo = getYawReturn(recoil, yawrecoil);
+			pitchReturnTo = getPitchReturn(recoil, pitchrecoil);
+
+			// リコイル
+			yawShakeTo += yawrecoil;
+			yawShakeTick = recoil.YAW_RECOIL_TICK;
+
+			pitchShakeTo += pitchrecoil;
+			pitchShakeTick = recoil.PITCH_RECOIL_TICK;
+			// リコイルパワー加算
+			recoilPower = recoilPower + getRecoil(data).POWER_SHOOT > 100 ? 100
+					: recoilPower + getRecoil(data).POWER_SHOOT;
+		}
+
+		/** Tick毎の変化 */
+		private void updateRecoil() {
+			// 撃ってなければ戻る
+			if (nowGun == null) {
+				return;
+			}
+			Recoil recoil = getRecoil(nowGun);
+			if (yawShakeTick >= 0) {
+				float coe = yawShakeTo / (yawShakeTick + 1);
+				System.out.println("yaw shake :" + yawShakeTo + " - " + coe + " time : " + yawShakeTick);
+				yawShakeTo -= coe;
+				Minecraft.getMinecraft().player.rotationYaw += coe;
+				yawShakeTick -= 1;
+				if (yawShakeTick == -1) {
+					yawReturnTick = recoil.YAW_RETURN_TICK;
+				}
+			}
+			if (pitchShakeTick >= 0) {
+				float coe = pitchShakeTo / (pitchShakeTick + 1);
+				pitchShakeTo -= coe;
+				Minecraft.getMinecraft().player.rotationPitch -= coe;
+				pitchShakeTick -= 1;
+				if (pitchShakeTick == -1) {
+					pitchReturnTick = recoil.PITCH_RETURN_TICK;
+				}
+			}
+
+			if (yawReturnTick >= 0) {
+				float coe = yawReturnTo / (yawReturnTick + 1);
+				yawReturnTo -= coe;
+				Minecraft.getMinecraft().player.rotationYaw -= coe;
+				yawReturnTick -= 1;
+			}
+			if (pitchReturnTick >= 0) {
+				float coe = pitchReturnTo / (pitchReturnTick + 1);
+				pitchReturnTo -= coe;
+				Minecraft.getMinecraft().player.rotationPitch += coe;
+				pitchReturnTick -= 1;
+			}
+			if (recoilPower > 0) {
+				recoilPower = recoilPower - recoil.POWER_TICK < 0 ? 0 : recoilPower - recoil.POWER_TICK;
+			}
+			// 適応が終わったら止める
+			if (pitchReturnTick == -1 && yawReturnTick == -1) {
+				nowGun = null;
+			}
+		}
+	}
+
+	/**tick update TODO レンダー側のTickでやりたい*/
+	public static void updateRecoil() {
+		main.updateRecoil();
+		off.updateRecoil();
+	}
 
 	/** 現在のリコイルパワー(0-100)を取得 */
 	public static int getRecoilPower() {
@@ -30,7 +120,6 @@ public class RecoilHandler {
 	}
 
 	/** プレイヤーの状態から使用するリコイルを取得 */
-
 	private static Recoil getRecoil(GunData data) {
 		EntityPlayer player = Minecraft.getMinecraft().player;
 		return getRecoil(data, player.isSneaking(), HideViewHandler.isADS);
@@ -68,82 +157,6 @@ public class RecoilHandler {
 		}
 	}
 
-	/**
-	 * 反動を与える
-	 *
-	 * @param shooter
-	 */
-	public static void addRecoil(GunData data) {
-		// 銃が変わったならリコイルの適応を解除
-		if (!data.equals(nowGun)) {
-			yawShakeTo = pitchShakeTo = 0;
-			nowGun = data;
-		}
-		Recoil recoil = getRecoil(data);
-		float yawrecoil = getYawRecoil(recoil);
-		float pitchrecoil = getPitchRecoil(recoil);
-
-		// リコイル戻し
-		yawReturnTo = getYawReturn(recoil, yawrecoil);
-		pitchReturnTo = getPitchReturn(recoil, pitchrecoil);
-
-		// リコイル
-		yawShakeTo += yawrecoil;
-		yawShakeTick = recoil.YAW_RECOIL_TICK;
-
-		pitchShakeTo += pitchrecoil;
-		pitchShakeTick = recoil.PITCH_RECOIL_TICK;
-		// リコイルパワー加算
-		recoilPower = recoilPower + getRecoil(data).POWER_SHOOT > 100 ? 100 : recoilPower + getRecoil(data).POWER_SHOOT;
-	}
-
-	/** Tick毎の変化 */
-	static public void updateRecoil() {
-		// 撃ってなければ戻る
-		if (nowGun == null) {
-			return;
-		}
-		Recoil recoil = getRecoil(nowGun);
-		if (yawShakeTick >= 0) {
-			float coe = yawShakeTo / (yawShakeTick + 1);
-			yawShakeTo -= coe;
-			Minecraft.getMinecraft().player.rotationYaw += coe;
-			yawShakeTick -= 1;
-			if (yawShakeTick == -1) {
-				yawReturnTick = recoil.YAW_RETURN_TICK;
-			}
-		}
-		if (pitchShakeTick >= 0) {
-			float coe = pitchShakeTo / (pitchShakeTick + 1);
-			pitchShakeTo -= coe;
-			Minecraft.getMinecraft().player.rotationPitch -= coe;
-			pitchShakeTick -= 1;
-			if (pitchShakeTick == -1) {
-				pitchReturnTick = recoil.PITCH_RETURN_TICK;
-			}
-		}
-
-		if (yawReturnTick >= 0) {
-			float coe = yawReturnTo / (yawReturnTick + 1);
-			yawReturnTo -= coe;
-			Minecraft.getMinecraft().player.rotationYaw -= coe;
-			yawReturnTick -= 1;
-		}
-		if (pitchReturnTick >= 0) {
-			float coe = pitchReturnTo / (pitchReturnTick + 1);
-			pitchReturnTo -= coe;
-			Minecraft.getMinecraft().player.rotationPitch += coe;
-			pitchReturnTick -= 1;
-		}
-		if (recoilPower > 0) {
-			recoilPower = recoilPower - recoil.POWER_TICK < 0 ? 0 : recoilPower - recoil.POWER_TICK;
-		}
-		// 適応が終わったら止める
-		if (pitchReturnTick == -1 && yawReturnTick == -1) {
-			nowGun = null;
-		}
-	}
-
 	/** yaw軸の戻る先を取得 */
 	static private float getYawReturn(Recoil data, float base) {
 		float shake = data.MIN_YAW_RETURN + ((data.MAX_YAW_RETURN - data.MIN_YAW_RETURN) / 100 * recoilPower);
@@ -168,5 +181,9 @@ public class RecoilHandler {
 		float base = data.MIN_PITCH_BASE + (data.MAX_PITCH_BASE - data.MIN_PITCH_BASE / 100 * recoilPower);
 		float spread = data.MIN_PITCH_SPREAD + ((data.MAX_PITCH_SPREAD - data.MIN_PITCH_SPREAD) / 100 * recoilPower);
 		return (float) HideMath.normal(base, spread);
+	}
+
+	public static void addRecoil(GunData modifyData, EnumHand hand) {
+
 	}
 }

@@ -24,6 +24,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import network.PacketShoot;
@@ -42,6 +43,7 @@ public class GunController {
 
 	public ShootPoints shootPoint = ShootPoints.DefaultShootPoint;
 	public IGuns gun;
+	public EnumHand hand;
 
 	// ===============クライアント,サーバー共通部分==================
 	private GunData modifyData = null;
@@ -49,8 +51,8 @@ public class GunController {
 	/** リロードの状況保存0でリロード完了処理 */
 	private int reload = -1;
 
-	public GunController() {
-
+	public GunController(EnumHand hand) {
+		this.hand = hand;
 	}
 
 	private boolean onClient = false;
@@ -282,7 +284,7 @@ public class GunController {
 					LOGGER.error("cant shoot from other entity at client");
 					return;
 				}
-				RecoilHandler.addRecoil(modifyData);
+				RecoilHandler.addRecoil(modifyData, hand);
 				if (completionTick != null) {
 					offset += completionTick;
 					completionTick = null;
@@ -440,7 +442,7 @@ public class GunController {
 			Magazine mag = magazine.new Magazine(getUseMagazine(), HideNBT.getMagazineBulletNum(maxitem));
 			magazine.addMagazinetoLast(mag);
 			maxitem.setCount(maxitem.getCount() - 1);
-			System.out.println("add  " + mag);
+			//	System.out.println("add  " + mag);
 
 			// 全リロードの場合ループ
 			if (modifyData.RELOAD_ALL)
@@ -464,7 +466,7 @@ public class GunController {
 		for (ItemStack item : container.inventoryItemStacks) {
 			if (ItemMagazine.isMagazine(item, name)) {
 				int bulletNum = HideNBT.getMagazineBulletNum(item);
-				System.out.println("find mag " + item + " " + bulletNum);
+				//	System.out.println("find mag " + item + " " + bulletNum);
 				if (bulletNum > c) {
 					maxitem = item;
 					c = bulletNum;
