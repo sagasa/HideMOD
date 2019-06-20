@@ -2,6 +2,7 @@ package network;
 
 import handler.PacketHandler;
 import handler.SoundHandler;
+import handler.SoundHandler.HideEntitySound;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -130,7 +131,7 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 
 	@SideOnly(Side.CLIENT)
 	static void playSound(PacketPlaySound m) {
-	//TODO	HideSound sound = new HideSound(m.Name, m.Vol, m.Pitch, (float) m.X, (float) m.Y, (float) m.Z);
-	//	Minecraft.getMinecraft().getSoundHandler().playDelayedSound(sound, m.Delay);
+		HideEntitySound sound = new HideEntitySound(m.Name, m.Vol, m.Pitch, (float) m.X, (float) m.Y, (float) m.Z);
+		Minecraft.getMinecraft().getSoundHandler().playDelayedSound(sound, m.Delay);
 	}
 }

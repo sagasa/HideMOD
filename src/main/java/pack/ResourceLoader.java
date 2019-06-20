@@ -19,14 +19,14 @@ import net.minecraft.util.ResourceLocation;
 public class ResourceLoader implements IResourcePack {
 
 	/** TEXTURE をテクスチャに置換して */
-	private static final String NoModelJson = "{\"parent\":\"builtin/generated\",\"textures\":{\"layer0\":\"hidemod:items/TEXTURE\"},\"display\":{"
+	private static final String NoModelJson = "{\"parent\":\"builtin/generated\",\"textures\":{\"layer0\":\"TEXTURE\"},\"display\":{"
 			+ "\"thirdperson\":{\"rotation\":[0,90,-35],\"translation\":[0,1.25,-3.5],\"scale\":[0.85,0.85,0.85]},"
 			+ "\"thirdperson\":{\"rotation\":[0,90,-35],\"translation\":[0,1.25,-3.5],\"scale\":[0.85,0.85,0.85]},"
 			+ "\"firstperson\":{\"rotation\":[0,-135,25],\"translation\":[0,4,2],\"scale\":[1.7,1.7,1.7]},"
 			+ "\"firstperson\":{\"rotation\":[0,-135,25],\"translation\":[0,4,2],\"scale\":[1.7,1.7,1.7]}"
 			+ "}}";
 	/** TEXTURE をテクスチャに置換して */
-	private static final String HasModelJson = "{\"parent\":\"builtin/generated\",\"textures\":{\"layer0\":\"hidemod:items/TEXTURE\"},\"display\":{"
+	private static final String HasModelJson = "{\"parent\":\"builtin/generated\",\"textures\":{\"layer0\":\"TEXTURE\"},\"display\":{"
 			+ "\"thirdperson_righthand\":{\"rotation\":[0,90,-35],\"translation\":[0,1.25,-3.5],\"scale\":[0,0,0]},"
 			+ "\"thirdperson_lefthand\":{\"rotation\":[0,90,-35],\"translation\":[0,1.25,-3.5],\"scale\":[0,0,0]},"
 			+ "\"firstperson_righthand\":{\"rotation\":[0,-135,25],\"translation\":[0,4,2],\"scale\":[0,0,0]},"
@@ -36,6 +36,7 @@ public class ResourceLoader implements IResourcePack {
 	@Override
 	public InputStream getInputStream(ResourceLocation resource) throws IOException {
 		// 参照されたリソースを渡す
+		System.out.println("useResource " + resource.getResourcePath());
 		// sounds.json
 		if (resource.getResourcePath().equals("sounds.json")) {
 			return makeSoundJson();
@@ -54,7 +55,7 @@ public class ResourceLoader implements IResourcePack {
 				return makeItemModel(PackData.MAGAZINE_DATA_MAP.get(registerName).ITEM_ICONNAME, true);
 			}
 		}
-		Pattern itemTexture = Pattern.compile("^textures\\/items\\/");
+		Pattern itemTexture = Pattern.compile("^textures\\/");
 		Pattern png = Pattern.compile("\\.png$");
 		if (itemTexture.matcher(resource.getResourcePath()).find()) {
 			String iconName = png.matcher(itemTexture.matcher(resource.getResourcePath()).replaceAll(""))
@@ -83,6 +84,7 @@ public class ResourceLoader implements IResourcePack {
 		}
 		sb.append("\"" + "sample" + "\": {\"category\" : \"player\",\"sounds\" : [ \"" + HideMod.MOD_ID + ":" + "sample"
 				+ "\" ]}}");
+		System.out.println(sb.toString());
 		return new ByteArrayInputStream(sb.toString().getBytes());
 	}
 
@@ -119,7 +121,7 @@ public class ResourceLoader implements IResourcePack {
 				return true;
 			}
 		}
-		Pattern itemTexture = Pattern.compile("^textures\\/items\\/");
+		Pattern itemTexture = Pattern.compile("^textures\\/");
 		Pattern png = Pattern.compile("\\.png$");
 		if (itemTexture.matcher(resource.getResourcePath()).find()) {
 			String iconName = png.matcher(itemTexture.matcher(resource.getResourcePath()).replaceAll(""))

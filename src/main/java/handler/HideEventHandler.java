@@ -5,6 +5,7 @@ import handler.client.InputHandler;
 import handler.client.RenderHandler;
 import items.ItemGun;
 import net.minecraft.item.Item;
+import net.minecraft.util.SoundEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
@@ -29,6 +30,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import pack.PackData;
 
 public class HideEventHandler {
+	//============= レジスタ ================
 	/* イニシャライズ */
 	@SubscribeEvent
 	public void onEvent(RegistryEvent.Register<Item> event) {
@@ -40,6 +42,12 @@ public class HideEventHandler {
 	@SideOnly(Side.CLIENT)
 	public void onEvent(ModelRegistryEvent event) {
 		PackData.registerModel();
+	}
+
+	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
+	public void registerSound(RegistryEvent.Register<SoundEvent> event) {
+		PackData.registerSound(event);
 	}
 
 	/** 型に応じてデータマネージャーを添付する */
@@ -122,6 +130,7 @@ public class HideEventHandler {
 	public void onEvent(TickEvent.RenderTickEvent event) {
 		if (event.phase.equals(Phase.START)) {
 			RenderHandler.setRenderTick(event.renderTickTime);
+	//		RecoilHandler.updateRecoil(event.renderTickTime);
 		}
 	}
 

@@ -78,13 +78,13 @@ public class PackLoader {
 					// 弾登録
 					checkAndAddToMap(PackData.MAGAZINE_DATA_MAP, cash.Magazines, packDomain);
 					// Icon登録
-					checkAndAddToMap(cash.Icons, PackData.ICON_MAP, packDomain);
+					checkAndAddToMap(PackData.ICON_MAP, cash.Icons, packDomain);
 					// Texture登録
-					checkAndAddToMap(cash.Textures, PackData.TEXTURE_MAP, packDomain);
+					checkAndAddToMap(PackData.TEXTURE_MAP, cash.Textures, packDomain);
 					// Sound登録
-					checkAndAddToMap(cash.Sounds, PackData.SOUND_MAP, packDomain);
+					checkAndAddToMap(PackData.SOUND_MAP, cash.Sounds, packDomain);
 					// Model登録
-					checkAndAddToMap(cash.Models, PackData.MODEL_MAP, packDomain);
+					checkAndAddToMap(PackData.MODEL_MAP, cash.Models, packDomain);
 					LOGGER.info("End check and add pack[" + cash.Pack.PACK_NAME + "]");
 					LOGGER.info("End read file[" + file.getName() + "]");
 				} catch (IOException e1) {
@@ -162,13 +162,13 @@ public class PackLoader {
 			if (PackPattern.ICON.mache(name)) {
 				String n = PackPattern.ICON.trim(name);
 				Icons.put(n, data);
-				LOGGER.debug("add icon[" + n + "] to PackReader");
+				LOGGER.info("add icon[" + n + "] to PackReader");
 			}
 			// model
 			if (PackPattern.MODEL.mache(name)) {
 				String n = PackPattern.MODEL.trim(name);
 				Models.put(n, ObjLoader.LoadModel(new ByteArrayInputStream(data)));
-				LOGGER.debug("add model[" + n + "] to PackReader");
+				LOGGER.info("add model[" + n + "] to PackReader");
 			}
 			// texture
 			if (PackPattern.TEXTURE.mache(name)) {
@@ -178,7 +178,7 @@ public class PackLoader {
 			if (PackPattern.SOUND.mache(name)) {
 				String n = PackPattern.SOUND.trim(name);
 				Sounds.put(n, data);
-				LOGGER.debug("add sound[" + n + "] to PackReader");
+				LOGGER.info("add sound[" + n + "] to PackReader");
 			}
 		}
 
@@ -186,7 +186,7 @@ public class PackLoader {
 		private enum PackPattern {
 			GUN("guns", "json"), MAGAZINE("magazines", "json"), PACKINFO(Pattern.compile("^(.*)pack\\.json$"),
 					"json"), ICON("icons", "png"), SCOPE("scopes",
-							"png"), TEXTURE("textures", "png"), SOUND("soubds", "ogg"), MODEL("models", "obj");
+							"png"), TEXTURE("textures", "png"), SOUND("sounds", "ogg"), MODEL("models", "obj");
 
 			private PackPattern(Pattern mache, String end) {
 				this.mache = mache;
@@ -248,10 +248,10 @@ public class PackLoader {
 	private static <T> void checkAndAddToMap(Map<String, T> to, Map<String, T> from, String packDomain) {
 		for (String name : from.keySet()) {
 			// ショートネームを登録名に書き換え
-			String newname = setResourceDomain(name, packDomain);
+			String newname = appendPackDomain(name, packDomain);
 			// 重複しないかどうか
 			if (to.containsKey(name)) {
-				LOGGER.warn("Duplicate name :" + newname + ",Typr : Resource");
+				LOGGER.warn("Duplicate name :" + newname + ",Type : Resource");
 				return;
 			}
 			to.put(newname, from.get(name));
@@ -291,9 +291,9 @@ public class PackLoader {
 			if (info == null)
 				return v;
 			if (info.isResourceName())
-				return setResourceDomain(v, Domain);
+				return appendModDomain(appendPackDomain(v, Domain));
 			if (info.isName())
-				return setDomain(v, Domain);
+				return appendPackDomain(v, Domain);
 			return v;
 		}, true);
 		DataBase.changeFieldsByType(data, String[].class, (v, f) -> {
@@ -301,23 +301,23 @@ public class PackLoader {
 			if (info == null)
 				return v;
 			if (info.isResourceName())
-				return Arrays.asList(v).stream().map(name -> setResourceDomain(name, Domain))
+				return Arrays.asList(v).stream().map(name -> appendModDomain(appendPackDomain(name, Domain)))
 						.collect(Collectors.toList()).toArray(v);
 			if (info.isName())
-				return Arrays.asList(v).stream().map(name -> setDomain(name, Domain)).collect(Collectors.toList())
+				return Arrays.asList(v).stream().map(name -> appendPackDomain(name, Domain))
+						.collect(Collectors.toList())
 						.toArray(v);
 			return v;
 		}, true);
 	}
 
 	/** ドメインを追加 */
-	private static String setDomain(String name, String domain) {
+	private static String appendPackDomain(String name, String domain) {
 		return domain + "_" + toRegisterName(name);
 	}
 
 	/** ドメインを追加(リソース用) */
-	private static String setResourceDomain(String name, String domain) {
-		name = domain + "_" + toRegisterName(name);
+	private static String appendModDomain(String name) {
 		if (!name.contains(":")) {
 			name = HideMod.MOD_ID + ":" + name;
 		}

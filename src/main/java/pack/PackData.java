@@ -10,6 +10,7 @@ import model.ModelPart;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.RegistryEvent.Register;
 import net.minecraftforge.fml.relauncher.Side;
@@ -50,6 +51,7 @@ public class PackData {
 	public static MagazineData getBulletData(String name) {
 		return MAGAZINE_DATA_MAP.get(name);
 	}
+
 	/**登録名からアタッチメントを取得*/
 	public static AttachmentsData getAttachmentData(String name) {
 		return ATTACHMENT_DATA_MAP.get(name);
@@ -78,16 +80,21 @@ public class PackData {
 			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(
 					new ResourceLocation(HideMod.MOD_ID, item.MagazineData.ITEM_SHORTNAME), "inventory"));
 		}
-//		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new IRenderFactory() {
-//			@Override
-//			public Render createRenderFor(RenderManager manager) {
-//				return new RenderBullet(manager);
-//			}
-	//	});
+		//		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new IRenderFactory() {
+		//			@Override
+		//			public Render createRenderFor(RenderManager manager) {
+		//				return new RenderBullet(manager);
+		//			}
+		//	});
 	}
 
-	public static String debug() {
-		return MAGAZINE_DATA_MAP.entrySet().toString();
+	@SideOnly(Side.CLIENT)
+	public static void registerSound(Register<SoundEvent> event) {
+		for (String name : SOUND_MAP.keySet()) {
+			System.out.println("SoundRegister " + name);
+			event.getRegistry().register(
+					new SoundEvent(new ResourceLocation(HideMod.MOD_ID, name))
+							.setRegistryName(name));
+		}
 	}
-
 }

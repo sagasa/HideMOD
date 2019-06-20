@@ -1,5 +1,7 @@
 package handler.client;
 
+import java.util.EnumMap;
+
 import helper.HideMath;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,8 +15,12 @@ import types.items.GunData;
 public class RecoilHandler {
 	private static int recoilPower = 0;
 
-	private static RecoilCash main;
-	private static RecoilCash off;
+	private static EnumMap<EnumHand, RecoilCash> recoilcash = new EnumMap<>(EnumHand.class);
+
+	static {
+		recoilcash.put(EnumHand.MAIN_HAND, new RecoilCash());
+		recoilcash.put(EnumHand.OFF_HAND, new RecoilCash());
+	}
 
 	private static class RecoilCash {
 		private float yawReturnTo = 0;
@@ -30,6 +36,7 @@ public class RecoilHandler {
 		private GunData nowGun = null;
 
 		private void clearRecoil() {
+			System.out.println("Clear");
 			yawShakeTo = pitchShakeTo = 0;
 			nowGun = null;
 		}
@@ -40,6 +47,7 @@ public class RecoilHandler {
 		 * @param shooter
 		 */
 		private void addRecoil(GunData data) {
+			nowGun = data;
 			Recoil recoil = getRecoil(data);
 			float yawrecoil = getYawRecoil(recoil);
 			float pitchrecoil = getPitchRecoil(recoil);
@@ -65,10 +73,11 @@ public class RecoilHandler {
 			if (nowGun == null) {
 				return;
 			}
+			//
 			Recoil recoil = getRecoil(nowGun);
 			if (yawShakeTick >= 0) {
-				float coe = yawShakeTo / (yawShakeTick + 1);
-				System.out.println("yaw shake :" + yawShakeTo + " - " + coe + " time : " + yawShakeTick);
+				float coe = yawShakeTo * 1 / (yawShakeTick + 1);
+			//	System.out.println("yaw shake :" + yawShakeTo + "  " + coe + " time : " + yawShakeTick);
 				yawShakeTo -= coe;
 				Minecraft.getMinecraft().player.rotationYaw += coe;
 				yawShakeTick -= 1;
@@ -78,6 +87,7 @@ public class RecoilHandler {
 			}
 			if (pitchShakeTick >= 0) {
 				float coe = pitchShakeTo / (pitchShakeTick + 1);
+			//	System.out.println("yaw shake :" + pitchShakeTo + "  " + coe + " time : " + pitchShakeTick);
 				pitchShakeTo -= coe;
 				Minecraft.getMinecraft().player.rotationPitch -= coe;
 				pitchShakeTick -= 1;
@@ -102,16 +112,25 @@ public class RecoilHandler {
 				recoilPower = recoilPower - recoil.POWER_TICK < 0 ? 0 : recoilPower - recoil.POWER_TICK;
 			}
 			// 適応が終わったら止める
-			if (pitchReturnTick == -1 && yawReturnTick == -1) {
+			if (pitchReturnTick == -1 && yawReturnTick == -1 && pitchShakeTick == -1 && yawShakeTick == -1) {
 				nowGun = null;
 			}
+			//*/
 		}
 	}
 
-	/**tick update TODO レンダー側のTickでやりたい*/
-	public static void updateRecoil() {
-		main.updateRecoil();
-		off.updateRecoil();
+	/**tick update TODO レンダー側のTickでやりたい
+	 * @param renderTickTime */
+	public static void updateRecoil(float renderTickTime) {
+		recoilcash.values().forEach(recoil -> recoil.updateRecoil());
+	}
+
+	public static void addRecoil(GunData modifyData, EnumHand hand) {
+		recoilcash.get(hand).addRecoil(modifyData);
+	}
+
+	public static void clearRecoil(EnumHand hand) {
+		recoilcash.get(hand).clearRecoil();
 	}
 
 	/** 現在のリコイルパワー(0-100)を取得 */
@@ -181,9 +200,5 @@ public class RecoilHandler {
 		float base = data.MIN_PITCH_BASE + (data.MAX_PITCH_BASE - data.MIN_PITCH_BASE / 100 * recoilPower);
 		float spread = data.MIN_PITCH_SPREAD + ((data.MAX_PITCH_SPREAD - data.MIN_PITCH_SPREAD) / 100 * recoilPower);
 		return (float) HideMath.normal(base, spread);
-	}
-
-	public static void addRecoil(GunData modifyData, EnumHand hand) {
-
 	}
 }

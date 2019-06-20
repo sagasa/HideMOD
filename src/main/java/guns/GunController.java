@@ -66,6 +66,7 @@ public class GunController {
 	/** カスタムとオリジナルから修正版のGunDataを作成
 	 * カスタムパーツが見つからなければスキップ*/
 	private void updateCustomize() {
+		System.out.println("updateCastomize");
 		if (isGun()) {
 			modifyData = (GunData) gun.getGunData().clone();
 			HideNBT.getGunAttachments(gun.getGunTag()).stream().map(str -> PackData.getAttachmentData(str))
@@ -100,6 +101,10 @@ public class GunController {
 			shootdelay = Math.max(0, shootdelay);
 			HideNBT.setGunShootDelay(gun.getGunTag(), shootdelay);
 			System.out.println(shootdelay);
+		}
+		//リコイル停止
+		if (Shooter instanceof EntityPlayer && onClient) {
+			RecoilHandler.clearRecoil(hand);
 		}
 		// 削除
 		uid = 0;
@@ -316,16 +321,17 @@ public class GunController {
 
 	/** サーバーサイド */
 	public void shoot(boolean isADS, float offset) {
-		//	shoot(modifyData, magazine.getNextBullet(), Shooter, isADS, offset, X, Y, Z, Yaw, Pitch);
+		shoot(modifyData, magazine.getNextBullet(), Shooter, isADS, offset, X, Y, Z, Yaw, Pitch);
 		lastShootTime = Minecraft.getSystemTime();
 	}
 
 	/** エンティティを生成 ShootNumに応じた数弾を出す */
 	private static void shoot(GunData gundata, MagazineData bulletdata, Entity shooter, boolean isADS, float offset,
 			double x, double y, double z, float yaw, float pitch) {
+		SoundHandler.broadcastSound(shooter.world, x, y, z, gundata.SOUND_SHOOT);
 		if (bulletdata != null && bulletdata.BULLETDATA != null) {
+			SoundHandler.broadcastSound(shooter.world, x, y, z, gundata.SOUND_SHOOT);
 			for (int i = 0; i < bulletdata.BULLETDATA.SHOOT_NUM; i++) {
-				SoundHandler.broadcastSound(shooter.world, x, y, z, gundata.SOUND_SHOOT);
 				EntityBullet bullet = new EntityBullet(gundata, bulletdata, shooter, isADS, offset, x, y, z, yaw,
 						pitch);
 				shooter.world.spawnEntity(bullet);

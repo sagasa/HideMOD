@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import guns.GunController;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -55,8 +56,8 @@ public class HidePlayerData {
 			return null;
 		}
 
-		public GunController gunMain = new GunController();
-		public GunController gunOff = new GunController();
+		public GunController gunMain = new GunController(EnumHand.MAIN_HAND);
+		public GunController gunOff = new GunController(EnumHand.OFF_HAND);
 	}
 
 	public static class ServerPlayerData extends CommonPlayerData {

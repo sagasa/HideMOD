@@ -50,7 +50,7 @@ public class HideViewHandler {
 	@SideOnly(Side.CLIENT)
 	public static void ClientTick(EntityPlayerSP player) {
 		// アップデート
-		RecoilHandler.updateRecoil();
+		RecoilHandler.updateRecoil(0f);
 		if (HitMarkerTime > 0) {
 			HitMarkerTime--;
 		}

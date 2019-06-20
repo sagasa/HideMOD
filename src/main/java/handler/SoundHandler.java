@@ -81,15 +81,16 @@ public class SoundHandler {
 			//同期
 			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
 				public void run() {
-					//					Minecraft.getMinecraft().getSoundHandler().playDelayedSound(
-					//							new HideSound(soundName, finalVol, pitch, (float) x, (float) y, (float) z), finalDelay);
+					Minecraft.getMinecraft().getSoundHandler().playDelayedSound(
+							new HideEntitySound(soundName, finalVol, pitch, (float) x, (float) y, (float) z),
+							finalDelay);
 				}
 			});
 
 		}
 	}
-	//TODO サウンドカテゴリ追加したい…にゃあ
 
+	//TODO サウンドカテゴリ追加したい…にゃあ
 	public static class HideEntitySound extends PositionedSound implements ITickableSound {
 		/**トラッキング対象 消えたら再生を終了*/
 		final protected Entity entity;
@@ -113,8 +114,22 @@ public class SoundHandler {
 			moveVec = move;
 		}
 
+		public HideEntitySound(String soundName, float finalVol, float pitch, float x, float y, float z) {
+			super(new ResourceLocation(soundName), SoundCategory.PLAYERS);
+			moveVec = Vec3d.ZERO;
+			entity = null;
+			xPosF = x;
+			yPosF = y;
+			zPosF = z;
+			volume = finalVol;
+			this.pitch = pitch;
+		}
+
 		@Override
 		public void update() {
+			if (entity == null)
+				return;
+
 			if (entity.isDead) {
 				donePlaying = true;
 				return;
@@ -132,6 +147,5 @@ public class SoundHandler {
 		public boolean isDonePlaying() {
 			return donePlaying;
 		}
-
 	}
 }
