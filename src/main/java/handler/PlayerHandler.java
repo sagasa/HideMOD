@@ -63,7 +63,7 @@ public class PlayerHandler {
 				Supplier<NBTTagCompound> gunTag = side == Side.CLIENT
 						? () -> HideNBT.getGunTag(player.getHeldItemMainhand())
 						: () -> HideNBT.getGunTag(main);
-				data.gunMain.setGun(ItemGun.getGunData(main), gunTag);
+				data.gunMain.setGun(ItemGun.getGunData(main), gunTag, player);
 				data.gunMain.setShooter(player);
 			}
 			if ((data.gunOff.isGun() ^ ItemGun.isGun(off)) || (data.gunOff.isGun() && ItemGun.isGun(off)
@@ -72,7 +72,7 @@ public class PlayerHandler {
 				Supplier<NBTTagCompound> gunTag = side == Side.CLIENT
 						? () -> HideNBT.getGunTag(player.getHeldItemOffhand())
 						: () -> HideNBT.getGunTag(off);
-				data.gunOff.setGun(ItemGun.getGunData(off), gunTag);
+				data.gunOff.setGun(ItemGun.getGunData(off), gunTag, player);
 				data.gunOff.setShooter(player);
 			}
 			// アップデート
@@ -164,36 +164,13 @@ public class PlayerHandler {
 			guns.forEach(gun -> HideNBT.setGunFireMode(gun.getGunTag(), gun.getNextFireMode()));
 			// player.connection.sendPacket(new SPacketitem);
 		}
-
-		boolean flag = true;
 		if (data.reload) {
-			System.out.println("inv " + player.inventoryContainer.getInventory());
 			data.reload = false;
-			if (data.reloadState > 0) {
-				data.reloadAll = true;
-				// マガジンの取り外し TODO
-			} else {
-				int time = 0;
-				for (GunController gun : guns) {
-					time += gun.getGunData().RELOAD_TICK; // 音
-					SoundHandler.broadcastSound(player.world, player.posX, player.posY, player.posZ,
-							gun.getGunData().SOUND_RELOAD);
-					// マガジンを取り外し
-					gun.preReload(player, player.inventoryContainer, 0);
-				}
-				data.reloadAll = false;
-				data.reloadState = time;
+			for (GunController gun : guns) {
+				// リロード
+				gun.preReload(0);
 			}
+		}
 
-		}
-		if (0 <= data.reloadState) {
-			if (data.reloadState == 0) {
-				for (GunController gun : guns) {
-					gun.reload(player.inventoryContainer);
-				}
-				data.reload = true;
-			}
-			data.reloadState--;
-		}
 	}
 }

@@ -71,14 +71,14 @@ public class HideNBT {
 		if (!gunTag.hasKey(GUN_ATTACHMENTS))
 			setGunAttachments(gunTag, new ArrayList<>());
 		List<String> list = new ArrayList<>();
-		gunTag.getTagList(GUN_ATTACHMENTS,8).forEach(nbt->list.add(nbt.toString()));
+		gunTag.getTagList(GUN_ATTACHMENTS, 8).forEach(nbt -> list.add(nbt.toString()));
 		return list;
 	}
 
 	/** 指定のタグのみを書き換え */
 	public static void setGunAttachments(NBTTagCompound gunTag, List<String> list) {
 		NBTTagList tag = new NBTTagList();
-		list.forEach(str->tag.appendTag(new NBTTagString(str)));
+		list.forEach(str -> tag.appendTag(new NBTTagString(str)));
 		gunTag.setTag(GUN_ATTACHMENTS, tag);
 	}
 
@@ -90,7 +90,7 @@ public class HideNBT {
 		while (magazines.hasKey(i + "")) {
 			NBTTagCompound magData = magazines.getCompoundTag(i + "");
 			if (magData.getInteger(MAGAZINE_MUMBER) > 0) {
-				loadedMagazines.addMagazinetoLast(loadedMagazines.new Magazine(magData.getString(MAGAZINE_NAME),
+				loadedMagazines.addMagazinetoLast(new Magazine(magData.getString(MAGAZINE_NAME),
 						magData.getInteger(MAGAZINE_MUMBER)));
 			}
 			i++;

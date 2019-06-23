@@ -148,4 +148,9 @@ public class SoundHandler {
 			return donePlaying;
 		}
 	}
+
+	public static void broadcastSound(double x, double y, double z, Sound sound) {
+		// TODO 自動生成されたメソッド・スタブ
+
+	}
 }

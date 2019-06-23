@@ -150,7 +150,7 @@ public class RenderHandler {
 		// 残弾
 		float fontSize = 1.8f;
 		GlStateManager.scale(fontSize, fontSize, fontSize);
-		mc.fontRenderer.drawString(gun.magazine.getLoadedNum() + "/" + gun.getCanUseBulletNum(mc.player),
+		mc.fontRenderer.drawString(gun.magazine.getLoadedNum() + "/" + gun.getCanUseBulletNum(),
 				(x + 5) / fontSize, (y + 21) / fontSize, 0xFFFFFF, false);
 		GlStateManager.scale(1 / fontSize, 1 / fontSize, 1 / fontSize);
 		// 使用する弾

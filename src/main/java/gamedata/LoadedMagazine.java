@@ -13,7 +13,7 @@ public class LoadedMagazine {
 	private List<Magazine> magazineList = new ArrayList<>();
 
 	/** 単体のマガジン */
-	public class Magazine {
+	public static class Magazine {
 		public String name;
 		public int num;
 
@@ -24,7 +24,7 @@ public class LoadedMagazine {
 
 		@Override
 		public String toString() {
-			return super.toString() + "[name=" + name + ",num=" + num + "]";
+			return "[name=" + name + ",num=" + num + "]";
 		}
 
 		public boolean magEquals(Magazine obj) {
@@ -95,7 +95,7 @@ public class LoadedMagazine {
 
 	@Override
 	public String toString() {
-		return super.toString() + magazineList;
+		return magazineList.toString();
 	}
 
 	public boolean magEquals(LoadedMagazine loadmag) {

@@ -36,7 +36,6 @@ public class RecoilHandler {
 		private GunData nowGun = null;
 
 		private void clearRecoil() {
-			System.out.println("Clear");
 			yawShakeTo = pitchShakeTo = 0;
 			nowGun = null;
 		}

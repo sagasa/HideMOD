@@ -70,9 +70,6 @@ public class HidePlayerData {
 
 		public boolean dualToggle = true;
 
-		public int reloadState = -1;
-		public boolean reloadAll = false;
-
 		public int adsstate = 0;
 		public float adsRes = 0f;
 	}
