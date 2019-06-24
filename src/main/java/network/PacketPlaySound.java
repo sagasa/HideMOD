@@ -2,7 +2,6 @@ package network;
 
 import handler.PacketHandler;
 import handler.SoundHandler;
-import handler.SoundHandler.HideEntitySound;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,18 +14,13 @@ import types.effect.Sound;
 
 public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySound, IMessage> {
 
-	private static final byte CLIENT_PLAYSOUND = 0;
-	private static final byte SERVER_PLAYREQ = 1;
-	private byte Mode;
+	int entityID;
 	String Name;
 	double X;
 	double Y;
 	double Z;
 	float Vol;
 	float Pitch;
-
-	int Delay;
-
 	float Range;
 	boolean UseDelay;
 	boolean UseDecay;
@@ -34,16 +28,18 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 	public PacketPlaySound() {
 	}
 
-	/** サーバー→クライアント 指定位置で再生 */
-	public PacketPlaySound(String soundName, double x, double y, double z, float vol, float pitch, int delay) {
-		Mode = CLIENT_PLAYSOUND;
+	public PacketPlaySound(int e, String soundName, double x, double y, double z, float vol, float pitch,
+			float range, boolean useDelay, boolean useDecay) {
+		entityID = e;
 		Name = soundName;
 		X = x;
 		Y = y;
 		Z = z;
 		Vol = vol;
 		Pitch = pitch;
-		Delay = delay;
+		Range = range;
+		UseDelay = useDelay;
+		UseDecay = useDecay;
 	}
 
 	/** クライアント→クライアント 指定位置で再生 */
@@ -54,7 +50,6 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 	/** クライアント→クライアント 指定位置で再生 */
 	public PacketPlaySound(String soundName, double x, double y, double z, float vol, float pitch, float range,
 			boolean delay, boolean decay) {
-		Mode = SERVER_PLAYREQ;
 		Name = soundName;
 		X = x;
 		Y = y;
@@ -68,70 +63,52 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 
 	@Override
 	public void fromBytes(ByteBuf buf) {
-		Mode = buf.readByte();
 		Name = PacketHandler.readString(buf);
 		X = buf.readDouble();
 		Y = buf.readDouble();
 		Z = buf.readDouble();
 		Vol = buf.readFloat();
 		Pitch = buf.readFloat();
-		if (Mode == SERVER_PLAYREQ) {
-			Range = buf.readFloat();
-			UseDelay = buf.readBoolean();
-			UseDecay = buf.readBoolean();
-		} else {
-			Delay = buf.readInt();
-		}
+		Range = buf.readFloat();
+		UseDelay = buf.readBoolean();
+		UseDecay = buf.readBoolean();
+		entityID = buf.readInt();
 	}
 
 	@Override
 	public void toBytes(ByteBuf buf) {
-		buf.writeByte(Mode);
 		PacketHandler.writeString(buf, Name);
 		buf.writeDouble(X);
 		buf.writeDouble(Y);
 		buf.writeDouble(Z);
 		buf.writeFloat(Vol);
 		buf.writeFloat(Pitch);
-		if (Mode == SERVER_PLAYREQ) {
-			buf.writeFloat(Range);
-			buf.writeBoolean(UseDelay);
-			buf.writeBoolean(UseDecay);
-		} else {
-			buf.writeInt(Delay);
-		}
+		buf.writeFloat(Range);
+		buf.writeBoolean(UseDelay);
+		buf.writeBoolean(UseDecay);
+		buf.writeInt(entityID);
 	}
 
 	@Override
 	public IMessage onMessage(final PacketPlaySound m, final MessageContext ctx) {
 		if (ctx.side == Side.SERVER) {
-			ctx.getServerHandler().player.getServer().addScheduledTask(new Runnable() {
-				public void run() {
-					processMessage(m);
-				}
+			ctx.getServerHandler().player.getServer().addScheduledTask(() -> {
+				EntityPlayer player = ctx.getServerHandler().player;
+				SoundHandler.broadcastSound(ctx.getServerHandler().player.world, m.entityID, m.Name, m.X, m.Y, m.Z,
+						m.Range, m.Vol, m.Pitch,
+						m.UseDelay, m.UseDecay);
 
-				private void processMessage(PacketPlaySound m) {
-					EntityPlayer player = ctx.getServerHandler().player;
-					SoundHandler.broadcastSound(player.world, m.Name, m.X, m.Y, m.Z, m.Range, m.Vol, m.Pitch,
-							m.UseDelay, m.UseDecay);
-				}
 			});
-		} else {
-			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
-				@Override
-				public void run() {
-					// 再生
-					playSound(m);
-				}
-			});
+		} else
+			Minecraft.getMinecraft().addScheduledTask(() -> playSound(m));
 
-		}
 		return null;
 	}
 
 	@SideOnly(Side.CLIENT)
 	static void playSound(PacketPlaySound m) {
-		HideEntitySound sound = new HideEntitySound(m.Name, m.Vol, m.Pitch, (float) m.X, (float) m.Y, (float) m.Z);
-		Minecraft.getMinecraft().getSoundHandler().playDelayedSound(sound, m.Delay);
+		System.out.println(Minecraft.getMinecraft().world+" "+m.entityID);
+		SoundHandler.playSound(Minecraft.getMinecraft().world.getEntityByID(m.entityID), m.Name, m.X, m.Y, m.Z, m.Range,
+				m.Vol, m.Pitch, m.UseDelay, m.UseDecay);
 	}
 }

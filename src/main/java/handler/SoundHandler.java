@@ -1,14 +1,15 @@
 package handler;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import gamedata.HideEntitySound;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.ITickableSound;
-import net.minecraft.client.audio.PositionedSound;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -19,138 +20,94 @@ import types.effect.Sound;
 
 /** サーバーからクライアントへサウンドを流すハンドラ */
 public class SoundHandler {
-	public static final SoundHandler INSTANCE = new SoundHandler();
-	/** 1ブロック当たり何tickかかるか */
-	private static final float SOUND_SPEAD = 0.2f;
-
 	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用 */
-	public static void broadcastSound(String soundName, Entity e, float range, float vol, float pitch,
-			boolean useSoundDelay, boolean useDecay) {
-		broadcastSound(e.world, soundName, e.posX, e.posY, e.posZ, range, vol, pitch, useSoundDelay, useDecay);
+	public static void broadcastSound(Entity e, double x, double y, double z, Sound sound) {
+		broadcastSound(e.world, e.getEntityId(), sound.NAME, x, y, z, sound.RANGE, sound.VOL, sound.PITCH,
+				sound.USE_DELAY,
+				sound.USE_DECAY);
 	}
 
 	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用 */
-	public static void broadcastSound(World w, double x, double y, double z, Sound sound) {
-		broadcastSound(w, sound.NAME, x, y, z, sound.RANGE, sound.VOL, sound.PITCH, sound.USE_DELAY, sound.USE_DECAY);
-	}
-
-	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用 */
-	public static void broadcastSound(World w, String soundName, double x, double y, double z, float range, float vol,
-			float pitch, boolean useSoundDelay, boolean useDecay) {
+	public static void broadcastSound(World world, int entityID, String soundName, double x, double y, double z,
+			float range, float vol,
+			float pitch, boolean useDelay, boolean useDecay) {
+		Entity e = world.getEntityByID(entityID);
 		// 同じワールドのプレイヤーの距離を計算してパケットを送信
-		for (EntityPlayer player : (ArrayList<EntityPlayer>) w.playerEntities) {
-			double distance = new Vec3d(x, y, z).distanceTo(new Vec3d(player.posX, player.posY, player.posZ));
+		for (EntityPlayer player : world.playerEntities) {
+			double distance = new Vec3d(e.posX, e.posY, e.posZ)
+					.distanceTo(new Vec3d(player.posX, player.posY, player.posZ));
 			if (distance < range) {
-				float playerVol = vol;
-				if (useDecay) {
-					playerVol = playerVol * (float) (1 - (distance / range));
-				}
-				int Delay = 0;
-				if (useSoundDelay) {
-					Delay = (int) (distance * SOUND_SPEAD);
-				}
-				// TODO そのうちドップラー効果でも
 				// パケット
-				PacketHandler.INSTANCE.sendTo(new PacketPlaySound(soundName, x, y, z, playerVol, pitch, Delay),
+				PacketHandler.INSTANCE.sendTo(
+						new PacketPlaySound(entityID, soundName, x, y, z, vol, pitch, pitch, useDelay, useDecay),
 						(EntityPlayerMP) player);
 			}
 		}
 	}
 
+	//============= クライアントサイドでの再生メゾット ==============
+
 	@SideOnly(Side.CLIENT)
-	public static void playSound(double x, double y, double z, Sound sound) {
-		playSound(sound.NAME, x, y, z, sound.RANGE, sound.VOL, sound.PITCH, sound.USE_DELAY, sound.USE_DECAY);
+	public static HideEntitySound playSound(Entity entity, double x, double y, double z, Sound sound) {
+		return playSound(entity, sound.NAME, x, y, z, sound.RANGE, sound.VOL, sound.PITCH, sound.USE_DELAY,
+				sound.USE_DECAY);
 	}
 
 	@SideOnly(Side.CLIENT)
-	public static void playSound(String soundName, double x, double y, double z, float range, float vol, float pitch,
+	public static HideEntitySound playSound(Entity entity, String soundName, double x, double y, double z, float range,
+			float vol,
+			float pitch,
 			boolean useSoundDelay, boolean useDecay) {
-		EntityPlayer player = Minecraft.getMinecraft().player;
-		double distance = new Vec3d(x, y, z).distanceTo(new Vec3d(player.posX, player.posY, player.posZ));
-		if (distance < range) {
-			float playerVol = vol;
-			if (useDecay) {
-				playerVol = playerVol * (float) (1 - (distance / range));
-			}
-			final float finalVol = playerVol;
-			int Delay = 0;
-			if (useSoundDelay) {
-				Delay = (int) (distance * SOUND_SPEAD);
-			}
-			final int finalDelay = Delay;
+		HideEntitySound sound = new HideEntitySound(entity, soundName, x, y, z, vol, pitch, range, useSoundDelay,
+				useDecay,
+				SoundCategory.PLAYERS);
+		if (sound.getDistance() < range) {
 			//同期
 			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
 				public void run() {
-					Minecraft.getMinecraft().getSoundHandler().playDelayedSound(
-							new HideEntitySound(soundName, finalVol, pitch, (float) x, (float) y, (float) z),
-							finalDelay);
+					playSound(sound);
 				}
 			});
-
-		}
+			return sound;
+		} else
+			return null;
 	}
 
-	//TODO サウンドカテゴリ追加したい…にゃあ
-	public static class HideEntitySound extends PositionedSound implements ITickableSound {
-		/**トラッキング対象 消えたら再生を終了*/
-		final protected Entity entity;
+	private static Map<HideEntitySound, Integer> delayedSounds = new HashMap<>();
+	private static int time;
 
-		final protected Vec3d moveVec;
-
-		protected boolean donePlaying = false;
-
-		/** エンティティに追従する音
-		 * @param e 追従先*/
-		protected HideEntitySound(Sound sound, Entity e, SoundCategory categoryIn) {
-			this(sound, e, Vec3d.ZERO, categoryIn);
-		}
-
-		/** エンティティに追従する音
-		 * @param e 追従先
-		 * @param move エンティティと音源の位置関係*/
-		protected HideEntitySound(Sound sound, Entity e, Vec3d move, SoundCategory categoryIn) {
-			super(new ResourceLocation(sound.NAME), categoryIn);
-			entity = e;
-			moveVec = move;
-		}
-
-		public HideEntitySound(String soundName, float finalVol, float pitch, float x, float y, float z) {
-			super(new ResourceLocation(soundName), SoundCategory.PLAYERS);
-			moveVec = Vec3d.ZERO;
-			entity = null;
-			xPosF = x;
-			yPosF = y;
-			zPosF = z;
-			volume = finalVol;
-			this.pitch = pitch;
-		}
-
-		@Override
-		public void update() {
-			if (entity == null)
-				return;
-
-			if (entity.isDead) {
-				donePlaying = true;
-				return;
+	/**tickアップデート*/
+	public static void update() {
+		time++;
+		Iterator<Entry<HideEntitySound, Integer>> itr = delayedSounds.entrySet().iterator();
+		while (itr.hasNext()) {
+			Entry<HideEntitySound, Integer> entry1 = itr.next();
+			if (time >= entry1.getValue()) {
+				Minecraft.getMinecraft().getSoundHandler().playSound(entry1.getKey());
+				itr.remove();
 			}
-			//位置更新
-			Vec3d location = entity.getPositionVector();
-			if (moveVec != Vec3d.ZERO)
-				location = location.add(moveVec.rotatePitch(entity.rotationPitch).rotateYaw(entity.rotationYaw));
-			xPosF = (float) location.x;
-			yPosF = (float) location.y;
-			zPosF = (float) location.z;
-		}
-
-		@Override
-		public boolean isDonePlaying() {
-			return donePlaying;
 		}
 	}
 
-	public static void broadcastSound(double x, double y, double z, Sound sound) {
-		// TODO 自動生成されたメソッド・スタブ
+	public static boolean isSoundPlaying(HideEntitySound sound) {
+		return delayedSounds.containsKey(sound) ||
+				Minecraft.getMinecraft().getSoundHandler().isSoundPlaying(sound);
+	}
 
+	/**キャンセルに対応したディレイ付き再生*/
+	public static void playSound(HideEntitySound sound) {
+		int delay = sound.getDelay();
+		if (delay > 0) {
+			delayedSounds.put(sound, delay + time);
+		} else {
+			Minecraft.getMinecraft().getSoundHandler().playSound(sound);
+		}
+	}
+
+	public static void stopSound(HideEntitySound sound) {
+		if (delayedSounds.containsKey(sound))
+			delayedSounds.remove(sound);
+		else
+			Minecraft.getMinecraft().getSoundHandler().stopSound(sound);
 	}
 }

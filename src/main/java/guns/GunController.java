@@ -189,7 +189,7 @@ public class GunController {
 	public void tickUpdate(Side side) {
 		if (!isGun())
 			return;
-		System.out.println("magazineState "+magazine);
+	//	System.out.println("magazineState " + magazine);
 		if (side == Side.CLIENT) {
 			// magazine
 			LoadedMagazine now = HideNBT.getGunLoadedMagazines(gun.getGunTag());
@@ -332,9 +332,8 @@ public class GunController {
 	/** エンティティを生成 ShootNumに応じた数弾を出す */
 	private static void shoot(GunData gundata, MagazineData bulletdata, Entity shooter, boolean isADS, float offset,
 			double x, double y, double z, float yaw, float pitch) {
-		SoundHandler.broadcastSound(shooter.world, x, y, z, gundata.SOUND_SHOOT);
+		SoundHandler.broadcastSound(shooter, 0, 0, 0, gundata.SOUND_SHOOT);
 		if (bulletdata != null && bulletdata.BULLETDATA != null) {
-			SoundHandler.broadcastSound(shooter.world, x, y, z, gundata.SOUND_SHOOT);
 			for (int i = 0; i < bulletdata.BULLETDATA.SHOOT_NUM; i++) {
 				EntityBullet bullet = new EntityBullet(gundata, bulletdata, shooter, isADS, offset, x, y, z, yaw,
 						pitch);
@@ -386,7 +385,7 @@ public class GunController {
 			return false;
 		System.out.println("unload ");
 		// 音
-		SoundHandler.broadcastSound(X, Y, Z,
+		SoundHandler.broadcastSound(Shooter, X, Y, Z,
 				gun.getGunData().SOUND_RELOAD);
 		// ReloadAll以外で空きスロットがある場合何もしない
 		if (magazine.getList().size() < modifyData.LOAD_NUM) {
