@@ -39,7 +39,7 @@ public class SoundHandler {
 			if (distance < range) {
 				// パケット
 				PacketHandler.INSTANCE.sendTo(
-						new PacketPlaySound(entityID, soundName, x, y, z, vol, pitch, pitch, useDelay, useDecay),
+						new PacketPlaySound(entityID, soundName, x, y, z, vol, pitch, range, useDelay, useDecay),
 						(EntityPlayerMP) player);
 			}
 		}

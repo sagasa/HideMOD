@@ -290,7 +290,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 				HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 			}
 			// サウンド
-			SoundHandler.broadcastSound(world, endPos.x, endPos.y, endPos.z, exp.SOUND);
+			SoundHandler.broadcastSound(this, endPos.x, endPos.y, endPos.z, exp.SOUND);
 			// TODO エフェクト
 		}
 	}

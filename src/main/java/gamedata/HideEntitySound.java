@@ -52,7 +52,7 @@ public class HideEntitySound extends PositionedSound implements ITickableSound {
 		this.volume = vol;
 		this.attenuationType = AttenuationType.LINEAR;
 		this.entity = e;
-		this.moveVec = (x == 0 && y == 0 && z == 0) ? Vec3d.ZERO : new Vec3d(x, y, z);
+		this.moveVec = (x == 0 && y == 0 && z == 0) ? Vec3d.ZERO : new Vec3d(-z, y, x);
 		this.RANGE = range;
 		this.USE_DECAY = decay;
 		this.USE_DELAY = delay;
@@ -85,8 +85,10 @@ public class HideEntitySound extends PositionedSound implements ITickableSound {
 		}
 		//位置更新
 		Vec3d location = entity.getPositionVector();
-		if (moveVec != Vec3d.ZERO)
-			location = location.add(moveVec.rotatePitch(entity.rotationPitch).rotateYaw(entity.rotationYaw));
+		if (moveVec != Vec3d.ZERO) {
+			location = location.add(
+					moveVec.rotatePitch(-entity.rotationPitch / 57.29578f).rotateYaw(-entity.rotationYaw / 57.29578f));
+		}
 		xPosF = (float) location.x;
 		yPosF = (float) location.y;
 		zPosF = (float) location.z;

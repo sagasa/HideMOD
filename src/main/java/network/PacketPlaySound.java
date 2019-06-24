@@ -107,7 +107,6 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 
 	@SideOnly(Side.CLIENT)
 	static void playSound(PacketPlaySound m) {
-		System.out.println(Minecraft.getMinecraft().world+" "+m.entityID);
 		SoundHandler.playSound(Minecraft.getMinecraft().world.getEntityByID(m.entityID), m.Name, m.X, m.Y, m.Z, m.Range,
 				m.Vol, m.Pitch, m.UseDelay, m.UseDecay);
 	}
