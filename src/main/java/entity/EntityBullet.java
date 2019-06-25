@@ -98,7 +98,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		motionX = -Math.sin(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
 		motionZ = Math.cos(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
 		motionY = -Math.sin(Math.toRadians(rotationPitch));
-		float f2 = MathHelper.sqrt(motionX * motionX + motionZ * motionZ + motionY * motionY);
+		float f2 = MathHelper.sqrt(motionX * motionX + motionZ * motionZ + motionY * motionY) / 0.1f;
 		motionX /= f2;
 		motionZ /= f2;
 		motionY /= f2;

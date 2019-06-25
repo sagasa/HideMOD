@@ -3,16 +3,22 @@ package pack;
 import java.util.HashMap;
 import java.util.Map;
 
+import entity.EntityBullet;
+import entity.render.RenderBullet;
 import hidemod.HideMod;
 import items.ItemGun;
 import items.ItemMagazine;
 import model.ModelPart;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.RegistryEvent.Register;
+import net.minecraftforge.fml.client.registry.IRenderFactory;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -80,12 +86,12 @@ public class PackData {
 			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(
 					new ResourceLocation(HideMod.MOD_ID, item.MagazineData.ITEM_SHORTNAME), "inventory"));
 		}
-		//		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new IRenderFactory() {
-		//			@Override
-		//			public Render createRenderFor(RenderManager manager) {
-		//				return new RenderBullet(manager);
-		//			}
-		//	});
+		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new IRenderFactory() {
+			@Override
+			public Render createRenderFor(RenderManager manager) {
+				return new RenderBullet(manager);
+			}
+		});
 	}
 
 	@SideOnly(Side.CLIENT)

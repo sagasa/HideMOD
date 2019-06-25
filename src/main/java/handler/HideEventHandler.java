@@ -140,7 +140,7 @@ public class HideEventHandler {
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onEvent(RenderLivingEvent.Post event) {
-		RenderHandler.RenderEntityEvent(event);
+	//	RenderHandler.RenderEntityEvent(event);
 	}
 
 	@SubscribeEvent

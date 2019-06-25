@@ -26,6 +26,7 @@ import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import network.PacketShoot;
@@ -93,6 +94,8 @@ public class GunController {
 		updateCustomize();
 		magazine = HideNBT.getGunLoadedMagazines(gun.getGunTag());
 		shootDelay = HideNBT.getGunShootDelay(gun.getGunTag());
+		lastTime = lastShootTime = Minecraft.getSystemTime();
+		System.out.println("load " + shootDelay);
 	}
 
 	public void saveAndClear() {
@@ -103,7 +106,7 @@ public class GunController {
 					(int) (RPMtoMillis(modifyData.RPM) - (System.currentTimeMillis() - lastShootTime)));
 			shootdelay = Math.max(0, shootdelay);
 			HideNBT.setGunShootDelay(gun.getGunTag(), shootdelay);
-			System.out.println(shootdelay);
+			System.out.println("Save" + shootdelay);
 		}
 		//リコイル停止
 		if (Shooter instanceof EntityPlayer && onClient) {
@@ -218,12 +221,12 @@ public class GunController {
 
 	/** 保存時のShootDelay補完用 */
 	private long lastShootTime = 0;
+	private long lastTime = -1;
 
 	/** NBT保存 */
 	private int shootDelay = 0;
 	private int shootNum = 0;
 	private boolean stopshoot = false;
-	private long lastTime = -1;
 
 	/** 銃のアップデート処理 トリガー関連 */
 	public void gunUpdate(boolean trigger) {
@@ -289,11 +292,12 @@ public class GunController {
 					LOGGER.error("cant shoot from other entity at client");
 					return;
 				}
-				RecoilHandler.addRecoil(modifyData, hand);
+				//	RecoilHandler.addRecoil(modifyData, hand);
 				if (completionTick != null) {
 					offset += completionTick;
 					completionTick = null;
 				}
+				Shooter.world.spawnParticle(EnumParticleTypes.HEART, X, Y, Z, 0, 0, 0, 0);
 				PacketHandler.INSTANCE.sendToServer(
 						new PacketShoot(isADS, offset, X, Y, Z, Yaw, Pitch, HideNBT.getHideID(gun.getGunTag())));
 			} else {
@@ -325,8 +329,8 @@ public class GunController {
 	}
 
 	/** RPMをミリ秒に変換 */
-	private static int RPMtoMillis(int rpm) {
-		return 60000 / rpm;
+	private static int RPMtoMillis(float rPM) {
+		return (int) (60000 / rPM);
 	}
 
 	/** ミリ秒をTickに変換 */
