@@ -1,6 +1,7 @@
 package handler;
 
 import handler.client.HideScope;
+import handler.client.HideSoundManager;
 import handler.client.InputHandler;
 import handler.client.RenderHandler;
 import items.ItemGun;
@@ -95,6 +96,7 @@ public class HideEventHandler {
 	public void onEvent(TickEvent.ClientTickEvent event) {
 		if (event.phase == Phase.START) {
 			InputHandler.tickUpdate();
+			HideSoundManager.update();
 		}
 	}
 

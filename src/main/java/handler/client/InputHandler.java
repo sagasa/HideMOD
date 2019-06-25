@@ -15,9 +15,12 @@ import handler.PlayerHandler;
 import handler.PlayerHandler.EquipMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import network.PacketInput;
 import types.base.GunFireMode;
 
+@SideOnly(Side.CLIENT)
 public class InputHandler {
 
 	private static float acceleration = 0F;

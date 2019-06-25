@@ -1,6 +1,7 @@
 package gamedata;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -79,6 +80,15 @@ public class LoadedMagazine {
 			magazineList.remove(last);
 		}
 		return null;
+	}
+
+	public void removeEmpty() {
+		Iterator<Magazine> itr = magazineList.iterator();
+		while (itr.hasNext()) {
+			Magazine mag = itr.next();
+			if (PackData.getBulletData(mag.name) == null || mag.num <= 0)
+				itr.remove();
+		}
 	}
 
 	public void addMagazinetoFast(@Nonnull Magazine mag) {

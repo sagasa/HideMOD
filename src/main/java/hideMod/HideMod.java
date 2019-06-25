@@ -5,11 +5,14 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import entity.EntityBullet;
 import handler.HideEventHandler;
 import handler.PacketHandler;
+import helper.HideDamage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -18,6 +21,7 @@ import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import pack.PackLoader;
@@ -56,10 +60,10 @@ public class HideMod {
 		PacketHandler.init();
 
 		// ダメージの初期設定
-	//	HideDamage.init();
+		HideDamage.init();
 		// エンティティ登録
-	//	EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,
-	//			"entity_bullet", 1, MOD_ID, 512, 1, false);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,
+				"entity_bullet", 1, MOD_ID, 512, 1, false);
 
 		if (FMLCommonHandler.instance().getSide().isClient()) {
 			// リソースローダーを追加
@@ -70,7 +74,6 @@ public class HideMod {
 			Minecraft.getMinecraft().refreshResources();
 			System.out.println(defaultResourcePacks);
 		}
-
 	}
 
 	@EventHandler
@@ -90,6 +93,7 @@ public class HideMod {
 	}
 
 	/** クライアントサイド限定 playerを取得 */
+	@SideOnly(Side.CLIENT)
 	public static EntityPlayer getPlayer() {
 		return Minecraft.getMinecraft().player;
 	}

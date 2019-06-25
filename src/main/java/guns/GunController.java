@@ -1,7 +1,7 @@
 package guns;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -10,7 +10,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import entity.EntityBullet;
-import gamedata.HidePlayerData;
 import gamedata.LoadedMagazine;
 import gamedata.LoadedMagazine.Magazine;
 import handler.HideEntityDataManager;
@@ -43,10 +42,10 @@ public class GunController {
 	/**ロード可能な弾薬のどれかをロードする*/
 	public static final String LOAD_ANY = "ANY";
 
-	public ShootPoints shootPoint = ShootPoints.DefaultShootPoint;
-	public IGuns gun;
-	public IMagazineHolder magazineHolder;
-	public EnumHand hand;
+	private ShootPoints shootPoint = ShootPoints.DefaultShootPoint;
+	private IGuns gun;
+	private IMagazineHolder magazineHolder;
+	private EnumHand hand;
 
 	// ===============クライアント,サーバー共通部分==================
 	private GunData modifyData = null;
@@ -101,7 +100,7 @@ public class GunController {
 		if (isGun() && !onClient) {
 			HideNBT.setGunLoadedMagazines(gun.getGunTag(), magazine);
 			int shootdelay = (int) MillistoTick(
-					(int) (RPMtoMillis(modifyData.RPM) - (Minecraft.getSystemTime() - lastShootTime)));
+					(int) (RPMtoMillis(modifyData.RPM) - (System.currentTimeMillis() - lastShootTime)));
 			shootdelay = Math.max(0, shootdelay);
 			HideNBT.setGunShootDelay(gun.getGunTag(), shootdelay);
 			System.out.println(shootdelay);
@@ -120,6 +119,7 @@ public class GunController {
 		completionTick = 0f;
 		lastTime = 0;
 		lastShootTime = 0;
+		reload = -1;
 	}
 
 	public boolean isGun() {
@@ -189,16 +189,11 @@ public class GunController {
 	public void tickUpdate(Side side) {
 		if (!isGun())
 			return;
-	//	System.out.println("magazineState " + magazine);
+		//	System.out.println("magazineState " + magazine);
 		if (side == Side.CLIENT) {
-			// magazine
-			LoadedMagazine now = HideNBT.getGunLoadedMagazines(gun.getGunTag());
-			// リロード検知
-			if (now.getLoadedNum() > amount) {
-				magazine = now;
-				System.out.println("Magazine更新");
-			}
-			amount = now.getLoadedNum();
+			LoadedMagazine mag = HideNBT.getGunLoadedMagazines(gun.getGunTag());
+			if (magazine.getList().size() != mag.getList().size())
+				magazine = mag;
 		} else {
 			// リロードタイマー
 			if (reload > 0) {
@@ -309,31 +304,18 @@ public class GunController {
 		}
 	}
 
-	/** サーバーサイドでパケットからの射撃処理 */
-	public static void shoot(EntityPlayer player, long uid, float offset, boolean isADS, double x, double y, double z,
-			float yaw, float pitch) {
-		GunController gun = HidePlayerData.getServerData(player).getGun(uid);
-		if (gun == null) {
-			LOGGER.warn("cant make bullet by cant find gun: player = " + player.getName());
-		}
-		gun.setPos(x, y, z);
-		gun.setRotate(yaw, pitch);
-		gun.setShooter(player);
-		gun.shoot(isADS, offset);
-		// System.out.println("offset at shoot" + offset);
-	}
-
 	/** サーバーサイド */
 	public void shoot(boolean isADS, float offset) {
 		shoot(modifyData, magazine.getNextBullet(), Shooter, isADS, offset, X, Y, Z, Yaw, Pitch);
-		lastShootTime = Minecraft.getSystemTime();
+		reload = -1;
+		lastShootTime = System.currentTimeMillis();
 	}
 
 	/** エンティティを生成 ShootNumに応じた数弾を出す */
 	private static void shoot(GunData gundata, MagazineData bulletdata, Entity shooter, boolean isADS, float offset,
 			double x, double y, double z, float yaw, float pitch) {
-		SoundHandler.broadcastSound(shooter, 0, 0, 0, gundata.SOUND_SHOOT);
 		if (bulletdata != null && bulletdata.BULLETDATA != null) {
+			SoundHandler.broadcastSound(shooter, 0, 0, 0, gundata.SOUND_SHOOT);
 			for (int i = 0; i < bulletdata.BULLETDATA.SHOOT_NUM; i++) {
 				EntityBullet bullet = new EntityBullet(gundata, bulletdata, shooter, isADS, offset, x, y, z, yaw,
 						pitch);
@@ -362,16 +344,20 @@ public class GunController {
 		if (magazine.getList().size() < modifyData.LOAD_NUM) {
 			return true;
 		}
-
-		MagazineData magData = ItemMagazine.getMagazineData(getUseMagazine());
-		for (int i = 0; i < magazine.getList().size(); i++) {
-			Magazine mag = magazine.getList().get(i);
-			// リロード可能なマガジンなら
-			if ((mag.num < magData.MAGAZINE_SIZE && mag.name.equals(getUseMagazine())) || mag.num == 0) {
+		Iterator<Magazine> itr = magazine.getList().iterator();
+		while (itr.hasNext()) {
+			Magazine mag = itr.next();
+			if (mag.num < PackData.getBulletData(mag.name).MAGAZINE_SIZE) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	/**オプションを考慮したマガジン排出処理*/
+	private void exitMagazine(Magazine mag) {
+		if (0 < mag.num || !PackData.getBulletData(mag.name).MAGAZINE_BREAK)
+			magazineHolder.addMagazine(mag.name, mag.num);
 	}
 
 	/**
@@ -379,64 +365,66 @@ public class GunController {
 	 */
 	public boolean preReload(int addReloadTime) {
 		// ReloadAllの場合リロード可能なマガジンをすべて取り外す
-		// ReloadAll以外ので空スロットがない場合同じ種類で1番少ないマガジンを取り外す
+		// ReloadAll以外+アンロードが許可されている+空スロットがない場合同じ種類で1番少ないマガジンを取り外す
 		// リロードカウントを始める
 		if (!isGun() || !needReload())
 			return false;
-		System.out.println("unload ");
+		//リロード中なら
+		if (reload != -1) {
+			unload();
+			return false;
+		}
+
+		//空のスロットがない+アンロードが許可されていないなら止める
+		magazine.removeEmpty();
+		if (magazine.getList().size() >= modifyData.LOAD_NUM && !modifyData.UNLOAD_IN_RELOADING) {
+			return false;
+		}
+		//リロード開始
 		// 音
 		SoundHandler.broadcastSound(Shooter, X, Y, Z,
 				gun.getGunData().SOUND_RELOAD);
+		reload = modifyData.RELOAD_TICK + addReloadTime;
+
 		// ReloadAll以外で空きスロットがある場合何もしない
-		if (magazine.getList().size() < modifyData.LOAD_NUM) {
-			if (!modifyData.RELOAD_ALL) {
-				return false;
-			}
+		if (magazine.getList().size() < modifyData.LOAD_NUM && !modifyData.RELOAD_ALL) {
+			return true;
 		}
-		MagazineData magData = ItemMagazine.getMagazineData(getUseMagazine());
-		int c = magData.MAGAZINE_SIZE;
-		int index = -1;
-		List<Magazine> list = new ArrayList<>();
-		for (int i = 0; i < magazine.getList().size(); i++) {
-			Magazine mag = magazine.getList().get(i);
-			// リロード可能なマガジンなら
-			if ((mag.num < magData.MAGAZINE_SIZE && mag.name.equals(getUseMagazine())) || mag.num == 0) {
-				if (modifyData.RELOAD_ALL) {
-					list.add(mag);
-				} else if (mag.num < c) {
-					c = mag.num;
-					index = i;
+
+		MagazineData useMag = ItemMagazine.getMagazineData(getUseMagazine());
+		float min = 1f;
+		Magazine minMag = null;
+		Iterator<Magazine> itr = magazine.getList().iterator();
+		while (itr.hasNext()) {
+			Magazine mag = itr.next();
+			//reloadAllなら問答無用で排出
+			if (modifyData.RELOAD_ALL && mag.num < PackData.getBulletData(mag.name).MAGAZINE_SIZE) {
+				exitMagazine(mag);
+				itr.remove();
+			} else {
+				float dia = mag.num / PackData.getBulletData(mag.name).MAGAZINE_SIZE;
+				if (dia < min) {
+					min = dia;
+					minMag = mag;
 				}
 			}
 		}
-		if (modifyData.RELOAD_ALL) {
-			list.forEach(mag -> {
-				if (!PackData.getBulletData(mag.name).MAGAZINE_BREAK || mag.num > 0)
-					magazineHolder.addMagazine(mag.name, mag.num);
-			});
-			magazine.getList().removeAll(list);
-		} else if (index != -1) {
-			Magazine mag = magazine.getList().get(index);
-			magazineHolder.addMagazine(mag.name, mag.num);
-			magazine.getList().remove(index);
+		if (!modifyData.RELOAD_ALL && minMag != null) {
+			magazine.getList().remove(minMag);
+			exitMagazine(minMag);
 		}
-		//リロードフラグ
-		reload = modifyData.RELOAD_TICK + addReloadTime;
 		return true;
 	}
 
 	private void reload() {
+		if (magazine.getList().size() >= modifyData.LOAD_NUM)
+			return;
 		int count = magazineHolder.useMagazine(getUseMagazine());
 		if (count > 0) {
 			magazine.addMagazinetoLast(new Magazine(getUseMagazine(), count));
-			//	System.out.println("add  " + mag);
-
 			// 全リロードの場合ループ
 			if (modifyData.RELOAD_ALL)
 				reload();
-
-			System.out.println("SAVE");
-			HideNBT.setGunLoadedMagazines(gun.getGunTag(), magazine);
 		}
 	}
 
@@ -518,27 +506,12 @@ public class GunController {
 		return isGun() ? magazineHolder.getBulletCount() : 0;
 	}
 
-	public int getBulletAmount() {
-		int num = 0;
-		for (Magazine mag : magazine.getList()) {
-			num += mag.num;
-		}
-		return num;
-	}
-
 	public int getMaxBulletAmount() {
 		return modifyData.LOAD_NUM * PackData.getBulletData(getUseMagazine()).MAGAZINE_SIZE;
 	}
 
 	public String getUseMagazine() {
 		return HideNBT.getGunUseingBullet(gun.getGunTag());
-	}
-
-	public boolean setUseMagazine(String name) {
-		if (!getUseMagazineList().contains(name))
-			return false;
-		HideNBT.setGunUseingBullet(gun.getGunTag(), name);
-		return true;
 	}
 
 	public List<String> getUseMagazineList() {
@@ -549,19 +522,9 @@ public class GunController {
 		return HideNBT.getGunFireMode(gun.getGunTag());
 	}
 
-	public boolean setFireMode(GunFireMode firemode) {
-		HideNBT.getGunFireMode(gun.getGunTag());
-		return true;
-	}
-
 	public List<GunFireMode> getFireModeList() {
 		return Arrays.asList(modifyData.FIREMODE).stream().map(str -> GunFireMode.getFireMode(str))
 				.collect(Collectors.toList());
-	}
-
-	public void trigger(int time) {
-		// TODO 自動生成されたメソッド・スタブ
-
 	}
 
 	public void setGun(GunData gunData, Supplier<NBTTagCompound> gunTag, EntityPlayer player) {
@@ -644,3 +607,5 @@ public class GunController {
 		public void addMagazine(String name, int amount);
 	}
 }
+
+//=================== Mobから利用するためのスタティックなコントローラー ========================= //TODO

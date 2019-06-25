@@ -7,6 +7,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 /** 銃 兵器 装備品 GUIの描画系 */
+@SideOnly(Side.CLIENT)
 public class HideViewHandler {
 	// クライアント側変数
 	public static int HitMarkerTime = 0;
