@@ -89,10 +89,8 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 				if (gun == null) {
 					log.warn("cant make bullet by cant find gun: player = " + player.getName());
 				}
-				gun.setPos(m.x, m.y, m.z);
-				gun.setRotate(m.yaw, m.pitch);
 				gun.setShooter(player);
-				gun.shoot(m.isADS, m.offset);
+				gun.shoot(m.isADS, m.offset, m.x, m.y, m.z, m.yaw, m.pitch);
 			});
 		}
 		return null;

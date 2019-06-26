@@ -142,10 +142,19 @@ public class GunController {
 	private double Z;
 	private float Yaw;
 	private float Pitch;
+	private double oldX;
+	private double oldY;
+	private double oldZ;
+	private float oldYaw;
+	private float oldPitch;
 	private Entity Shooter;
 
 	/** 弾の出現点を設定 */
 	public GunController setPos(double x, double y, double z) {
+		System.out.println(x+" "+y+" "+z + " "+System.currentTimeMillis()+" "+hand);
+		oldX = X;
+		oldY = Y;
+		oldZ = Z;
 		X = x;
 		Y = y;
 		Z = z;
@@ -154,6 +163,8 @@ public class GunController {
 
 	/** 弾の向きを設定 */
 	public GunController setRotate(float yaw, float pitch) {
+		oldYaw = Yaw;
+		oldPitch = Pitch;
 		Yaw = yaw;
 		Pitch = pitch;
 		return this;
@@ -309,8 +320,8 @@ public class GunController {
 	}
 
 	/** サーバーサイド */
-	public void shoot(boolean isADS, float offset) {
-		shoot(modifyData, magazine.getNextBullet(), Shooter, isADS, offset, X, Y, Z, Yaw, Pitch);
+	public void shoot(boolean isADS, float offset, double x, double y, double z, float yaw, float pitch) {
+		shoot(modifyData, magazine.getNextBullet(), Shooter, isADS, offset, x, y, z, yaw, pitch);
 		reload = -1;
 		lastShootTime = System.currentTimeMillis();
 	}
