@@ -13,4 +13,16 @@ public class HideMath {
 		// System.out.println("calue : "+ x);
 		return (x);
 	}
+
+	public static double completion(double old, double now, Float completion) {
+		return completion == null ? now : old + (now - old) * completion;
+	}
+
+	public static float completion(float old, float now, Float completion) {
+		return completion == null ? now : old + (now - old) * completion;
+	}
+
+	public static int completion(int old, int now, Float completion) {
+		return completion == null ? now : (int) (old + (now - old) * completion);
+	}
 }

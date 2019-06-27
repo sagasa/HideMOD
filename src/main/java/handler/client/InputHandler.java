@@ -111,15 +111,6 @@ public class InputHandler {
 		ClientPlayerData data = HidePlayerData.getClientData(player);
 		GunController gunMain = data.gunMain;
 		GunController gunOff = data.gunOff;
-		// Pos代入
-		if (gunMain != null) {
-			gunMain.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ).setRotate(player.rotationYaw,
-					player.rotationPitch);
-		}
-		if (gunOff != null) {
-			gunOff.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ).setRotate(player.rotationYaw,
-					player.rotationPitch);
-		}
 
 		EquipMode em = EquipMode.getEquipMode(gunMain,gunOff);
 		// 射撃処理

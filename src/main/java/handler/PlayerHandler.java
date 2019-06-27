@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import entity.EntityDrivable;
 import gamedata.HidePlayerData;
+import gamedata.HidePlayerData.ClientPlayerData;
 import gamedata.HidePlayerData.CommonPlayerData;
 import gamedata.HidePlayerData.ServerPlayerData;
 import guns.GunController;
@@ -37,6 +38,7 @@ public class PlayerHandler {
 				if (event.player.equals(Minecraft.getMinecraft().player)) {
 					gunStateUpdate(event.player, event.side);
 					HideViewHandler.ClientTick(Minecraft.getMinecraft().player);
+					ClientUpdate();
 				}
 			} else if (event.side == Side.SERVER) {
 				gunStateUpdate(event.player, event.side);
@@ -134,6 +136,16 @@ public class PlayerHandler {
 		public boolean hasOff() {
 			return hasOff;
 		}
+	}
+
+	private static void ClientUpdate() {
+		//TODO 兵器の場合
+		EntityPlayer player = Minecraft.getMinecraft().player;
+		ClientPlayerData data = HidePlayerData.getClientData(player);
+		data.gunMain.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ).setRotate(player.rotationYaw,
+				player.rotationPitch);
+		data.gunOff.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ).setRotate(player.rotationYaw,
+				player.rotationPitch);
 	}
 
 	/** サーバーTick処理 プログレスを進める */

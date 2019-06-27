@@ -16,6 +16,7 @@ import handler.HideEntityDataManager;
 import handler.PacketHandler;
 import handler.SoundHandler;
 import handler.client.RecoilHandler;
+import helper.HideMath;
 import helper.HideNBT;
 import items.ItemMagazine;
 import net.minecraft.client.Minecraft;
@@ -303,14 +304,20 @@ public class GunController {
 					LOGGER.error("cant shoot from other entity at client");
 					return;
 				}
-				//	RecoilHandler.addRecoil(modifyData, hand);
+				System.out.println("shoot comp = "+completionTick + "  offset = "+offset);
 				if (completionTick != null) {
 					offset += completionTick;
 					completionTick = null;
 				}
+				//	RecoilHandler.addRecoil(modifyData, hand);
+				double x = HideMath.completion(X, oldX, offset);
+				double y = HideMath.completion(Y, oldY, offset);
+				double z = HideMath.completion(Z, oldZ, offset);
+
+
 				Shooter.world.spawnParticle(EnumParticleTypes.HEART, X, Y, Z, 0, 0, 0, 0);
 				PacketHandler.INSTANCE.sendToServer(
-						new PacketShoot(isADS, offset, X, Y, Z, Yaw, Pitch, HideNBT.getHideID(gun.getGunTag())));
+						new PacketShoot(isADS, offset, x, y, z, Yaw, Pitch, HideNBT.getHideID(gun.getGunTag())));
 			} else {
 				shoot(modifyData, bullet, Shooter, isADS, offset, X, Y, Z, Yaw, Pitch);
 			}
