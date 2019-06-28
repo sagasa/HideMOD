@@ -1,6 +1,7 @@
 package guns;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
@@ -119,7 +120,6 @@ public class GunController {
 		modifyData = null;
 		shootDelay = 0;
 		magazine = new LoadedMagazine();
-		amount = 0;
 		completionTick = 0f;
 		lastTime = 0;
 		lastShootTime = 0;
@@ -181,9 +181,9 @@ public class GunController {
 		return isGun() && uid == id;
 	}
 
-	public boolean stateEquals(GunController gun) {
-		return this.modifyData.ITEM_SHORTNAME.equals(gun.modifyData.ITEM_SHORTNAME)
-				&& this.getFireMode() == gun.getFireMode();
+	public boolean stateEquals(GunController other) {
+		return this.modifyData.ITEM_SHORTNAME.equals(other.modifyData.ITEM_SHORTNAME)
+				&& this.getFireMode() == other.getFireMode();
 	}
 
 	public GunData getGunData() {
@@ -198,8 +198,6 @@ public class GunController {
 
 	/** NBT保存 */
 	public LoadedMagazine magazine;
-
-	private int amount = 0;
 
 	public void tickUpdate(Side side) {
 		if (!isGun())
@@ -392,7 +390,7 @@ public class GunController {
 		// リロードカウントを始める
 		if (!isGun() || !needReload())
 			return false;
-		//リロード中なら
+		//リロード中ならdsq
 		if (reload != -1) {
 			unload();
 			return false;
@@ -414,7 +412,6 @@ public class GunController {
 			return true;
 		}
 
-		MagazineData useMag = ItemMagazine.getMagazineData(getUseMagazine());
 		float min = 1f;
 		Magazine minMag = null;
 		Iterator<Magazine> itr = magazine.getList().iterator();
@@ -442,9 +439,9 @@ public class GunController {
 	private void reload() {
 		if (magazine.getList().size() >= modifyData.LOAD_NUM)
 			return;
-		int count = magazineHolder.useMagazine(getUseMagazine());
-		if (count > 0) {
-			magazine.addMagazinetoLast(new Magazine(getUseMagazine(), count));
+		Magazine mag = magazineHolder.useMagazine(getUseMagazines());
+		if (mag.num > 0) {
+			magazine.addMagazinetoLast(mag);
 			// 全リロードの場合ループ
 			if (modifyData.RELOAD_ALL)
 				reload();
@@ -513,7 +510,7 @@ public class GunController {
 		if (!isGun())
 			return null;
 		String now = HideNBT.getGunUseingBullet(gun.getGunTag());
-		List<String> modes = getUseMagazineList();
+		List<String> modes = Arrays.asList(getUseMagazineList());
 		int index = modes.indexOf(now.toString()) + 1;
 		if (index > modes.size() - 1) {
 			index = 0;
@@ -526,19 +523,27 @@ public class GunController {
 
 	/** 銃で使用中の弾薬の所持数を返す */
 	public int getCanUseBulletNum() {
-		return isGun() ? magazineHolder.getBulletCount() : 0;
+		return isGun() ? magazineHolder.getBulletCount(getUseMagazines()) : 0;
 	}
 
+	/**利用可能なすべてのマガジンの中で最大の保持できる弾薬数*/
 	public int getMaxBulletAmount() {
-		return modifyData.LOAD_NUM * PackData.getBulletData(getUseMagazine()).MAGAZINE_SIZE;
+		return modifyData.LOAD_NUM * Arrays.stream(getUseMagazines())
+				.map(str -> PackData.getBulletData(str).MAGAZINE_SIZE).max(Comparator.naturalOrder()).get();
+	}
+
+	/**利用可能なすべてのマガジンを返す NBTの文字列じゃないことに注意*/
+	public String[] getUseMagazines() {
+		String name = HideNBT.getGunUseingBullet(gun.getGunTag());
+		return name.equals(LOAD_ANY) ? getUseMagazineList() : new String[] { name };
 	}
 
 	public String getUseMagazine() {
 		return HideNBT.getGunUseingBullet(gun.getGunTag());
 	}
 
-	public List<String> getUseMagazineList() {
-		return Arrays.asList(modifyData.MAGAZINE_USE);
+	public String[] getUseMagazineList() {
+		return modifyData.MAGAZINE_USE;
 	}
 
 	public GunFireMode getFireMode() {
@@ -564,42 +569,57 @@ public class GunController {
 				}
 			}, new IMagazineHolder() {
 				@Override
-				public int useMagazine(String name) {
+				public Magazine useMagazine(String... name) {
 					InventoryPlayer inv = player.inventory;
-					int count = 0;
+					Magazine mag = new Magazine(null, 0);
 					int index = -1;
 					for (int i = 0; i < inv.mainInventory.size(); i++) {
 						ItemStack item = inv.mainInventory.get(i);
-						if (ItemMagazine.isMagazine(item, name)) {
-							int bulletNum = HideNBT.getMagazineBulletNum(item);
-							//	System.out.println("find mag " + item + " " + bulletNum);
-							if (bulletNum > count) {
-								index = i;
-								count = bulletNum;
-								if (bulletNum >= PackData.getBulletData(name).MAGAZINE_SIZE)
-									break;
+						//
+						for (String str : name)
+							if (ItemMagazine.isMagazine(item, str)) {
+								int bulletNum = HideNBT.getMagazineBulletNum(item);
+								//	System.out.println("find mag " + item + " " + bulletNum);
+								if (bulletNum > mag.num) {
+									index = i;
+									mag.num = bulletNum;
+									mag.name = str;
+								}
+								break;
 							}
-						}
 					}
-					if (count > 0) {
+					if (mag.num > 0) {
 						ItemStack item = inv.mainInventory.get(index);
 						if (item.getCount() > 1)
 							item.setCount(item.getCount() - 1);
 						else
 							inv.mainInventory.set(index, ItemStack.EMPTY);
 					}
-					return count;
+					return mag;
 				}
 
 				@Override
-				public int getBulletCount() {
+				public int getBulletCount(String... name) {
 					int num = 0;
-					String bulletName = HideNBT.getGunUseingBullet(gun.getGunTag());
 					for (ItemStack item : player.inventory.mainInventory) {
-						if (ItemMagazine.isMagazine(item, bulletName)) {
-							num += HideNBT.getMagazineBulletNum(item) * item.getCount();
-						}
+						for (String str : name)
+							if (ItemMagazine.isMagazine(item, str)) {
+								num += HideNBT.getMagazineBulletNum(item) * item.getCount();
+								break;
+							}
 					}
+					return num;
+				}
+
+				@Override
+				public int getMaxBulletCount(String... name) {
+					int num = 0;
+					for (ItemStack item : player.inventory.mainInventory)
+						for (String str : name)
+							if (ItemMagazine.isMagazine(item, str)) {
+								num = Math.max(num, HideNBT.getMagazineBulletNum(item));
+								break;
+							}
 					return num;
 				}
 
@@ -622,10 +642,12 @@ public class GunController {
 
 	public interface IMagazineHolder {
 		/**指定された弾の数*/
-		public int getBulletCount();
+		public int getBulletCount(String... name);
+
+		public int getMaxBulletCount(String... name);
 
 		/**指定されたマガジンの中で1番残弾が多いものを消費してその残弾数を返す*/
-		public int useMagazine(String name);
+		public Magazine useMagazine(String... name);
 
 		public void addMagazine(String name, int amount);
 	}
