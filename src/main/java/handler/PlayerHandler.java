@@ -23,6 +23,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /***/
 public class PlayerHandler {
@@ -138,6 +139,7 @@ public class PlayerHandler {
 		}
 	}
 
+	@SideOnly(Side.CLIENT)
 	private static void ClientUpdate() {
 		//TODO 兵器の場合
 		EntityPlayer player = Minecraft.getMinecraft().player;

@@ -93,7 +93,7 @@ public class HideEntitySound extends PositionedSound implements ITickableSound {
 		yPosF = (float) location.y;
 		zPosF = (float) location.z;
 		if (USE_DECAY)
-			volume = VOL * (float) (1 - (getDistance() / RANGE));
+			volume = VOL * (float) (1.3 - (getDistance() / RANGE));
 	}
 
 	@Override

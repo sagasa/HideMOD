@@ -1,1 +1,3 @@
 gradlew build
+
+cmd "/k"

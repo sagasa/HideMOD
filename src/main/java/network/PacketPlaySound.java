@@ -25,6 +25,7 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 	float Range;
 	boolean UseDelay;
 	boolean UseDecay;
+	boolean Excepting;
 
 	public PacketPlaySound() {
 	}
@@ -45,12 +46,12 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 
 	/** クライアント→クライアント 指定位置で再生 */
 	public PacketPlaySound(Sound sound, double x, double y, double z) {
-		this(sound.NAME, x, y, z, sound.VOL, sound.PITCH, sound.RANGE, sound.USE_DELAY, sound.USE_DECAY);
+		this(sound.NAME, x, y, z, sound.VOL, sound.PITCH, sound.RANGE, sound.USE_DELAY, sound.USE_DECAY, true);
 	}
 
 	/** クライアント→クライアント 指定位置で再生 */
 	public PacketPlaySound(String soundName, double x, double y, double z, float vol, float pitch, float range,
-			boolean delay, boolean decay) {
+			boolean delay, boolean decay, boolean excepting) {
 		Name = soundName;
 		X = x;
 		Y = y;
@@ -60,6 +61,7 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 		Range = range;
 		UseDelay = delay;
 		UseDecay = decay;
+		Excepting = excepting;
 	}
 
 	@Override
@@ -73,6 +75,7 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 		Range = buf.readFloat();
 		UseDelay = buf.readBoolean();
 		UseDecay = buf.readBoolean();
+		Excepting = buf.readBoolean();
 		entityID = buf.readInt();
 	}
 
@@ -87,6 +90,7 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 		buf.writeFloat(Range);
 		buf.writeBoolean(UseDelay);
 		buf.writeBoolean(UseDecay);
+		buf.writeBoolean(Excepting);
 		buf.writeInt(entityID);
 	}
 
@@ -97,7 +101,7 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 				EntityPlayer player = ctx.getServerHandler().player;
 				SoundHandler.broadcastSound(ctx.getServerHandler().player.world, m.entityID, m.Name, m.X, m.Y, m.Z,
 						m.Range, m.Vol, m.Pitch,
-						m.UseDelay, m.UseDecay);
+						m.UseDelay, m.UseDecay, m.Excepting);
 
 			});
 		} else
@@ -108,7 +112,9 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 
 	@SideOnly(Side.CLIENT)
 	static void playSound(PacketPlaySound m) {
-		HideSoundManager.playSound(Minecraft.getMinecraft().world.getEntityByID(m.entityID), m.Name, m.X, m.Y, m.Z, m.Range,
+		HideSoundManager.playSound(Minecraft.getMinecraft().world.getEntityByID(m.entityID), m.Name, m.X, m.Y, m.Z,
+				m.Range,
 				m.Vol, m.Pitch, m.UseDelay, m.UseDecay);
+		System.out.println("playsound by packet");
 	}
 }

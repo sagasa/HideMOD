@@ -8,6 +8,7 @@ import items.ItemGun;
 import net.minecraft.item.Item;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderItemInFrameEvent;
@@ -67,6 +68,10 @@ public class HideEventHandler {
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedInEvent event) {
 
+	}
+	@SubscribeEvent
+	public void onEvent(MouseEvent e) {
+		System.out.println(e.getDx()+" "+e.getX());
 	}
 
 	@SubscribeEvent

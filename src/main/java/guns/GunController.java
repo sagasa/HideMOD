@@ -15,6 +15,7 @@ import gamedata.LoadedMagazine.Magazine;
 import handler.HideEntityDataManager;
 import handler.PacketHandler;
 import handler.SoundHandler;
+import handler.client.HideSoundManager;
 import handler.client.RecoilHandler;
 import helper.HideMath;
 import helper.HideNBT;
@@ -27,7 +28,6 @@ import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.EnumParticleTypes;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import network.PacketShoot;
@@ -95,7 +95,7 @@ public class GunController {
 		updateCustomize();
 		magazine = HideNBT.getGunLoadedMagazines(gun.getGunTag());
 		shootDelay = HideNBT.getGunShootDelay(gun.getGunTag());
-		lastTime = lastShootTime = Minecraft.getSystemTime();
+		lastTime = lastShootTime = System.currentTimeMillis();
 		System.out.println("load " + shootDelay);
 	}
 
@@ -152,7 +152,7 @@ public class GunController {
 
 	/** 弾の出現点を設定 */
 	public GunController setPos(double x, double y, double z) {
-		System.out.println(x+" "+y+" "+z + " "+System.currentTimeMillis()+" "+hand);
+		//System.out.println(x+" "+y+" "+z + " "+System.currentTimeMillis()+" "+hand);
 		oldX = X;
 		oldY = Y;
 		oldZ = Z;
@@ -304,20 +304,21 @@ public class GunController {
 					LOGGER.error("cant shoot from other entity at client");
 					return;
 				}
-				System.out.println("shoot comp = "+completionTick + "  offset = "+offset);
 				if (completionTick != null) {
 					offset += completionTick;
 					completionTick = null;
 				}
-				//	RecoilHandler.addRecoil(modifyData, hand);
-				double x = HideMath.completion(X, oldX, offset);
-				double y = HideMath.completion(Y, oldY, offset);
-				double z = HideMath.completion(Z, oldZ, offset);
+				HideSoundManager.playSound(Shooter, 0, 0, 0, modifyData.SOUND_SHOOT);
 
+				RecoilHandler.addRecoil(modifyData, hand);
+				double x = HideMath.completion(oldX, X, offset);
+				double y = HideMath.completion(oldY, Y, offset);
+				double z = HideMath.completion(oldZ, Z, offset);
+				float yaw = HideMath.completion(oldYaw, Yaw, offset);
+				float pitch = HideMath.completion(oldPitch, Pitch, offset);
 
-				Shooter.world.spawnParticle(EnumParticleTypes.HEART, X, Y, Z, 0, 0, 0, 0);
 				PacketHandler.INSTANCE.sendToServer(
-						new PacketShoot(isADS, offset, x, y, z, Yaw, Pitch, HideNBT.getHideID(gun.getGunTag())));
+						new PacketShoot(isADS, offset, x, y, z, yaw, pitch, HideNBT.getHideID(gun.getGunTag())));
 			} else {
 				shoot(modifyData, bullet, Shooter, isADS, offset, X, Y, Z, Yaw, Pitch);
 			}
@@ -337,7 +338,7 @@ public class GunController {
 	private static void shoot(GunData gundata, MagazineData bulletdata, Entity shooter, boolean isADS, float offset,
 			double x, double y, double z, float yaw, float pitch) {
 		if (bulletdata != null && bulletdata.BULLETDATA != null) {
-			SoundHandler.broadcastSound(shooter, 0, 0, 0, gundata.SOUND_SHOOT);
+			SoundHandler.broadcastSound(shooter, 0, 0, 0, gundata.SOUND_SHOOT, true);
 			for (int i = 0; i < bulletdata.BULLETDATA.SHOOT_NUM; i++) {
 				EntityBullet bullet = new EntityBullet(gundata, bulletdata, shooter, isADS, offset, x, y, z, yaw,
 						pitch);
@@ -405,7 +406,7 @@ public class GunController {
 		//リロード開始
 		// 音
 		SoundHandler.broadcastSound(Shooter, X, Y, Z,
-				gun.getGunData().SOUND_RELOAD);
+				gun.getGunData().SOUND_RELOAD, true);
 		reload = modifyData.RELOAD_TICK + addReloadTime;
 
 		// ReloadAll以外で空きスロットがある場合何もしない

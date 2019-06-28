@@ -98,7 +98,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		motionX = -Math.sin(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
 		motionZ = Math.cos(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
 		motionY = -Math.sin(Math.toRadians(rotationPitch));
-		float f2 = MathHelper.sqrt(motionX * motionX + motionZ * motionZ + motionY * motionY) / 0.1f;
+		float f2 = MathHelper.sqrt(motionX * motionX + motionZ * motionZ + motionY * motionY) / gunData.BULLET_SPEED;
 		motionX /= f2;
 		motionZ /= f2;
 		motionY /= f2;
@@ -118,10 +118,10 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		this.lastTickPosX = this.posX;
 		this.lastTickPosY = this.posY;
 		this.lastTickPosZ = this.posZ;
-
 		this.prevPosX = this.posX + (this.motionX * tick);
 		this.prevPosY = this.posY + (this.motionY * tick);
 		this.prevPosZ = this.posZ + (this.motionZ * tick);
+
 		if (!this.world.isRemote) {
 			// 削除計算
 			life -= tick;
@@ -290,7 +290,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 				HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 			}
 			// サウンド
-			SoundHandler.broadcastSound(this, endPos.x, endPos.y, endPos.z, exp.SOUND);
+			SoundHandler.broadcastSound(this, endPos.x, endPos.y, endPos.z, exp.SOUND, false);
 			// TODO エフェクト
 		}
 	}
