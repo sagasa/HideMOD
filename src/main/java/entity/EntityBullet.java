@@ -291,7 +291,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			}
 			// サウンド
 			SoundHandler.broadcastSound(this, endPos.x, endPos.y, endPos.z, exp.SOUND, false);
-			// TODO エフェクト
+			// TODO エフェクト サウンドの対象を座標に変えなきゃ
 		}
 	}
 

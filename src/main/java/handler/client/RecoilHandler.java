@@ -4,7 +4,6 @@ import java.util.EnumMap;
 
 import helper.HideMath;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -25,8 +24,8 @@ public class RecoilHandler {
 	private static class RecoilCash {
 		private float yawReturnTo = 0;
 		private float pitchReturnTo = 0;
-		private int yawReturnTick = -1;
-		private int pitchReturnTick = -1;
+		private float yawReturnTick = -1;
+		private float pitchReturnTick = -1;
 
 		private float yawShakeTo = 0;
 		private float pitchShakeTo = 0;
@@ -52,8 +51,8 @@ public class RecoilHandler {
 			float pitchrecoil = getPitchRecoil(recoil);
 
 			// リコイル戻し
-			yawReturnTo = getYawReturn(recoil, yawrecoil);
-			pitchReturnTo = getPitchReturn(recoil, pitchrecoil);
+			yawReturnTo = yawrecoil;
+			pitchReturnTo = pitchrecoil;
 
 			// リコイル
 			yawShakeTo += yawrecoil;
@@ -61,51 +60,51 @@ public class RecoilHandler {
 
 			pitchShakeTo += pitchrecoil;
 			pitchShakeTick = recoil.PITCH_RECOIL_TICK;
+
+			pitchReturnTick = yawReturnTick = -1;
 			// リコイルパワー加算
 			recoilPower = recoilPower + getRecoil(data).POWER_SHOOT > 100 ? 100
 					: recoilPower + getRecoil(data).POWER_SHOOT;
 		}
 
 		/** Tick毎の変化 */
-		private void updateRecoil() {
+		private void updateRecoil(float tick) {
 			// 撃ってなければ戻る
-			if (nowGun == null) {
+			if (nowGun == null || Minecraft.getMinecraft().player == null) {
 				return;
 			}
 			//
 			Recoil recoil = getRecoil(nowGun);
 			if (yawShakeTick >= 0) {
-				float coe = yawShakeTo * 1 / (yawShakeTick + 1);
-			//	System.out.println("yaw shake :" + yawShakeTo + "  " + coe + " time : " + yawShakeTick);
+				float coe = yawShakeTo * tick / (yawShakeTick + 1);
 				yawShakeTo -= coe;
 				Minecraft.getMinecraft().player.rotationYaw += coe;
-				yawShakeTick -= 1;
-				if (yawShakeTick == -1) {
+				yawShakeTick -= tick;
+				if (yawShakeTick < 0) {
 					yawReturnTick = recoil.YAW_RETURN_TICK;
 				}
 			}
 			if (pitchShakeTick >= 0) {
-				float coe = pitchShakeTo / (pitchShakeTick + 1);
-			//	System.out.println("yaw shake :" + pitchShakeTo + "  " + coe + " time : " + pitchShakeTick);
+				float coe = pitchShakeTo * tick / (pitchShakeTick + 1);
 				pitchShakeTo -= coe;
 				Minecraft.getMinecraft().player.rotationPitch -= coe;
-				pitchShakeTick -= 1;
-				if (pitchShakeTick == -1) {
+				pitchShakeTick -= tick;
+				if (pitchShakeTick < 0) {
 					pitchReturnTick = recoil.PITCH_RETURN_TICK;
 				}
 			}
 
 			if (yawReturnTick >= 0) {
-				float coe = yawReturnTo / (yawReturnTick + 1);
+				float coe = yawReturnTo * tick / (yawReturnTick + 1);
 				yawReturnTo -= coe;
 				Minecraft.getMinecraft().player.rotationYaw -= coe;
-				yawReturnTick -= 1;
+				yawReturnTick -= tick;
 			}
 			if (pitchReturnTick >= 0) {
-				float coe = pitchReturnTo / (pitchReturnTick + 1);
+				float coe = pitchReturnTo * tick / (pitchReturnTick + 1);
 				pitchReturnTo -= coe;
 				Minecraft.getMinecraft().player.rotationPitch += coe;
-				pitchReturnTick -= 1;
+				pitchReturnTick -= tick;
 			}
 			if (recoilPower > 0) {
 				recoilPower = recoilPower - recoil.POWER_TICK < 0 ? 0 : recoilPower - recoil.POWER_TICK;
@@ -118,10 +117,18 @@ public class RecoilHandler {
 		}
 	}
 
+	static long lastTime = -1;
+
 	/**tick update TODO レンダー側のTickでやりたい
 	 * @param renderTickTime */
 	public static void updateRecoil(float renderTickTime) {
-		recoilcash.values().forEach(recoil -> recoil.updateRecoil());
+		if (lastTime < 0) {
+			lastTime = System.currentTimeMillis();
+			return;
+		}
+		long now = System.currentTimeMillis();
+		recoilcash.values().forEach(recoil -> recoil.updateRecoil((now - lastTime) / 50f));
+		lastTime = now;
 	}
 
 	public static void addRecoil(GunData modifyData, EnumHand hand) {
@@ -139,8 +146,8 @@ public class RecoilHandler {
 
 	/** プレイヤーの状態から使用するリコイルを取得 */
 	private static Recoil getRecoil(GunData data) {
-		EntityPlayer player = Minecraft.getMinecraft().player;
-		return getRecoil(data, player.isSneaking(), HideViewHandler.isADS);
+		boolean sneak = Minecraft.getMinecraft().player != null ? Minecraft.getMinecraft().player.isSneaking() : false;
+		return getRecoil(data, sneak, HideViewHandler.isADS);
 	}
 
 	// 状態から取得 使えなかった場合前を参照

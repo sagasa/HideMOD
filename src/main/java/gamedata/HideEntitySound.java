@@ -39,6 +39,14 @@ public class HideEntitySound extends PositionedSound implements ITickableSound {
 		return (int) (SOUND_SPEAD * getDistance());
 	}
 
+	public float getRange() {
+		return RANGE;
+	}
+
+	public Entity getEntity() {
+		return entity;
+	}
+
 	public double getDistance() {
 		return Minecraft.getMinecraft().getRenderViewEntity().getPositionVector()
 				.distanceTo(new Vec3d(xPosF, yPosF, zPosF));

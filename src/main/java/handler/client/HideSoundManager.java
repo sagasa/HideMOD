@@ -67,17 +67,26 @@ public class HideSoundManager {
 		HideEntitySound sound = new HideEntitySound(entity, soundName, x, y, z, vol, pitch, range, useSoundDelay,
 				useDecay,
 				SoundCategory.PLAYERS);
-		if (sound.getDistance() < range) {
-			//同期
-			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
-				public void run() {
-					playSound(sound);
-				}
-			});
-			return sound;
-		} else
-			return null;
+		playSound(sound);
+		return sound;
 	}
+
+	public static void playSound(HideEntitySound sound, byte cate) {
+		cateSoundMap.put(makeKey(sound.getEntity().getEntityId(), cate), sound);
+		playSound(sound);
+	}
+
+	public static void stopSound(int entity, byte cate) {
+		long key = makeKey(entity, cate);
+		stopSound(cateSoundMap.get(key));
+		cateSoundMap.remove(key);
+	}
+
+	private static long makeKey(int entityID, byte cate) {
+		return (((long) cate) << 32) + entityID;
+	}
+
+	private static Map<Long, HideEntitySound> cateSoundMap = new HashMap<>();
 
 	private static Map<HideEntitySound, Integer> delayedSounds = new HashMap<>();
 	private static int time;
@@ -93,6 +102,10 @@ public class HideSoundManager {
 				itr.remove();
 			}
 		}
+		Iterator<Entry<Long, HideEntitySound>> itrcate = cateSoundMap.entrySet().iterator();
+		while (itrcate.hasNext())
+			if (itrcate.next().getValue().isDonePlaying())
+				itrcate.remove();
 	}
 
 	public static boolean isSoundPlaying(HideEntitySound sound) {
@@ -101,13 +114,14 @@ public class HideSoundManager {
 	}
 
 	/**キャンセルに対応したディレイ付き再生*/
-	public static void playSound(HideEntitySound sound) {
+	public static HideEntitySound playSound(HideEntitySound sound) {
 		int delay = sound.getDelay();
 		if (delay > 0) {
 			delayedSounds.put(sound, delay + time);
 		} else {
 			Minecraft.getMinecraft().getSoundHandler().playSound(sound);
 		}
+		return sound;
 	}
 
 	public static void stopSound(HideEntitySound sound) {

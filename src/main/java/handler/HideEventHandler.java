@@ -3,12 +3,12 @@ package handler;
 import handler.client.HideScope;
 import handler.client.HideSoundManager;
 import handler.client.InputHandler;
+import handler.client.RecoilHandler;
 import handler.client.RenderHandler;
 import items.ItemGun;
 import net.minecraft.item.Item;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderItemInFrameEvent;
@@ -68,10 +68,6 @@ public class HideEventHandler {
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedInEvent event) {
 
-	}
-	@SubscribeEvent
-	public void onEvent(MouseEvent e) {
-		System.out.println(e.getDx()+" "+e.getX());
 	}
 
 	@SubscribeEvent
@@ -137,7 +133,7 @@ public class HideEventHandler {
 	public void onEvent(TickEvent.RenderTickEvent event) {
 		if (event.phase.equals(Phase.START)) {
 			RenderHandler.setRenderTick(event.renderTickTime);
-	//		RecoilHandler.updateRecoil(event.renderTickTime);
+			RecoilHandler.updateRecoil(event.renderTickTime);
 		}
 	}
 
@@ -145,7 +141,7 @@ public class HideEventHandler {
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onEvent(RenderLivingEvent.Post event) {
-	//	RenderHandler.RenderEntityEvent(event);
+		//	RenderHandler.RenderEntityEvent(event);
 	}
 
 	@SubscribeEvent

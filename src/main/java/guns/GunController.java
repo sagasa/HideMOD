@@ -45,6 +45,8 @@ public class GunController {
 	/**ロード可能な弾薬のどれかをロードする*/
 	public static final String LOAD_ANY = "ANY";
 
+	public static final byte SOUND_RELOAD = 1;
+
 	private ShootPoints shootPoint = ShootPoints.DefaultShootPoint;
 	private IGuns gun;
 	private IMagazineHolder magazineHolder;
@@ -96,6 +98,7 @@ public class GunController {
 		updateCustomize();
 		magazine = HideNBT.getGunLoadedMagazines(gun.getGunTag());
 		shootDelay = HideNBT.getGunShootDelay(gun.getGunTag());
+		shootDelay = shootDelay < 0 ? 0 : shootDelay;
 		lastTime = lastShootTime = System.currentTimeMillis();
 		System.out.println("load " + shootDelay);
 	}
@@ -123,7 +126,7 @@ public class GunController {
 		completionTick = 0f;
 		lastTime = 0;
 		lastShootTime = 0;
-		reload = -1;
+		stopReload();
 	}
 
 	public boolean isGun() {
@@ -328,7 +331,7 @@ public class GunController {
 	/** サーバーサイド */
 	public void shoot(boolean isADS, float offset, double x, double y, double z, float yaw, float pitch) {
 		shoot(modifyData, magazine.getNextBullet(), Shooter, isADS, offset, x, y, z, yaw, pitch);
-		reload = -1;
+		stopReload();
 		lastShootTime = System.currentTimeMillis();
 	}
 
@@ -353,6 +356,13 @@ public class GunController {
 	/** ミリ秒をTickに変換 */
 	private static float MillistoTick(int millis) {
 		return millis / 50f;
+	}
+
+	private void stopReload() {
+		if (reload != -1) {
+			reload = -1;
+			SoundHandler.bloadcastCancel(Shooter.world, Shooter.getEntityId(), SOUND_RELOAD);
+		}
 	}
 
 	/**
@@ -403,8 +413,8 @@ public class GunController {
 		}
 		//リロード開始
 		// 音
-		SoundHandler.broadcastSound(Shooter, X, Y, Z,
-				gun.getGunData().SOUND_RELOAD, true);
+		SoundHandler.broadcastSound(Shooter, 0, 0, 0,
+				gun.getGunData().SOUND_RELOAD, false, SOUND_RELOAD);
 		reload = modifyData.RELOAD_TICK + addReloadTime;
 
 		// ReloadAll以外で空きスロットがある場合何もしない
