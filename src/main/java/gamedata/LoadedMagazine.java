@@ -41,9 +41,8 @@ public class LoadedMagazine {
 		Magazine mag = getNextMagazine(true);
 		if (mag == null) {
 			return null;
-		} else {
-			return PackData.getBulletData(mag.name);
 		}
+		return PackData.getBulletData(mag.name);
 	}
 
 	/** 次に撃つ弾を取得 消費する */
@@ -51,9 +50,8 @@ public class LoadedMagazine {
 		Magazine mag = getNextMagazine(true);
 		if (mag == null) {
 			return null;
-		} else {
-			return PackData.getBulletData(mag.name);
 		}
+		return PackData.getBulletData(mag.name);
 	}
 
 	/** 初めの弾が入ったマガジンを返す */

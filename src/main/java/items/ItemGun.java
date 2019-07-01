@@ -18,7 +18,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import pack.PackData;
 import types.base.GunFireMode;
 import types.items.GunData;
@@ -47,19 +46,12 @@ public class ItemGun extends Item {
 
 	/** アイテムスタックを作成 */
 	public static ItemStack makeGun(String name) {
-		if (PackData.getGunData(name)!=null) {
+		if (PackData.getGunData(name) != null) {
 			ItemStack stack = new ItemStack(INSTANCE_MAP.get(name));
 			stack = checkGunNBT(stack);
 			return stack;
 		}
 		return null;
-	}
-
-	/** アイテムスタック作成時に呼ばれる これの中でNBTを設定する */
-	@Override
-	public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
-		checkGunNBT(stack);
-		return super.initCapabilities(stack, nbt);
 	}
 
 	@Override
@@ -108,9 +100,10 @@ public class ItemGun extends Item {
 		super.addInformation(stack, worldIn, tooltip, flagIn);
 		// 破損チェック
 		if (!stack.hasTagCompound()) {
+			System.out.println("cant write tooltip");
 			return;
 		}
-		NBTTagCompound hideTag = HideNBT.getMagazineTag(stack);
+		NBTTagCompound hideTag = HideNBT.getGunTag(stack);
 		tooltip.add(ChatFormatting.GRAY + "FireMode : " + HideNBT.getGunFireMode(hideTag));
 		tooltip.add(ChatFormatting.GRAY + "UseBullet : "
 				+ ItemMagazine.getMagazineName(HideNBT.getGunUseingBullet(hideTag)));

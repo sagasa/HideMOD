@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -253,20 +254,21 @@ public class GunController {
 		lastTime = Minecraft.getSystemTime();
 		if (!trigger)
 			stopshoot = false;
+		GunFireMode firemode = getFireMode();
 
-		if (getFireMode() == GunFireMode.SEMIAUTO && !stopshoot && shootDelay <= 0 && trigger) {
+		if (firemode == GunFireMode.SEMIAUTO && !stopshoot && shootDelay <= 0 && trigger) {
 			if (shootDelay < 0) {
 				shootDelay = 0;
 			}
 			shoot(MillistoTick(shootDelay));
 			shootDelay += RPMtoMillis(modifyData.RPM);
 			stopshoot = true;
-		} else if (getFireMode() == GunFireMode.FULLAUTO && !stopshoot && shootDelay <= 0 && trigger) {
+		} else if (firemode == GunFireMode.FULLAUTO && !stopshoot && shootDelay <= 0 && trigger) {
 			while (shootDelay <= 0 && !stopshoot) {
 				shoot(MillistoTick(shootDelay));
 				shootDelay += RPMtoMillis(modifyData.RPM);
 			}
-		} else if (getFireMode() == GunFireMode.BURST && !stopshoot) {
+		} else if (firemode == GunFireMode.BURST && !stopshoot) {
 			// 射撃開始
 			if (trigger && shootNum == -1 && shootDelay <= 0 && !stopshoot) {
 				shootNum = modifyData.BURST_BULLET_NUM;
@@ -285,7 +287,7 @@ public class GunController {
 				shootNum = -1;
 			}
 
-		} else if (getFireMode() == GunFireMode.MINIGUN && !stopshoot && shootDelay <= 0 && trigger) {
+		} else if (firemode == GunFireMode.MINIGUN && !stopshoot && shootDelay <= 0 && trigger) {
 			while (shootDelay <= 0 && !stopshoot) {
 				shoot(MillistoTick(shootDelay));
 				shootDelay += RPMtoMillis(modifyData.RPM);
@@ -545,6 +547,8 @@ public class GunController {
 	/**利用可能なすべてのマガジンを返す NBTの文字列じゃないことに注意*/
 	public String[] getUseMagazines() {
 		String name = HideNBT.getGunUseingBullet(gun.getGunTag());
+		if (name == null)
+			return ArrayUtils.EMPTY_STRING_ARRAY;
 		return name.equals(LOAD_ANY) ? getUseMagazineList() : new String[] { name };
 	}
 

@@ -62,7 +62,7 @@ public class HideNBT {
 
 	/** GunTagをItemGunから取得 */
 	public static NBTTagCompound getMagazineTag(ItemStack item) {
-		return getTag(getTag(item), GUN_ATTACHMENTS);
+		return getTag(getTag(item), ITEM_MAGAZINE);
 	}
 
 	/** 指定のタグのみを読み取る */

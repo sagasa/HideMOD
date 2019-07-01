@@ -13,7 +13,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import pack.PackData;
 import types.items.MagazineData;
 
@@ -39,13 +38,6 @@ public class ItemMagazine extends Item {
 	/** アイテムスタックを作成 残弾指定 */
 	public static ItemStack makeMagazine(String name, int ammoNum) {
 		return HideNBT.setMagazineBulletNum(makeMagazine(name), ammoNum);
-	}
-
-	/** アイテムスタック作成時に呼ばれる これの中でNBTを設定する */
-	@Override
-	public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
-		setBulletNBT(stack);
-		return super.initCapabilities(stack, nbt);
 	}
 
 	/** アイテムスタックを作成 */

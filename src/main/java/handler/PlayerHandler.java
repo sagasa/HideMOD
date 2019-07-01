@@ -14,8 +14,6 @@ import handler.client.HideViewHandler;
 import helper.HideNBT;
 import items.ItemGun;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -81,9 +79,6 @@ public class PlayerHandler {
 			// アップデート
 			data.gunMain.tickUpdate(side);
 			data.gunOff.tickUpdate(side);
-
-			Entity e;
-			EntityLivingBase entity;
 		}
 	}
 
@@ -112,10 +107,9 @@ public class PlayerHandler {
 				if (main.stateEquals(off)) {
 					// メインとサブが同じ武器なら
 					return Dual;
-				} else {
-					// 違ったら
-					return OtherDual;
 				}
+				// 違ったら
+				return OtherDual;
 			} else if (!main.isGun() && off.isGun() && off.getGunData().USE_SECONDARY) {
 				// サブだけに銃を持っているなら
 				return Off;
