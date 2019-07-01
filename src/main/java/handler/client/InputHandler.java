@@ -3,6 +3,8 @@ package handler.client;
 import java.util.ArrayList;
 import java.util.EnumMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -23,6 +25,8 @@ import types.base.GunFireMode;
 @SideOnly(Side.CLIENT)
 public class InputHandler {
 
+	private static final Logger log = LogManager.getLogger();
+
 	private static float acceleration = 0F;
 	private static float acceleration_changed_detector = 0F;
 	private static float rotate = 0F;
@@ -35,7 +39,7 @@ public class InputHandler {
 	public static void tickUpdate() {
 		InputWatcher.tickUpdate();
 		EntityPlayerSP player = Minecraft.getMinecraft().player;
-		if(player==null) {
+		if (player == null) {
 			return;
 		}
 
@@ -71,7 +75,7 @@ public class InputHandler {
 			}
 
 			if (acceleration_changed_detector != acceleration) {
-			//TODO	PacketHandler.INSTANCE.sendToServer(new PacketAcceleration(acceleration));
+				//TODO	PacketHandler.INSTANCE.sendToServer(new PacketAcceleration(acceleration));
 				if (player.getRidingEntity() != null && player.getRidingEntity() instanceof EntityDrivable) {
 					EntityDrivable drivable = (EntityDrivable) player.getRidingEntity();
 					drivable.setAcceleration(acceleration);
@@ -90,7 +94,7 @@ public class InputHandler {
 			}
 
 			if (rotate_changed_detector != rotate) {
-			//TODO	PacketHandler.INSTANCE.sendToServer(new PacketRotate(rotate));
+				//TODO	PacketHandler.INSTANCE.sendToServer(new PacketRotate(rotate));
 				if (player.getRidingEntity() != null && player.getRidingEntity() instanceof EntityDrivable) {
 					EntityDrivable drivable = (EntityDrivable) player.getRidingEntity();
 					drivable.setRotate(rotate);
@@ -112,7 +116,7 @@ public class InputHandler {
 		GunController gunMain = data.gunMain;
 		GunController gunOff = data.gunOff;
 
-		EquipMode em = EquipMode.getEquipMode(gunMain,gunOff);
+		EquipMode em = EquipMode.getEquipMode(gunMain, gunOff);
 		// 射撃処理
 		if (em == EquipMode.Main) {
 			gunMain.gunUpdate(trigger, completion);
@@ -172,6 +176,10 @@ public class InputHandler {
 		Watcher.setName("InputWatcher");
 		Watcher.setDaemon(true);
 		Watcher.start();
+		Watcher.setUncaughtExceptionHandler((thread, throwable) -> {
+			startWatcher();
+			log.warn("InputThread was clash restarting",throwable);
+		});
 	}
 
 	public static void stopWatcher() {
