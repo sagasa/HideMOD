@@ -6,6 +6,7 @@ import java.util.Map;
 import entity.EntityBullet;
 import entity.render.RenderBullet;
 import hidemod.HideMod;
+import io.netty.buffer.ByteBuf;
 import items.ItemGun;
 import items.ItemMagazine;
 import model.ModelPart;
@@ -23,6 +24,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
 import types.attachments.AttachmentsData;
+import types.base.DataBase;
 import types.items.GunData;
 import types.items.MagazineData;
 
@@ -86,7 +88,7 @@ public class PackData {
 			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(
 					new ResourceLocation(HideMod.MOD_ID, item.MagazineData.ITEM_SHORTNAME), "inventory"));
 		}
-		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new IRenderFactory() {
+		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new IRenderFactory<EntityBullet>() {
 			@Override
 			public Render createRenderFor(RenderManager manager) {
 				return new RenderBullet(manager);
@@ -102,5 +104,12 @@ public class PackData {
 					new SoundEvent(new ResourceLocation(HideMod.MOD_ID, name))
 							.setRegistryName(name));
 		}
+	}
+
+	public static void writeBuffer(ByteBuf buf) {
+	}
+
+	public static void writeBuffer(ByteBuf buf, DataBase data) {
+
 	}
 }

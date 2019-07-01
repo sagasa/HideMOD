@@ -45,10 +45,9 @@ public class PacketHandler {
 
 	/***/
 	public static void syncToClient() {
-		//TODO
 	}
 
-	public static void syncFromServer(byte cate) {
+	public static void syncFromServer() {
 		//TODO
 	}
 
