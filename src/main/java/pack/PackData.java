@@ -30,13 +30,13 @@ import types.items.MagazineData;
 
 public class PackData {
 	/** 弾 ショートネーム - MagazineData MAP */
-	static Map<String, MagazineData> MAGAZINE_DATA_MAP = new HashMap<>();
+	public static Map<String, MagazineData> MAGAZINE_DATA_MAP = new HashMap<>();
 
 	/** 銃 ショートネーム - GunData MAP */
-	static Map<String, GunData> GUN_DATA_MAP = new HashMap<>();
+	public static Map<String, GunData> GUN_DATA_MAP = new HashMap<>();
 
-	/** 銃 ショートネーム - Attachment MAP */
-	static Map<String, AttachmentsData> ATTACHMENT_DATA_MAP = new HashMap<>();
+	/** アタッチメント ショートネーム - Attachment MAP */
+	public static Map<String, AttachmentsData> ATTACHMENT_DATA_MAP = new HashMap<>();
 
 	/** アイコン 登録名 - byte[] MAP */
 	static Map<String, byte[]> ICON_MAP = new HashMap<>();
@@ -68,10 +68,7 @@ public class PackData {
 	/** アイテム登録 */
 	public static void registerItems(Register<Item> event) {
 		IForgeRegistry<Item> register = event.getRegistry();
-		for (GunData data : GUN_DATA_MAP.values()) {
-			Item item = new ItemGun(data);
-			register.register(item);
-		}
+		register.register(ItemGun.INSTANCE);
 		for (MagazineData data : MAGAZINE_DATA_MAP.values()) {
 			register.register(new ItemMagazine(data));
 		}
@@ -80,10 +77,6 @@ public class PackData {
 	/** モデル登録 */
 	@SideOnly(Side.CLIENT)
 	public static void registerModel() {
-		for (ItemGun item : ItemGun.INSTANCE_MAP.values()) {
-			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(
-					new ResourceLocation(HideMod.MOD_ID, item.GunData.ITEM_SHORTNAME), "inventory"));
-		}
 		for (ItemMagazine item : ItemMagazine.INSTANCE_MAP.values()) {
 			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(
 					new ResourceLocation(HideMod.MOD_ID, item.MagazineData.ITEM_SHORTNAME), "inventory"));

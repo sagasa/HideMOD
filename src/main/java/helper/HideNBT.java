@@ -23,6 +23,7 @@ public class HideNBT {
 	public static final String GUN_SHOOTDELAY = "GunShootDelay";
 	public static final String GUN_MAGAZINES = "GunMagazines";
 	public static final String GUN_ATTACHMENTS = "GunAttachments";
+	public static final String GUN_NAME = "GunName";
 	public static final String GUN_ID = "GunID";
 	public static final String MAGAZINE_NAME = "MagazineName";
 	public static final String MAGAZINE_MUMBER = "MagazineNumber";
@@ -42,7 +43,7 @@ public class HideNBT {
 	/**
 	 * Tagを取得 noNull
 	 */
-	private static NBTTagCompound getTag(NBTTagCompound root, String key) {
+	public static NBTTagCompound getTag(NBTTagCompound root, String key) {
 		if (root.hasKey(key)) {
 			return root.getCompoundTag(key);
 		}
