@@ -6,9 +6,11 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 
 import helper.HideNBT;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import pack.PackData;
 import types.items.MagazineData;
@@ -19,11 +21,12 @@ public class ItemMagazine extends Item {
 	// 登録
 	public ItemMagazine(String name) {
 		super();
+		this.setCreativeTab(CreativeTabs.COMBAT);
 		this.setUnlocalizedName(name);
 		this.setRegistryName(name);
 	}
 
-	public static final ItemGun INSTANCE = new ItemGun("hidegun");
+	public static final ItemMagazine INSTANCE = new ItemMagazine("hidemagazine");
 
 	/** アイテムスタックを作成 残弾指定 */
 	public static ItemStack makeMagazine(String name, int ammoNum) {
@@ -32,27 +35,43 @@ public class ItemMagazine extends Item {
 
 	/** アイテムスタックを作成 */
 	public static ItemStack makeMagazine(String name) {
-		if (PackData.getBulletData(name) != null) {
+		return makeMagazine(PackData.getBulletData(name));
+	}
+
+	/** アイテムスタックを作成 */
+	public static ItemStack makeMagazine(MagazineData data) {
+		if (data != null) {
 			ItemStack stack = new ItemStack(INSTANCE);
 			stack.setTagCompound(new NBTTagCompound());
-			return setBulletNBT(stack);
+			return makeMagazineNBT(stack, data);
 		}
 		return null;
 	}
 
 	/** どのような状態からでも有効なNBTを書き込む */
-	public static ItemStack setBulletNBT(ItemStack item) {
+	public static ItemStack makeMagazineNBT(ItemStack item, MagazineData data) {
 		if (!(item.getItem() instanceof ItemMagazine)) {
 			return item;
 		}
-		MagazineData data = getMagazineData(item);
-		HideNBT.setMagazineBulletNum(item, data.MAGAZINE_SIZE);
+		NBTTagCompound hideTag = HideNBT.getMagazineTag(item);
+		hideTag.setString(HideNBT.MAGAZINE_NAME, data.ITEM_SHORTNAME);
+		HideNBT.setMagazineBulletNum(hideTag, data.MAGAZINE_SIZE);
 		return item;
 	}
 
 	@Override
+	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
+		if (tab == CreativeTabs.COMBAT)
+			PackData.MAGAZINE_DATA_MAP.values().forEach(mag -> {
+				System.out.println("aaaadd");
+				items.add(makeMagazine(mag));
+			});
+	}
+
+	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
-		return getMagazineData(stack).ITEM_DISPLAYNAME;
+		MagazineData data = getMagazineData(stack);
+		return data != null ? data.ITEM_DISPLAYNAME : null;
 	}
 
 	// =========================================================
@@ -83,7 +102,7 @@ public class ItemMagazine extends Item {
 	}
 
 	public static boolean isMagazine(ItemStack item, String str) {
-		if (item != null && item.getItem() instanceof ItemMagazine
+		if (item != null && ItemMagazine.getMagazineData(item) != null
 				&& ItemMagazine.getMagazineData(item).ITEM_SHORTNAME.equals(str)) {
 			return true;
 		}
@@ -91,7 +110,7 @@ public class ItemMagazine extends Item {
 	}
 
 	public static boolean isMagazine(ItemStack item, String str, int size) {
-		if (item != null && item.getItem() instanceof ItemMagazine
+		if (item != null && ItemMagazine.getMagazineData(item) != null
 				&& ItemMagazine.getMagazineData(item).ITEM_SHORTNAME.equals(str)
 				&& HideNBT.getMagazineBulletNum(item) == size) {
 			return true;
@@ -112,10 +131,12 @@ public class ItemMagazine extends Item {
 
 	/** 装弾数取得 */
 	public static int getMagazineSize(ItemStack stack) {
-		return getMagazineData(stack).MAGAZINE_SIZE;
+		MagazineData data = getMagazineData(stack);
+		return data == null ? 0 : data.MAGAZINE_SIZE;
 	}
 
 	/** アップデート 表示更新など */
+	@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
 		super.addInformation(stack, worldIn, tooltip, flagIn);
 		if (!stack.hasTagCompound()) {
@@ -140,7 +161,7 @@ public class ItemMagazine extends Item {
 		if (!(item.getItem() instanceof ItemMagazine)) {
 			return null;
 		}
-		return ((ItemMagazine) item.getItem()).MagazineData;
+		return PackData.getBulletData(HideNBT.getMagazineTag(item).getString(HideNBT.MAGAZINE_NAME));
 	}
 
 	/** その名前の弾は存在するか */

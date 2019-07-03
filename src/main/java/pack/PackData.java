@@ -10,13 +10,11 @@ import io.netty.buffer.ByteBuf;
 import items.ItemGun;
 import items.ItemMagazine;
 import model.ModelPart;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.RegistryEvent.Register;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
@@ -69,18 +67,12 @@ public class PackData {
 	public static void registerItems(Register<Item> event) {
 		IForgeRegistry<Item> register = event.getRegistry();
 		register.register(ItemGun.INSTANCE);
-		for (MagazineData data : MAGAZINE_DATA_MAP.values()) {
-			register.register(new ItemMagazine(data));
-		}
+		register.register(ItemMagazine.INSTANCE);
 	}
 
 	/** モデル登録 */
 	@SideOnly(Side.CLIENT)
 	public static void registerModel() {
-		for (ItemMagazine item : ItemMagazine.INSTANCE_MAP.values()) {
-			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(
-					new ResourceLocation(HideMod.MOD_ID, item.MagazineData.ITEM_SHORTNAME), "inventory"));
-		}
 		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new IRenderFactory<EntityBullet>() {
 			@Override
 			public Render createRenderFor(RenderManager manager) {

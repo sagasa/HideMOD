@@ -10,6 +10,7 @@ import gamedata.HidePlayerData.ClientPlayerData;
 import gamedata.LoadedMagazine.Magazine;
 import guns.GunController;
 import handler.PlayerHandler.EquipMode;
+import helper.HideNBT;
 import hidemod.HideMod;
 import items.ItemGun;
 import items.ItemMagazine;
@@ -31,6 +32,8 @@ import net.minecraftforge.client.event.RenderLivingEvent.Post;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import pack.PackData;
+import types.items.MagazineData;
 
 @SideOnly(Side.CLIENT)
 public class RenderHandler {
@@ -106,6 +109,8 @@ public class RenderHandler {
 
 	}
 
+	static ItemStack stack = new ItemStack(ItemMagazine.INSTANCE);
+
 	/** 銃のステータスGUI描画 */
 	private static void writeGunInfo(int x, int y, GunController gun) {
 		if (gun == null || !gun.isGun()) {
@@ -133,15 +138,18 @@ public class RenderHandler {
 		int offset = 0;
 		for (Magazine magazine : gun.magazine.getList()) {
 			if (magazine != null) {
-				RenderHelper.enableGUIStandardItemLighting();
-				GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-				// 表示用アイテムスタック
-				ItemStack stack = ItemMagazine.makeMagazine(magazine.name, magazine.num);
-				mc.getRenderItem().renderItemIntoGUI(stack, x + 1 + offset, y + 1);
-				mc.getRenderItem().renderItemOverlayIntoGUI(mc.fontRenderer, stack, x + 1 + offset, y + 1, null);
-				GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-				RenderHelper.disableStandardItemLighting();
-
+				MagazineData data = PackData.getBulletData(magazine.name);
+				if (data != null) {
+					RenderHelper.enableGUIStandardItemLighting();
+					GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+					// 表示用アイテムスタック
+					ItemMagazine.makeMagazineNBT(stack, data);
+					HideNBT.setMagazineBulletNum(stack, magazine.num);
+					mc.getRenderItem().renderItemIntoGUI(stack, x + 1 + offset, y + 1);
+					mc.getRenderItem().renderItemOverlayIntoGUI(mc.fontRenderer, stack, x + 1 + offset, y + 1, null);
+					GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+					RenderHelper.disableStandardItemLighting();
+				}
 			}
 			offset += 16;
 		}
