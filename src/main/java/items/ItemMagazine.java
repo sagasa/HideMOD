@@ -26,7 +26,7 @@ public class ItemMagazine extends Item {
 		this.setRegistryName(name);
 	}
 
-	public static final ItemMagazine INSTANCE = new ItemMagazine("hidemagazine");
+	public static final ItemMagazine INSTANCE = new ItemMagazine("magazine");
 
 	/** アイテムスタックを作成 残弾指定 */
 	public static ItemStack makeMagazine(String name, int ammoNum) {
