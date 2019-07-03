@@ -1,14 +1,11 @@
 package items;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 
 import helper.HideNBT;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -18,22 +15,15 @@ import types.items.MagazineData;
 
 public class ItemMagazine extends Item {
 
-	public static Map<String, ItemMagazine> INSTANCE_MAP = new HashMap<>();
-
-	public MagazineData MagazineData;
-
 	// ========================================================================
 	// 登録
-	public ItemMagazine(MagazineData data) {
+	public ItemMagazine(String name) {
 		super();
-		this.setCreativeTab(CreativeTabs.COMBAT);
-		String name = data.ITEM_SHORTNAME;
 		this.setUnlocalizedName(name);
 		this.setRegistryName(name);
-		this.setMaxStackSize(data.ITEM_STACK_SIZE);
-		this.MagazineData = data;
-		INSTANCE_MAP.put(name, this);
 	}
+
+	public static final ItemGun INSTANCE = new ItemGun("hidegun");
 
 	/** アイテムスタックを作成 残弾指定 */
 	public static ItemStack makeMagazine(String name, int ammoNum) {
@@ -43,7 +33,7 @@ public class ItemMagazine extends Item {
 	/** アイテムスタックを作成 */
 	public static ItemStack makeMagazine(String name) {
 		if (PackData.getBulletData(name) != null) {
-			ItemStack stack = new ItemStack(INSTANCE_MAP.get(name));
+			ItemStack stack = new ItemStack(INSTANCE);
 			stack.setTagCompound(new NBTTagCompound());
 			return setBulletNBT(stack);
 		}
@@ -67,6 +57,11 @@ public class ItemMagazine extends Item {
 
 	// =========================================================
 	// 更新 便利機能
+	@Override
+	public int getItemStackLimit(ItemStack stack) {
+		return getMagazineData(stack).ITEM_STACK_SIZE;
+	}
+
 	@Override
 	public boolean showDurabilityBar(ItemStack stack) {
 		return getMagazineSize(stack) > getBulletNum(stack);

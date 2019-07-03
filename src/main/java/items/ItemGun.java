@@ -78,12 +78,10 @@ public class ItemGun extends Item {
 	/**サブタイプに銃を書き込む*/
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
-		System.out.println(items);
-		PackData.GUN_DATA_MAP.values().forEach(gun -> {
-			items.add(makeGun(gun));
-		});
-
-		super.getSubItems(tab, items);
+		if (tab == CreativeTabs.COMBAT)
+			PackData.GUN_DATA_MAP.values().forEach(gun -> {
+				items.add(makeGun(gun));
+			});
 	}
 
 	/** データ破損チェック */
