@@ -170,6 +170,12 @@ public class PackLoader {
 				Models.put(n, ObjLoader.LoadModel(new ByteArrayInputStream(data)));
 				LOGGER.info("add model[" + n + "] to PackReader");
 			}
+			// model
+			if (PackPattern.MODEL_INFO.mache(name)) {
+				String n = PackPattern.MODEL_INFO.trim(name);
+				Models.put(n, ObjLoader.LoadModel(new ByteArrayInputStream(data)));
+				LOGGER.info("add model[" + n + "] to PackReader");
+			}
 			// texture
 			if (PackPattern.TEXTURE.mache(name)) {
 				// TODO
@@ -186,7 +192,8 @@ public class PackLoader {
 		private enum PackPattern {
 			GUN("guns", "json"), MAGAZINE("magazines", "json"), PACKINFO(Pattern.compile("^(.*)pack\\.json$"),
 					"json"), ICON("icons", "png"), SCOPE("scopes",
-							"png"), TEXTURE("textures", "png"), SOUND("sounds", "ogg"), MODEL("models", "obj");
+							"png"), TEXTURE("textures", "png"), SOUND("sounds",
+									"ogg"), MODEL("models", "obj"), MODEL_INFO("models", "json");
 
 			private PackPattern(Pattern mache, String end) {
 				this.mache = mache;

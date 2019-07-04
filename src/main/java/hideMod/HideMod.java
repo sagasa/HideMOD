@@ -9,7 +9,9 @@ import entity.EntityBullet;
 import handler.HideEventHandler;
 import handler.PacketHandler;
 import helper.HideDamage;
+import items.ItemGun;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
@@ -87,6 +89,7 @@ public class HideMod {
 
 	@SideOnly(Side.CLIENT)
 	void RegistryRenders() {
+		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ItemGun.INSTANCE, 0, new ModelResourceLocation("hidemod:gun", "inventory"));
 		// Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item,
 		// meta, location)
 

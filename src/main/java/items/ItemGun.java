@@ -14,6 +14,7 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -130,6 +131,12 @@ public class ItemGun extends Item {
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public EnumAction getItemUseAction(ItemStack stack) {
+		// TODO 自動生成されたメソッド・スタブ
+		return EnumAction.BOW;
 	}
 
 	/** GunData取得 */

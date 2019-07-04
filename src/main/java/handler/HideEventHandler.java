@@ -1,5 +1,6 @@
 package handler;
 
+import handler.client.HideItemRender;
 import handler.client.HideScope;
 import handler.client.HideSoundManager;
 import handler.client.InputHandler;
@@ -8,6 +9,7 @@ import handler.client.RenderHandler;
 import items.ItemGun;
 import net.minecraft.item.Item;
 import net.minecraft.util.SoundEvent;
+import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
@@ -50,6 +52,12 @@ public class HideEventHandler {
 	@SideOnly(Side.CLIENT)
 	public void registerSound(RegistryEvent.Register<SoundEvent> event) {
 		PackData.registerSound(event);
+	}
+
+	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
+	public void registerModel(ModelBakeEvent e) {
+		HideItemRender.register(e);
 	}
 
 	/** 型に応じてデータマネージャーを添付する */
