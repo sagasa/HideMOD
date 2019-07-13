@@ -7,6 +7,7 @@ import handler.client.InputHandler;
 import handler.client.RecoilHandler;
 import handler.client.RenderHandler;
 import items.ItemGun;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.client.event.ModelBakeEvent;
@@ -31,6 +32,7 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToSe
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import network.PacketSync;
 import pack.PackData;
 
 public class HideEventHandler {
@@ -75,7 +77,7 @@ public class HideEventHandler {
 	// ========接続イベント=========
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedInEvent event) {
-
+		PacketHandler.INSTANCE.sendTo(new PacketSync(), (EntityPlayerMP) event.player);
 	}
 
 	@SubscribeEvent

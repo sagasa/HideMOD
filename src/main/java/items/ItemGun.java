@@ -82,7 +82,7 @@ public class ItemGun extends Item {
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
 		if (tab == CreativeTabs.COMBAT)
-			PackData.GUN_DATA_MAP.values().forEach(gun -> {
+			PackData.getGunData().forEach(gun -> {
 				items.add(makeGun(gun));
 			});
 	}

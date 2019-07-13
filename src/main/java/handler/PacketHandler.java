@@ -19,6 +19,7 @@ import network.PacketHit;
 import network.PacketInput;
 import network.PacketPlaySound;
 import network.PacketShoot;
+import network.PacketSync;
 
 public class PacketHandler {
 
@@ -39,6 +40,8 @@ public class PacketHandler {
 		INSTANCE.registerMessage(PacketHit.class, PacketHit.class, 4, Side.CLIENT);
 		INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 5, Side.CLIENT);
 		INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 6, Side.SERVER);
+		INSTANCE.registerMessage(PacketSync.class, PacketSync.class, 10, Side.CLIENT);
+		INSTANCE.registerMessage(PacketSync.class, PacketSync.class, 11, Side.SERVER);
 
 		//		INSTANCE.registerMessage(PacketSync.class, PacketSync.class, 5, Side.SERVER);
 	}
@@ -95,39 +98,47 @@ public class PacketHandler {
 
 	/** EntityDataManager用のデータシリアライザ */
 	public static final DataSerializer<Vec3d> Vec3d = new DataSerializer<Vec3d>() {
+		@Override
 		public void write(PacketBuffer buf, Vec3d value) {
 			buf.writeDouble(value.x);
 			buf.writeDouble(value.y);
 			buf.writeDouble(value.z);
 		}
 
+		@Override
 		public Vec3d read(PacketBuffer buf) throws IOException {
 			return new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
 		}
 
+		@Override
 		public DataParameter<Vec3d> createKey(int id) {
 			return new DataParameter<>(id, this);
 		}
 
+		@Override
 		public Vec3d copyValue(Vec3d value) {
 			return value;
 		}
 	};
 	/** EntityDataManager用のデータシリアライザ */
 	public static final DataSerializer<Vec2f> Vec2f = new DataSerializer<Vec2f>() {
+		@Override
 		public void write(PacketBuffer buf, Vec2f value) {
 			buf.writeFloat(value.x);
 			buf.writeFloat(value.y);
 		}
 
+		@Override
 		public Vec2f read(PacketBuffer buf) throws IOException {
 			return new Vec2f(buf.readFloat(), buf.readFloat());
 		}
 
+		@Override
 		public DataParameter<Vec2f> createKey(int id) {
 			return new DataParameter<>(id, this);
 		}
 
+		@Override
 		public Vec2f copyValue(Vec2f value) {
 			return value;
 		}

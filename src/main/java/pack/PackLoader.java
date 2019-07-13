@@ -73,18 +73,20 @@ public class PackLoader {
 					}
 					LOGGER.info("Start check and add pack[" + cash.Pack.PACK_NAME + "]");
 					String packDomain = toRegisterName(cash.Pack.PACK_ROOTNAME);
+					// パックの登録
+					PackData.readData.PACK_INFO.add(cash.Pack);
 					// 銃登録
-					checkAndAddToMap(PackData.GUN_DATA_MAP, cash.Guns, packDomain);
+					checkAndAddToMap(PackData.readData.GUN_DATA_MAP, cash.Guns, packDomain);
 					// 弾登録
-					checkAndAddToMap(PackData.MAGAZINE_DATA_MAP, cash.Magazines, packDomain);
+					checkAndAddToMap(PackData.readData.MAGAZINE_DATA_MAP, cash.Magazines, packDomain);
 					// Icon登録
-					checkAndAddToMap(PackData.ICON_MAP, cash.Icons, packDomain);
+					checkAndAddToMap(PackData.readData.ICON_MAP, cash.Icons, packDomain);
 					// Texture登録
-					checkAndAddToMap(PackData.TEXTURE_MAP, cash.Textures, packDomain);
+					checkAndAddToMap(PackData.readData.TEXTURE_MAP, cash.Textures, packDomain);
 					// Sound登録
-					checkAndAddToMap(PackData.SOUND_MAP, cash.Sounds, packDomain);
+					checkAndAddToMap(PackData.readData.SOUND_MAP, cash.Sounds, packDomain);
 					// Model登録
-					checkAndAddToMap(PackData.MODEL_MAP, cash.Models, packDomain);
+					checkAndAddToMap(PackData.readData.MODEL_MAP, cash.Models, packDomain);
 					LOGGER.info("End check and add pack[" + cash.Pack.PACK_NAME + "]");
 					LOGGER.info("End read file[" + file.getName() + "]");
 				} catch (IOException e1) {
@@ -92,6 +94,8 @@ public class PackLoader {
 				}
 			}
 		}
+		LOGGER.info("copy to currentData");
+		PackData.currentData = PackData.readData.clone();
 	}
 
 	/** ファイルから読み込むモジュール */
@@ -179,6 +183,9 @@ public class PackLoader {
 			// texture
 			if (PackPattern.TEXTURE.mache(name)) {
 				// TODO
+				String n = PackPattern.TEXTURE.trim(name);
+				Icons.put(n, data);
+				LOGGER.info("add texture[" + n + "] to PackReader");
 			}
 			// sounds
 			if (PackPattern.SOUND.mache(name)) {

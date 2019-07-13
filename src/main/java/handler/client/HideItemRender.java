@@ -25,7 +25,7 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 
 	@Override
 	public void renderByItem(ItemStack item, float partialTicks) {
-		System.out.println("RENDER!!!!!!!!");
+//		System.out.println("RENDER!!!!!!!!");
 		Minecraft mc = Minecraft.getMinecraft();
 		Tessellator tessellator = Tessellator.getInstance();
 		Rectangle size = new Rectangle(0, 0, 1, 1);

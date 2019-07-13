@@ -62,8 +62,7 @@ public class ItemMagazine extends Item {
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
 		if (tab == CreativeTabs.COMBAT)
-			PackData.MAGAZINE_DATA_MAP.values().forEach(mag -> {
-				System.out.println("aaaadd");
+			PackData.getMagazineData().forEach(mag -> {
 				items.add(makeMagazine(mag));
 			});
 	}
