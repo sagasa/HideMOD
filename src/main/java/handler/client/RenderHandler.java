@@ -14,6 +14,7 @@ import helper.HideNBT;
 import hidemod.HideMod;
 import items.ItemGun;
 import items.ItemMagazine;
+import model.HideModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.model.ModelPlayer;
@@ -218,6 +219,9 @@ public class RenderHandler {
 	public static void RenderHand(RenderHandEvent event) {
 		ItemStack item = mc.player.getHeldItemMainhand();
 		if (ItemGun.isGun(item)) {
+			HideModel model = PackData.getModel("modelstg44");
+			if (model != null)
+				model.render();
 			// ((ItemGun)item.getItem()).Model.render(RenderTick,Minecraft.getMinecraft().thePlayer);
 		}
 	}

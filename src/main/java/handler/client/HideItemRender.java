@@ -1,22 +1,15 @@
 package handler.client;
 
-import java.awt.Rectangle;
 import java.util.Collections;
 import java.util.List;
 
-import org.lwjgl.opengl.GL11;
-
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.client.event.ModelBakeEvent;
@@ -26,7 +19,7 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 	@Override
 	public void renderByItem(ItemStack item, float partialTicks) {
 //		System.out.println("RENDER!!!!!!!!");
-		Minecraft mc = Minecraft.getMinecraft();
+	/*	Minecraft mc = Minecraft.getMinecraft();
 		Tessellator tessellator = Tessellator.getInstance();
 		Rectangle size = new Rectangle(0, 0, 1, 1);
 		GL11.glPushMatrix();
@@ -38,7 +31,7 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 		buf.pos(size.x + size.width, size.y + size.height, Zlevel).tex(1, 1).endVertex();
 		buf.pos(size.x, size.y + size.height, Zlevel).tex(0, 1).endVertex();
 		tessellator.draw();
-		GL11.glPopMatrix();
+		GL11.glPopMatrix();//*/
 	}
 
 

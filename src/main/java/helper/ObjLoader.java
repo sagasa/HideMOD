@@ -16,9 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Strings;
 
-import model.ModelPart;
-import model.ModelPart.HidePolygon;
-import model.ModelPart.VertexUV;
+import model.HideModel.HideVertex;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 
@@ -29,14 +27,13 @@ public class ObjLoader {
 	private List<Vec3d> vertices = new ArrayList<>();
 	private List<Vec2f> texCoords = new ArrayList<>();
 	private List<Vec3d> normals = new ArrayList<>();
-	private Map<String, List<HidePolygon>> poly = new HashMap<>();
-
+	private Map<String, List<HideVertex>> poly = new HashMap<>();
 
 	/** リソースロケーションからグループ名-ポリゴン配列のMapを返す */
-	public static Map<String, ModelPart> LoadModel(InputStream model) {
+	public static Map<String, HideVertex[]> LoadModel(InputStream model) {
 		try {
 			return new ObjLoader().Load(model);
-		} catch (IOException e) {
+		} catch (Throwable e) {
 			LOGGER.warn(e.getMessage());
 		}
 		return null;
@@ -46,7 +43,7 @@ public class ObjLoader {
 	 * Streamからグループ名-ポリゴン配列のMapを返す
 	 * @throws IOException
 	 */
-	private Map<String, ModelPart> Load(InputStream model) throws IOException {
+	private Map<String, HideVertex[]> Load(InputStream model) throws Throwable {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(model, Charset.forName("UTF-8")));
 		String group = null;
 		String line;
@@ -74,7 +71,7 @@ public class ObjLoader {
 					LOGGER.warn("頂点多すぎ");
 					continue;
 				}
-				List<VertexUV> verts = new ArrayList<>();
+				List<HideVertex> verts = new ArrayList<>();
 				for (String str : splitData) {
 					String[] pts = str.split("/");
 
@@ -82,25 +79,26 @@ public class ObjLoader {
 					Integer texture = pts.length < 2 || Strings.isNullOrEmpty(pts[1]) ? null : Integer.parseInt(pts[1]);
 					Integer normal = pts.length < 3 || Strings.isNullOrEmpty(pts[2]) ? null : Integer.parseInt(pts[2]);
 					Vec3d pos = vertices.get(vert - 1);
-					VertexUV vertexuv;
+
+					HideVertex vertexuv;
 					if (texture != null) {
 						Vec2f tex = texCoords.get(texture - 1);
-						vertexuv = new VertexUV((float) pos.x, (float) pos.y, (float) pos.z, tex.x, tex.y);
+						vertexuv = new HideVertex((float) pos.x, (float) pos.y, (float) pos.z, tex.x, tex.y);
 					} else {
-						vertexuv = new VertexUV((float) pos.x, (float) pos.y, (float) pos.z, 0, 0);
+						vertexuv = new HideVertex((float) pos.x, (float) pos.y, (float) pos.z, 0, 0);
 					}
 					verts.add(vertexuv);
 				}
 				if (!poly.containsKey(group)) {
 					poly.put(group, new ArrayList<>());
 				}
-				poly.get(group).add(new HidePolygon(verts.toArray(new VertexUV[verts.size()])));
+				poly.get(group).addAll(verts);
 			}
 		}
 		// フォーマットをまとめる
-		Map<String, ModelPart> res = new HashMap<>();
+		Map<String, HideVertex[]> res = new HashMap<>();
 		for (String str : poly.keySet()) {
-			res.put(str, new ModelPart(poly.get(str).toArray(new HidePolygon[poly.get(str).size()])));
+			res.put(str, poly.get(str).toArray(new HideVertex[poly.get(str).size()]));
 		}
 		return res;
 	}

@@ -11,7 +11,7 @@ import entity.render.RenderBullet;
 import hidemod.HideMod;
 import items.ItemGun;
 import items.ItemMagazine;
-import model.ModelPart;
+import model.HideModel;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.item.Item;
@@ -52,7 +52,7 @@ public class PackData implements Cloneable {
 	Map<String, byte[]> TEXTURE_MAP = new HashMap<>();
 
 	/** モデル 登録名 - Map<String,ModelPart> MAP */
-	Map<String, Map<String, ModelPart>> MODEL_MAP = new HashMap<>();
+	Map<String, HideModel> MODEL_MAP = new HashMap<>();
 
 	static PackData readData = new PackData();
 
@@ -81,6 +81,11 @@ public class PackData implements Cloneable {
 	/**登録名からアタッチメントを取得*/
 	public static AttachmentsData getAttachmentData(String name) {
 		return currentData.ATTACHMENT_DATA_MAP.get(name);
+	}
+
+	/**登録名からアタッチメントを取得*/
+	public static HideModel getModel(String name) {
+		return currentData.MODEL_MAP.get(name);
 	}
 
 	/** アイテム登録 */

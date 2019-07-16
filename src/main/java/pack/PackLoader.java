@@ -23,7 +23,8 @@ import com.google.gson.Gson;
 import helper.ArrayEditor;
 import helper.ObjLoader;
 import hidemod.HideMod;
-import model.ModelPart;
+import model.HideModel;
+import model.HideModel.HideVertex;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import types.Info;
 import types.PackInfo;
@@ -86,7 +87,9 @@ public class PackLoader {
 					// Sound登録
 					checkAndAddToMap(PackData.readData.SOUND_MAP, cash.Sounds, packDomain);
 					// Model登録
-					checkAndAddToMap(PackData.readData.MODEL_MAP, cash.Models, packDomain);
+					cash.ModelInfos.entrySet()
+							.forEach(entry -> entry.getValue().modelParts = cash.Models.get(entry.getKey()));
+					checkAndAddToMap(PackData.readData.MODEL_MAP, cash.ModelInfos, packDomain);
 					LOGGER.info("End check and add pack[" + cash.Pack.PACK_NAME + "]");
 					LOGGER.info("End read file[" + file.getName() + "]");
 				} catch (IOException e1) {
@@ -106,7 +109,8 @@ public class PackLoader {
 		private Map<String, byte[]> Icons = new HashMap<>();
 		private Map<String, byte[]> Textures = new HashMap<>();
 		private Map<String, byte[]> Sounds = new HashMap<>();
-		private Map<String, Map<String, ModelPart>> Models = new HashMap<>();
+		private Map<String, Map<String, HideVertex[]>> Models = new HashMap<>();
+		private Map<String, HideModel> ModelInfos = new HashMap<>();
 
 		/** ファイルからパックのキャッシュを作成する */
 		public PackReader(File file) throws IOException {
@@ -177,7 +181,7 @@ public class PackLoader {
 			// model
 			if (PackPattern.MODEL_INFO.mache(name)) {
 				String n = PackPattern.MODEL_INFO.trim(name);
-				Models.put(n, ObjLoader.LoadModel(new ByteArrayInputStream(data)));
+				//	Models.put(n, ObjLoader.LoadModel(new ByteArrayInputStream(data)));
 				LOGGER.info("add model[" + n + "] to PackReader");
 			}
 			// texture
