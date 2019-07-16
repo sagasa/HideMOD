@@ -181,14 +181,14 @@ public class PackLoader {
 			// model
 			if (PackPattern.MODEL_INFO.mache(name)) {
 				String n = PackPattern.MODEL_INFO.trim(name);
-				//	Models.put(n, ObjLoader.LoadModel(new ByteArrayInputStream(data)));
+				ModelInfos.put(n, gson.fromJson(new String(data, Charset.forName("UTF-8")), HideModel.class));
 				LOGGER.info("add model[" + n + "] to PackReader");
 			}
 			// texture
 			if (PackPattern.TEXTURE.mache(name)) {
 				// TODO
 				String n = PackPattern.TEXTURE.trim(name);
-				Icons.put(n, data);
+				Textures.put(n, data);
 				LOGGER.info("add texture[" + n + "] to PackReader");
 			}
 			// sounds

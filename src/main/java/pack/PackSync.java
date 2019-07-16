@@ -29,7 +29,7 @@ public class PackSync {
 	}
 
 	public static void sendPackInfo() {
-		Minecraft.getMinecraft().player.sendChatMessage("Start server sync");
+	//	Minecraft.getMinecraft().player.sendChatMessage("Start server sync");
 		List<List<Integer>> hash = getPackHash();
 		PacketHandler.INSTANCE.sendToServer(new PacketSync(hash));
 	}

@@ -66,6 +66,14 @@ public class ResourceLoader implements IResourcePack {
 				return new ByteArrayInputStream(PackData.currentData.ICON_MAP.get(iconName));
 			}
 		}
+		Pattern modelSkin = Pattern.compile("^skin\\/");
+		if (modelSkin.matcher(resource.getResourcePath()).find()) {
+			String skinName = png.matcher(modelSkin.matcher(resource.getResourcePath()).replaceAll(""))
+					.replaceAll("");
+			if (PackData.currentData.TEXTURE_MAP.containsKey(skinName)) {
+				return new ByteArrayInputStream(PackData.currentData.TEXTURE_MAP.get(skinName));
+			}
+		}
 		Pattern Sound = Pattern.compile("^sounds\\/");
 		Pattern ogg = Pattern.compile("\\.ogg$");
 		if (Sound.matcher(resource.getResourcePath()).find()) {
@@ -129,6 +137,14 @@ public class ResourceLoader implements IResourcePack {
 			String iconName = png.matcher(itemTexture.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
 			if (PackData.currentData.ICON_MAP.containsKey(iconName) && !iconName.equals("sample")) {
+				return true;
+			}
+		}
+		Pattern modelSkin = Pattern.compile("^skin\\/");
+		if (modelSkin.matcher(resource.getResourcePath()).find()) {
+			String skinName = png.matcher(modelSkin.matcher(resource.getResourcePath()).replaceAll(""))
+					.replaceAll("");
+			if (PackData.currentData.TEXTURE_MAP.containsKey(skinName) && !skinName.equals("sample")) {
 				return true;
 			}
 		}

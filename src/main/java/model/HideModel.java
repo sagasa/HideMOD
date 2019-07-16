@@ -4,10 +4,13 @@ import java.util.Map;
 
 import org.lwjgl.opengl.GL11;
 
+import hidemod.HideMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import types.base.DataBase;
@@ -40,6 +43,11 @@ public class HideModel extends DataBase {
 			texV = v;
 			hasNormal = false;
 		}
+
+		@Override
+		public String toString() {
+			return "[" + posX + "," + posY + "," + posZ + " : " + texU + "," + texV + "]";
+		}
 	}
 
 	// エディタサイドのみ
@@ -52,10 +60,10 @@ public class HideModel extends DataBase {
 	public float scaleX;//TODO
 
 	public HideModel setModel(Map<String, HideVertex[]> faces) {
-		modelParts = faces;
-		rootBone = new Bone(faces.keySet());
 		return this;
 	}
+
+	private ResourceLocation Textur = new ResourceLocation(HideMod.MOD_ID, "skin/default_skinstg44.png");
 
 	@SideOnly(Side.CLIENT)
 	public void render() {
@@ -63,19 +71,28 @@ public class HideModel extends DataBase {
 			Minecraft mc = Minecraft.getMinecraft();
 			Tessellator tessellator = Tessellator.getInstance();
 			GL11.glPushMatrix();
+
+			GlStateManager.disableCull();
+			//	GlStateManager.translate(mc.player.posX, mc.player.posY,mc.player.posZ);
+			GlStateManager.scale(0.1, 0.1, 0.1);
+
+			Minecraft.getMinecraft().renderEngine.bindTexture(Textur);
 			BufferBuilder buf = tessellator.getBuffer();
 			for (HideVertex[] part : modelParts.values()) {
-				int i = 0;
-				for (HideVertex vert : part) {
-					if (i % 0 == 0)
+				int i = 3;
+				for (int j = 0; j < part.length; j++) {
+					HideVertex vert = part[j];
+					if (i % 3 == 0) {
 						buf.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX);
-					buf.pos(vert.posX, vert.posY, vert.posZ).tex(vert.texU, vert.texV).endVertex();
-					if (i % 0 == 0 && i > 0)
+					}
+					buf.pos(vert.posX, vert.posY, vert.posZ).tex(vert.texU,1f- vert.texV).endVertex();
+					if (i % 3 == 2) {
 						tessellator.draw();
+					}
 					i++;
 				}
 			}
-			;
+			GlStateManager.enableCull();
 			GL11.glPopMatrix();
 		}
 	}

@@ -213,15 +213,23 @@ public class RenderHandler {
 
 		GlStateManager.popMatrix();
 
+		ItemStack item = mc.player.getHeldItemMainhand();
+		if (ItemGun.isGun(item)) {
+			HideModel model = PackData.getModel("default_modelstg44");
+			if (model != null)
+				model.render();
+			// ((ItemGun)item.getItem()).Model.render(RenderTick,Minecraft.getMinecraft().thePlayer);
+		}
 	}
 
 	/** 自分の持ってる銃の描画 アニメーションとパーツの稼働はこのメゾットのみ */
 	public static void RenderHand(RenderHandEvent event) {
 		ItemStack item = mc.player.getHeldItemMainhand();
 		if (ItemGun.isGun(item)) {
-			HideModel model = PackData.getModel("modelstg44");
-			if (model != null)
+			HideModel model = PackData.getModel("default_modelstg44");
+			if (model != null) {
 				model.render();
+			}
 			// ((ItemGun)item.getItem()).Model.render(RenderTick,Minecraft.getMinecraft().thePlayer);
 		}
 	}

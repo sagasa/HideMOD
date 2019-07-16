@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import javax.script.CompiledScript;
@@ -35,10 +34,6 @@ public class Bone extends DataBase implements IBone {
 		scriptEngine.put("bone", this);
 	}
 
-	public Bone(Set<String> models) {
-		this();
-		models.forEach(name -> this.models.add(new ModelSelector(name)));
-	}
 
 	@Override
 	public void loadIdentity() {

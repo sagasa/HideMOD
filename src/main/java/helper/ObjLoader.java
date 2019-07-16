@@ -67,8 +67,12 @@ public class ObjLoader {
 				float[] value = parseFloats(splitData);
 				normals.add(new Vec3d(value[0], value[1], value[2]));
 			} else if (key.equalsIgnoreCase("f")) {
-				if (splitData.length > 4 || group == null) {
-					LOGGER.warn("頂点多すぎ");
+				if (group == null) {
+					LOGGER.warn("グループに属していません");
+					continue;
+				}
+				if (splitData.length < 3) {
+					LOGGER.warn("頂点数が足りません");
 					continue;
 				}
 				List<HideVertex> verts = new ArrayList<>();
@@ -92,7 +96,12 @@ public class ObjLoader {
 				if (!poly.containsKey(group)) {
 					poly.put(group, new ArrayList<>());
 				}
-				poly.get(group).addAll(verts);
+				//3角に変換
+				for (int i = 0; i < verts.size() - 2; i++) {
+					poly.get(group).add(verts.get(0));
+					poly.get(group).add(verts.get(i + 1));
+					poly.get(group).add(verts.get(i + 2));
+				}
 			}
 		}
 		// フォーマットをまとめる
