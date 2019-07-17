@@ -59,7 +59,10 @@ public class HideModel extends DataBase {
 
 	public float scaleX;//TODO
 
+
+
 	public HideModel setModel(Map<String, HideVertex[]> faces) {
+		modelParts = faces;
 		return this;
 	}
 
@@ -69,12 +72,12 @@ public class HideModel extends DataBase {
 	public void render() {
 		if (modelParts != null) {
 			Minecraft mc = Minecraft.getMinecraft();
+
 			Tessellator tessellator = Tessellator.getInstance();
 			GL11.glPushMatrix();
 
 			GlStateManager.disableCull();
-			//	GlStateManager.translate(mc.player.posX, mc.player.posY,mc.player.posZ);
-			GlStateManager.scale(0.1, 0.1, 0.1);
+			GlStateManager.scale(0.03, 0.03, 0.03);
 
 			Minecraft.getMinecraft().renderEngine.bindTexture(Textur);
 			BufferBuilder buf = tessellator.getBuffer();
@@ -85,7 +88,7 @@ public class HideModel extends DataBase {
 					if (i % 3 == 0) {
 						buf.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX);
 					}
-					buf.pos(vert.posX, vert.posY, vert.posZ).tex(vert.texU,1f- vert.texV).endVertex();
+					buf.pos(vert.posX, vert.posY, vert.posZ).tex(vert.texU, 1f - vert.texV).endVertex();
 					if (i % 3 == 2) {
 						tessellator.draw();
 					}

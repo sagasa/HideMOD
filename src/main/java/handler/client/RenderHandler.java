@@ -25,6 +25,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
@@ -63,6 +64,9 @@ public class RenderHandler {
 		int y = scaledresolution.getScaledHeight();
 
 		if (event.isCancelable() && event.getType() == ElementType.CROSSHAIRS) {
+			ClientPlayerData data = HidePlayerData.getClientData(HideMod.getPlayer());
+			if (EquipMode.getEquipMode(data.gunMain, data.gunOff) != EquipMode.None)
+				event.setCanceled(true);
 			writeHitMarker(x, y);
 			writeScope(x, y);
 		}
@@ -228,7 +232,18 @@ public class RenderHandler {
 		if (ItemGun.isGun(item)) {
 			HideModel model = PackData.getModel("default_modelstg44");
 			if (model != null) {
+				if (mc.gameSettings.thirdPersonView != 0)
+					return;
+				int side = 1;
+				if (mc.gameSettings.mainHand == EnumHandSide.LEFT)
+					side = -1;
+				GlStateManager.pushMatrix();
+				GlStateManager.rotate(90, 0, 1, 0);
+				GlStateManager.translate(1, -1.0, 0.6 * side);
+				GlStateManager.rotate(-5 * side, 0, 1, 0);
+
 				model.render();
+				GlStateManager.popMatrix();
 			}
 			// ((ItemGun)item.getItem()).Model.render(RenderTick,Minecraft.getMinecraft().thePlayer);
 		}
