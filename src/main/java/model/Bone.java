@@ -1,8 +1,5 @@
 package model;
 
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,12 +8,13 @@ import java.util.function.Supplier;
 
 import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import hidemod.HideMod;
-import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import types.base.DataBase;
+
+import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 /** モデルのアニメーション用 */
 public class Bone extends DataBase implements IBone {
@@ -34,12 +32,14 @@ public class Bone extends DataBase implements IBone {
 	transient public IRenderProperty rootProperty;
 
 	public Bone() {
-		getClass().getClassLoader();
-		URLClassLoader.newInstance(new URL[] {new File(HideMod.getModDir().getAbsolutePath()+"\nashorn.jar").toURI().toURL()}, );
-		System.out.println(new NashornScriptEngineFactory());
-		EngineManager.getEngineFactories().forEach(m->System.out.println("Engine "+m.getEngineName()+" "+m.getLanguageName()));
-		System.out.println("AAAAAAAAAAAAAAAAAAA"+scriptEngine.ENGINE+" : "+scriptEngine.NAME+" - "+scriptEngine);
 
+		try {
+			Class c = Class.forName("");
+			ScriptEngineFactory factory = (ScriptEngineFactory) c.newInstance();
+			factory.getScriptEngine();
+		} catch (Throwable throwable) {
+			throwable.printStackTrace();
+		}
 		scriptEngine.put("bone", this);
 	}
 
