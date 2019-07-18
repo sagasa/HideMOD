@@ -1,5 +1,6 @@
 package hidemod;
 
+import java.io.File;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -44,6 +45,11 @@ public class HideMod {
 	/** 起動出来るMinecraft本体のバージョン。記法はMavenのVersion Range Specificationを検索すること。 */
 	public static final String MOD_ACCEPTED_MC_VERSIONS = "[1.12,1.12.2]";
 
+	private static File ModeDir;
+	public static File getModDir() {
+		return ModeDir;
+	}
+
 	private static final Logger LOGGER = LogManager.getLogger();
 
 	/* イニシャライズ */
@@ -56,6 +62,7 @@ public class HideMod {
 	// アイテム登録
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
+		ModeDir = new File(event.getModConfigurationDirectory().getParentFile(), "/mods/");
 		// パック読み込み
 		PackLoader.load(event);
 		// パケットの初期設定
@@ -89,7 +96,8 @@ public class HideMod {
 
 	@SideOnly(Side.CLIENT)
 	void RegistryRenders() {
-		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ItemGun.INSTANCE, 0, new ModelResourceLocation("hidemod:gun", "inventory"));
+		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ItemGun.INSTANCE, 0,
+				new ModelResourceLocation("hidemod:gun", "inventory"));
 		// Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item,
 		// meta, location)
 
