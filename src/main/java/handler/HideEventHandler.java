@@ -7,6 +7,7 @@ import handler.client.InputHandler;
 import handler.client.RecoilHandler;
 import handler.client.RenderHandler;
 import items.ItemGun;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.util.SoundEvent;
@@ -150,7 +151,7 @@ public class HideEventHandler {
 	// 手持ちアイテム描画
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
-	public void onEvent(RenderLivingEvent.Post event) {
+	public void onEvent(RenderLivingEvent.Pre<EntityLivingBase> event) {
 		RenderHandler.RenderEntityEvent(event);
 	}
 

@@ -100,7 +100,6 @@ public class HideMod {
 				new ModelResourceLocation("hidemod:gun", "inventory"));
 		// Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item,
 		// meta, location)
-
 	}
 
 	/** クライアントサイド限定 playerを取得 */

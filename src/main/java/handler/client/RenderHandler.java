@@ -30,7 +30,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.client.event.RenderHandEvent;
-import net.minecraftforge.client.event.RenderLivingEvent.Post;
+import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -202,7 +202,8 @@ public class RenderHandler {
 	static ModelPlayer model = new ModelPlayer(0, false);
 
 	/** 自分以外の持ってる銃の描画 */
-	public static void RenderEntityEvent(Post event) {
+	public static void RenderEntityEvent(RenderLivingEvent<EntityLivingBase> e) {
+		/*
 		model.isChild = false;
 		GlStateManager.pushMatrix();
 		GlStateManager.enableRescaleNormal();
@@ -212,17 +213,25 @@ public class RenderHandler {
 
 		EntityLivingBase player = event.getEntity();
 
-		model.render(HideMod.getPlayer(), player.limbSwing, player.limbSwingAmount, 0f, player.rotationYaw,
-				player.rotationPitch, 0.0625F);
+	//	model.render(HideMod.getPlayer(), player.limbSwing, player.limbSwingAmount, 0f, player.rotationYaw,
+	//			player.rotationPitch, 0.0625F);
 
-		GlStateManager.popMatrix();
+		GlStateManager.popMatrix();//*/
 
 		ItemStack item = mc.player.getHeldItemMainhand();
 		if (ItemGun.isGun(item)) {
 			HideModel model = PackData.getModel("default_modelstg44");
-			if (model != null)
+			if (model != null) {
+				GlStateManager.pushMatrix();
+				GlStateManager.translate(e.getX(), e.getY(), e.getZ());
+				GlStateManager.rotate(90, 0, 1, 0);
+				GlStateManager.translate(1, -1.0, 0.6 );
+				GlStateManager.rotate(-5 , 0, 1, 0);
+				GlStateManager.disableLighting();
 				model.render();
-			// ((ItemGun)item.getItem()).Model.render(RenderTick,Minecraft.getMinecraft().thePlayer);
+				GlStateManager.popMatrix();
+
+			}
 		}
 	}
 
@@ -241,8 +250,8 @@ public class RenderHandler {
 				GlStateManager.rotate(90, 0, 1, 0);
 				GlStateManager.translate(1, -1.0, 0.6 * side);
 				GlStateManager.rotate(-5 * side, 0, 1, 0);
-
-				model.render();
+				GlStateManager.disableLighting();
+		//		model.render();
 				GlStateManager.popMatrix();
 			}
 			// ((ItemGun)item.getItem()).Model.render(RenderTick,Minecraft.getMinecraft().thePlayer);

@@ -111,7 +111,8 @@ public class InputHandler {
 		EntityPlayerSP player = Minecraft.getMinecraft().player;
 		if (player == null)
 			return;
-		boolean trigger = player.isDead ? false : InputBind.GUN_FIRE.isButtonDown();
+		boolean trigger = player.isDead || !Minecraft.getMinecraft().inGameHasFocus ? false
+				: InputBind.GUN_FIRE.isButtonDown();
 		ClientPlayerData data = HidePlayerData.getClientData(player);
 		GunController gunMain = data.gunMain;
 		GunController gunOff = data.gunOff;
@@ -178,7 +179,7 @@ public class InputHandler {
 		Watcher.start();
 		Watcher.setUncaughtExceptionHandler((thread, throwable) -> {
 			startWatcher();
-			log.warn("InputThread was clash restarting",throwable);
+			log.warn("InputThread was clash restarting", throwable);
 		});
 	}
 

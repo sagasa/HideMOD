@@ -8,17 +8,15 @@ import java.util.function.Supplier;
 
 import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import types.base.DataBase;
 
-import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
-
 /** モデルのアニメーション用 */
 public class Bone extends DataBase implements IBone {
-	transient private static final ScriptEngineManager EngineManager = new ScriptEngineManager();
+	transient private static final ScriptEngineManager EngineManager;
+	transient private static final boolean ScriptAnimation;
 	transient protected ScriptEngine scriptEngine = EngineManager.getEngineByName("nashorn");
 	transient protected CompiledScript animation;
 	transient private Map<String, Supplier<Float>> Propertis = new HashMap<>();
@@ -28,19 +26,17 @@ public class Bone extends DataBase implements IBone {
 
 	public String script = "";
 
+	static {
+		EngineManager = new ScriptEngineManager();
+		ScriptAnimation = EngineManager.getEngineByName("nashorn") != null;
+	}
+
 	/** プロパティの取得元 */
 	transient public IRenderProperty rootProperty;
 
 	public Bone() {
-
-		try {
-			Class c = Class.forName("");
-			ScriptEngineFactory factory = (ScriptEngineFactory) c.newInstance();
-			factory.getScriptEngine();
-		} catch (Throwable throwable) {
-			throwable.printStackTrace();
-		}
-		scriptEngine.put("bone", this);
+		if (ScriptAnimation)
+			scriptEngine.put("bone", this);
 	}
 
 	@Override
@@ -73,10 +69,11 @@ public class Bone extends DataBase implements IBone {
 
 	@Override
 	public void update() {
-		try {
-			animation.eval();
-		} catch (ScriptException e) {
-		}
+		if (ScriptAnimation)
+			try {
+				animation.eval();
+			} catch (ScriptException e) {
+			}
 	}
 
 	@Override
