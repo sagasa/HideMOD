@@ -117,6 +117,7 @@ public class HideSoundManager {
 	public static HideEntitySound playSound(HideEntitySound sound) {
 		int delay = sound.getDelay();
 		if (delay > 0) {
+			System.out.println("delay");
 			delayedSounds.put(sound, delay + time);
 		} else {
 			Minecraft.getMinecraft().getSoundHandler().playSound(sound);

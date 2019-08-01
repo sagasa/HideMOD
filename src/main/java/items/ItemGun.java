@@ -56,6 +56,7 @@ public class ItemGun extends Item {
 		return null;
 	}
 
+
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
 		GunData data = getGunData(stack);

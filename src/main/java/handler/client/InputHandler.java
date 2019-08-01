@@ -27,6 +27,8 @@ public class InputHandler {
 
 	private static final Logger log = LogManager.getLogger();
 
+	private static boolean isStart = false;
+
 	private static float acceleration = 0F;
 	private static float acceleration_changed_detector = 0F;
 	private static float rotate = 0F;
@@ -39,7 +41,7 @@ public class InputHandler {
 	public static void tickUpdate() {
 		InputWatcher.tickUpdate();
 		EntityPlayerSP player = Minecraft.getMinecraft().player;
-		if (player == null) {
+		if (player == null||!isStart) {
 			return;
 		}
 
@@ -181,9 +183,11 @@ public class InputHandler {
 			startWatcher();
 			log.warn("InputThread was clash restarting", throwable);
 		});
+		isStart = true;
 	}
 
 	public static void stopWatcher() {
+		isStart = false;
 		Watcher.stop = true;
 	}
 

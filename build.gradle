@@ -78,3 +78,16 @@ processResources {
         exclude 'mcmod.info'
     }
 }
+
+//manifestファイルの書き込みをビルドに追加する。これにより、coremodの読み込みが可能になる。
+//なお、テスト起動時にはこのオプションが効かないためVMオプションに以下の引数を追加する。
+//-Dfml.coreMods.load=alcore.asm.ALCorePlugin
+
+jar {
+    manifest {
+        //coremodのパスを指定する。
+        attributes FMLCorePlugin: 'overwrite.HideCorePlugin'
+        //今回はAluminiummodが別で入っているためそれも読み込む。
+        attributes FMLCorePluginContainsFMLMod : 'true'
+    }
+}

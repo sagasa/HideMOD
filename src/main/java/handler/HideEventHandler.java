@@ -20,6 +20,7 @@ import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityEvent;
+import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerEvent.StopTracking;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
@@ -84,6 +85,11 @@ public class HideEventHandler {
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedOutEvent event) {
 
+	}
+
+	@SubscribeEvent
+	public void onEvent(LivingEntityUseItemEvent e) {
+		e.setDuration(20);
 	}
 
 	/** クライアント側でのワールド読み込み時に入力監視スレッドを立ち上げる */
@@ -151,7 +157,7 @@ public class HideEventHandler {
 	// 手持ちアイテム描画
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
-	public void onEvent(RenderLivingEvent.Pre<EntityLivingBase> event) {
+	public void onEvent(RenderLivingEvent.Post<EntityLivingBase> event) {
 		RenderHandler.RenderEntityEvent(event);
 	}
 

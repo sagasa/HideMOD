@@ -71,7 +71,7 @@ public class HideModel extends DataBase {
 	@SideOnly(Side.CLIENT)
 	public void render() {
 		if (modelParts != null) {
-			System.out.println("render");
+			//System.out.println("render");
 			Minecraft mc = Minecraft.getMinecraft();
 
 			Tessellator tessellator = Tessellator.getInstance();
