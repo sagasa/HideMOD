@@ -12,7 +12,9 @@ import guns.GunController;
 import handler.PlayerHandler.EquipMode;
 import helper.HideNBT;
 import hidemod.HideMod;
+import items.ItemGun;
 import items.ItemMagazine;
+import model.HideModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.model.ModelPlayer;
@@ -23,6 +25,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
@@ -240,7 +243,7 @@ public class RenderHandler {
 		}//*/
 	}
 
-	private static void makeDot() {
+	public static void makeDot() {
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         GL11.glColor3f(1, 1, 1);
@@ -255,7 +258,7 @@ public class RenderHandler {
 	}
 
 	/** 自分の持ってる銃の描画 アニメーションとパーツの稼働はこのメゾットのみ */
-	public static void RenderHand(RenderHandEvent event) {/*
+	public static void RenderHand(RenderHandEvent event) {//*
 		ItemStack item = mc.player.getHeldItemMainhand();
 		if (ItemGun.isGun(item)) {
 			HideModel model = PackData.getModel("default_modelstg44");

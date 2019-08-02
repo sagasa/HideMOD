@@ -120,7 +120,8 @@ public class HideSoundManager {
 			System.out.println("delay");
 			delayedSounds.put(sound, delay + time);
 		} else {
-			Minecraft.getMinecraft().getSoundHandler().playSound(sound);
+			delayedSounds.put(sound, delay + time);
+			//Minecraft.getMinecraft().getSoundHandler().playSound(sound);
 		}
 		return sound;
 	}

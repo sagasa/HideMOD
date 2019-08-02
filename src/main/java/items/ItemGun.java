@@ -8,7 +8,6 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 
 import gamedata.LoadedMagazine.Magazine;
 import guns.GunController;
-import handler.client.HideItemRender;
 import helper.HideNBT;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
@@ -36,7 +35,6 @@ public class ItemGun extends Item {
 		this.setUnlocalizedName(name);
 		this.setRegistryName(name);
 		this.setMaxStackSize(1);
-		setTileEntityItemStackRenderer(new HideItemRender());
 	}
 
 	public static final ItemGun INSTANCE = new ItemGun("gun");
