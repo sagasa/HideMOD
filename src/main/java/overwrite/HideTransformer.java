@@ -70,9 +70,7 @@ public class HideTransformer implements IClassTransformer {
 					MethodVisitor mv = super.visitMethod(access, methodName, desc, signature, exceptions);
 					//呼び出し元のメソッドを参照していることを確認する。
 					String s1 = FMLDeobfuscatingRemapper.INSTANCE.mapMethodName(name, methodName, desc);
-
-					log.info("methodName " + s1 + " " + methodName);
-
+					//			log("methodName " + s1);
 					//C:\Users\<ユーザー名>\.gradle\caches\minecraft\net\minecraftforge\forge\1.7.10-10.13.4.1558-1.7.10\forge-1.7.10-10.13.4.1558-1.7.10-decomp.jar\より名称を検索、比較してメソッドの難読化名を探す。
 					if (s1.equals("setRotationAngles") || s1.equals("func_78087_a")) {
 						//もし対象だったらMethodVisitorを差し替える。
@@ -101,7 +99,58 @@ public class HideTransformer implements IClassTransformer {
 			cr.accept(cv, ClassReader.EXPAND_FRAMES);
 			return cw.toByteArray();
 		}
-		return bytes;
+		if ("net.minecraft.client.Minecraft".equals(transformedName)) {
+			ClassReader cr = new ClassReader(bytes);
+			ClassWriter cw = new ClassWriter(1);
+			ClassVisitor cv = new ClassVisitor(ASM4, cw) {
+				//クラス内のメソッドを訪れる。
+				@Override
+				public MethodVisitor visitMethod(int access, String methodName, String desc, String signature,
+						String[] exceptions) {
+					MethodVisitor mv = super.visitMethod(access, methodName, desc, signature, exceptions);
+					//呼び出し元のメソッドを参照していることを確認する。
+					String s1 = FMLDeobfuscatingRemapper.INSTANCE.mapMethodName(name, methodName, desc);
+					//コンストラクタのため省略
+					//C:\Users\<ユーザー名>\.gradle\caches\minecraft\net\minecraftforge\forge\1.7.10-10.13.4.1558-1.7.10\forge-1.7.10-10.13.4.1558-1.7.10-decomp.jar\より名称を検索、比較してメソッドの難読化名を探す。
+					if (s1.equals("clickMouse") || s1.equals("func_147116_af")) {
+						//もし対象だったらMethodVisitorを差し替える。
+						mv = new MethodVisitor(ASM4, mv) {
+							@Override
+							public void visitCode() {
+								log.info("Visitstart");
+								super.visitCode();
+								//*
+								mv.visitVarInsn(ALOAD, 0);
+								mv.visitMethodInsn(
+										INVOKESTATIC, "overwrite/HideHook", "hookOnLeftClick", Type
+												.getMethodDescriptor(Type.BOOLEAN_TYPE,
+														Type.getObjectType(
+																"net/minecraft/client/Minecraft")),
+										false);
+								mv.visitInsn(ICONST_1);;
+								mv.visitVarInsn(BASTORE, 1);
+								/*
+								Label skip = new Label();
+								mv.visitJumpInsn(GOTO, skip);
+								mv.visitInsn(RETURN);
+								mv.visitLabel(skip);//*/
+							}
+						};
+					}
+					return mv;
+				}
+			};
+			cr.accept(cv, ClassReader.EXPAND_FRAMES);
+			return cw.toByteArray();
+		}
 
+		return bytes;
+	}
+
+	static int i = 0;
+
+	private static void log(String str) {
+		log.info(i + str);
+		i++;
 	}
 }
