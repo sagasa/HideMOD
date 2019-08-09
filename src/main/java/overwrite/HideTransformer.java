@@ -119,7 +119,7 @@ public class HideTransformer implements IClassTransformer {
 							public void visitCode() {
 								log.info("Visitstart");
 								super.visitCode();
-								//*
+								/*
 								mv.visitVarInsn(ALOAD, 0);
 								mv.visitMethodInsn(
 										INVOKESTATIC, "overwrite/HideHook", "hookOnLeftClick", Type
@@ -127,8 +127,6 @@ public class HideTransformer implements IClassTransformer {
 														Type.getObjectType(
 																"net/minecraft/client/Minecraft")),
 										false);
-								mv.visitInsn(ICONST_1);;
-								mv.visitVarInsn(BASTORE, 1);
 								/*
 								Label skip = new Label();
 								mv.visitJumpInsn(GOTO, skip);
