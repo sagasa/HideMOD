@@ -15,6 +15,8 @@ public abstract class ItemData extends DataBase {
 	/** アイコン名 */
 	@Info(isResourceName = true)
 	public String ITEM_ICONNAME = "sample";
+	@Info(isResourceName = true)
+	public String ITEM_MODELNAME = "default";
 	/**スタックサイズ*/
 	public int ITEM_STACK_SIZE = 1;
 	/** 所持しているときのHP増加量 */

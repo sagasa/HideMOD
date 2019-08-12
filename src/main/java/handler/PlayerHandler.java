@@ -135,8 +135,8 @@ public class PlayerHandler {
 
 	@SideOnly(Side.CLIENT)
 	private static void ClientUpdate() {
-		//TODO 兵器の場合
 		EntityPlayer player = Minecraft.getMinecraft().player;
+		//TODO 兵器の場合
 		ClientPlayerData data = HidePlayerData.getClientData(player);
 		data.gunMain.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ).setRotate(player.rotationYaw,
 				player.rotationPitch);

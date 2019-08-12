@@ -1,8 +1,12 @@
 package handler.client;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.vecmath.Matrix4f;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.util.vector.Vector3f;
 
 import com.google.common.collect.Lists;
@@ -14,6 +18,8 @@ import net.minecraft.client.renderer.block.model.BlockFaceUV;
 import net.minecraft.client.renderer.block.model.BlockPartFace;
 import net.minecraft.client.renderer.block.model.FaceBakery;
 import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
+import net.minecraft.client.renderer.block.model.ItemOverride;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.block.model.ModelBlock;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -26,6 +32,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import pack.PackData;
+import types.items.ItemData;
 
 @SideOnly(Side.CLIENT)
 public class HideItemRender extends TileEntityItemStackRenderer {
@@ -50,12 +58,31 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 
 	public static void register(ModelBakeEvent e) {
 		e.getModelRegistry().putObject(new ModelResourceLocation("hidemod:gun", "inventory"), dummyModel);
+		System.out.println("call Bake Event");
+		/*	((SimpleReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new IResourceManagerReloadListener() {
+				@Override
+				public void onResourceManagerReload(IResourceManager resourceManager) {
+					System.out.println("call Reload Event "+resourceManager.getResourceDomains());
+
+				}
+			});//*/
 	}
 
+	private static final String EMPTY_MODEL_RAW = "{    'elements': [        {   'from': [0, 0, 0],            'to': [16, 16, 16],            'faces': {                'down': {'uv': [0, 0, 16, 16], 'texture': '' }            }        }    ]}"
+			.replaceAll("'", "\"");
+	protected static final ModelBlock MODEL_GENERATED = ModelBlock.deserialize(EMPTY_MODEL_RAW);
 
-    private static final String EMPTY_MODEL_RAW = "{    'elements': [        {   'from': [0, 0, 0],            'to': [16, 16, 16],            'faces': {                'down': {'uv': [0, 0, 16, 16], 'texture': '' }            }        }    ]}".replaceAll("'", "\"");
-    protected static final ModelBlock MODEL_GENERATED = ModelBlock.deserialize(EMPTY_MODEL_RAW);
+	static ItemOverrideList override = new ItemOverrideList(new ArrayList<ItemOverride>()) {
+		@Override
+		public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack, net.minecraft.world.World world,
+				net.minecraft.entity.EntityLivingBase entity) {
+			ItemData data = PackData.getItemData(stack);
+			if (data != null) {
 
+			}
+			return super.handleItemState(originalModel, stack, world, entity);
+		}
+	};
 
 	static List<BakedQuad> model;
 	private static FaceBakery faceBakery = new FaceBakery();
@@ -67,6 +94,47 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 	}
 
 	static IBakedModel dummyModel = new IBakedModel() {
+
+		@Override
+		public Pair<? extends IBakedModel, Matrix4f> handlePerspective(TransformType cameraTransformType) {
+			if (cameraTransformType == TransformType.GUI) {
+				return testModel.handlePerspective(cameraTransformType);
+			}
+			return IBakedModel.super.handlePerspective(cameraTransformType);
+		}
+
+		@Override
+		public boolean isGui3d() {
+			return false;
+		}
+
+		@Override
+		public boolean isBuiltInRenderer() {
+			return false;
+		}
+
+		@Override
+		public boolean isAmbientOcclusion() {
+			return false;
+		}
+
+		@Override
+		public List<BakedQuad> getQuads(IBlockState state, EnumFacing face, long rand) {
+			return Collections.emptyList();
+		}
+
+		@Override
+		public TextureAtlasSprite getParticleTexture() {
+			return null;
+		}
+
+		@Override
+		public ItemOverrideList getOverrides() {
+			return ItemOverrideList.NONE;
+		}
+	};
+
+	static IBakedModel testModel = new IBakedModel() {
 
 		@Override
 		public boolean isGui3d() {
@@ -114,7 +182,7 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 			//第七引数:面の回転(nullで自動)
 			//第八引数:モデルの回転に合わせてテクスチャを回転させるか
 			//第九引数:陰らせるかどうか
-			BakedQuad bakedQuad = faceBakery.makeBakedQuad(from, to, partFace, stone, face, ModelRotation.X90_Y90, null,
+			BakedQuad bakedQuad = faceBakery.makeBakedQuad(from, to, partFace, stone, face, ModelRotation.X90_Y0, null,
 					true,
 					true);
 

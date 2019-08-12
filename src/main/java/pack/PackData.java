@@ -8,6 +8,7 @@ import java.util.Map;
 
 import entity.EntityBullet;
 import entity.render.RenderBullet;
+import helper.HideNBT;
 import hidemod.HideMod;
 import items.ItemGun;
 import items.ItemMagazine;
@@ -15,6 +16,7 @@ import model.HideModel;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.event.RegistryEvent.Register;
@@ -26,6 +28,7 @@ import net.minecraftforge.registries.IForgeRegistry;
 import types.PackInfo;
 import types.attachments.AttachmentsData;
 import types.items.GunData;
+import types.items.ItemData;
 import types.items.MagazineData;
 
 public class PackData implements Cloneable {
@@ -57,6 +60,15 @@ public class PackData implements Cloneable {
 	static PackData readData = new PackData();
 
 	static PackData currentData = new PackData();
+
+	/** 登録名からGunData取得 */
+	public static ItemData getItemData(ItemStack item) {
+		Class<Item>  clazz = item.getItem().getRegistryType();
+		if(ItemGun.class.equals(clazz)) {
+			return PackData.getGunData(HideNBT.getGunTag(item).getString(HideNBT.GUN_NAME));
+		}
+		return null;
+	}
 
 	/** 登録名からGunData取得 */
 	public static GunData getGunData(String name) {

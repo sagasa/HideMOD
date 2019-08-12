@@ -14,6 +14,7 @@ import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.data.MetadataSerializer;
 import net.minecraft.util.ResourceLocation;
+import types.items.ItemData;
 
 /** デフォルトリソースパックに割り込んでリソースを押し込む */
 public class ResourceLoader implements IResourcePack {
@@ -48,12 +49,12 @@ public class ResourceLoader implements IResourcePack {
 			String registerName = json.matcher(itemModel.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
 			// 銃なら
-			if (PackData.GUN_DATA_MAP.containsKey(registerName)) {
-				return makeItemModel(PackData.GUN_DATA_MAP.get(registerName).ITEM_ICONNAME, true);
+			if (PackData.getGunData(registerName)!=null) {
+				return makeItemModel(PackData.getGunData(registerName));
 			}
 			// 弾なら
-			if (PackData.MAGAZINE_DATA_MAP.containsKey(registerName)) {
-				return makeItemModel(PackData.MAGAZINE_DATA_MAP.get(registerName).ITEM_ICONNAME, true);
+			if (PackData.getBulletData(registerName)!=null) {
+				return makeItemModel(PackData.getBulletData(registerName));
 			}
 		}
 		//*/
@@ -99,12 +100,12 @@ public class ResourceLoader implements IResourcePack {
 	}
 
 	/** Jsonの内容！！！ */
-	private static InputStream makeItemModel(String texture, boolean hasModel) {
+	public static InputStream makeItemModel(ItemData item) {
 		String data;
-		if (hasModel) {
-			data = HasModelJson.replace("TEXTURE", texture);
+		if (PackData.getModel(item.ITEM_MODELNAME) != null) {
+			data = HasModelJson.replace("TEXTURE", item.ITEM_ICONNAME);
 		} else {
-			data = NoModelJson.replace("TEXTURE", texture);
+			data = NoModelJson.replace("TEXTURE", item.ITEM_ICONNAME);
 		}
 		return new ByteArrayInputStream(data.getBytes());
 	}

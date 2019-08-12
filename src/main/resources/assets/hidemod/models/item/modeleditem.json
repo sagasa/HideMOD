@@ -1,0 +1,11 @@
+{
+  "parent": "item/generated",
+  "display": {
+    "thirdperson": {
+      "scale": [0, 0, 0]
+    },
+    "firstperson": {
+      "scale": [0, 0, 0]
+    }
+  }
+}
