@@ -60,7 +60,9 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 	public static void register(ModelBakeEvent e) {
 		e.getModelRegistry().putObject(new ModelResourceLocation("hidemod:gun", "inventory"), dummyModel);
 		System.out.println("call Bake Event");
-		Minecraft.getMinecraft().getTextureMapBlocks().registerSprite(new ResourceLocation(HideMod.MOD_ID, "textures/m14_scope"));
+
+		stone = Minecraft.getMinecraft().getTextureMapBlocks()
+				.getAtlasSprite(new ResourceLocation(HideMod.MOD_ID, "textures/m14_scope").toString());
 		/*	((SimpleReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new IResourceManagerReloadListener() {
 				@Override
 				public void onResourceManagerReload(IResourceManager resourceManager) {
@@ -89,12 +91,6 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 	static List<BakedQuad> model;
 	private static FaceBakery faceBakery = new FaceBakery();
 	static TextureAtlasSprite stone;
-
-	static {
-		stone = Minecraft.getMinecraft().getTextureMapBlocks()
-				.getAtlasSprite(new ResourceLocation(HideMod.MOD_ID, "textures/m14_scope").toString());
-;
-	}
 
 	static IBakedModel dummyModel = new IBakedModel() {
 

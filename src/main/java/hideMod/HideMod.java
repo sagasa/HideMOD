@@ -46,6 +46,7 @@ public class HideMod {
 	public static final String MOD_ACCEPTED_MC_VERSIONS = "[1.12,1.12.2]";
 
 	private static File ModeDir;
+
 	public static File getModDir() {
 		return ModeDir;
 	}
@@ -96,6 +97,9 @@ public class HideMod {
 
 	@SideOnly(Side.CLIENT)
 	void RegistryRenders() {
+		Minecraft.getMinecraft().getTextureMapBlocks()
+				.registerSprite(new ResourceLocation(HideMod.MOD_ID, "textures/m14_scope"));
+
 		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ItemGun.INSTANCE, 0,
 				new ModelResourceLocation("hidemod:gun", "inventory"));
 		// Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item,
