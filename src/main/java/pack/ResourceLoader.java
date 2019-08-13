@@ -100,7 +100,7 @@ public class ResourceLoader implements IResourcePack {
 	}
 
 	/** Jsonの内容！！！ */
-	public static InputStream makeItemModel(ItemData item) {
+	public  static InputStream makeItemModel(ItemData item) {
 		String data;
 		if (PackData.getModel(item.ITEM_MODELNAME) != null) {
 			data = HasModelJson.replace("TEXTURE", item.ITEM_ICONNAME);
