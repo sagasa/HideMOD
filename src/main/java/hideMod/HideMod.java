@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import entity.EntityBullet;
 import handler.HideEventHandler;
 import handler.PacketHandler;
+import handler.client.HideItemRender;
 import helper.HideDamage;
 import items.ItemGun;
 import net.minecraft.client.Minecraft;
@@ -76,6 +77,7 @@ public class HideMod {
 				"entity_bullet", 1, MOD_ID, 512, 1, false);
 
 		if (FMLCommonHandler.instance().getSide().isClient()) {
+			HideItemRender.registerLoader();
 			// リソースローダーを追加
 			List<IResourcePack> defaultResourcePacks = ObfuscationReflectionHelper.getPrivateValue(Minecraft.class,
 					Minecraft.getMinecraft(), "defaultResourcePacks", "field_110449_ao");

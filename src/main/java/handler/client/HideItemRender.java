@@ -1,14 +1,18 @@
 package handler.client;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 import javax.vecmath.Matrix4f;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.util.vector.Vector3f;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import hidemod.HideMod;
@@ -22,15 +26,19 @@ import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
 import net.minecraft.client.renderer.block.model.ItemOverride;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
-import net.minecraft.client.renderer.block.model.ModelBlock;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
+import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelBakeEvent;
+import net.minecraftforge.client.model.ICustomModelLoader;
+import net.minecraftforge.client.model.IModel;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import pack.PackData;
@@ -58,11 +66,11 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 	}
 
 	public static void register(ModelBakeEvent e) {
-		e.getModelRegistry().putObject(new ModelResourceLocation("hidemod:gun", "inventory"), dummyModel);
+		//	e.getModelRegistry().putObject(new ModelResourceLocation("hidemod:gun", "inventory"), dummyModel);
 		System.out.println("call Bake Event");
 
 		stone = Minecraft.getMinecraft().getTextureMapBlocks()
-				.getAtlasSprite(new ResourceLocation(HideMod.MOD_ID, "textures/m14_scope").toString());
+				.getAtlasSprite(new ResourceLocation(HideMod.MOD_ID, "default_m14_scope").toString());
 		/*	((SimpleReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new IResourceManagerReloadListener() {
 				@Override
 				public void onResourceManagerReload(IResourceManager resourceManager) {
@@ -72,9 +80,42 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 			});//*/
 	}
 
-	private static final String EMPTY_MODEL_RAW = "{    'elements': [        {   'from': [0, 0, 0],            'to': [16, 16, 16],            'faces': {                'down': {'uv': [0, 0, 16, 16], 'texture': '' }            }        }    ]}"
-			.replaceAll("'", "\"");
-	protected static final ModelBlock MODEL_GENERATED = ModelBlock.deserialize(EMPTY_MODEL_RAW);
+	public static void registerLoader() {
+		System.out.println("Register ModelLoader");
+		ModelLoaderRegistry.registerLoader(loader);
+	}
+
+	private static IModel HideItemModel = new IModel() {
+		@Override
+		public Collection<ResourceLocation> getTextures() {
+			return ImmutableSet.of(new ResourceLocation(HideMod.MOD_ID, "default_m14_scope"));
+		}
+
+		@Override
+		public IBakedModel bake(IModelState state, VertexFormat format,
+				Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+			return dummyModel;
+		}
+	};
+
+	private static ICustomModelLoader loader = new ICustomModelLoader() {
+
+		@Override
+		public void onResourceManagerReload(IResourceManager resourceManager) {
+
+		}
+
+		@Override
+		public IModel loadModel(ResourceLocation modelLocation) throws Exception {
+			return HideItemModel;
+		}
+
+		@Override
+		public boolean accepts(ResourceLocation modelLocation) {
+			System.out.println(modelLocation.getResourceDomain().equals(HideMod.MOD_ID)+" "+modelLocation.getResourceDomain());
+			return modelLocation.getResourceDomain().equals(HideMod.MOD_ID);
+		}
+	};
 
 	static ItemOverrideList override = new ItemOverrideList(new ArrayList<ItemOverride>()) {
 		@Override
@@ -91,6 +132,12 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 	static List<BakedQuad> model;
 	private static FaceBakery faceBakery = new FaceBakery();
 	static TextureAtlasSprite stone;
+
+	Map<String, IBakedModel> bakedModel;
+
+	private static IBakedModel getHideItemModel(ItemData data) {
+
+	}
 
 	static IBakedModel dummyModel = new IBakedModel() {
 
