@@ -16,17 +16,22 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import hidemod.HideMod;
+import model.HideModel;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockFaceUV;
+import net.minecraft.client.renderer.block.model.BlockPart;
 import net.minecraft.client.renderer.block.model.BlockPartFace;
 import net.minecraft.client.renderer.block.model.FaceBakery;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
+import net.minecraft.client.renderer.block.model.ItemModelGenerator;
 import net.minecraft.client.renderer.block.model.ItemOverride;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
+import net.minecraft.client.renderer.block.model.ModelBlock;
 import net.minecraft.client.renderer.block.model.ModelRotation;
+import net.minecraft.client.renderer.block.model.SimpleBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
 import net.minecraft.client.renderer.vertex.VertexFormat;
@@ -112,7 +117,8 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 
 		@Override
 		public boolean accepts(ResourceLocation modelLocation) {
-			System.out.println(modelLocation.getResourceDomain().equals(HideMod.MOD_ID)+" "+modelLocation.getResourceDomain());
+			System.out.println(
+					modelLocation.getResourceDomain().equals(HideMod.MOD_ID) + " " + modelLocation.getResourceDomain());
 			return modelLocation.getResourceDomain().equals(HideMod.MOD_ID);
 		}
 	};
@@ -134,9 +140,58 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 	static TextureAtlasSprite stone;
 
 	Map<String, IBakedModel> bakedModel;
+	private static final String SimpleIconModel = "{'parent':'item/generated','textures':{'layer0':'ICON'}}"
+			.replaceAll("'", "\"");
+	private static ItemModelGenerator itemmodelGen = new ItemModelGenerator();
 
 	private static IBakedModel getHideItemModel(ItemData data) {
+		String icon = data.ITEM_ICONNAME;
+		HideModel model = PackData.getModel(data.ITEM_MODELNAME);
+		if (model == null) {
 
+		}
+		return;
+	}
+
+	protected IBakedModel bakeModel(ModelBlock modelBlockIn, net.minecraftforge.common.model.ITransformation modelRotationIn, boolean uvLocked) {
+		TextureAtlasSprite textureatlassprite = this.sprites.get(new ResourceLocation(modelBlockIn.resolveTextureName("particle")));
+		SimpleBakedModel.Builder simplebakedmodel$builder = (new SimpleBakedModel.Builder(modelBlockIn, modelBlockIn.createOverrides())).setTexture(textureatlassprite);
+
+		if (modelBlockIn.getElements().isEmpty()) {
+			return null;
+		} else {
+			for (BlockPart blockpart : modelBlockIn.getElements()) {
+				for (EnumFacing enumfacing : blockpart.mapFaces.keySet()) {
+					BlockPartFace blockpartface = blockpart.mapFaces.get(enumfacing);
+					TextureAtlasSprite textureatlassprite1 = this.sprites
+							.get(new ResourceLocation(modelBlockIn.resolveTextureName(blockpartface.texture)));
+
+					if (blockpartface.cullFace == null || !net.minecraftforge.common.model.TRSRTransformation
+							.isInteger(modelRotationIn.getMatrix())) {
+						simplebakedmodel$builder.addGeneralQuad(this.makeBakedQuad(blockpart, blockpartface,
+								textureatlassprite1, enumfacing, modelRotationIn, uvLocked));
+					} else {
+						simplebakedmodel$builder.addFaceQuad(modelRotationIn.rotate(blockpartface.cullFace),
+								this.makeBakedQuad(blockpart, blockpartface, textureatlassprite1, enumfacing,
+										modelRotationIn, uvLocked));
+					}
+				}
+			}
+
+			return simplebakedmodel$builder.makeBakedModel();
+		}
+	}
+
+	private BakedQuad makeBakedQuad(BlockPart p_177589_1_, BlockPartFace p_177589_2_, TextureAtlasSprite p_177589_3_,
+			EnumFacing p_177589_4_, ModelRotation p_177589_5_, boolean p_177589_6_) {
+		return makeBakedQuad(p_177589_1_, p_177589_2_, p_177589_3_, p_177589_4_,
+				(net.minecraftforge.common.model.ITransformation) p_177589_5_, p_177589_6_);
+	}
+
+	protected BakedQuad makeBakedQuad(BlockPart p_177589_1_, BlockPartFace p_177589_2_, TextureAtlasSprite p_177589_3_,
+			EnumFacing p_177589_4_, net.minecraftforge.common.model.ITransformation p_177589_5_, boolean p_177589_6_) {
+		return this.faceBakery.makeBakedQuad(p_177589_1_.positionFrom, p_177589_1_.positionTo, p_177589_2_, p_177589_3_,
+				p_177589_4_, p_177589_5_, p_177589_1_.partRotation, p_177589_6_, p_177589_1_.shade);
 	}
 
 	static IBakedModel dummyModel = new IBakedModel() {
