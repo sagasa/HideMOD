@@ -44,10 +44,14 @@ public class ResourceLoader implements IResourcePack {
 		}
 		Pattern itemModel = Pattern.compile("^models\\/item\\/");
 		Pattern json = Pattern.compile("\\.json$");
-		/*
+		//*
 		if (itemModel.matcher(resource.getResourcePath()).find()) {
 			String registerName = json.matcher(itemModel.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
+
+
+			return new ByteArrayInputStream(NoModelJson.replace("TEXTURE", HideMod.MOD_ID + ":default_m14_scope").getBytes());
+			/*
 			// 銃なら
 			if (PackData.getGunData(registerName)!=null) {
 				return makeItemModel(PackData.getGunData(registerName));
@@ -56,6 +60,7 @@ public class ResourceLoader implements IResourcePack {
 			if (PackData.getBulletData(registerName)!=null) {
 				return makeItemModel(PackData.getBulletData(registerName));
 			}
+			*/
 		}
 		//*/
 		Pattern itemTexture = Pattern.compile("^textures\\/");

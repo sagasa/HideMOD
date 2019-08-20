@@ -273,7 +273,7 @@ public class RenderHandler {
 				GlStateManager.translate(1, -1.0, 0.6 * side);
 				GlStateManager.rotate(-5 * side, 0, 1, 0);
 				GlStateManager.disableLighting();
-				model.render();
+			//	model.render();
 				GlStateManager.enableLighting();
 				GlStateManager.popMatrix();
 			}

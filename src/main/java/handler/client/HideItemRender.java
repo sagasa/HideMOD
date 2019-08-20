@@ -44,10 +44,8 @@ import net.minecraftforge.client.model.ICustomModelLoader;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.model.IModelState;
-import net.minecraftforge.common.model.ITransformation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import overwrite.HideOverwrite;
 import pack.PackData;
 import types.items.ItemData;
 
@@ -73,7 +71,7 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 	}
 
 	public static void register(ModelBakeEvent e) {
-		//	e.getModelRegistry().putObject(new ModelResourceLocation("hidemod:gun", "inventory"), dummyModel);
+		//e.getModelRegistry().putObject(new ModelResourceLocation("hidemod:gun", "inventory"), dummyModel);
 		System.out.println("call Bake Event");
 
 		/*	((SimpleReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new IResourceManagerReloadListener() {
@@ -144,11 +142,10 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 	static TextureAtlasSprite stone;
 
 	Map<String, IBakedModel> bakedModel;
-	private static final String SimpleIconModel = "{'parent':'item/generated','textures':{'layer0':'ICON'}}".replaceAll("'", "\"");
+	private static final String SimpleIconModel = "{'parent':'item/generated','textures':{'layer0':'ICON'},'display':{'thirdperson_righthand':{'rotation':[0,-90,45],'translation':[0,1,-2],'scale':[1,1,1]},'firstperson_righthand':{'rotation':[0,-90,45],'translation':[1.13,3.2,1.13],'scale':[0.68,0.68,0.68]}}}".replaceAll("'", "\"");
 	private static final String SimpleModel = "{'parent':'item/generated'}".replaceAll("'", "\"");
 	private static final ModelBlock DummyModel = ModelBlock.deserialize(SimpleModel);
 	private static final ItemModelGenerator itemmodelGen = new ItemModelGenerator();
-
 	private static IBakedModel getHideItemModel(ItemData data) {
 		String icon = data.ITEM_ICONNAME;
 		HideModel model = PackData.getModel(data.ITEM_MODELNAME);
@@ -158,17 +155,21 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 		return bakeModel(HideMod.MOD_ID + ":default_m14_scope");
 	}
 
-
-
 	protected static IBakedModel bakeModel(String textureLoc) {
 		TextureAtlasSprite textureatlassprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(textureLoc);
+
 		ModelBlock itemModel = itemmodelGen.makeItemModel(Minecraft.getMinecraft().getTextureMapBlocks(), ModelBlock.deserialize(SimpleIconModel.replace("ICON", textureLoc)));
+		itemModel = ModelBlock.deserialize(SimpleIconModel.replace("ICON", textureLoc));
+
+
 		SimpleBakedModel.Builder simplebakedmodel$builder = (new SimpleBakedModel.Builder(itemModel, ItemOverrideList.NONE)).setTexture(textureatlassprite);
+		System.out.println("bake");
 		for (BlockPart blockpart : itemModel.getElements()) {
 			for (EnumFacing enumfacing : blockpart.mapFaces.keySet()) {
 				BlockPartFace blockpartface = blockpart.mapFaces.get(enumfacing);
+				System.out.println(enumfacing+" "+blockpartface.texture+" "+blockpart.positionFrom+" "+blockpart.positionTo);
 				simplebakedmodel$builder.addGeneralQuad(makeBakedQuad(blockpart, blockpartface,
-						textureatlassprite, enumfacing, , false));
+						textureatlassprite, enumfacing, ModelRotation.X0_Y0, false));
 			}
 		}
 		return simplebakedmodel$builder.makeBakedModel();

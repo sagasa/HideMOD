@@ -69,7 +69,7 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 			if (ItemGun.isGun(p_188358_2_)) {
 				HideModel model = PackData.getModel("default_modelstg44");
 				if (model != null) {
-					model.render();
+				//	model.render();
 				}
 			}
 
