@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import types.Info;
 import types.base.DataBase;
 
 public class HideModel extends DataBase {
@@ -54,19 +55,18 @@ public class HideModel extends DataBase {
 	transient public Map<String, HideVertex[]> modelParts;
 
 	// 共通
-	public String texture;
+	@Info(isResourceName=true)
+	public String texture = "";
 	public Bone rootBone = new Bone();
 
 	public float scaleX;//TODO
-
-
 
 	public HideModel setModel(Map<String, HideVertex[]> faces) {
 		modelParts = faces;
 		return this;
 	}
 
-	private ResourceLocation Textur = new ResourceLocation(HideMod.MOD_ID, "skin/default_skinstg44.png");
+	transient private ResourceLocation Textur = new ResourceLocation(HideMod.MOD_ID, "skin/default_skinstg44.png");
 
 	@SideOnly(Side.CLIENT)
 	public void render() {

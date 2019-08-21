@@ -213,8 +213,8 @@ public class RenderHandler {
 
 		EntityLivingBase player = event.getEntity();
 
-	//	model.render(HideMod.getPlayer(), player.limbSwing, player.limbSwingAmount, 0f, player.rotationYaw,
-	//			player.rotationPitch, 0.0625F);
+		//	model.render(HideMod.getPlayer(), player.limbSwing, player.limbSwingAmount, 0f, player.rotationYaw,
+		//			player.rotationPitch, 0.0625F);
 
 		GlStateManager.popMatrix();
 
@@ -245,23 +245,23 @@ public class RenderHandler {
 
 	public static void makeDot() {
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
-        GL11.glColor3f(1, 1, 1);
-        GL11.glPushMatrix();
-        GL11.glPointSize(10F);
-        GL11.glBegin(GL11.GL_POINTS);
-        GL11.glVertex3f(0F, 0F, 0F);
-        GL11.glEnd();
-        GL11.glPopMatrix();
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
+		GL11.glColor3f(1, 1, 1);
+		GL11.glPushMatrix();
+		GL11.glPointSize(10F);
+		GL11.glBegin(GL11.GL_POINTS);
+		GL11.glVertex3f(0F, 0F, 0F);
+		GL11.glEnd();
+		GL11.glPopMatrix();
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
 	}
 
 	/** 自分の持ってる銃の描画 アニメーションとパーツの稼働はこのメゾットのみ */
 	public static void RenderHand(RenderHandEvent event) {//*
 		ItemStack item = mc.player.getHeldItemMainhand();
 		if (ItemGun.isGun(item)) {
-			HideModel model = PackData.getModel("default_modelstg44");
+			HideModel model = PackData.getModel(ItemGun.getGunData(item).ITEM_MODELNAME);
 			if (model != null) {
 				if (mc.gameSettings.thirdPersonView != 0)
 					return;
@@ -273,12 +273,12 @@ public class RenderHandler {
 				GlStateManager.translate(1, -1.0, 0.6 * side);
 				GlStateManager.rotate(-5 * side, 0, 1, 0);
 				GlStateManager.disableLighting();
-			//	model.render();
+				model.render();
 				GlStateManager.enableLighting();
 				GlStateManager.popMatrix();
 			}
 			// ((ItemGun)item.getItem()).Model.render(RenderTick,Minecraft.getMinecraft().thePlayer);
-		}//*/
+		} //*/
 	}
 
 }

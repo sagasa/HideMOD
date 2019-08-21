@@ -3,8 +3,10 @@ package handler.client;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import javax.vecmath.Matrix4f;
@@ -85,16 +87,33 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 
 	public static void registerLoader() {
 		System.out.println("Register ModelLoader");
+		init();
 		ModelLoaderRegistry.registerLoader(loader);
 	}
 
 	static ItemData testItem = new ItemData() {
 	};
 
+	private static void init() {
+		registerModel(PackData.getGunData());
+	}
+
+	private static void registerModel(Collection<? extends ItemData> items) {
+		for (ItemData data : items) {
+			if (!data.ITEM_ICONNAME.isEmpty())
+				textures.add(new ResourceLocation(data.ITEM_ICONNAME));
+			HideModel model = PackData.getModel(data.ITEM_MODELNAME);
+			if (model != null && !model.texture.isEmpty())
+				textures.add(new ResourceLocation(model.texture));
+		}
+	}
+
+	private static Set<ResourceLocation> textures = new HashSet<>();
+
 	private static IModel HideItemModel = new IModel() {
 		@Override
 		public Collection<ResourceLocation> getTextures() {
-			return ImmutableSet.of(new ResourceLocation(HideMod.MOD_ID, "default_m14_scope"));
+			return ImmutableSet.copyOf(textures);
 		}
 
 		@Override
@@ -102,7 +121,6 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 				Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
 			stone = Minecraft.getMinecraft().getTextureMapBlocks()
 					.getAtlasSprite(new ResourceLocation(HideMod.MOD_ID, "default_m14_scope").toString());
-			testItem.ITEM_ICONNAME = "default_m14_scope";
 			return getHideItemModel(testItem);
 		}
 	};
@@ -142,10 +160,15 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 	static TextureAtlasSprite stone;
 
 	Map<String, IBakedModel> bakedModel;
-	private static final String SimpleIconModel = "{'parent':'item/generated','textures':{'layer0':'ICON'},'display':{'thirdperson_righthand':{'rotation':[0,-90,45],'translation':[0,1,-2],'scale':[1,1,1]},'firstperson_righthand':{'rotation':[0,-90,45],'translation':[1.13,3.2,1.13],'scale':[0.68,0.68,0.68]}}}".replaceAll("'", "\"");
+	private static final String EMPTY_MODEL_RAW = "{    'elements': [        {   'from': [0, 0, 0],            'to': [16, 16, 16],            'faces': {                'down': {'uv': [0, 0, 16, 16], 'texture': '' }            }        }    ]}"
+			.replaceAll("'", "\"");
+	private static final ModelBlock EmptyGenModel = ModelBlock.deserialize(EMPTY_MODEL_RAW);
+	private static final String SimpleIconModel = "{'parent':'item/generated','textures':{'layer0':'ICON'},'display':{'thirdperson_righthand':{'rotation':[0,-90,45],'translation':[0,1,-2],'scale':[1,1,1]},'firstperson_righthand':{'rotation':[0,-90,45],'translation':[1.13,3.2,1.13],'scale':[0.68,0.68,0.68]}}}"
+			.replaceAll("'", "\"");
 	private static final String SimpleModel = "{'parent':'item/generated'}".replaceAll("'", "\"");
 	private static final ModelBlock DummyModel = ModelBlock.deserialize(SimpleModel);
 	private static final ItemModelGenerator itemmodelGen = new ItemModelGenerator();
+
 	private static IBakedModel getHideItemModel(ItemData data) {
 		String icon = data.ITEM_ICONNAME;
 		HideModel model = PackData.getModel(data.ITEM_MODELNAME);
@@ -159,15 +182,14 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 		TextureAtlasSprite textureatlassprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(textureLoc);
 
 		ModelBlock itemModel = itemmodelGen.makeItemModel(Minecraft.getMinecraft().getTextureMapBlocks(), ModelBlock.deserialize(SimpleIconModel.replace("ICON", textureLoc)));
-		itemModel = ModelBlock.deserialize(SimpleIconModel.replace("ICON", textureLoc));
-
+		itemModel.parent = EmptyGenModel;
 
 		SimpleBakedModel.Builder simplebakedmodel$builder = (new SimpleBakedModel.Builder(itemModel, ItemOverrideList.NONE)).setTexture(textureatlassprite);
 		System.out.println("bake");
 		for (BlockPart blockpart : itemModel.getElements()) {
 			for (EnumFacing enumfacing : blockpart.mapFaces.keySet()) {
 				BlockPartFace blockpartface = blockpart.mapFaces.get(enumfacing);
-				System.out.println(enumfacing+" "+blockpartface.texture+" "+blockpart.positionFrom+" "+blockpart.positionTo);
+				System.out.println(enumfacing + " " + blockpartface.texture + " " + blockpart.positionFrom + " " + blockpart.positionTo);
 				simplebakedmodel$builder.addGeneralQuad(makeBakedQuad(blockpart, blockpartface,
 						textureatlassprite, enumfacing, ModelRotation.X0_Y0, false));
 			}

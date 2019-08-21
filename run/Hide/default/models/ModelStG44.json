@@ -35,5 +35,6 @@
     ],
     "script": ""
   },
-  "scaleX": 0.0
+  "scaleX": 0.0,
+  "texture": "skinstg44"
 }

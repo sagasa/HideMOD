@@ -180,7 +180,7 @@ public class HideEventHandler {
 	@SideOnly(Side.CLIENT)
 	public void onEvent(RenderItemInFrameEvent event) {
 		// System.out.println(event.target+"Stop");
-		System.out.println(event);
+		//System.out.println(event);
 	}
 	/*
 	 * Fog削除できるぞ

@@ -13,7 +13,6 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -53,7 +52,6 @@ public class ItemGun extends Item {
 		}
 		return null;
 	}
-
 
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
@@ -126,16 +124,7 @@ public class ItemGun extends Item {
 
 	/** 銃かどうか */
 	public static boolean isGun(ItemStack item) {
-		if (item != null && item.getItem() instanceof ItemGun) {
-			return true;
-		}
-		return false;
-	}
-
-	@Override
-	public EnumAction getItemUseAction(ItemStack stack) {
-		// TODO 自動生成されたメソッド・スタブ
-		return EnumAction.BOW;
+		return getGunData(item) != null;
 	}
 
 	/** GunData取得 */
@@ -145,7 +134,7 @@ public class ItemGun extends Item {
 
 	/** GunData取得 */
 	public static GunData getGunData(ItemStack item) {
-		if (!(item.getItem() instanceof ItemGun)) {
+		if (item != null && !(item.getItem() instanceof ItemGun)) {
 			return null;
 		}
 		return PackData.getGunData(HideNBT.getGunTag(item).getString(HideNBT.GUN_NAME));

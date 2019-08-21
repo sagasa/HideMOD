@@ -141,6 +141,7 @@
   "ITEM_DISPLAYNAME": "T_GUN",
   "ITEM_SHORTNAME": "gun_t",
   "ITEM_ICONNAME": "M14_scope",
+  "ITEM_MODELNAME": "modelstg44",
   "ITEM_STACK_SIZE": 1,
   "ITEM_MAX_HEALTH": 0.0,
   "ITEM_MOVE_SPEED": 0.0,

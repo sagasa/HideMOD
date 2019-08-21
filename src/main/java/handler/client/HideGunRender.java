@@ -37,15 +37,15 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 				GlStateManager.scale(0.5F, 0.5F, 0.5F);
 			}
 
-			this.renderHeldItem(entitylivingbaseIn, itemstack1,
+			this.renderHeldGun(entitylivingbaseIn, itemstack1,
 					ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND, EnumHandSide.RIGHT);
-			this.renderHeldItem(entitylivingbaseIn, itemstack,
+			this.renderHeldGun(entitylivingbaseIn, itemstack,
 					ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND, EnumHandSide.LEFT);
 			GlStateManager.popMatrix();
 		}
 	}
 
-	private void renderHeldItem(EntityLivingBase p_188358_1_, ItemStack p_188358_2_,
+	private void renderHeldGun(EntityLivingBase p_188358_1_, ItemStack p_188358_2_,
 			ItemCameraTransforms.TransformType p_188358_3_, EnumHandSide handSide) {
 		if (!p_188358_2_.isEmpty()) {
 			GlStateManager.pushMatrix();
@@ -67,9 +67,10 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 			//RenderHandler.makeDot();
 
 			if (ItemGun.isGun(p_188358_2_)) {
-				HideModel model = PackData.getModel("default_modelstg44");
+			//	System.out.println(ItemGun.getGunData(p_188358_2_).ITEM_MODELNAME+ItemGun.getGunData(p_188358_2_).ITEM_ICONNAME);
+				HideModel model = PackData.getModel(ItemGun.getGunData(p_188358_2_).ITEM_MODELNAME);
 				if (model != null) {
-				//	model.render();
+					model.render();
 				}
 			}
 

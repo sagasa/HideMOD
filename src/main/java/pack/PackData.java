@@ -63,8 +63,8 @@ public class PackData implements Cloneable {
 
 	/** 登録名からGunData取得 */
 	public static ItemData getItemData(ItemStack item) {
-		Class<Item>  clazz = item.getItem().getRegistryType();
-		if(ItemGun.class.equals(clazz)) {
+		Class<Item> clazz = item.getItem().getRegistryType();
+		if (ItemGun.class.equals(clazz)) {
 			return PackData.getGunData(HideNBT.getGunTag(item).getString(HideNBT.GUN_NAME));
 		}
 		return null;
@@ -95,8 +95,10 @@ public class PackData implements Cloneable {
 		return currentData.ATTACHMENT_DATA_MAP.get(name);
 	}
 
-	/**登録名からアタッチメントを取得*/
+	/**リソース名からモデルを取得*/
 	public static HideModel getModel(String name) {
+		if (name.contains(":"))
+			name = name.split(":", 2)[1];
 		return currentData.MODEL_MAP.get(name);
 	}
 
