@@ -63,7 +63,7 @@ public class PackData implements Cloneable {
 
 	/** 登録名からGunData取得 */
 	public static ItemData getItemData(ItemStack item) {
-		Class<Item> clazz = item.getItem().getRegistryType();
+		Class<? extends Item> clazz = item.getItem().getClass();
 		if (ItemGun.class.equals(clazz)) {
 			return PackData.getGunData(HideNBT.getGunTag(item).getString(HideNBT.GUN_NAME));
 		}

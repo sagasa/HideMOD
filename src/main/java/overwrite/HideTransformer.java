@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
@@ -116,10 +117,15 @@ public class HideTransformer implements IClassTransformer {
 						//もし対象だったらMethodVisitorを差し替える。
 						mv = new MethodVisitor(ASM4, mv) {
 							@Override
+							public void visitFrame(int type, int nLocal, Object[] local, int nStack, Object[] stack) {
+								System.out.println(type+" "+ nLocal+" "+ local+" "+ nStack+" "+ stack);
+								super.visitFrame(type, nLocal, local, nStack, stack);
+							}
+							@Override
 							public void visitCode() {
 								log.info("Visitstart");
 								super.visitCode();
-								/*
+								//*
 								mv.visitVarInsn(ALOAD, 0);
 								mv.visitMethodInsn(
 										INVOKESTATIC, "overwrite/HideHook", "hookOnLeftClick", Type
@@ -127,9 +133,10 @@ public class HideTransformer implements IClassTransformer {
 														Type.getObjectType(
 																"net/minecraft/client/Minecraft")),
 										false);
-								/*
+								//*
 								Label skip = new Label();
-								mv.visitJumpInsn(GOTO, skip);
+								mv.visitJumpInsn(IFGT, skip);
+								mv.visitFrame(F_NEW, 1, null, 0, null);
 								mv.visitInsn(RETURN);
 								mv.visitLabel(skip);//*/
 							}
