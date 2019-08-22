@@ -173,12 +173,14 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 		String icon = data.ITEM_ICONNAME;
 		HideModel model = PackData.getModel(data.ITEM_MODELNAME);
 		if (model == null) {
-
+			return bakeItemModel(HideMod.MOD_ID + ":default_m14_scope",true);
+		}else {
+			return bakeItemModel(HideMod.MOD_ID + ":default_m14_scope",false);
 		}
-		return bakeModel(HideMod.MOD_ID + ":default_m14_scope");
+
 	}
 
-	protected static IBakedModel bakeModel(String textureLoc) {
+	protected static IBakedModel bakeItemModel(String textureLoc,boolean inHand) {
 		TextureAtlasSprite textureatlassprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(textureLoc);
 
 		ModelBlock itemModel = itemmodelGen.makeItemModel(Minecraft.getMinecraft().getTextureMapBlocks(), ModelBlock.deserialize(SimpleIconModel.replace("ICON", textureLoc)));
@@ -189,7 +191,6 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 		for (BlockPart blockpart : itemModel.getElements()) {
 			for (EnumFacing enumfacing : blockpart.mapFaces.keySet()) {
 				BlockPartFace blockpartface = blockpart.mapFaces.get(enumfacing);
-				System.out.println(enumfacing + " " + blockpartface.texture + " " + blockpart.positionFrom + " " + blockpart.positionTo);
 				simplebakedmodel$builder.addGeneralQuad(makeBakedQuad(blockpart, blockpartface,
 						textureatlassprite, enumfacing, ModelRotation.X0_Y0, false));
 			}
