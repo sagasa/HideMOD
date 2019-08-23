@@ -102,7 +102,7 @@ public class HideTransformer implements IClassTransformer {
 		}
 		if ("net.minecraft.client.Minecraft".equals(transformedName)) {
 			ClassReader cr = new ClassReader(bytes);
-			ClassWriter cw = new ClassWriter(1);
+			ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 			ClassVisitor cv = new ClassVisitor(ASM4, cw) {
 				//クラス内のメソッドを訪れる。
 				@Override
@@ -117,11 +117,6 @@ public class HideTransformer implements IClassTransformer {
 						//もし対象だったらMethodVisitorを差し替える。
 						mv = new MethodVisitor(ASM4, mv) {
 							@Override
-							public void visitFrame(int type, int nLocal, Object[] local, int nStack, Object[] stack) {
-								System.out.println(type+" "+ nLocal+" "+ local+" "+ nStack+" "+ stack);
-								super.visitFrame(type, nLocal, local, nStack, stack);
-							}
-							@Override
 							public void visitCode() {
 								log.info("Visitstart");
 								super.visitCode();
@@ -135,8 +130,7 @@ public class HideTransformer implements IClassTransformer {
 										false);
 								//*
 								Label skip = new Label();
-								mv.visitJumpInsn(IFGT, skip);
-								mv.visitFrame(F_NEW, 1, null, 0, null);
+								mv.visitJumpInsn(IFEQ, skip);
 								mv.visitInsn(RETURN);
 								mv.visitLabel(skip);//*/
 							}

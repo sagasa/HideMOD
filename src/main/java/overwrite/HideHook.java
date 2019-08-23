@@ -26,12 +26,11 @@ public class HideHook {
 			model.bipedLeftArm.rotateAngleX = -((float) Math.PI / 2F) + model.bipedHead.rotateAngleX;
 
 		}
-		//	System.out.println("呼び出し！！！！！！！！！！！！！！");
 	}
 
+	/**左クリックにフック trueでキャンセル*/
 	@SideOnly(Side.CLIENT)
 	public static boolean hookOnLeftClick(Minecraft mc) {
 		return ItemGun.isGun(mc.player.getHeldItemMainhand());
-		//	System.out.println("呼び出し！！！！！！！！！！！！！！");
 	}
 }
