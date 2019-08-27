@@ -13,36 +13,52 @@ import pack.PackSync;
 
 public class PacketSync implements IMessage, IMessageHandler<PacketSync, IMessage> {
 
+	private static final byte EMPTY = -1;
 	//**サーバーからクライアントへ 現在のパックの状況を送るようリクエスト*/
 	private static final byte START = 0;
+	private static final byte END = 3;
 	//**クライアントからサーバーへ 現在のパック状態の送信*/
 	private static final byte SEND_HASH = 1;
 	private static final byte SEND_DATA = 2;
 
-	private byte mode;
+	private byte mode = EMPTY;
 
-	public PacketSync() {
-		mode = START;
+	public static PacketSync makeStartPacket() {
+		PacketSync packet = new PacketSync();
+		packet.mode = START;
+		return packet;
+	}
+
+	public static PacketSync makeEndPacket() {
+		PacketSync packet = new PacketSync();
+		packet.mode = END;
+		return packet;
 	}
 
 	List<List<byte[]>> dataList;
 
-	public void setByteData(List<List<byte[]>> list) {
-		mode = SEND_DATA;
-		dataList = list;
+	public static PacketSync makeDataPacket(List<List<byte[]>> list) {
+		PacketSync packet = new PacketSync();
+		packet.mode = SEND_DATA;
+		packet.dataList = list;
+		return packet;
 	}
 
 	List<List<Integer>> hashList;
 
-	public PacketSync(List<List<Integer>> list) {
-		mode = SEND_HASH;
-		hashList = list;
+	public static PacketSync makeHashPacket(List<List<Integer>> list) {
+		PacketSync packet = new PacketSync();
+		packet.mode = SEND_HASH;
+		packet.hashList = list;
+		return packet;
 	}
 
 	@Override
 	public IMessage onMessage(PacketSync m, MessageContext ctx) {
 		if (m.mode == START)
 			PackSync.sendPackInfo();
+		if (m.mode == END)
+			PackSync.packUpdate();
 		else if (m.mode == SEND_HASH)
 			if (ctx.side == Side.SERVER)
 				PackSync.makeChangeList(m.hashList, ctx.getServerHandler().player);

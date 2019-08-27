@@ -25,13 +25,13 @@ public class PackSync {
 
 	/***/
 	public static void syncPack() {
-		PacketHandler.INSTANCE.sendToAll(new PacketSync());
+		PacketHandler.INSTANCE.sendToAll(PacketSync.makeStartPacket());
 	}
 
 	public static void sendPackInfo() {
-	//	Minecraft.getMinecraft().player.sendChatMessage("Start server sync");
+		//	Minecraft.getMinecraft().player.sendChatMessage("Start server sync");
 		List<List<Integer>> hash = getPackHash();
-		PacketHandler.INSTANCE.sendToServer(new PacketSync(hash));
+		PacketHandler.INSTANCE.sendToServer(PacketSync.makeHashPacket(hash));
 	}
 
 	public static void makeChangeList(List<List<Integer>> clientList, EntityPlayerMP player) {
@@ -58,21 +58,29 @@ public class PackSync {
 			addList.add(addSub);
 		}
 		if (removeFlag)
-			PacketHandler.INSTANCE.sendTo(new PacketSync(removeList), player);
+			PacketHandler.INSTANCE.sendTo(PacketSync.makeHashPacket(removeList), player);
 		if (addFlag) {
-			PacketSync sync = new PacketSync();
-			sync.setByteData(toData(addList));
-			PacketHandler.INSTANCE.sendTo(sync, player);
+			PacketHandler.INSTANCE.sendTo(PacketSync.makeDataPacket(toData(addList)), player);
 		}
+		if (removeFlag || addFlag)
+			PacketHandler.INSTANCE.sendTo(PacketSync.makeEndPacket(), player);
+
 	}
 
+	/**サーバーから変更を受信*/
 	public static void addList(List<List<byte[]>> dataList) {
 		Minecraft.getMinecraft().player.sendChatMessage("Add " + dataList);
 
 	}
 
+	/**サーバーから変更を受信*/
 	public static void removeList(List<List<Integer>> hashList) {
 		Minecraft.getMinecraft().player.sendChatMessage("Remove " + hashList);
+	}
+
+	/**変更を確定して書き込み*/
+	public static void packUpdate() {
+
 	}
 
 	//======= Hash化メゾットs========
@@ -136,5 +144,6 @@ public class PackSync {
 			e.printStackTrace();
 			return 0;
 		}
+
 	}
 }
