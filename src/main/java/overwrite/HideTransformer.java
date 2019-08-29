@@ -24,7 +24,7 @@ public class HideTransformer implements IClassTransformer {
 		//対象クラス以外を除外する。対象は呼び出し元があるクラスである。
 		if ("net.minecraft.client.renderer.entity.RenderLivingBase".equals(transformedName)) {
 			ClassReader cr = new ClassReader(bytes);
-			ClassWriter cw = new ClassWriter(1);
+			ClassWriter cw = new ClassWriter(2);
 			ClassVisitor cv = new ClassVisitor(ASM4, cw) {
 				//クラス内のメソッドを訪れる。
 				@Override
@@ -62,7 +62,7 @@ public class HideTransformer implements IClassTransformer {
 		}
 		if ("net.minecraft.client.model.ModelBiped".equals(transformedName)) {
 			ClassReader cr = new ClassReader(bytes);
-			ClassWriter cw = new ClassWriter(1);
+			ClassWriter cw = new ClassWriter(2);
 			ClassVisitor cv = new ClassVisitor(ASM4, cw) {
 				//クラス内のメソッドを訪れる。
 				@Override

@@ -19,6 +19,7 @@ import handler.PacketHandler;
 import handler.SoundHandler;
 import handler.client.HideSoundManager;
 import handler.client.RecoilHandler;
+import helper.HideAdder;
 import helper.HideMath;
 import helper.HideNBT;
 import items.ItemMagazine;
@@ -46,7 +47,7 @@ public class GunController {
 	/**ロード可能な弾薬のどれかをロードする*/
 	public static final String LOAD_ANY = "ANY";
 
-	public static final byte SOUND_RELOAD = 1;
+	public static final byte SOUND_RELOAD = HideAdder.SoundCate.getNumber();
 
 	private ShootPoints shootPoint = ShootPoints.DefaultShootPoint;
 	private IGuns gun;

@@ -106,7 +106,8 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 	/**モデルローダー*/
 	private static ICustomModelLoader loader = new ICustomModelLoader() {
 		@Override
-		public void onResourceManagerReload(IResourceManager resourceManager) {}
+		public void onResourceManagerReload(IResourceManager resourceManager) {
+		}
 
 		@Override
 		public IModel loadModel(ResourceLocation modelLocation) throws Exception {
@@ -195,9 +196,9 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 		if (!modelCash.containsKey(type)) {
 			HideModel model = PackData.getModel(data.ITEM_MODELNAME);
 			if (model == null) {
-				modelCash.put(type, bakeItemModel(HideMod.MOD_ID + ":default_m14_scope", true));
+				modelCash.put(type, bakeItemModel(data.ITEM_ICONNAME, true));
 			}
-			modelCash.put(type, bakeItemModel(HideMod.MOD_ID + ":default_m14_scope", false));
+			modelCash.put(type, bakeItemModel(data.ITEM_ICONNAME, false));
 		}
 		return modelCash.get(type);
 	}

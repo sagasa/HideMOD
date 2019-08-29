@@ -78,7 +78,8 @@ public class HideModel extends DataBase {
 			GL11.glPushMatrix();
 
 			GlStateManager.disableCull();
-			GlStateManager.scale(0.03, 0.03, 0.03);
+			GlStateManager.scale(0.15, 0.15, 0.15);
+			GlStateManager.scale(scaleX, scaleX, scaleX);
 
 			Minecraft.getMinecraft().renderEngine.bindTexture(Textur);
 			BufferBuilder buf = tessellator.getBuffer();
