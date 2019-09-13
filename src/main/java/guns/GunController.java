@@ -43,7 +43,7 @@ import types.items.MagazineData;
  * TickUpdateを要求 */
 public class GunController {
 
-	private static final Logger LOGGER = LogManager.getLogger();
+	private static final Logger log = LogManager.getLogger();
 	/**ロード可能な弾薬のどれかをロードする*/
 	public static final String LOAD_ANY = "ANY";
 
@@ -102,7 +102,7 @@ public class GunController {
 		shootDelay = HideNBT.getGunShootDelay(gun.getGunTag());
 		shootDelay = shootDelay < 0 ? 0 : shootDelay;
 		lastTime = lastShootTime = System.currentTimeMillis();
-		System.out.println("load " + shootDelay);
+		System.out.println("load " + shootDelay + " "+magazine);
 	}
 
 	public void saveAndClear() {
@@ -218,6 +218,7 @@ public class GunController {
 				reload--;
 			} else if (reload == 0) {
 				reload = -1;
+				log.info("reload timer end, start reload");
 				reload();
 			}
 			HideNBT.setGunShootDelay(gun.getGunTag(), shootDelay);
@@ -305,7 +306,7 @@ public class GunController {
 			if (Shooter.world.isRemote) {
 				// シューターがプレイヤー以外ならエラー
 				if (!(Shooter instanceof EntityPlayer)) {
-					LOGGER.error("cant shoot from other entity at client");
+					log.error("cant shoot from other entity at client");
 					return;
 				}
 				if (completionTick != null) {
@@ -450,8 +451,11 @@ public class GunController {
 	}
 
 	private void reload() {
-		if (magazine.getList().size() >= modifyData.LOAD_NUM)
+		if (magazine.getList().size() >= modifyData.LOAD_NUM) {
+			log.info(magazine.getList());
+			log.info("reload stop! magazine is full");
 			return;
+		}
 		Magazine mag = magazineHolder.useMagazine(getUseMagazines());
 		if (mag.num > 0) {
 			magazine.addMagazinetoLast(mag);

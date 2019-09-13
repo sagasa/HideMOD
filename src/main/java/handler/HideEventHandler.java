@@ -1,5 +1,6 @@
 package handler;
 
+import gamedata.HidePlayerData;
 import handler.client.HideItemRender;
 import handler.client.HideScope;
 import handler.client.HideSoundManager;
@@ -7,6 +8,7 @@ import handler.client.InputHandler;
 import handler.client.RecoilHandler;
 import handler.client.RenderHandler;
 import items.ItemGun;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.util.SoundEvent;
@@ -76,12 +78,14 @@ public class HideEventHandler {
 	// ========接続イベント=========
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedInEvent event) {
-	//	PackSync.syncPack();
+		//	PackSync.syncPack();
 	}
 
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedOutEvent event) {
-
+		//切断時に銃の制御系を初期化
+		HidePlayerData.getServerData(event.player).gunMain.saveAndClear();
+		HidePlayerData.getServerData(event.player).gunOff.saveAndClear();
 	}
 
 	/** クライアント側でのワールド読み込み時に入力監視スレッドを立ち上げる */
@@ -94,6 +98,9 @@ public class HideEventHandler {
 	@SubscribeEvent
 	public void onEvent(ClientDisconnectionFromServerEvent event) {
 		InputHandler.stopWatcher();
+		//切断時に銃の制御系を初期化
+		HidePlayerData.getClientData(Minecraft.getMinecraft().player).gunMain.saveAndClear();
+		HidePlayerData.getClientData(Minecraft.getMinecraft().player).gunOff.saveAndClear();
 	}
 
 	@SubscribeEvent

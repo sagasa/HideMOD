@@ -41,8 +41,7 @@ public class HidePlayerData {
 	public static CommonPlayerData getData(EntityPlayer player, Side side) {
 		if (side == Side.CLIENT)
 			return getClientData(player);
-		else
-			return getServerData(player);
+		return getServerData(player);
 	}
 
 	public static class CommonPlayerData {
