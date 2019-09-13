@@ -265,6 +265,9 @@ public class PackLoader {
 	private static <T> void checkAndAddToMap(Map<String, T> to, Map<String, T> from, String packDomain) {
 		for (String name : from.keySet()) {
 			// ショートネームを登録名に書き換え
+			if (from.get(name) instanceof DataBase) {
+				setDomain(packDomain, (DataBase) from.get(name));
+			}
 			String newname = appendPackDomain(name, packDomain);
 			// 重複しないかどうか
 			if (to.containsKey(name)) {

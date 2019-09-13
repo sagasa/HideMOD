@@ -19,7 +19,6 @@ import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityEvent;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerEvent.StopTracking;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
@@ -34,7 +33,6 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnection
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import pack.PackData;
-import pack.PackSync;
 
 public class HideEventHandler {
 	//============= レジスタ ================
@@ -78,17 +76,12 @@ public class HideEventHandler {
 	// ========接続イベント=========
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedInEvent event) {
-		PackSync.syncPack();
+	//	PackSync.syncPack();
 	}
 
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedOutEvent event) {
 
-	}
-
-	@SubscribeEvent
-	public void onEvent(LivingEntityUseItemEvent e) {
-		e.setDuration(20);
 	}
 
 	/** クライアント側でのワールド読み込み時に入力監視スレッドを立ち上げる */

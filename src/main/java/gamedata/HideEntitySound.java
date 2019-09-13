@@ -48,6 +48,8 @@ public class HideEntitySound extends PositionedSound implements ITickableSound {
 	}
 
 	public double getDistance() {
+		if (Minecraft.getMinecraft().getRenderViewEntity() == null)
+			return 0;
 		return Minecraft.getMinecraft().getRenderViewEntity().getPositionVector()
 				.distanceTo(new Vec3d(xPosF, yPosF, zPosF));
 	}
@@ -58,7 +60,7 @@ public class HideEntitySound extends PositionedSound implements ITickableSound {
 		super(new ResourceLocation(soundName), categoryIn);
 		this.pitch = pitch;
 		this.volume = vol;
-		this.attenuationType = AttenuationType.LINEAR;
+		this.attenuationType = AttenuationType.NONE;
 		this.entity = e;
 		this.moveVec = (x == 0 && y == 0 && z == 0) ? Vec3d.ZERO : new Vec3d(-z, y, x);
 		this.RANGE = range;

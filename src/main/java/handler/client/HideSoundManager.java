@@ -1,9 +1,9 @@
 package handler.client;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import gamedata.HideEntitySound;
 import net.minecraft.client.Minecraft;
@@ -22,7 +22,7 @@ public class HideSoundManager {
 	private final Entity entity;
 	private final double X, Y, Z;
 
-	private Map<HideSoundType, HideEntitySound> sounds = new HashMap<>();
+	private Map<HideSoundType, HideEntitySound> sounds = new ConcurrentHashMap<>();
 
 	public HideSoundManager(Entity e, double x, double y, double z) {
 		entity = e;
@@ -86,9 +86,9 @@ public class HideSoundManager {
 		return (((long) cate) << 32) + entityID;
 	}
 
-	private static Map<Long, HideEntitySound> cateSoundMap = new HashMap<>();
+	private static Map<Long, HideEntitySound> cateSoundMap = new ConcurrentHashMap<>();
 
-	private static Map<HideEntitySound, Integer> delayedSounds = new HashMap<>();
+	private static Map<HideEntitySound, Integer> delayedSounds = new ConcurrentHashMap<>();
 	private static int time;
 
 	/**tickアップデート*/
@@ -117,7 +117,6 @@ public class HideSoundManager {
 	public static HideEntitySound playSound(HideEntitySound sound) {
 		int delay = sound.getDelay();
 		if (delay > 0) {
-			System.out.println("delay");
 			delayedSounds.put(sound, delay + time);
 		} else {
 			delayedSounds.put(sound, delay + time);

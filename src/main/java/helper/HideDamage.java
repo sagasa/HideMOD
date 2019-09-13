@@ -9,6 +9,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 
 public class HideDamage extends DamageSource {
 
@@ -34,7 +35,8 @@ public class HideDamage extends DamageSource {
 					attackingPlayer = attackingPlayer == null ? EntityLivingBase.class.getDeclaredField("field_70717_bb") : attackingPlayer;
 					recentlyHit = recentlyHit == null ? EntityLivingBase.class.getDeclaredField("field_70718_bc") : recentlyHit;
 					recentlySetRevenge = recentlySetRevenge == null
-							? EntityLivingBase.class.getMethod("func_70604_c", EntityLivingBase.class) : recentlySetRevenge;
+							? EntityLivingBase.class.getMethod("func_70604_c", EntityLivingBase.class)
+							: recentlySetRevenge;
 				} catch (NoSuchFieldException | NoSuchMethodException e1) {
 					System.out.println("どっちでもなかった");
 					e1.printStackTrace();
@@ -75,7 +77,7 @@ public class HideDamage extends DamageSource {
 
 	@Override
 	public ITextComponent getDeathMessage(EntityLivingBase p_151519_1_) {
-		return super.getDeathMessage(p_151519_1_);
+		return new TextComponentString("[Kill] " + Attacker.getName() + " ==[Gun]=>> " + p_151519_1_.getName());
 	}
 
 	public enum HideDamageCase {

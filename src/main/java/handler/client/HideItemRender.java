@@ -97,7 +97,8 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 				textures.add(new ResourceLocation(data.ITEM_ICONNAME));
 			HideModel model = PackData.getModel(data.ITEM_MODELNAME);
 			if (model != null && !model.texture.isEmpty())
-				textures.add(new ResourceLocation(model.texture));
+				System.out.println(model.texture);
+			//		textures.add(new ResourceLocation(model.texture));
 		}
 	}
 
@@ -195,6 +196,7 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 		String type = data.ITEM_ICONNAME + data.ITEM_MODELNAME;
 		if (!modelCash.containsKey(type)) {
 			HideModel model = PackData.getModel(data.ITEM_MODELNAME);
+			System.out.println(data.ITEM_ICONNAME +" "+ data.ITEM_DISPLAYNAME);
 			if (model == null) {
 				modelCash.put(type, bakeItemModel(data.ITEM_ICONNAME, true));
 			}

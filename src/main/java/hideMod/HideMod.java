@@ -12,6 +12,7 @@ import handler.PacketHandler;
 import handler.client.HideItemRender;
 import helper.HideDamage;
 import items.ItemGun;
+import items.ItemMagazine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.IResourcePack;
@@ -94,16 +95,14 @@ public class HideMod {
 		if (FMLCommonHandler.instance().getSide().isClient()) {
 			RegistryRenders();
 		}
-
 	}
 
 	@SideOnly(Side.CLIENT)
 	void RegistryRenders() {
-		Minecraft.getMinecraft().getTextureMapBlocks()
-				.registerSprite(new ResourceLocation(HideMod.MOD_ID, "textures/m14_scope"));
-
 		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ItemGun.INSTANCE, 0,
 				new ModelResourceLocation("hidemod:gun", "inventory"));
+		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ItemMagazine.INSTANCE, 0,
+				new ModelResourceLocation("hidemod:magazine", "inventory"));
 		// Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item,
 		// meta, location)
 	}

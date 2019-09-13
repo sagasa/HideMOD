@@ -67,6 +67,9 @@ public class PackData implements Cloneable {
 		if (ItemGun.class.equals(clazz)) {
 			return PackData.getGunData(HideNBT.getGunTag(item).getString(HideNBT.GUN_NAME));
 		}
+		if (ItemMagazine.class.equals(clazz)) {
+			return PackData.getBulletData(HideNBT.getMagazineTag(item).getString(HideNBT.MAGAZINE_NAME));
+		}
 		return null;
 	}
 

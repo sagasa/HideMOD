@@ -67,10 +67,10 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 			//RenderHandler.makeDot();
 
 			if (ItemGun.isGun(p_188358_2_)) {
-			//	System.out.println(ItemGun.getGunData(p_188358_2_).ITEM_MODELNAME+ItemGun.getGunData(p_188358_2_).ITEM_ICONNAME);
+				//	System.out.println(ItemGun.getGunData(p_188358_2_).ITEM_MODELNAME+ItemGun.getGunData(p_188358_2_).ITEM_ICONNAME);
 				HideModel model = PackData.getModel(ItemGun.getGunData(p_188358_2_).ITEM_MODELNAME);
 				if (model != null) {
-					model.render();
+					model.render(false);
 				}
 			}
 

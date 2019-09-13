@@ -16,10 +16,12 @@ import items.ItemGun;
 import items.ItemMagazine;
 import model.HideModel;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -27,6 +29,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.client.event.RenderHandEvent;
@@ -65,8 +68,8 @@ public class RenderHandler {
 
 		if (event.isCancelable() && event.getType() == ElementType.CROSSHAIRS) {
 			ClientPlayerData data = HidePlayerData.getClientData(HideMod.getPlayer());
-			if (EquipMode.getEquipMode(data.gunMain, data.gunOff) != EquipMode.None)
-				event.setCanceled(true);
+		//	if (EquipMode.getEquipMode(data.gunMain, data.gunOff) != EquipMode.None)
+		//		event.setCanceled(true);
 			writeHitMarker(x, y);
 			writeScope(x, y);
 		}
@@ -272,9 +275,27 @@ public class RenderHandler {
 				GlStateManager.rotate(90, 0, 1, 0);
 				GlStateManager.translate(1, -1.0, 0.6 * side);
 				GlStateManager.rotate(-5 * side, 0, 1, 0);
-				GlStateManager.disableLighting();
-				model.render();
-				GlStateManager.enableLighting();
+
+				mc.entityRenderer.enableLightmap();
+				AbstractClientPlayer abstractclientplayer = mc.player;
+				int light = mc.world.getCombinedLight(new BlockPos(abstractclientplayer.posX, abstractclientplayer.posY + (double) abstractclientplayer.getEyeHeight(), abstractclientplayer.posZ), 0);
+				float f = (float) (light & 65535);
+				float f1 = (float) (light >> 16);
+				OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, f, f1);
+
+				GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+				GlStateManager.enableRescaleNormal();
+				GlStateManager.alphaFunc(516, 0.1F);
+				GlStateManager.enableBlend();
+				GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+
+				model.render(true);
+
+				GlStateManager.disableRescaleNormal();
+				GlStateManager.disableBlend();
+				RenderHelper.disableStandardItemLighting();
+				mc.entityRenderer.disableLightmap();
+
 				GlStateManager.popMatrix();
 			}
 			// ((ItemGun)item.getItem()).Model.render(RenderTick,Minecraft.getMinecraft().thePlayer);

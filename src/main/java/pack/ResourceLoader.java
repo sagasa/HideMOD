@@ -117,7 +117,7 @@ public class ResourceLoader implements IResourcePack {
 
 	@Override
 	public boolean resourceExists(ResourceLocation resource) {
-		System.out.println("ReceiveRequest : " + resource.getResourcePath());
+		System.out.println("ReceiveRequest : " + resource.toString());
 		// 参照されたリソースが存在するかの指定。
 		// sounds.json
 		if (resource.getResourcePath().equals("sounds.json")) {
@@ -167,7 +167,7 @@ public class ResourceLoader implements IResourcePack {
 
 	@Override
 	public Set getResourceDomains() {
-		return ImmutableSet.of("hidemod");
+		return ImmutableSet.of(HideMod.MOD_ID);
 	}
 
 	@Override
