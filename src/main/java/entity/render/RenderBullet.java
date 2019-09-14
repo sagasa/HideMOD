@@ -29,7 +29,7 @@ public class RenderBullet extends Render {
 		GL11.glRotatef(90F -bullet.prevRotationPitch - (bullet.rotationPitch - bullet.prevRotationPitch) * f1, -1.0F, 0.0F, 0.0F);
 		ModelBase model = new ModelBullet();
 		if(model != null)
-			model.render(bullet, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.05F);
+			model.render(bullet, 0.0F, 0.0F, f1, 0.0F, 0.0F, 0.05F);
 		GL11.glPopMatrix();
 	}
 
