@@ -146,7 +146,7 @@ public class PlayerHandler {
 
 	/** サーバーTick処理 プログレスを進める */
 	private static void ServerTick(EntityPlayerMP player) {
-		// if(player.getRidingEntity() instanceof )
+		// if(player.getRidingEntity() instanceof)
 		ServerPlayerData data = HidePlayerData.getServerData(player);
 		List<GunController> guns = new ArrayList<>();
 		// アイテムの場合同期用

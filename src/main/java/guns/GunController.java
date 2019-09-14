@@ -25,6 +25,7 @@ import helper.HideNBT;
 import items.ItemMagazine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -153,7 +154,7 @@ public class GunController {
 	private double oldZ;
 	private float oldYaw;
 	private float oldPitch;
-	private Entity Shooter;
+	private EntityLivingBase Shooter;
 
 	/** 弾の出現点を設定 */
 	public GunController setPos(double x, double y, double z) {
@@ -177,7 +178,7 @@ public class GunController {
 	}
 
 	/** シューターを設定 */
-	public GunController setShooter(Entity shooter) {
+	public GunController setShooter(EntityLivingBase shooter) {
 		Shooter = shooter;
 		return this;
 	}
