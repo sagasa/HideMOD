@@ -59,7 +59,7 @@ public class GunController {
 	private GunData modifyData = null;
 
 	/** リロードの状況保存0でリロード完了処理 */
-	private int reload = -1;
+	private int reloadProgress = -1;
 
 	public GunController(EnumHand hand) {
 		this.hand = hand;
@@ -215,10 +215,11 @@ public class GunController {
 				magazine = mag;
 		} else {
 			// リロードタイマー
-			if (reload > 0) {
-				reload--;
-			} else if (reload == 0) {
-				reload = -1;
+			if (reloadProgress > 0) {
+				HideEntityDataManager.setADSState(Shooter, modifyData.RELOAD_TICK);
+				reloadProgress--;
+			} else if (reloadProgress == 0) {
+				reloadProgress = -1;
 				log.info("reload timer end, start reload");
 				reload();
 			}
@@ -364,8 +365,8 @@ public class GunController {
 	}
 
 	private void stopReload() {
-		if (reload != -1) {
-			reload = -1;
+		if (reloadProgress != -1) {
+			reloadProgress = -1;
 			SoundHandler.bloadcastCancel(Shooter.world, Shooter.getEntityId(), SOUND_RELOAD);
 		}
 	}
@@ -406,7 +407,7 @@ public class GunController {
 		if (!isGun() || !needReload())
 			return false;
 		//リロード中ならdsq
-		if (reload != -1) {
+		if (reloadProgress != -1) {
 			unload();
 			return false;
 		}
@@ -420,7 +421,7 @@ public class GunController {
 		// 音
 		SoundHandler.broadcastSound(Shooter, 0, 0, 0,
 				gun.getGunData().SOUND_RELOAD, false, SOUND_RELOAD);
-		reload = modifyData.RELOAD_TICK + addReloadTime;
+		reloadProgress = modifyData.RELOAD_TICK + addReloadTime;
 
 		// ReloadAll以外で空きスロットがある場合何もしない
 		if (magazine.getList().size() < modifyData.LOAD_NUM && !modifyData.RELOAD_ALL) {

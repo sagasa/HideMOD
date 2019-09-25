@@ -17,8 +17,7 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 	public static final byte GUN_MODE = 3;
 	public static final byte GUN_BULLET = 4;
 
-	public PacketInput() {
-	}
+	public PacketInput() {}
 
 	public PacketInput(byte mode) {
 		this.mode = mode;
@@ -67,6 +66,10 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 			data.changeFireMode = true;
 		else if (m.mode == GUN_RELOAD)
 			data.reload = true;
+		else if (m.mode == GUN_RELOAD)
+			data.reload = true;
+		else if (m.mode == GUN_ADS)
+			data.ads = m.isADS;
 		return null;
 	}
 }

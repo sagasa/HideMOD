@@ -62,10 +62,14 @@ public class HidePlayerData {
 	public static class ServerPlayerData extends CommonPlayerData {
 		public boolean leftMouse = false;
 		public boolean rightMouse;
-
+		/**サーバー側で処理*/
 		public boolean reload = false;
+		/**サーバー側で処理*/
 		public boolean changeAmmo = false;
+		/**サーバー側で処理*/
 		public boolean changeFireMode = false;
+		/**アニメーションのためのサーバー処理*/
+		public boolean ads = false;
 
 		public boolean dualToggle = true;
 

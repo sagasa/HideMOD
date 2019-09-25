@@ -155,18 +155,24 @@ public class PlayerHandler {
 		}
 		// 変更対象をリストに
 		EquipMode em = EquipMode.getEquipMode(data.gunMain, data.gunOff);
-		if (em.hasMain())
+		//adsにかかる時間 0でADS不能
+		int adsTick = 1;
+		if (em.hasMain()) {
 			guns.add(data.gunMain);
-		if (em.hasOff())
+			adsTick += data.gunMain.getGunData().ADS_TICK;
+		}
+		if (em.hasOff()) {
 			guns.add(data.gunOff);
-
+			adsTick += data.gunOff.getGunData().ADS_TICK;
+		}
+		if (adsTick < 0)
+			adsTick = 0;
 		if (data.changeAmmo) {
 			data.changeAmmo = false;
 			guns.forEach(gun -> HideNBT.setGunUseingBullet(gun.getGunTag(), gun.getNextUseMagazine()));
 			// player.connection.sendPacket(new SPacketEntityEquipment(player.getEntityId(),
 			// EntityEquipmentSlot.MAINHAND, player.getHeldItemMainhand()));
 		}
-
 		if (data.changeFireMode) {
 			data.changeFireMode = false;
 			guns.forEach(gun -> HideNBT.setGunFireMode(gun.getGunTag(), gun.getNextFireMode()));
@@ -179,6 +185,19 @@ public class PlayerHandler {
 				gun.preReload(0);
 			}
 		}
+		//ADS計算
+		else if (adsTick < data.adsstate)
+			data.adsstate = adsTick;
+		if (data.ads) {
+			if (data.adsstate < adsTick)
+				data.adsstate++;
+		} else {
+			if (0 < data.adsstate)
+				data.adsstate--;
+		}
+		data.adsRes = data.adsstate == 0 ? 0 : data.adsstate / (float) adsTick;
+
+		System.out.println(data.adsRes);
 
 	}
 }

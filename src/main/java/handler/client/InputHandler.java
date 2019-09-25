@@ -66,8 +66,8 @@ public class InputHandler {
 			if (pushKeys.contains(InputBind.GUN_USEBULLET)) {
 				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_BULLET));
 			}
-			if (pushKeys.contains(InputBind.GUN_USEBULLET)) {
-				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_ADS));
+			if (oldKeys.get(InputBind.GUN_AIM) != newKeys.get(InputBind.GUN_AIM)) {
+				PacketHandler.INSTANCE.sendToServer(new PacketInput(newKeys.get(InputBind.GUN_AIM)));
 			}
 		} else {
 			// Drivable用入力操作
