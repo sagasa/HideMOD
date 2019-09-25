@@ -41,7 +41,7 @@ public class InputHandler {
 	public static void tickUpdate() {
 		InputWatcher.tickUpdate();
 		EntityPlayerSP player = Minecraft.getMinecraft().player;
-		if (player == null||!isStart) {
+		if (player == null || !isStart) {
 			return;
 		}
 
@@ -59,10 +59,15 @@ public class InputHandler {
 			// アイテムの銃の処理
 			if (pushKeys.contains(InputBind.GUN_FIREMODE)) {
 				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_MODE));
-			} else if (pushKeys.contains(InputBind.GUN_RELOAD)) {
+			}
+			if (pushKeys.contains(InputBind.GUN_RELOAD)) {
 				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_RELOAD));
-			} else if (pushKeys.contains(InputBind.GUN_USEBULLET)) {
+			}
+			if (pushKeys.contains(InputBind.GUN_USEBULLET)) {
 				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_BULLET));
+			}
+			if (pushKeys.contains(InputBind.GUN_USEBULLET)) {
+				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_ADS));
 			}
 		} else {
 			// Drivable用入力操作
