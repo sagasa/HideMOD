@@ -17,6 +17,8 @@ import handler.PlayerHandler;
 import handler.PlayerHandler.EquipMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.settings.KeyBinding;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import network.PacketInput;
@@ -26,6 +28,8 @@ import types.base.GunFireMode;
 public class InputHandler {
 
 	private static final Logger log = LogManager.getLogger();
+
+	public static final KeyBinding sampleKey = new KeyBinding("Key.sample", Keyboard.KEY_R, "CategoryName");
 
 	private static boolean isStart = false;
 
@@ -37,6 +41,10 @@ public class InputHandler {
 	private static EnumMap<InputBind, Boolean> oldKeys = new EnumMap<>(InputBind.class);
 	private static EnumMap<InputBind, Boolean> newKeys = new EnumMap<>(InputBind.class);
 
+	public static void init() {
+		ClientRegistry.registerKeyBinding(sampleKey);
+	}
+
 	/** Tickアップデート */
 	public static void tickUpdate() {
 		InputWatcher.tickUpdate();
@@ -44,7 +52,7 @@ public class InputHandler {
 		if (player == null || !isStart) {
 			return;
 		}
-
+		sampleKey.isPressed();
 		// キー入力の取得 押された変化を取得
 		ArrayList<InputBind> pushKeys = new ArrayList<>();
 		oldKeys.putAll(newKeys);
@@ -114,7 +122,8 @@ public class InputHandler {
 	private static boolean dualToggle = false;
 	private static boolean lastTrigger = false;
 
-	public static void clientGunUpdate(float completion) {
+	/**監視スレッドからの呼び出し 取扱注意*/
+	private static void clientGunUpdate(float completion) {
 		EntityPlayerSP player = Minecraft.getMinecraft().player;
 		if (player == null)
 			return;

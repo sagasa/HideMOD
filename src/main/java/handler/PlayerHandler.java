@@ -142,6 +142,30 @@ public class PlayerHandler {
 				player.rotationPitch);
 		data.gunOff.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ).setRotate(player.rotationYaw,
 				player.rotationPitch);
+		EquipMode em = EquipMode.getEquipMode(data.gunMain, data.gunOff);
+		//adsにかかる時間 0でADS不能
+		int adsTick = 1;
+		if (em.hasMain()) {
+			adsTick += data.gunMain.getGunData().ADS_TICK;
+		}
+		if (em.hasOff()) {
+			adsTick += data.gunOff.getGunData().ADS_TICK;
+		}
+		if (adsTick < 0)
+			adsTick = 0;
+		//ADS計算
+		else if (adsTick < data.adsstate)
+			data.adsstate = adsTick;
+		if (data.ads) {
+			if (data.adsstate < adsTick)
+				data.adsstate++;
+		} else {
+			if (0 < data.adsstate)
+				data.adsstate--;
+		}
+		data.adsRes = data.adsstate == 0 ? 0 : data.adsstate / (float) adsTick;
+
+		System.out.println(data.adsRes);
 	}
 
 	/** サーバーTick処理 プログレスを進める */
@@ -155,18 +179,11 @@ public class PlayerHandler {
 		}
 		// 変更対象をリストに
 		EquipMode em = EquipMode.getEquipMode(data.gunMain, data.gunOff);
-		//adsにかかる時間 0でADS不能
-		int adsTick = 1;
-		if (em.hasMain()) {
+		if (em.hasMain())
 			guns.add(data.gunMain);
-			adsTick += data.gunMain.getGunData().ADS_TICK;
-		}
-		if (em.hasOff()) {
+		if (em.hasOff())
 			guns.add(data.gunOff);
-			adsTick += data.gunOff.getGunData().ADS_TICK;
-		}
-		if (adsTick < 0)
-			adsTick = 0;
+
 		if (data.changeAmmo) {
 			data.changeAmmo = false;
 			guns.forEach(gun -> HideNBT.setGunUseingBullet(gun.getGunTag(), gun.getNextUseMagazine()));
@@ -185,19 +202,5 @@ public class PlayerHandler {
 				gun.preReload(0);
 			}
 		}
-		//ADS計算
-		else if (adsTick < data.adsstate)
-			data.adsstate = adsTick;
-		if (data.ads) {
-			if (data.adsstate < adsTick)
-				data.adsstate++;
-		} else {
-			if (0 < data.adsstate)
-				data.adsstate--;
-		}
-		data.adsRes = data.adsstate == 0 ? 0 : data.adsstate / (float) adsTick;
-
-		System.out.println(data.adsRes);
-
 	}
 }

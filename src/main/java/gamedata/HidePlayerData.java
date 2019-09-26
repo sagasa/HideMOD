@@ -57,6 +57,8 @@ public class HidePlayerData {
 
 		public GunController gunMain = new GunController(EnumHand.MAIN_HAND);
 		public GunController gunOff = new GunController(EnumHand.OFF_HAND);
+		//ADSの状態
+		public float adsRes = 0f;
 	}
 
 	public static class ServerPlayerData extends CommonPlayerData {
@@ -68,13 +70,8 @@ public class HidePlayerData {
 		public boolean changeAmmo = false;
 		/**サーバー側で処理*/
 		public boolean changeFireMode = false;
-		/**アニメーションのためのサーバー処理*/
-		public boolean ads = false;
 
 		public boolean dualToggle = true;
-
-		public int adsstate = 0;
-		public float adsRes = 0f;
 	}
 
 	public static class ClientPlayerData extends CommonPlayerData {
@@ -82,5 +79,8 @@ public class HidePlayerData {
 			gunMain.setClientMode(true);
 			gunOff.setClientMode(true);
 		}
+
+		//ADS用のカウンタ
+		public int adsstate = 0;
 	}
 }
