@@ -17,18 +17,19 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 	public static final byte GUN_MODE = 3;
 	public static final byte GUN_BULLET = 4;
 
-	public PacketInput() {}
+	public PacketInput() {
+	}
 
 	public PacketInput(byte mode) {
 		this.mode = mode;
 	}
 
-	private boolean isADS;
+	private float ADState;
 
-	/**ADSトグルパケット*/
-	public PacketInput(boolean isads) {
+	/**ADS変更パケット*/
+	public PacketInput(float ads) {
 		this.mode = GUN_ADS;
-		this.isADS = isads;
+		this.ADState = ads;
 	}
 
 	private EquipMode equipMode;
@@ -37,7 +38,7 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 	public void fromBytes(ByteBuf buf) {
 		this.mode = buf.readByte();
 		if (mode == GUN_ADS) {
-			isADS = buf.readBoolean();
+			ADState = buf.readFloat();
 		}
 	}
 
@@ -45,7 +46,7 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 	public void toBytes(ByteBuf buf) {
 		buf.writeByte(mode);
 		if (mode == GUN_ADS) {
-			buf.writeBoolean(isADS);
+			buf.writeFloat(ADState);
 		}
 	}
 
@@ -69,7 +70,7 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 		else if (m.mode == GUN_RELOAD)
 			data.reload = true;
 		else if (m.mode == GUN_ADS)
-			data.ads = m.isADS;
+			data.adsRes = m.ADState;
 		return null;
 	}
 }

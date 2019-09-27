@@ -29,7 +29,12 @@ public class InputHandler {
 
 	private static final Logger log = LogManager.getLogger();
 
-	public static final KeyBinding sampleKey = new KeyBinding("Key.sample", Keyboard.KEY_R, "CategoryName");
+	public static final KeyBinding AIM = new KeyBinding("Key.aim", -99, "HideMod");
+	public static final KeyBinding FIRE = new KeyBinding("Key.fire", -100, "HideMod");
+	public static final KeyBinding RELOAD = new KeyBinding("Key.reload", Keyboard.KEY_R, "HideMod");
+	public static final KeyBinding CHANGE_BULLET = new KeyBinding("Key.reload", Keyboard.KEY_B, "HideMod");
+	public static final KeyBinding CHANGE_FIREMODE = new KeyBinding("Key.reload", Keyboard.KEY_V, "HideMod");
+	public static final KeyBinding DEBUG = new KeyBinding("Key.debug", Keyboard.KEY_G, "HideMod");
 
 	private static boolean isStart = false;
 
@@ -42,7 +47,12 @@ public class InputHandler {
 	private static EnumMap<InputBind, Boolean> newKeys = new EnumMap<>(InputBind.class);
 
 	public static void init() {
-		ClientRegistry.registerKeyBinding(sampleKey);
+		ClientRegistry.registerKeyBinding(AIM);
+		ClientRegistry.registerKeyBinding(FIRE);
+		ClientRegistry.registerKeyBinding(RELOAD);
+		ClientRegistry.registerKeyBinding(CHANGE_BULLET);
+		ClientRegistry.registerKeyBinding(CHANGE_FIREMODE);
+		ClientRegistry.registerKeyBinding(DEBUG);
 	}
 
 	/** Tickアップデート */
@@ -52,7 +62,6 @@ public class InputHandler {
 		if (player == null || !isStart) {
 			return;
 		}
-		sampleKey.isPressed();
 		// キー入力の取得 押された変化を取得
 		ArrayList<InputBind> pushKeys = new ArrayList<>();
 		oldKeys.putAll(newKeys);
@@ -62,21 +71,51 @@ public class InputHandler {
 				pushKeys.add(bind);
 			}
 		}
+		//銃火器への操作
+		ClientPlayerData data = HidePlayerData.getClientData(player);
+		EquipMode em = EquipMode.getEquipMode(data.gunMain, data.gunOff);
+		if (em != EquipMode.None) {
+			//adsにかかる時間 0でADS不能
+			int adsTick = 1;
+			if (em.hasMain()) {
+				adsTick += data.gunMain.getGunData().ADS_TICK;
+			}
+			if (em.hasOff()) {
+				adsTick += data.gunOff.getGunData().ADS_TICK;
+			}
+			if (adsTick < 0)
+				adsTick = 0;
+			//ADS計算
+			else if (adsTick < data.adsstate)
+				data.adsstate = adsTick;
+			if (InputHandler.AIM.isKeyDown()) {
+				if (data.adsstate < adsTick)
+					data.adsstate++;
+			} else {
+				if (0 < data.adsstate)
+					data.adsstate--;
+			}
+			if (CHANGE_FIREMODE.isPressed()) {
+				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_MODE));
+			}
+			if (RELOAD.isPressed()) {
+				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_RELOAD));
+			}
+			if (CHANGE_BULLET.isPressed()) {
+				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_BULLET));
+			}
+			float oldADS = data.adsRes;
+			data.adsRes = data.adsstate == 0 ? 0 : data.adsstate / (float) adsTick;
+			if (oldADS != data.adsRes) {
+				PacketHandler.INSTANCE.sendToServer(new PacketInput(data.adsRes));
+			}
+
+		}
+
 		// 兵器に乗っているか
 		if (!PlayerHandler.isOnEntityDrivable(player)) {
 			// アイテムの銃の処理
-			if (pushKeys.contains(InputBind.GUN_FIREMODE)) {
-				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_MODE));
-			}
-			if (pushKeys.contains(InputBind.GUN_RELOAD)) {
-				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_RELOAD));
-			}
-			if (pushKeys.contains(InputBind.GUN_USEBULLET)) {
-				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_BULLET));
-			}
-			if (oldKeys.get(InputBind.GUN_AIM) != newKeys.get(InputBind.GUN_AIM)) {
-				PacketHandler.INSTANCE.sendToServer(new PacketInput(newKeys.get(InputBind.GUN_AIM)));
-			}
+
 		} else {
 			// Drivable用入力操作
 			if (player.movementInput.forwardKeyDown == player.movementInput.backKeyDown) {
@@ -123,12 +162,12 @@ public class InputHandler {
 	private static boolean lastTrigger = false;
 
 	/**監視スレッドからの呼び出し 取扱注意*/
-	private static void clientGunUpdate(float completion) {
+	private static void clientGunUpdate(float completion, boolean fireKey) {
 		EntityPlayerSP player = Minecraft.getMinecraft().player;
 		if (player == null)
 			return;
 		boolean trigger = player.isDead || !Minecraft.getMinecraft().inGameHasFocus ? false
-				: InputBind.GUN_FIRE.isButtonDown();
+				: fireKey;
 		ClientPlayerData data = HidePlayerData.getClientData(player);
 		GunController gunMain = data.gunMain;
 		GunController gunOff = data.gunOff;
@@ -207,11 +246,6 @@ public class InputHandler {
 
 	/** 入力を監視するデーモンスレッド */
 	private static class InputWatcher extends Thread {
-		private static final InputBind[] fastUpdate = new InputBind[] { InputBind.GUN_AIM, InputBind.GUN_FIRE };
-
-		private EnumMap<InputBind, Boolean> lastInput = new EnumMap<>(InputBind.class);
-		private EnumMap<InputBind, Boolean> nowInput = new EnumMap<>(InputBind.class);
-
 		/** Tickアップデート */
 		public static void tickUpdate() {
 			InputWatcher.lastTickMillis = Minecraft.getSystemTime();
@@ -222,13 +256,6 @@ public class InputHandler {
 		/** trueになったらループを抜けて止める */
 		private boolean stop = false;
 
-		public InputWatcher() {
-			for (InputBind inputBind : fastUpdate) {
-				nowInput.put(inputBind, false);
-				lastInput.put(inputBind, false);
-			}
-		}
-
 		/** 最終アップデートの時点のSysTime */
 		private static long lastTickMillis = 0;
 
@@ -238,12 +265,13 @@ public class InputHandler {
 			try {
 				while (!stop) {
 					long time = Minecraft.getSystemTime();
-					lastInput.putAll(nowInput);
-					for (InputBind input : fastUpdate) {
-						nowInput.put(input, input.isButtonDown());
-					}
 					// 射撃処理
-					clientGunUpdate((Minecraft.getSystemTime() - lastTickMillis) / 50f);
+					boolean fire;
+					if (0 <= FIRE.getKeyCode())
+						fire = Keyboard.isKeyDown(FIRE.getKeyCode());
+					else
+						fire = Mouse.isButtonDown(FIRE.getKeyCode() + 100);
+					clientGunUpdate((Minecraft.getSystemTime() - lastTickMillis) / 50f, fire);
 
 					time = Minecraft.getSystemTime() - time;
 					time = Math.max(20 - time, 1);
@@ -257,10 +285,7 @@ public class InputHandler {
 	}
 
 	public enum InputBind {
-		GUN_FIRE(false, 0), GUN_AIM(false, 1), GUN_RELOAD(true, Keyboard.KEY_R), GUN_FIREMODE(true,
-				Keyboard.KEY_V), GUN_USEBULLET(true, Keyboard.KEY_B), DEBUG(true, Keyboard.KEY_G), DRIVABLE_LEFT(true,
-						Keyboard.KEY_A), DRIVABLE_RIGHT(true, Keyboard.KEY_D), DRIVABLE_FORWARD(true,
-								Keyboard.KEY_W), DRIVABLE_BACK(true, Keyboard.KEY_S);
+		DRIVABLE_LEFT(true, Keyboard.KEY_A), DRIVABLE_RIGHT(true, Keyboard.KEY_D), DRIVABLE_FORWARD(true, Keyboard.KEY_W), DRIVABLE_BACK(true, Keyboard.KEY_S);
 
 		private boolean isKey;
 		private int sysID;

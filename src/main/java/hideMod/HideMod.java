@@ -10,6 +10,7 @@ import entity.EntityBullet;
 import handler.HideEventHandler;
 import handler.PacketHandler;
 import handler.client.HideItemRender;
+import handler.client.InputHandler;
 import helper.HideDamage;
 import items.ItemGun;
 import items.ItemMagazine;
@@ -70,7 +71,6 @@ public class HideMod {
 		PackLoader.load(event);
 		// パケットの初期設定
 		PacketHandler.init();
-
 		// ダメージの初期設定
 		HideDamage.init();
 		// エンティティ登録
@@ -93,12 +93,15 @@ public class HideMod {
 	public void init(FMLInitializationEvent event) {
 		// エンティティのレンダー登録
 		if (FMLCommonHandler.instance().getSide().isClient()) {
-			RegistryRenders();
+			initClient();
 		}
 	}
 
 	@SideOnly(Side.CLIENT)
-	void RegistryRenders() {
+	void initClient() {
+		// キーバインド設定
+		InputHandler.init();
+		//レンダー登録
 		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ItemGun.INSTANCE, 0,
 				new ModelResourceLocation("hidemod:gun", "inventory"));
 		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(ItemMagazine.INSTANCE, 0,
