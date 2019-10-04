@@ -32,8 +32,8 @@ public class InputHandler {
 	public static final KeyBinding AIM = new KeyBinding("Key.aim", -99, "HideMod");
 	public static final KeyBinding FIRE = new KeyBinding("Key.fire", -100, "HideMod");
 	public static final KeyBinding RELOAD = new KeyBinding("Key.reload", Keyboard.KEY_R, "HideMod");
-	public static final KeyBinding CHANGE_BULLET = new KeyBinding("Key.reload", Keyboard.KEY_B, "HideMod");
-	public static final KeyBinding CHANGE_FIREMODE = new KeyBinding("Key.reload", Keyboard.KEY_V, "HideMod");
+	public static final KeyBinding CHANGE_BULLET = new KeyBinding("Key.bullet", Keyboard.KEY_B, "HideMod");
+	public static final KeyBinding CHANGE_FIREMODE = new KeyBinding("Key.firemode", Keyboard.KEY_V, "HideMod");
 	public static final KeyBinding DEBUG = new KeyBinding("Key.debug", Keyboard.KEY_G, "HideMod");
 
 	private static boolean isStart = false;

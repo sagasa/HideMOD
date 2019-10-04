@@ -107,6 +107,19 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	@Override
+	public boolean isInRangeToRender3d(double x, double y, double z) {
+		double d0 = this.posX - x;
+		double d2 = this.posZ - z;
+		double d3 = d0 * d0 + d2 * d2;
+		return this.isInRangeToRenderDist(d3);
+	}
+
+	@Override
+	public boolean isInRangeToRenderDist(double distance) {
+		return distance < 80000;
+	}
+
+	@Override
 	public void onUpdate() {
 		if (lastWorldTick != 0) {
 			onUpdate(world.getTotalWorldTime() - lastWorldTick);
@@ -118,9 +131,9 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		this.lastTickPosX = this.posX;
 		this.lastTickPosY = this.posY;
 		this.lastTickPosZ = this.posZ;
-		this.prevPosX = this.posX + (this.motionX * tick);
-		this.prevPosY = this.posY + (this.motionY * tick);
-		this.prevPosZ = this.posZ + (this.motionZ * tick);
+		this.posX += (this.motionX * tick);
+		this.posY += (this.motionY * tick);
+		this.posZ += (this.motionZ * tick);
 
 		if (!this.world.isRemote) {
 			// 削除計算
@@ -132,17 +145,14 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		} else {
 			ClientUpdate();
 		}
-		this.posX = this.prevPosX;
-		this.posY = this.prevPosY;
-		this.posZ = this.prevPosZ;
 		this.setPosition(this.posX, this.posY, this.posZ);
 	}
 
 	private void ServerUpdate() {
 		/** 前のtickの位置ベクトル */
-		Vec3d lvo = new Vec3d(posX, posY, posZ);
+		Vec3d lvo = new Vec3d(lastTickPosX, lastTickPosY, lastTickPosZ);
 		/** 今のtickの位置ベクトル */
-		Vec3d lvt = new Vec3d(prevPosX, prevPosY, prevPosZ);
+		Vec3d lvt = new Vec3d(posX, posX, posX);
 
 		/** 弾が消失した位置 */
 		Vec3d endPos = lvt;

@@ -16,7 +16,7 @@ public class HideEntityDataManager {
 
 	public static void onEntityInit(EntityConstructing event) {
 		Entity e = event.getEntity();
-		if (e instanceof EntityLivingBase) {
+		if (e instanceof EntityPlayer) {
 			e.getDataManager().register(RELOAD_KEY, -1f);
 			e.getDataManager().register(ADS_KEY, 0f);
 		}
