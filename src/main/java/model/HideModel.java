@@ -15,7 +15,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import types.Info;
 import types.base.DataBase;
 
-public class HideModel extends DataBase {
+public class HideModel extends DataBase implements IRenderProperty{
 
 	public static class Pos3f {
 		public float X = 0, Y = 0, Z = 0;
@@ -120,5 +120,11 @@ public class HideModel extends DataBase {
 			}
 			GL11.glPopMatrix();
 		}
+	}
+
+	@Override
+	public float getRenderPropery(AnimationType type) {
+
+		return 0;
 	}
 }
