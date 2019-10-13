@@ -1,11 +1,13 @@
 package model;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -15,7 +17,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import types.Info;
 import types.base.DataBase;
 
-public class HideModel extends DataBase implements IRenderProperty{
+public class HideModel extends DataBase {
 
 	public static class Pos3f {
 		public float X = 0, Y = 0, Z = 0;
@@ -59,9 +61,6 @@ public class HideModel extends DataBase implements IRenderProperty{
 		}
 	}
 
-	// エディタサイドのみ
-	transient public Map<String, HideVertex[]> modelParts;
-
 	// 共通
 	@Info(isResourceName = true)
 	public String texture = "";
@@ -79,32 +78,20 @@ public class HideModel extends DataBase implements IRenderProperty{
 
 	transient private ResourceLocation TexResource = null;
 
-	@SideOnly(Side.CLIENT)
-	public void render(boolean firstPerson) {
-		if (modelParts != null) {
-			if (TexResource == null) {
-				System.out.println(texture);
-				String tex = texture.replace(":", ":skin/");
-				TexResource = new ResourceLocation(tex);
-			}
+	/**モデル 別ファイルから読み込み*/
+	transient public Map<String, HideVertex[]> modelParts;
 
-			//System.out.println("render");
-			Minecraft mc = Minecraft.getMinecraft();
+	transient private boolean isInit = false;
+	transient private Map<String, Integer> renderLists = new HashMap<>();
 
-			Tessellator tessellator = Tessellator.getInstance();
-			GL11.glPushMatrix();
-
-			GlStateManager.scale(0.15, 0.15, 0.15);
-
-			if (firstPerson)
-				GlStateManager.translate(offsetFirstPerson.X, offsetFirstPerson.Y, offsetFirstPerson.Z);
-			GlStateManager.translate(offset.X, offset.Y, offset.Z);
-
-			GlStateManager.scale(scaleX, scaleX, scaleX);
-
-			Minecraft.getMinecraft().renderEngine.bindTexture(TexResource);
-			BufferBuilder buf = tessellator.getBuffer();
-			for (HideVertex[] part : modelParts.values()) {
+	public void render(String name) {
+		if (!isInit) {
+			for (String key : modelParts.keySet()) {
+				int list;
+				GlStateManager.glNewList(list = GLAllocation.generateDisplayLists(1), GL11.GL_COMPILE);
+				Tessellator tessellator = Tessellator.getInstance();
+				BufferBuilder buf = tessellator.getBuffer();
+				HideVertex[] part = modelParts.get(key);
 				int i = 3;
 				for (int j = 0; j < part.length; j++) {
 					HideVertex vert = part[j];
@@ -117,14 +104,42 @@ public class HideModel extends DataBase implements IRenderProperty{
 					}
 					i++;
 				}
+				GlStateManager.glEndList();
+				renderLists.put(key, list);
 			}
-			GL11.glPopMatrix();
+			isInit = true;
 		}
+		if (renderLists.containsKey(name))
+			GlStateManager.callList(renderLists.get(name));
 	}
 
-	@Override
-	public float getRenderPropery(AnimationType type) {
+	@SideOnly(Side.CLIENT)
+	public void render(boolean firstPerson,IRenderProperty prop) {
+		if (modelParts != null) {
+			if (TexResource == null) {
+				System.out.println(texture);
+				String tex = texture.replace(":", ":skin/");
+				TexResource = new ResourceLocation(tex);
+			}
 
-		return 0;
+			//System.out.println("render");
+			Minecraft mc = Minecraft.getMinecraft();
+
+			GL11.glPushMatrix();
+
+			GlStateManager.scale(0.15, 0.15, 0.15);
+
+			if (firstPerson)
+				GlStateManager.translate(offsetFirstPerson.X, offsetFirstPerson.Y, offsetFirstPerson.Z);
+			GlStateManager.translate(offset.X, offset.Y, offset.Z);
+
+			GlStateManager.scale(scaleX, scaleX, scaleX);
+
+			Minecraft.getMinecraft().renderEngine.bindTexture(TexResource);
+
+			rootBone.render(prop);
+
+			GL11.glPopMatrix();
+		}
 	}
 }

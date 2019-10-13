@@ -1,6 +1,10 @@
 package model;
 
+import java.util.List;
+import java.util.Map;
+
 public interface IRenderProperty {
-	/** レンダー時のオプションプロパティ取得 */
-	abstract float getRenderPropery(AnimationType type);
+	abstract public Map<AnimationType, Float> getRenderPropery();
+
+	abstract public Map<String, List<String>> getPartPropery();
 }
