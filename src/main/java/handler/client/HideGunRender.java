@@ -1,7 +1,14 @@
 package handler.client;
 
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import items.ItemGun;
+import model.AnimationType;
 import model.HideModel;
+import model.IRenderProperty;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -45,6 +52,17 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 		}
 	}
 
+	static IRenderProperty prop = new IRenderProperty() {
+		@Override
+		public Map<AnimationType, Float> getRenderPropery() {
+			return new EnumMap<>(AnimationType.class);
+		}
+		@Override
+		public Map<String, List<String>> getPartPropery() {
+			return new HashMap<>();
+		}
+	};
+
 	private void renderHeldGun(EntityLivingBase p_188358_1_, ItemStack p_188358_2_,
 			ItemCameraTransforms.TransformType p_188358_3_, EnumHandSide handSide) {
 		if (!p_188358_2_.isEmpty()) {
@@ -70,7 +88,7 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 				//	System.out.println(ItemGun.getGunData(p_188358_2_).ITEM_MODELNAME+ItemGun.getGunData(p_188358_2_).ITEM_ICONNAME);
 				HideModel model = PackData.getModel(ItemGun.getGunData(p_188358_2_).ITEM_MODELNAME);
 				if (model != null) {
-					model.render(false);
+					model.render(false,prop);
 				}
 			}
 

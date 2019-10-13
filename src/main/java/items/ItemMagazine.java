@@ -77,6 +77,8 @@ public class ItemMagazine extends Item {
 	// 更新 便利機能
 	@Override
 	public int getItemStackLimit(ItemStack stack) {
+		if (getMagazineData(stack) == null)
+			return 0;
 		return getMagazineData(stack).ITEM_STACK_SIZE;
 	}
 

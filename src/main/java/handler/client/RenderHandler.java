@@ -1,6 +1,10 @@
 package handler.client;
 
 import java.awt.Rectangle;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -14,7 +18,9 @@ import helper.HideNBT;
 import hidemod.HideMod;
 import items.ItemGun;
 import items.ItemMagazine;
+import model.AnimationType;
 import model.HideModel;
+import model.IRenderProperty;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.ScaledResolution;
@@ -68,8 +74,8 @@ public class RenderHandler {
 
 		if (event.isCancelable() && event.getType() == ElementType.CROSSHAIRS) {
 			ClientPlayerData data = HidePlayerData.getClientData(HideMod.getPlayer());
-		//	if (EquipMode.getEquipMode(data.gunMain, data.gunOff) != EquipMode.None)
-		//		event.setCanceled(true);
+			//	if (EquipMode.getEquipMode(data.gunMain, data.gunOff) != EquipMode.None)
+			//		event.setCanceled(true);
 			writeHitMarker(x, y);
 			writeScope(x, y);
 		}
@@ -260,6 +266,17 @@ public class RenderHandler {
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 	}
 
+	static IRenderProperty prop = new IRenderProperty() {
+		@Override
+		public Map<AnimationType, Float> getRenderPropery() {
+			return new EnumMap<>(AnimationType.class);
+		}
+		@Override
+		public Map<String, List<String>> getPartPropery() {
+			return new HashMap<>();
+		}
+	};
+
 	/** 自分の持ってる銃の描画 アニメーションとパーツの稼働はこのメゾットのみ */
 	public static void RenderHand(RenderHandEvent event) {//*
 		ItemStack item = mc.player.getHeldItemMainhand();
@@ -278,9 +295,9 @@ public class RenderHandler {
 
 				mc.entityRenderer.enableLightmap();
 				AbstractClientPlayer abstractclientplayer = mc.player;
-				int light = mc.world.getCombinedLight(new BlockPos(abstractclientplayer.posX, abstractclientplayer.posY + (double) abstractclientplayer.getEyeHeight(), abstractclientplayer.posZ), 0);
-				float f = (float) (light & 65535);
-				float f1 = (float) (light >> 16);
+				int light = mc.world.getCombinedLight(new BlockPos(abstractclientplayer.posX, abstractclientplayer.posY + abstractclientplayer.getEyeHeight(), abstractclientplayer.posZ), 0);
+				float f = light & 65535;
+				float f1 = light >> 16;
 				OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, f, f1);
 
 				GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -289,7 +306,8 @@ public class RenderHandler {
 				GlStateManager.enableBlend();
 				GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 
-				model.render(true);
+
+				model.render(true, prop);
 
 				GlStateManager.disableRescaleNormal();
 				GlStateManager.disableBlend();

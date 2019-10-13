@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -282,6 +283,12 @@ public class PackLoader {
 	private static boolean checkData(DataBase data) {
 		try {
 			for (DataPath path : data.getFieldsByType(data.getClass(), null, new ArrayList<>(), true)) {
+				// Nullの判定部分
+				if (path.field.isAccessible()&&!Modifier.isTransient(path.field.getModifiers()) && !path.field.getType().isPrimitive() && path.field.get(data)==null) {
+					LOGGER.error("null is not allow at" + data.getClass().getSimpleName() + "."
+							+ path.field.getName());
+					return false;
+				}
 				// 空リストの判別部分
 				if (path.field.getAnnotation(Info.class) != null && path.field.getAnnotation(Info.class).noEmpty()) {
 					if (path.field.getType().isArray() && ((String[]) path.field.get(data)).length == 0) {

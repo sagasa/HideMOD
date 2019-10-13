@@ -103,13 +103,14 @@ public class GunController {
 		shootDelay = HideNBT.getGunShootDelay(gun.getGunTag());
 		shootDelay = shootDelay < 0 ? 0 : shootDelay;
 		lastTime = lastShootTime = System.currentTimeMillis();
-		System.out.println("load " + shootDelay + " "+magazine);
+		System.out.println("load " + shootDelay + " " + magazine);
 	}
 
 	public void saveAndClear() {
 		// セーブ
 		if (isGun() && !onClient) {
 			HideNBT.setGunLoadedMagazines(gun.getGunTag(), magazine);
+			System.out.println("last shoot  " + lastShootTime + " " + (System.currentTimeMillis() - lastShootTime));
 			int shootdelay = (int) MillistoTick(
 					(int) (RPMtoMillis(modifyData.RPM) - (System.currentTimeMillis() - lastShootTime)));
 			shootdelay = Math.max(0, shootdelay);
