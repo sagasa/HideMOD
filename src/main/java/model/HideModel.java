@@ -73,13 +73,14 @@ public class HideModel extends DataBase {
 
 	public HideModel setModel(Map<String, HideVertex[]> faces) {
 		modelParts = faces;
+		rootBone.init(this);
 		return this;
 	}
 
 	transient private ResourceLocation TexResource = null;
 
 	/**モデル 別ファイルから読み込み*/
-	transient public Map<String, HideVertex[]> modelParts;
+	transient Map<String, HideVertex[]> modelParts;
 
 	transient private boolean isInit = false;
 	transient private Map<String, Integer> renderLists = new HashMap<>();

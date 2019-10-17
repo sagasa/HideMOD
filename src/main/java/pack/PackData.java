@@ -65,10 +65,10 @@ public class PackData implements Cloneable {
 	public static ItemData getItemData(ItemStack item) {
 		Class<? extends Item> clazz = item.getItem().getClass();
 		if (ItemGun.class.equals(clazz)) {
-			return PackData.getGunData(HideNBT.getGunTag(item).getString(HideNBT.GUN_NAME));
+			return PackData.getGunData(HideNBT.getHideTag(item).getString(HideNBT.GUN_NAME));
 		}
 		if (ItemMagazine.class.equals(clazz)) {
-			return PackData.getBulletData(HideNBT.getMagazineTag(item).getString(HideNBT.MAGAZINE_NAME));
+			return PackData.getBulletData(HideNBT.getHideTag(item).getString(HideNBT.MAGAZINE_NAME));
 		}
 		return null;
 	}
@@ -108,6 +108,7 @@ public class PackData implements Cloneable {
 	/** アイテム登録 */
 	public static void registerItems(Register<Item> event) {
 		IForgeRegistry<Item> register = event.getRegistry();
+		ItemGun.INSTANCE = new ItemGun("gun", currentData.GUN_DATA_MAP);
 		register.register(ItemGun.INSTANCE);
 		register.register(ItemMagazine.INSTANCE);
 	}

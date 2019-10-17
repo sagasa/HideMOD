@@ -88,7 +88,7 @@ public class PackLoader {
 					checkAndAddToMap(PackData.readData.SOUND_MAP, cash.Sounds, packDomain);
 					// Model登録
 					cash.ModelInfos.entrySet()
-							.forEach(entry -> entry.getValue().modelParts = cash.Models.get(entry.getKey()));
+							.forEach(entry -> entry.getValue().setModel(cash.Models.get(entry.getKey())));
 					checkAndAddToMap(PackData.readData.MODEL_MAP, cash.ModelInfos, packDomain);
 					LOGGER.info("End check and add pack[" + cash.Pack.PACK_NAME + "]");
 					LOGGER.info("End read file[" + file.getName() + "]");

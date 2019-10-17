@@ -16,7 +16,8 @@ import types.items.MagazineData;
 /** NBTの読み書きを集約 Nullチェック完備 */
 public class HideNBT {
 
-	public static final String ITEM_GUN = "HideGun";
+	public static final String ITEM_TAG = "HideItem";
+	public static final String DATA_NAME = "Name";
 	public static final String ITEM_MAGAZINE = "HideMatazine";
 	public static final String GUN_FIREMODE = "GunFireMode";
 	public static final String GUN_USEBULLET = "GunUseMagazine";
@@ -57,13 +58,8 @@ public class HideNBT {
 	// ================================
 
 	/**GunTagを取得*/
-	public static NBTTagCompound getGunTag(ItemStack item) {
-		return getTag(getTag(item), ITEM_GUN);
-	}
-
-	/** GunTagをItemGunから取得 */
-	public static NBTTagCompound getMagazineTag(ItemStack item) {
-		return getTag(getTag(item), ITEM_MAGAZINE);
+	public static NBTTagCompound getHideTag(ItemStack item) {
+		return getTag(getTag(item), ITEM_TAG);
 	}
 
 	/** 指定のタグのみを読み取る */
@@ -193,11 +189,11 @@ public class HideNBT {
 	}
 
 	public static ItemStack setMagazineBulletNum(ItemStack makeMagazine, int ammoNum) {
-		setMagazineBulletNum(getMagazineTag(makeMagazine), ammoNum);
+		setMagazineBulletNum(getHideTag(makeMagazine), ammoNum);
 		return makeMagazine;
 	}
 
 	public static int getMagazineBulletNum(ItemStack stack) {
-		return getBulletNum(getMagazineTag(stack));
+		return getBulletNum(getHideTag(stack));
 	}
 }

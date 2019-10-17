@@ -2,6 +2,7 @@ package items;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
@@ -13,7 +14,6 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
@@ -22,21 +22,17 @@ import pack.PackData;
 import types.base.GunFireMode;
 import types.items.GunData;
 
-public class ItemGun extends Item {
+public class ItemGun extends HideItem<GunData> {
 	/** モデル描画 */
 	// public RenderHideGun Model;
 
 	// ========================================================================
 
-	public ItemGun(String name) {
-		super();
-		this.setCreativeTab(CreativeTabs.COMBAT);
-		this.setUnlocalizedName(name);
-		this.setRegistryName(name);
-		this.setMaxStackSize(1);
+	public ItemGun(String name,Map<String,GunData> data) {
+		super(name, data);
 	}
 
-	public static final ItemGun INSTANCE = new ItemGun("gun");
+	public static ItemGun INSTANCE ;
 
 	/** アイテムスタックを作成 */
 	public static ItemStack makeGun(String name) {
@@ -65,7 +61,7 @@ public class ItemGun extends Item {
 			return item;
 		}
 		// タグがなければ書き込む;
-		NBTTagCompound hideTag = HideNBT.getGunTag(item);
+		NBTTagCompound hideTag = HideNBT.getHideTag(item);
 		hideTag.setString(HideNBT.GUN_NAME, data.ITEM_SHORTNAME);
 		HideNBT.setHideID(hideTag, UUID.randomUUID().getLeastSignificantBits());
 		HideNBT.setGunShootDelay(hideTag, 0);
@@ -107,7 +103,7 @@ public class ItemGun extends Item {
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
 		super.addInformation(stack, worldIn, tooltip, flagIn);
 		// 破損チェック
-		NBTTagCompound hideTag = HideNBT.getGunTag(stack);
+		NBTTagCompound hideTag = HideNBT.getHideTag(stack);
 		tooltip.add(ChatFormatting.GRAY + "FireMode : " + HideNBT.getGunFireMode(hideTag));
 		String useBullet = HideNBT.getGunUseingBullet(hideTag);
 		tooltip.add(ChatFormatting.GRAY + "UseBullet : "
@@ -120,6 +116,7 @@ public class ItemGun extends Item {
 				tooltip.add("empty");
 			}
 		}
+		tooltip.add(ChatFormatting.GRAY + "FireMode : ");
 	}
 
 	/** 銃かどうか */
@@ -137,6 +134,12 @@ public class ItemGun extends Item {
 		if (item != null && !(item.getItem() instanceof ItemGun)) {
 			return null;
 		}
-		return PackData.getGunData(HideNBT.getGunTag(item).getString(HideNBT.GUN_NAME));
+		return PackData.getGunData(HideNBT.getHideTag(item).getString(HideNBT.GUN_NAME));
+	}
+
+	@Override
+	public ItemStack makeItem(GunData data) {
+		// TODO 自動生成されたメソッド・スタブ
+		return null;
 	}
 }
