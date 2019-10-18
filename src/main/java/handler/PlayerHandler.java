@@ -57,9 +57,8 @@ public class PlayerHandler {
 		} else {
 			ItemStack main = player.getHeldItemMainhand();
 			ItemStack off = player.getHeldItemOffhand();
-
 			if ((data.gunMain.isGun() ^ ItemGun.isGun(main)) || (data.gunMain.isGun() && ItemGun.isGun(main)
-					&& !data.gunMain.idEquals(HideNBT.getHideID(HideNBT.getHideTag(main))))) {
+					&& !data.gunMain.NBTEquals(HideNBT.getHideTag(main)))) {
 				// クライアントサイドではインスタンスに連続性がないので仕方なくプレイヤーからのサプライヤーを用意
 				Supplier<NBTTagCompound> gunTag = side == Side.CLIENT
 						? () -> HideNBT.getHideTag(player.getHeldItemMainhand())
@@ -68,7 +67,7 @@ public class PlayerHandler {
 				data.gunMain.setShooter(player);
 			}
 			if ((data.gunOff.isGun() ^ ItemGun.isGun(off)) || (data.gunOff.isGun() && ItemGun.isGun(off)
-					&& !data.gunOff.idEquals(HideNBT.getHideID(HideNBT.getHideTag(off))))) {
+					&& !data.gunOff.NBTEquals(HideNBT.getHideTag(off)))) {
 				// クライアントサイドではインスタンスに連続性がないので仕方なくプレイヤーからのサプライヤーを用意
 				Supplier<NBTTagCompound> gunTag = side == Side.CLIENT
 						? () -> HideNBT.getHideTag(player.getHeldItemOffhand())

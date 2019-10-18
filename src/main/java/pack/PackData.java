@@ -65,7 +65,7 @@ public class PackData implements Cloneable {
 	public static ItemData getItemData(ItemStack item) {
 		Class<? extends Item> clazz = item.getItem().getClass();
 		if (ItemGun.class.equals(clazz)) {
-			return PackData.getGunData(HideNBT.getHideTag(item).getString(HideNBT.GUN_NAME));
+			return PackData.getGunData(HideNBT.getHideTag(item).getString(HideNBT.DATA_NAME));
 		}
 		if (ItemMagazine.class.equals(clazz)) {
 			return PackData.getBulletData(HideNBT.getHideTag(item).getString(HideNBT.MAGAZINE_NAME));

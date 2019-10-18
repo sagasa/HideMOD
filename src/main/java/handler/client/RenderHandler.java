@@ -212,44 +212,7 @@ public class RenderHandler {
 
 	/** 自分以外の持ってる銃の描画 */
 	public static void RenderEntityEvent(RenderLivingEvent<EntityLivingBase> e) {
-		/*
-		model.isChild = false;
-		GlStateManager.pushMatrix();
-		GlStateManager.enableRescaleNormal();
-		GlStateManager.scale(-0.9F, -0.9F, 0.9F);
-		float f = 0.0625F;
-		GlStateManager.translate(2.0F, -1.501F, 0.0F);
 
-		EntityLivingBase player = event.getEntity();
-
-		//	model.render(HideMod.getPlayer(), player.limbSwing, player.limbSwingAmount, 0f, player.rotationYaw,
-		//			player.rotationPitch, 0.0625F);
-
-		GlStateManager.popMatrix();
-
-		ItemStack item = mc.player.getHeldItemMainhand();
-		if (ItemGun.isGun(item)) {
-			HideModel model = PackData.getModel("default_modelstg44");
-			if (model != null&&e.getRenderer().getMainModel() instanceof ModelBiped) {
-				GlStateManager.pushMatrix();
-				GlStateManager.translate(e.getX(), e.getY()+((ModelBiped)e.getRenderer().getMainModel()).bipedRightArm.rotationPointY, e.getZ());
-				System.out.println(((ModelBiped)e.getRenderer().getMainModel()).bipedRightArm.rotationPointY);
-				makeDot();
-				GlStateManager.rotate(e.getEntity().rotationYawHead+180, 0, -1, 0);
-				GlStateManager.rotate(e.getEntity().rotationPitch, -1, 0, 0);
-				GlStateManager.translate(0.25, 0, -0.5);
-				GlStateManager.scale(0.35, 0.35, 0.35);
-				GlStateManager.rotate(90, 0, 1, 0);
-				//GlStateManager.translate(1, -1.0, 0.6 );
-				//GlStateManager.rotate(-5 , 0, 1, 0);
-				ItemCameraTransforms.DEFAULT.applyTransform(TransformType.THIRD_PERSON_RIGHT_HAND);
-				GlStateManager.disableLighting();
-				model.render();
-				GlStateManager.enableLighting();
-				GlStateManager.popMatrix();
-
-			}
-		}//*/
 	}
 
 	public static void makeDot() {

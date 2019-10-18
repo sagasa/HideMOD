@@ -25,13 +25,13 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 	float pitch;
 	float offset;
 	boolean isADS;
-	long uid;
+	boolean isMain;
 	double worldTime;
 
 	public PacketShoot() {
 	}
 
-	public PacketShoot(boolean isADS, float offset, double x, double y, double z, float yaw, float pitch, long hideID) {
+	public PacketShoot(boolean isADS, float offset, double x, double y, double z, float yaw, float pitch, boolean isMain) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -39,7 +39,7 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 		this.pitch = pitch;
 		this.offset = offset;
 		this.isADS = isADS;
-		this.uid = hideID;
+		this.isMain = isMain;
 		this.worldTime = Minecraft.getMinecraft().player.world.getTotalWorldTime();
 	}
 
@@ -53,7 +53,7 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 		offset = buf.readFloat();
 		isADS = buf.readBoolean();
 		worldTime = buf.readDouble();
-		uid = buf.readLong();
+		isMain = buf.readBoolean();
 	}
 
 	@Override // ByteBufにデータを書き込む。
@@ -66,7 +66,7 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 		buf.writeFloat(offset);
 		buf.writeBoolean(isADS);
 		buf.writeDouble(worldTime);
-		buf.writeLong(uid);
+		buf.writeBoolean(isMain);
 	}
 
 	// 受信イベント
@@ -85,7 +85,7 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 				lag = lag < 0 ? 0 : lag;
 				//	System.out.println("lag = " + lag);
 				// System.out.println("射撃パケット受信" + (m.offset + (float) lag));
-				GunController gun = HidePlayerData.getServerData(player).getGun(m.uid);
+				GunController gun = m.isMain?HidePlayerData.getServerData(player).gunMain:HidePlayerData.getServerData(player).gunOff;
 				if (gun == null) {
 					log.warn("cant make bullet by cant find gun: player = " + player.getName());
 				}

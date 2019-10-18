@@ -24,7 +24,6 @@ public class HideNBT {
 	public static final String GUN_SHOOTDELAY = "GunShootDelay";
 	public static final String GUN_MAGAZINES = "GunMagazines";
 	public static final String GUN_ATTACHMENTS = "GunAttachments";
-	public static final String GUN_NAME = "GunName";
 	public static final String GUN_ID = "GunID";
 	public static final String MAGAZINE_NAME = "MagazineName";
 	public static final String MAGAZINE_MUMBER = "MagazineNumber";

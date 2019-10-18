@@ -41,7 +41,8 @@ import types.items.GunData;
 import types.items.MagazineData;
 
 /** 銃の制御系
- * TickUpdateを要求 */
+ * TickUpdateを要求
+ * Playerに紐付けで動作 */
 public class GunController {
 
 	private static final Logger log = LogManager.getLogger();
@@ -89,15 +90,11 @@ public class GunController {
 		}
 	}
 
-	/** ID保持 */
-	private long uid = 0;
-
 	public void setGun(IGuns gun, IMagazineHolder mag) {
 		System.out.println("change " + HideNBT.getHideID(gun.getGunTag()));
 		saveAndClear();
 		this.gun = gun;
 		this.magazineHolder = mag;
-		uid = HideNBT.getHideID(gun.getGunTag());
 		updateCustomize();
 		magazine = HideNBT.getGunLoadedMagazines(gun.getGunTag());
 		shootDelay = HideNBT.getGunShootDelay(gun.getGunTag());
@@ -122,7 +119,6 @@ public class GunController {
 			RecoilHandler.clearRecoil(hand);
 		}
 		// 削除
-		uid = 0;
 		gun = null;
 		modifyData = null;
 		shootDelay = 0;
@@ -135,6 +131,10 @@ public class GunController {
 
 	public boolean isGun() {
 		return gun != null && magazineHolder != null;
+	}
+
+	public boolean NBTEquals(NBTTagCompound hideTag) {
+		return gun.getGunTag().equals(hideTag);
 	}
 
 	/** このTickで射撃可能かどうか */
@@ -182,10 +182,6 @@ public class GunController {
 	public GunController setShooter(EntityLivingBase shooter) {
 		Shooter = shooter;
 		return this;
-	}
-
-	public boolean idEquals(long id) {
-		return isGun() && uid == id;
 	}
 
 	public boolean stateEquals(GunController other) {
@@ -326,7 +322,7 @@ public class GunController {
 				float pitch = HideMath.completion(oldPitch, Pitch, offset);
 
 				PacketHandler.INSTANCE.sendToServer(
-						new PacketShoot(isADS, offset, x, y, z, yaw, pitch, HideNBT.getHideID(gun.getGunTag())));
+						new PacketShoot(isADS, offset, x, y, z, yaw, pitch, hand == EnumHand.MAIN_HAND));
 			} else {
 				shoot(modifyData, bullet, Shooter, isADS, offset, X, Y, Z, Yaw, Pitch);
 			}

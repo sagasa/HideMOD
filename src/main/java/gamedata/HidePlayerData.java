@@ -45,16 +45,6 @@ public class HidePlayerData {
 	}
 
 	public static class CommonPlayerData {
-		/** MainとOffからID一致を返す */
-		public GunController getGun(long id) {
-			if (gunMain.idEquals(id)) {
-				return gunMain;
-			} else if (gunOff.idEquals(id)) {
-				return gunOff;
-			}
-			return null;
-		}
-
 		public GunController gunMain = new GunController(EnumHand.MAIN_HAND);
 		public GunController gunOff = new GunController(EnumHand.OFF_HAND);
 		//ADSの状態

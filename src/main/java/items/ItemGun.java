@@ -11,13 +11,12 @@ import gamedata.LoadedMagazine.Magazine;
 import guns.GunController;
 import helper.HideNBT;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import pack.PackData;
 import types.base.GunFireMode;
 import types.items.GunData;
@@ -28,11 +27,11 @@ public class ItemGun extends HideItem<GunData> {
 
 	// ========================================================================
 
-	public ItemGun(String name,Map<String,GunData> data) {
+	public ItemGun(String name, Map<String, GunData> data) {
 		super(name, data);
 	}
 
-	public static ItemGun INSTANCE ;
+	public static ItemGun INSTANCE;
 
 	/** アイテムスタックを作成 */
 	public static ItemStack makeGun(String name) {
@@ -49,12 +48,6 @@ public class ItemGun extends HideItem<GunData> {
 		return null;
 	}
 
-	@Override
-	public String getItemStackDisplayName(ItemStack stack) {
-		GunData data = getGunData(stack);
-		return data != null ? data.ITEM_DISPLAYNAME : null;
-	}
-
 	/** どのような状態からでも有効なNBTを書き込む */
 	public static ItemStack makeGunNBT(ItemStack item, GunData data) {
 		if (!(item.getItem() instanceof ItemGun)) {
@@ -62,22 +55,13 @@ public class ItemGun extends HideItem<GunData> {
 		}
 		// タグがなければ書き込む;
 		NBTTagCompound hideTag = HideNBT.getHideTag(item);
-		hideTag.setString(HideNBT.GUN_NAME, data.ITEM_SHORTNAME);
+		hideTag.setString(HideNBT.DATA_NAME, data.ITEM_SHORTNAME);
 		HideNBT.setHideID(hideTag, UUID.randomUUID().getLeastSignificantBits());
 		HideNBT.setGunShootDelay(hideTag, 0);
 		HideNBT.setGunFireMode(hideTag,
 				GunFireMode.getFireMode(Arrays.asList(data.FIREMODE).iterator().next().toString()));
 		HideNBT.setGunUseingBullet(hideTag, GunController.LOAD_ANY);
 		return item;
-	}
-
-	/**サブタイプに銃を書き込む*/
-	@Override
-	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
-		if (tab == CreativeTabs.COMBAT)
-			PackData.getGunData().forEach(gun -> {
-				items.add(makeGun(gun));
-			});
 	}
 
 	/** データ破損チェック */
@@ -94,6 +78,11 @@ public class ItemGun extends HideItem<GunData> {
 	public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entity) {
 
 		return true;
+	}
+
+	@Override
+	public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
+		return super.initCapabilities(stack, nbt);
 	}
 
 	// =========================================================
@@ -116,7 +105,6 @@ public class ItemGun extends HideItem<GunData> {
 				tooltip.add("empty");
 			}
 		}
-		tooltip.add(ChatFormatting.GRAY + "FireMode : ");
 	}
 
 	/** 銃かどうか */
@@ -134,12 +122,12 @@ public class ItemGun extends HideItem<GunData> {
 		if (item != null && !(item.getItem() instanceof ItemGun)) {
 			return null;
 		}
-		return PackData.getGunData(HideNBT.getHideTag(item).getString(HideNBT.GUN_NAME));
+		return PackData.getGunData(HideNBT.getHideTag(item).getString(HideNBT.DATA_NAME));
 	}
 
 	@Override
 	public ItemStack makeItem(GunData data) {
 		// TODO 自動生成されたメソッド・スタブ
-		return null;
+		return makeGun(data);
 	}
 }

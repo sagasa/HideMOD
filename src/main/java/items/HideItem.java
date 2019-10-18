@@ -6,11 +6,7 @@ import helper.HideNBT;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import types.items.ItemData;
 
 public abstract class HideItem<T extends ItemData> extends Item {
@@ -27,7 +23,6 @@ public abstract class HideItem<T extends ItemData> extends Item {
 
 	/**デフォルトのアイテム名*/
 	protected String defaultName = "Not Set";
-	protected boolean hasUUID = true;
 
 	/**HideItemとして処理可能か*/
 	public static boolean isHideItem(ItemStack item) {
@@ -51,6 +46,14 @@ public abstract class HideItem<T extends ItemData> extends Item {
 		return data == null ? defaultName : data.ITEM_DISPLAYNAME;
 	}
 
+	@Override
+	public int getItemStackLimit(ItemStack stack) {
+		ItemData data = getData(stack);
+		if (data == null)
+			return 0;
+		return data.ITEM_STACK_SIZE;
+	}
+
 	/**サブタイプに銃を書き込む*/
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
@@ -58,30 +61,5 @@ public abstract class HideItem<T extends ItemData> extends Item {
 			dagaMap.values().forEach(data -> {
 				items.add(makeItem(data));
 			});
-	}
-
-	@Override
-	public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
-		// TODO 自動生成されたメソッド・スタブ
-		System.out.println("initCapabilities");
-		return new ItemUID();
-	}
-
-	class ItemUID implements ICapabilityProvider {
-
-		@Override
-		public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-			// TODO 自動生成されたメソッド・スタブ
-			System.out.println("hasCapability " + capability + " " + facing);
-			return false;
-		}
-
-		@Override
-		public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-			System.out.println("getCapability " + capability + " " + facing);
-			// TODO 自動生成されたメソッド・スタブ
-			return null;
-		}
-
 	}
 }
