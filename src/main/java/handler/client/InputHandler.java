@@ -73,26 +73,7 @@ public class InputHandler {
 		ClientPlayerData data = HidePlayerData.getClientData(player);
 		EquipMode em = data.gunManager.CurrentEquipMode;
 		if (em != EquipMode.None) {
-			//adsにかかる時間 0でADS不能
-			int adsTick = 1;
-			if (em.hasMain()) {
-				adsTick += data.gunManager.getGunMain().getGunData().ADS_TICK;
-			}
-			if (em.hasOff()) {
-				adsTick += data.gunManager.getGunOff().getGunData().ADS_TICK;
-			}
-			if (adsTick < 0)
-				adsTick = 0;
-			//ADS計算
-			else if (adsTick < data.adsstate)
-				data.adsstate = adsTick;
-			if (InputHandler.AIM.isKeyDown()) {
-				if (data.adsstate < adsTick)
-					data.adsstate++;
-			} else {
-				if (0 < data.adsstate)
-					data.adsstate--;
-			}
+
 			if (CHANGE_FIREMODE.isPressed()) {
 				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_MODE));
 			}
@@ -102,12 +83,32 @@ public class InputHandler {
 			if (CHANGE_BULLET.isPressed()) {
 				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_BULLET));
 			}
-			float oldADS = data.adsRes;
-			data.adsRes = data.adsstate == 0 ? 0 : data.adsstate / (float) adsTick;
-			if (oldADS != data.adsRes) {
-				PacketHandler.INSTANCE.sendToServer(new PacketInput(data.adsRes));
-			}
+		}
 
+		//adsにかかる時間 0でADS不能
+		int adsTick = 1;
+		if (em.hasMain()) {
+			adsTick += data.gunManager.getGunMain().getGunData().ADS_TICK;
+		}
+		if (em.hasOff()) {
+			adsTick += data.gunManager.getGunOff().getGunData().ADS_TICK;
+		}
+		if (adsTick < 0)
+			adsTick = 0;
+		//ADS計算
+		else if (adsTick < data.adsstate)
+			data.adsstate = adsTick;
+		if (InputHandler.AIM.isKeyDown() && em != EquipMode.None) {
+			if (data.adsstate < adsTick)
+				data.adsstate++;
+		} else {
+			if (0 < data.adsstate)
+				data.adsstate--;
+		}
+		float oldADS = data.adsRes;
+		data.adsRes = data.adsstate == 0 ? 0 : data.adsstate / (float) adsTick;
+		if (oldADS != data.adsRes) {
+			PacketHandler.INSTANCE.sendToServer(new PacketInput(data.adsRes));
 		}
 
 		// 兵器に乗っているか
