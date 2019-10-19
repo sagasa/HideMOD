@@ -24,8 +24,6 @@ public class HideNBT {
 	public static final String GUN_SHOOTDELAY = "GunShootDelay";
 	public static final String GUN_MAGAZINES = "GunMagazines";
 	public static final String GUN_ATTACHMENTS = "GunAttachments";
-	public static final String GUN_ID = "GunID";
-	public static final String MAGAZINE_NAME = "MagazineName";
 	public static final String MAGAZINE_MUMBER = "MagazineNumber";
 
 	/**
@@ -86,7 +84,7 @@ public class HideNBT {
 		while (magazines.hasKey(i + "")) {
 			NBTTagCompound magData = magazines.getCompoundTag(i + "");
 			if (magData.getInteger(MAGAZINE_MUMBER) > 0) {
-				loadedMagazines.addMagazinetoLast(new Magazine(magData.getString(MAGAZINE_NAME),
+				loadedMagazines.addMagazinetoLast(new Magazine(magData.getString(DATA_NAME),
 						magData.getInteger(MAGAZINE_MUMBER)));
 			}
 			i++;
@@ -102,7 +100,7 @@ public class HideNBT {
 			if (mag != null) {
 				NBTTagCompound magazine = new NBTTagCompound();
 				magazine.setInteger(MAGAZINE_MUMBER, mag.num);
-				magazine.setString(MAGAZINE_NAME, mag.name);
+				magazine.setString(DATA_NAME, mag.name);
 				magazines.setTag(i + "", magazine);
 			}
 		}
@@ -120,7 +118,7 @@ public class HideNBT {
 			if (0 < n) {
 				n--;
 				magData.setInteger(MAGAZINE_MUMBER, n);
-				return PackData.getBulletData(magData.getString(MAGAZINE_NAME));
+				return PackData.getBulletData(magData.getString(DATA_NAME));
 			}
 			i++;
 		}
@@ -161,16 +159,6 @@ public class HideNBT {
 	/** 指定のタグのみを書き換え */
 	public static void setGunFireMode(NBTTagCompound gunTag, GunFireMode mode) {
 		gunTag.setString(GUN_FIREMODE, GunFireMode.getFireMode(mode));
-	}
-
-	/** 指定のタグのみを読み取る */
-	public static long getHideID(NBTTagCompound gunTag) {
-		return gunTag.getLong(GUN_ID);
-	}
-
-	/** 指定のタグのみを書き換え */
-	public static void setHideID(NBTTagCompound gunTag, long value) {
-		gunTag.setLong(GUN_ID, value);
 	}
 
 	// ================================

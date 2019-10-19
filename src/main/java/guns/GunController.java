@@ -91,7 +91,6 @@ public class GunController {
 	}
 
 	public void setGun(IGuns gun, IMagazineHolder mag) {
-		System.out.println("change " + HideNBT.getHideID(gun.getGunTag()));
 		saveAndClear();
 		this.gun = gun;
 		this.magazineHolder = mag;
@@ -381,7 +380,8 @@ public class GunController {
 		Iterator<Magazine> itr = magazine.getList().iterator();
 		while (itr.hasNext()) {
 			Magazine mag = itr.next();
-			if (mag.num < PackData.getBulletData(mag.name).MAGAZINE_SIZE) {
+			MagazineData magData = PackData.getBulletData(mag.name);
+			if (magData == null || mag.num < magData.MAGAZINE_SIZE) {
 				return true;
 			}
 		}
@@ -390,7 +390,8 @@ public class GunController {
 
 	/**オプションを考慮したマガジン排出処理*/
 	private void exitMagazine(Magazine mag) {
-		if (0 < mag.num || !PackData.getBulletData(mag.name).MAGAZINE_BREAK)
+		MagazineData magData = PackData.getBulletData(mag.name);
+		if (magData != null && (0 < mag.num || !magData.MAGAZINE_BREAK))
 			magazineHolder.addMagazine(mag.name, mag.num);
 	}
 
@@ -424,18 +425,23 @@ public class GunController {
 		if (magazine.getList().size() < modifyData.LOAD_NUM && !modifyData.RELOAD_ALL) {
 			return true;
 		}
-
+		//最小のマガジンを検出
 		float min = 1f;
 		Magazine minMag = null;
 		Iterator<Magazine> itr = magazine.getList().iterator();
 		while (itr.hasNext()) {
 			Magazine mag = itr.next();
+			MagazineData magData = PackData.getBulletData(mag.name);
+			//存在しないマガジンなら排出
+			if (magData == null) {
+				itr.remove();
+			}
 			//reloadAllなら問答無用で排出
-			if (modifyData.RELOAD_ALL && mag.num < PackData.getBulletData(mag.name).MAGAZINE_SIZE) {
+			else if (modifyData.RELOAD_ALL && mag.num < magData.MAGAZINE_SIZE) {
 				exitMagazine(mag);
 				itr.remove();
 			} else {
-				float dia = mag.num / PackData.getBulletData(mag.name).MAGAZINE_SIZE;
+				float dia = mag.num / magData.MAGAZINE_SIZE;
 				if (dia < min) {
 					min = dia;
 					minMag = mag;

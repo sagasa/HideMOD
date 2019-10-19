@@ -3,7 +3,6 @@ package items;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 
@@ -56,7 +55,6 @@ public class ItemGun extends HideItem<GunData> {
 		// タグがなければ書き込む;
 		NBTTagCompound hideTag = HideNBT.getHideTag(item);
 		hideTag.setString(HideNBT.DATA_NAME, data.ITEM_SHORTNAME);
-		HideNBT.setHideID(hideTag, UUID.randomUUID().getLeastSignificantBits());
 		HideNBT.setGunShootDelay(hideTag, 0);
 		HideNBT.setGunFireMode(hideTag,
 				GunFireMode.getFireMode(Arrays.asList(data.FIREMODE).iterator().next().toString()));

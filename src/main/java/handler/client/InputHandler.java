@@ -11,7 +11,6 @@ import org.lwjgl.input.Mouse;
 import entity.EntityDrivable;
 import gamedata.HidePlayerData;
 import gamedata.HidePlayerData.ClientPlayerData;
-import guns.GunController;
 import handler.PacketHandler;
 import handler.PlayerHandler;
 import handler.PlayerHandler.EquipMode;
@@ -22,7 +21,6 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import network.PacketInput;
-import types.base.GunFireMode;
 
 @SideOnly(Side.CLIENT)
 public class InputHandler {
@@ -73,15 +71,15 @@ public class InputHandler {
 		}
 		//銃火器への操作
 		ClientPlayerData data = HidePlayerData.getClientData(player);
-		EquipMode em = EquipMode.getEquipMode(data.gunMain, data.gunOff);
+		EquipMode em = data.gunManager.CurrentEquipMode;
 		if (em != EquipMode.None) {
 			//adsにかかる時間 0でADS不能
 			int adsTick = 1;
 			if (em.hasMain()) {
-				adsTick += data.gunMain.getGunData().ADS_TICK;
+				adsTick += data.gunManager.getGunMain().getGunData().ADS_TICK;
 			}
 			if (em.hasOff()) {
-				adsTick += data.gunOff.getGunData().ADS_TICK;
+				adsTick += data.gunManager.getGunOff().getGunData().ADS_TICK;
 			}
 			if (adsTick < 0)
 				adsTick = 0;
@@ -158,70 +156,6 @@ public class InputHandler {
 		}
 	}
 
-	private static boolean dualToggle = false;
-	private static boolean lastTrigger = false;
-
-	/**監視スレッドからの呼び出し 取扱注意*/
-	private static void clientGunUpdate(float completion, boolean fireKey) {
-		EntityPlayerSP player = Minecraft.getMinecraft().player;
-		if (player == null)
-			return;
-		boolean trigger = player.isDead || !Minecraft.getMinecraft().inGameHasFocus ? false
-				: fireKey;
-		ClientPlayerData data = HidePlayerData.getClientData(player);
-		GunController gunMain = data.gunMain;
-		GunController gunOff = data.gunOff;
-
-		EquipMode em = EquipMode.getEquipMode(gunMain, gunOff);
-		// 射撃処理
-		if (em == EquipMode.Main) {
-			gunMain.gunUpdate(trigger, completion);
-
-		} else if (em == EquipMode.Off) {
-			gunOff.gunUpdate(trigger, completion);
-
-		} else if (em == EquipMode.OtherDual) {
-			gunMain.gunUpdate(trigger, completion);
-			gunOff.gunUpdate(trigger, completion);
-		} else if (em == EquipMode.Dual) {
-
-			boolean mainTrigger = false;
-			boolean offTrigger = false;
-			GunFireMode mode = GunFireMode.FULLAUTO;// TODO
-			if (mode == GunFireMode.BURST || mode == GunFireMode.SEMIAUTO) {
-				if (trigger != lastTrigger && trigger) {
-					if ((dualToggle || !gunOff.canShoot()) && gunMain.canShoot()) {
-						mainTrigger = true;
-						dualToggle = false;
-					} else if ((!dualToggle || !gunMain.canShoot()) && gunOff.canShoot()) {
-						offTrigger = true;
-						dualToggle = true;
-					}
-				}
-			} else {
-				mainTrigger = offTrigger = trigger;
-			}
-			gunMain.gunUpdate(mainTrigger, completion);
-			gunOff.gunUpdate(offTrigger, completion);
-		}
-		lastTrigger = trigger;
-
-		// 銃ののぞき込み処理
-		String scope;
-
-		/*
-		 *
-		 * if (scope != null) { boolean ads_res = false; int adsTick = 0; if
-		 * (em.hasMain()) { adsTick += ItemGun.getGunData(main).ADS_TICK; } if
-		 * (em.hasOff()) { adsTick += ItemGun.getGunData(off).ADS_TICK; } // クリックされているなら
-		 * if (rightMouseHold) { if (adsState < adsTick) { adsState++; } else if
-		 * (adsState > adsTick) { adsState = adsTick; } } else if (0 < adsState) {
-		 * adsState--; } // ノータイムか if (adsTick <= 0) { ads_res = rightMouseHold; } else
-		 * { ads_res = adsState == adsTick; } // 適応 if (ads_res) { if (!isADS) {
-		 * setADS(scope, dia); } } else { if (isADS) { clearADS(); } } //
-		 */
-	}
-
 	static private InputWatcher Watcher;
 
 	public static void startWatcher() {
@@ -271,7 +205,11 @@ public class InputHandler {
 						fire = Keyboard.isKeyDown(FIRE.getKeyCode());
 					else
 						fire = Mouse.isButtonDown(FIRE.getKeyCode() + 100);
-					clientGunUpdate((Minecraft.getSystemTime() - lastTickMillis) / 50f, fire);
+					EntityPlayerSP player = Minecraft.getMinecraft().player;
+					if (player == null)
+						continue;
+					ClientPlayerData data = HidePlayerData.getClientData(player);
+					data.gunManager.clientGunUpdate((Minecraft.getSystemTime() - lastTickMillis) / 50f, fire);
 
 					time = Minecraft.getSystemTime() - time;
 					time = Math.max(20 - time, 1);

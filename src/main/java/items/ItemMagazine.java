@@ -54,7 +54,7 @@ public class ItemMagazine extends Item {
 			return item;
 		}
 		NBTTagCompound hideTag = HideNBT.getHideTag(item);
-		hideTag.setString(HideNBT.MAGAZINE_NAME, data.ITEM_SHORTNAME);
+		hideTag.setString(HideNBT.DATA_NAME, data.ITEM_SHORTNAME);
 		HideNBT.setMagazineBulletNum(hideTag, data.MAGAZINE_SIZE);
 		return item;
 	}
@@ -155,7 +155,7 @@ public class ItemMagazine extends Item {
 		if (!(item.getItem() instanceof ItemMagazine)) {
 			return null;
 		}
-		return PackData.getBulletData(HideNBT.getHideTag(item).getString(HideNBT.MAGAZINE_NAME));
+		return PackData.getBulletData(HideNBT.getHideTag(item).getString(HideNBT.DATA_NAME));
 	}
 
 	/** その名前の弾は存在するか */

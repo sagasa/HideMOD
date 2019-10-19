@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import guns.GunController;
+import guns.PlayerGunManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -16,6 +16,12 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class HidePlayerData {
 	private static Map<UUID, ClientPlayerData> ClientDataMap = new HashMap<>();
 	private static Map<UUID, ServerPlayerData> ServerDataMap = new HashMap<>();
+
+	/**自プレイヤーのデータ*/
+	@SideOnly(Side.CLIENT)
+	public static ClientPlayerData getClientData() {
+		return getClientData(Minecraft.getMinecraft().player);
+	}
 
 	@SideOnly(Side.CLIENT)
 	/** プレイヤーデータを取得 無かったらPut */
@@ -45,8 +51,9 @@ public class HidePlayerData {
 	}
 
 	public static class CommonPlayerData {
-		public GunController gunMain = new GunController(EnumHand.MAIN_HAND);
-		public GunController gunOff = new GunController(EnumHand.OFF_HAND);
+		//	public GunController gunMain = new GunController(EnumHand.MAIN_HAND);
+		//	public GunController gunOff = new GunController(EnumHand.OFF_HAND);
+		public PlayerGunManager gunManager = new PlayerGunManager();
 		//ADSの状態
 		public float adsRes = 0f;
 	}
@@ -66,8 +73,9 @@ public class HidePlayerData {
 
 	public static class ClientPlayerData extends CommonPlayerData {
 		public ClientPlayerData() {
-			gunMain.setClientMode(true);
-			gunOff.setClientMode(true);
+			gunManager.setClientMode(true);
+			//gunMain.setClientMode(true);
+			//gunOff.setClientMode(true);
 		}
 
 		//ADS用のカウンタ

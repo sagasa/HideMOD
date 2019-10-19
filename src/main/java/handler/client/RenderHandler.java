@@ -108,17 +108,17 @@ public class RenderHandler {
 		ClientPlayerData data = HidePlayerData.getClientData(HideMod.getPlayer());
 		if (data == null)
 			return;
-		EquipMode em = EquipMode.getEquipMode(data.gunMain, data.gunOff);
+		EquipMode em = data.gunManager.CurrentEquipMode;
 		if (em == EquipMode.Main) {
-			writeGunInfo(x, y, data.gunMain);
+			writeGunInfo(x, y, data.gunManager.getGunMain());
 		} else if (em == EquipMode.Off) {
-			writeGunInfo(x, y, data.gunOff);
+			writeGunInfo(x, y, data.gunManager.getGunOff());
 		} else if (em == EquipMode.Dual) {
-			writeGunInfo(x, y, data.gunMain);
-			writeGunInfo(x - 120, y, data.gunOff);
+			writeGunInfo(x, y, data.gunManager.getGunMain());
+			writeGunInfo(x - 120, y, data.gunManager.getGunOff());
 		} else if (em == EquipMode.OtherDual) {
-			writeGunInfo(x, y, data.gunMain);
-			writeGunInfo(x - 120, y, data.gunOff);
+			writeGunInfo(x, y, data.gunManager.getGunMain());
+			writeGunInfo(x - 120, y, data.gunManager.getGunOff());
 		}
 
 	}
@@ -234,6 +234,7 @@ public class RenderHandler {
 		public Map<AnimationType, Float> getRenderPropery() {
 			return new EnumMap<>(AnimationType.class);
 		}
+
 		@Override
 		public Map<String, List<String>> getPartPropery() {
 			return new HashMap<>();
@@ -268,7 +269,6 @@ public class RenderHandler {
 				GlStateManager.alphaFunc(516, 0.1F);
 				GlStateManager.enableBlend();
 				GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-
 
 				model.render(true, prop);
 

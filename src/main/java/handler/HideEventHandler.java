@@ -84,8 +84,7 @@ public class HideEventHandler {
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedOutEvent event) {
 		//切断時に銃の制御系を初期化
-		HidePlayerData.getServerData(event.player).gunMain.saveAndClear();
-		HidePlayerData.getServerData(event.player).gunOff.saveAndClear();
+		HidePlayerData.getServerData(event.player).gunManager.saveAndClear();
 	}
 
 	/** クライアント側でのワールド読み込み時に入力監視スレッドを立ち上げる */
@@ -99,8 +98,7 @@ public class HideEventHandler {
 	public void onEvent(ClientDisconnectionFromServerEvent event) {
 		InputHandler.stopWatcher();
 		//切断時に銃の制御系を初期化
-		HidePlayerData.getClientData(Minecraft.getMinecraft().player).gunMain.saveAndClear();
-		HidePlayerData.getClientData(Minecraft.getMinecraft().player).gunOff.saveAndClear();
+		HidePlayerData.getClientData(Minecraft.getMinecraft().player).gunManager.saveAndClear();
 	}
 
 	@SubscribeEvent

@@ -85,7 +85,7 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 				lag = lag < 0 ? 0 : lag;
 				//	System.out.println("lag = " + lag);
 				// System.out.println("射撃パケット受信" + (m.offset + (float) lag));
-				GunController gun = m.isMain?HidePlayerData.getServerData(player).gunMain:HidePlayerData.getServerData(player).gunOff;
+				GunController gun = HidePlayerData.getServerData(player).gunManager.getGunController(m.isMain);
 				if (gun == null) {
 					log.warn("cant make bullet by cant find gun: player = " + player.getName());
 				}
