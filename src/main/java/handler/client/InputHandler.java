@@ -27,8 +27,7 @@ public class InputHandler {
 
 	private static final Logger log = LogManager.getLogger();
 
-	public static final KeyBinding AIM = new KeyBinding("Key.aim", -99, "HideMod");
-	public static final KeyBinding FIRE = new KeyBinding("Key.fire", -100, "HideMod");
+	private static int FireKeyCode = 0;
 	public static final KeyBinding RELOAD = new KeyBinding("Key.reload", Keyboard.KEY_R, "HideMod");
 	public static final KeyBinding CHANGE_BULLET = new KeyBinding("Key.bullet", Keyboard.KEY_B, "HideMod");
 	public static final KeyBinding CHANGE_FIREMODE = new KeyBinding("Key.firemode", Keyboard.KEY_V, "HideMod");
@@ -45,8 +44,6 @@ public class InputHandler {
 	private static EnumMap<InputBind, Boolean> newKeys = new EnumMap<>(InputBind.class);
 
 	public static void init() {
-		ClientRegistry.registerKeyBinding(AIM);
-		ClientRegistry.registerKeyBinding(FIRE);
 		ClientRegistry.registerKeyBinding(RELOAD);
 		ClientRegistry.registerKeyBinding(CHANGE_BULLET);
 		ClientRegistry.registerKeyBinding(CHANGE_FIREMODE);
@@ -56,7 +53,8 @@ public class InputHandler {
 	/** Tickアップデート */
 	public static void tickUpdate() {
 		InputWatcher.tickUpdate();
-		EntityPlayerSP player = Minecraft.getMinecraft().player;
+		Minecraft mc = Minecraft.getMinecraft();
+		EntityPlayerSP player = mc.player;
 		if (player == null || !isStart) {
 			return;
 		}
@@ -69,6 +67,7 @@ public class InputHandler {
 				pushKeys.add(bind);
 			}
 		}
+		FireKeyCode = mc.gameSettings.keyBindAttack.getKeyCode();
 		//銃火器への操作
 		ClientPlayerData data = HidePlayerData.getClientData(player);
 		EquipMode em = data.gunManager.CurrentEquipMode;
@@ -98,7 +97,8 @@ public class InputHandler {
 		//ADS計算
 		else if (adsTick < data.adsstate)
 			data.adsstate = adsTick;
-		if (InputHandler.AIM.isKeyDown() && em != EquipMode.None) {
+
+		if (mc.gameSettings.keyBindUseItem.isKeyDown() && em != EquipMode.None) {
 			if (data.adsstate < adsTick)
 				data.adsstate++;
 		} else {
@@ -202,10 +202,10 @@ public class InputHandler {
 					long time = Minecraft.getSystemTime();
 					// 射撃処理
 					boolean fire;
-					if (0 <= FIRE.getKeyCode())
-						fire = Keyboard.isKeyDown(FIRE.getKeyCode());
+					if (0 <= FireKeyCode)
+						fire = Keyboard.isKeyDown(FireKeyCode);
 					else
-						fire = Mouse.isButtonDown(FIRE.getKeyCode() + 100);
+						fire = Mouse.isButtonDown(FireKeyCode + 100);
 					EntityPlayerSP player = Minecraft.getMinecraft().player;
 					if (player == null)
 						continue;
