@@ -152,7 +152,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		/** 前のtickの位置ベクトル */
 		Vec3d lvo = new Vec3d(lastTickPosX, lastTickPosY, lastTickPosZ);
 		/** 今のtickの位置ベクトル */
-		Vec3d lvt = new Vec3d(posX, posX, posX);
+		Vec3d lvt = new Vec3d(posX, posY, posZ);
 
 		/** 弾が消失した位置 */
 		Vec3d endPos = lvt;
