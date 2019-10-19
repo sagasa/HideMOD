@@ -212,7 +212,7 @@ public class GunController {
 		} else {
 			// リロードタイマー
 			if (reloadProgress > 0) {
-				HideEntityDataManager.setADSState(Shooter, modifyData.RELOAD_TICK);
+			//	HideEntityDataManager.setADSState(Shooter, modifyData.RELOAD_TICK);
 				reloadProgress--;
 			} else if (reloadProgress == 0) {
 				reloadProgress = -1;

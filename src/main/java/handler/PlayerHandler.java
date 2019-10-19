@@ -4,6 +4,7 @@ import entity.EntityDrivable;
 import gamedata.HidePlayerData;
 import gamedata.HidePlayerData.ClientPlayerData;
 import gamedata.HidePlayerData.CommonPlayerData;
+import gamedata.HidePlayerData.ServerPlayerData;
 import guns.GunController;
 import handler.client.HideViewHandler;
 import net.minecraft.client.Minecraft;
@@ -112,6 +113,10 @@ public class PlayerHandler {
 		// アイテムの場合同期用
 		if (isOnEntityDrivable(player)) {
 
+		}else {
+			ServerPlayerData data = HidePlayerData.getServerData(player);
+			HideEntityDataManager.setADSState(player, data.adsRes);
 		}
+
 	}
 }

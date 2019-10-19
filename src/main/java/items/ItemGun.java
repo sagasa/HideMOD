@@ -74,7 +74,6 @@ public class ItemGun extends HideItem<GunData> {
 	// TODO 銃剣のオプション次第
 	@Override
 	public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entity) {
-
 		return true;
 	}
 

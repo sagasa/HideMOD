@@ -31,6 +31,7 @@ public class HideHook {
 	/**左クリックにフック trueでキャンセル*/
 	@SideOnly(Side.CLIENT)
 	public static boolean hookOnLeftClick(Minecraft mc) {
+		System.out.println(ItemGun.isGun(mc.player.getHeldItemMainhand()));
 		return ItemGun.isGun(mc.player.getHeldItemMainhand());
 	}
 }
