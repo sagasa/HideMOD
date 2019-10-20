@@ -1,13 +1,13 @@
 package items;
 
 import java.util.List;
+import java.util.Map;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 
 import helper.HideNBT;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
@@ -15,18 +15,15 @@ import net.minecraft.world.World;
 import pack.PackData;
 import types.items.MagazineData;
 
-public class ItemMagazine extends Item {
+public class ItemMagazine extends HideItem<MagazineData> {
 
 	// ========================================================================
 	// 登録
-	public ItemMagazine(String name) {
-		super();
-		this.setCreativeTab(CreativeTabs.COMBAT);
-		this.setUnlocalizedName(name);
-		this.setRegistryName(name);
+	public ItemMagazine(String name, Map<String, MagazineData> dagamap) {
+		super(name, dagamap);
 	}
 
-	public static final ItemMagazine INSTANCE = new ItemMagazine("magazine");
+	public static ItemMagazine INSTANCE;
 
 	/** アイテムスタックを作成 残弾指定 */
 	public static ItemStack makeMagazine(String name, int ammoNum) {
@@ -161,5 +158,10 @@ public class ItemMagazine extends Item {
 	/** その名前の弾は存在するか */
 	public static boolean isMagazineExist(String name) {
 		return PackData.getBulletData(name) != null;
+	}
+
+	@Override
+	public ItemStack makeItem(MagazineData data) {
+		return makeMagazine(data);
 	}
 }

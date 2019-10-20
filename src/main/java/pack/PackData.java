@@ -109,6 +109,7 @@ public class PackData implements Cloneable {
 	public static void registerItems(Register<Item> event) {
 		IForgeRegistry<Item> register = event.getRegistry();
 		ItemGun.INSTANCE = new ItemGun("gun", currentData.GUN_DATA_MAP);
+		ItemMagazine.INSTANCE = new ItemMagazine("magazine", currentData.MAGAZINE_DATA_MAP);
 		register.register(ItemGun.INSTANCE);
 		register.register(ItemMagazine.INSTANCE);
 	}

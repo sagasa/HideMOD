@@ -32,14 +32,12 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 			float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
 		boolean flag = entitylivingbaseIn.getPrimaryHand() == EnumHandSide.RIGHT;
 		ItemStack itemstack = flag ? entitylivingbaseIn.getHeldItemOffhand() : entitylivingbaseIn.getHeldItemMainhand();
-		ItemStack itemstack1 = flag ? entitylivingbaseIn.getHeldItemMainhand()
-				: entitylivingbaseIn.getHeldItemOffhand();
+		ItemStack itemstack1 = flag ? entitylivingbaseIn.getHeldItemMainhand() : entitylivingbaseIn.getHeldItemOffhand();
 
 		if (!itemstack.isEmpty() || !itemstack1.isEmpty()) {
 			GlStateManager.pushMatrix();
 
 			if (this.livingEntityRenderer.getMainModel().isChild) {
-				float f = 0.5F;
 				GlStateManager.translate(0.0F, 0.75F, 0.0F);
 				GlStateManager.scale(0.5F, 0.5F, 0.5F);
 			}
@@ -57,6 +55,7 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 		public Map<AnimationType, Float> getRenderPropery() {
 			return new EnumMap<>(AnimationType.class);
 		}
+
 		@Override
 		public Map<String, List<String>> getPartPropery() {
 			return new HashMap<>();
@@ -65,7 +64,7 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 
 	private void renderHeldGun(EntityLivingBase p_188358_1_, ItemStack p_188358_2_,
 			ItemCameraTransforms.TransformType p_188358_3_, EnumHandSide handSide) {
-		if (!p_188358_2_.isEmpty()) {
+		if (ItemGun.isGun(p_188358_2_)) {
 			GlStateManager.pushMatrix();
 
 			if (p_188358_1_.isSneaking()) {
@@ -84,12 +83,10 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 
 			//RenderHandler.makeDot();
 
-			if (ItemGun.isGun(p_188358_2_)) {
-				//	System.out.println(ItemGun.getGunData(p_188358_2_).ITEM_MODELNAME+ItemGun.getGunData(p_188358_2_).ITEM_ICONNAME);
-				HideModel model = PackData.getModel(ItemGun.getGunData(p_188358_2_).ITEM_MODELNAME);
-				if (model != null) {
-					model.render(false,prop);
-				}
+			//	System.out.println(ItemGun.getGunData(p_188358_2_).ITEM_MODELNAME+ItemGun.getGunData(p_188358_2_).ITEM_ICONNAME);
+			HideModel model = PackData.getModel(ItemGun.getGunData(p_188358_2_).ITEM_MODELNAME);
+			if (model != null) {
+				model.render(false, prop);
 			}
 
 			GlStateManager.popMatrix();

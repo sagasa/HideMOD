@@ -87,8 +87,10 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 		ModelLoaderRegistry.registerLoader(loader);
 	}
 
+	//登録する画像を抽出
 	private static void init() {
 		registerTexture(PackData.getGunData());
+		registerTexture(PackData.getMagazineData());
 	}
 
 	private static void registerTexture(Collection<? extends ItemData> items) {
@@ -196,7 +198,7 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 		String type = data.ITEM_ICONNAME + data.ITEM_MODELNAME;
 		if (!modelCash.containsKey(type)) {
 			HideModel model = PackData.getModel(data.ITEM_MODELNAME);
-			System.out.println(data.ITEM_ICONNAME +" "+ data.ITEM_DISPLAYNAME);
+			System.out.println(data.ITEM_ICONNAME + " " + data.ITEM_DISPLAYNAME);
 			if (model == null) {
 				modelCash.put(type, bakeItemModel(data.ITEM_ICONNAME, true));
 			}
