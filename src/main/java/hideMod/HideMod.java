@@ -3,7 +3,6 @@ package hidemod;
 import java.io.File;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import entity.EntityBullet;
@@ -54,7 +53,7 @@ public class HideMod {
 		return ModeDir;
 	}
 
-	private static final Logger LOGGER = LogManager.getLogger();
+	public static Logger LOGGER;
 
 	/* イニシャライズ */
 	@EventHandler
@@ -73,6 +72,8 @@ public class HideMod {
 		PacketHandler.init();
 		// ダメージの初期設定
 		HideDamage.init();
+		// ロガー保存
+		LOGGER = event.getModLog();
 		// エンティティ登録
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,
 				"entity_bullet", 1, MOD_ID, 512, 1, false);

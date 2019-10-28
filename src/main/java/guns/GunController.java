@@ -82,10 +82,7 @@ public class GunController {
 			modifyData = (GunData) gun.getGunData().clone();
 			HideNBT.getGunAttachments(gun.getGunTag()).stream().map(str -> PackData.getAttachmentData(str))
 					.filter(data -> data != null).forEach(part -> {
-						modifyData.multiplyFloat(part.FLOAT_DIA_MAP);
-						modifyData.addFloat(part.FLOAT_ADD_MAP);
-						modifyData.setFloat(part.FLOAT_SET_MAP);
-						modifyData.setString(part.STRING_SET_MAP);
+						modifyData.applyChange(part.CHANGE_LIST);
 					});
 		}
 	}

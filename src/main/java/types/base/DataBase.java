@@ -1,7 +1,11 @@
 package types.base;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 
 import org.apache.logging.log4j.LogManager;
@@ -18,59 +22,134 @@ import types.base.ValueChange.Operater;
 public abstract class DataBase implements Cloneable {
 	private final static Logger log = LogManager.getLogger();
 
+	private static Gson gson = null;
+
+	// Gsonオプション系
+	public static class Entry {
+		public Entry(Type type, Object value) {
+			Type = type;
+			Value = value;
+		}
+
+		public Type Type;
+		public Object Value;
+	}
+
+	/** オプションを登録 */
+	private static final void initGson() {
+		List<Entry> jsonOptions = new ArrayList<>();
+		// オプション
+
+		GsonBuilder gb = new GsonBuilder().setPrettyPrinting();
+		jsonOptions.forEach(entry -> {
+			gb.registerTypeAdapter(entry.Type, entry.Value);
+		});
+		gson = gb.create();
+	}
+
+	/** カスタムシリアライザ使用のGson */
+	public static final Gson getGson() {
+		if (gson == null)
+			initGson();
+		return gson;
+	}
+
 	/** JsonObjectを作成 */
 	public String MakeJsonData() {
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		return gson.toJson(this);
+		return getGson().toJson(this);
+	}
+
+	/**値の変更を行う*/
+	public void applyChange(List<ValueChange> change) {
+		change.forEach(c -> applyChange(c));
 	}
 
 	/** 値の変更を行う */
 	public void applyChange(ValueChange change) {
+		if (change.VALUE_CASH == null)
+			change.makeCash(getClass());
 
-		if ((change.OPERATER == Operater.Add || change.OPERATER == Operater.Multiply)&&getType(this, change.PATH)==int.class) {
-
-		}
-
-			switch (change.OPERATER) {
-			case Add:
-
-				break;
-			case ListAdd:
-				break;
-			case ListRemove:
-				break;
-			case Multiply:
-				break;
-			case Set:
-				break;
-			default:
-				break;
-
+		Class<?> type = getType(this, change.PATH);
+		if (change.OPERATER == Operater.Add || change.OPERATER == Operater.Multiply) {
+			//数値なら
+			if (type == int.class) {
+				int i = (int) getValue(this, change.PATH);
+				if (change.OPERATER == Operater.Add)
+					i += (Float) change.VALUE_CASH;
+				else
+					i *= (Float) change.VALUE_CASH;
+				setValue(this, change.PATH, i);
 			}
-
+			//数値なら
+			if (type == float.class) {
+				float f = (float) getValue(this, change.PATH);
+				if (change.OPERATER == Operater.Add)
+					f += (Float) change.VALUE_CASH;
+				else
+					f *= (Float) change.VALUE_CASH;
+				setValue(this, change.PATH, f);
+			}
+		} else if (change.OPERATER == Operater.ListAdd) {
+			//リスト処理
+			((List) getValue(this, change.PATH)).add(change.VALUE_CASH);
+		} else if (change.OPERATER == Operater.ListRemove) {
+			//リスト処理
+			((List) getValue(this, change.PATH)).remove(change.VALUE_CASH);
+		} else if (change.OPERATER == Operater.Set) {
+			setValue(this, change.PATH, change.VALUE_CASH);
+		}
 	}
 
-	/** .区切りのフィールド名のパスにの型取得する */
-	public static Class<?> getType(DataBase data, String path) {
+	/** .区切りのフィールド名のパスの型取得する */
+	protected final static Class<?> getType(DataBase data, String path) {
+		return getType(data.getClass(), path);
+	}
+
+	/** .区切りのフィールド名のパスの型取得する */
+	protected final static Class<?> getType(Class<?> type, String path) {
 		String[] split = path.split("\\.", 2);
 		try {
 			// フィールド取得
-			Field field = data.getClass().getField(split[0]);
+			Field field = type.getField(split[0]);
 			if (split.length == 2) {
-				return getType((DataBase) field.get(data), split[1]);
+				return getType(field.getType(), split[1]);
 			} else if (split.length == 1) {
 				return field.getType();
 			}
 		} catch (NoSuchFieldException e) {
-			log.error("cant find field : " + path + " from " + data.getClass().getSimpleName());
-		} catch (SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			log.error("cant find field : " + path + " from " + type.getSimpleName());
+		} catch (SecurityException | IllegalArgumentException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**あんまり遅いんでキャッシュ*/
+	private static final Map<String, Type> fieldTypeMap = new HashMap<>();
+
+	/** .区切りのフィールド名のパスの型取得する */
+	protected final static Type getGenericType(Class<?> type, String path) {
+		String[] split = path.split("\\.", 2);
+		try {
+			// フィールド取得
+			Field field = type.getField(split[0]);
+			if (split.length == 2) {
+				return getGenericType(field.getType(), split[1]);
+			} else if (split.length == 1) {
+				if (!fieldTypeMap.containsKey(path))
+					fieldTypeMap.put(path, field.getGenericType());
+				return fieldTypeMap.get(path);
+			}
+		} catch (NoSuchFieldException e) {
+			log.error("cant find field : " + path + " from " + type.getSimpleName());
+		} catch (SecurityException | IllegalArgumentException e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
 
 	/** .区切りのフィールド名のパスにデータを書き込む */
-	public static void setValue(DataBase data, String path, Object value) {
+	protected final static void setValue(DataBase data, String path, Object value) {
 		String[] split = path.split("\\.", 2);
 		try {
 			// フィールド取得
@@ -88,7 +167,7 @@ public abstract class DataBase implements Cloneable {
 	}
 
 	/** .区切りのフィールド名のパスからデータを取得する */
-	public static Object getValue(DataBase data, String path) {
+	protected final static Object getValue(DataBase data, String path) {
 		String[] split = path.split("\\.", 2);
 		try {
 			// フィールド取得

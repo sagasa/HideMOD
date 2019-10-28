@@ -1,8 +1,9 @@
 package types.attachments;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
+import types.base.ValueChange;
 import types.items.ItemData;
 
 public abstract class AttachmentsData extends ItemData{
@@ -12,9 +13,5 @@ public abstract class AttachmentsData extends ItemData{
 	/** アタッチメントの部位 */
 	public String TYPE = "default";
 
-	public Map<String,Float> FLOAT_ADD_MAP = new HashMap<>();
-	public Map<String,Float> FLOAT_DIA_MAP = new HashMap<>();
-	public Map<String,Float> FLOAT_SET_MAP = new HashMap<>();
-
-	public Map<String,String> STRING_SET_MAP = new HashMap<>();
+	public List<ValueChange> CHANGE_LIST = new ArrayList<>();
 }
