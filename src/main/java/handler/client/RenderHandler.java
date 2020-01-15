@@ -21,6 +21,7 @@ import items.ItemMagazine;
 import model.AnimationType;
 import model.HideModel;
 import model.IRenderProperty;
+import net.blacklab.lmr.entity.maidmodel.ModelLittleMaidBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.ScaledResolution;
@@ -147,7 +148,7 @@ public class RenderHandler {
 		tessellator.draw();
 		GL11.glPopMatrix();
 		GlStateManager.disableAlpha();
-
+		ModelLittleMaidBase base;
 		// マガジン
 		int offset = 0;
 		for (Magazine magazine : gun.magazine.getList()) {
