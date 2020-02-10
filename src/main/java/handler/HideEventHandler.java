@@ -87,13 +87,17 @@ public class HideEventHandler {
 		HidePlayerData.getServerData(event.player).gunManager.saveAndClear();
 	}
 
+	//=== クライアント ===
+
 	/** クライアント側でのワールド読み込み時に入力監視スレッドを立ち上げる */
+	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public void onEvent(ClientConnectedToServerEvent event) {
 		InputHandler.startWatcher();
 	}
 
 	/** 入力監視スレッドを停止する */
+	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public void onEvent(ClientDisconnectionFromServerEvent event) {
 		InputHandler.stopWatcher();

@@ -21,7 +21,6 @@ import items.ItemMagazine;
 import model.AnimationType;
 import model.HideModel;
 import model.IRenderProperty;
-import net.blacklab.lmr.entity.maidmodel.ModelLittleMaidBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.ScaledResolution;
@@ -78,7 +77,8 @@ public class RenderHandler {
 			//	if (EquipMode.getEquipMode(data.gunMain, data.gunOff) != EquipMode.None)
 			//		event.setCanceled(true);
 			writeHitMarker(x, y);
-			writeScope(x, y);
+			/** スコープ */
+			HideScope.renderOnGUI();
 		}
 		if (!event.isCancelable() && event.getType() == ElementType.HOTBAR) {
 			// 開始位置
@@ -96,13 +96,6 @@ public class RenderHandler {
 		// System.out.println("render");
 	}
 
-	/** スコープ */
-	private static void writeScope(int x, int y) {
-		if (HideScope.Scope == null) {
-			// HideScope.setScope(8f, 0.8f, new ScopeMask());
-		}
-		HideScope.renderOnGUI();// TODO そのうち統合
-	}
 
 	/** 画面右下に 残弾 射撃モード 使用する弾を描画 */
 	private static void writeGunInfo(int x, int y) {
@@ -148,7 +141,6 @@ public class RenderHandler {
 		tessellator.draw();
 		GL11.glPopMatrix();
 		GlStateManager.disableAlpha();
-		ModelLittleMaidBase base;
 		// マガジン
 		int offset = 0;
 		for (Magazine magazine : gun.magazine.getList()) {

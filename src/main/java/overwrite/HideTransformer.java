@@ -145,11 +145,4 @@ public class HideTransformer implements IClassTransformer {
 
 		return bytes;
 	}
-
-	static int i = 0;
-
-	private static void log(String str) {
-		log.info(i + str);
-		i++;
-	}
 }

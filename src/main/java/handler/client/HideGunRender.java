@@ -17,8 +17,11 @@ import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHandSide;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import pack.PackData;
 
+@SideOnly(Side.CLIENT)
 public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 
 	protected final RenderLivingBase<?> livingEntityRenderer;
