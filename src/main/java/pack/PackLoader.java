@@ -356,7 +356,6 @@ public class PackLoader {
 		String res = string.toLowerCase().replaceAll("[\\. -]", "_").replaceAll("[^a-z0-9_]", "");
 		if (!string.equals(res))
 			LOGGER.warn("register name [" + string + "] is invalid change to [" + res + "]");
-		;
 		return res;
 	}
 }

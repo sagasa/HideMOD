@@ -28,7 +28,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
@@ -213,7 +212,7 @@ public class GunController {
 				reloadProgress--;
 			} else if (reloadProgress == 0) {
 				reloadProgress = -1;
-				log.info("reload timer end, start reload");
+				log.debug("reload timer end, start reload");
 				reload();
 			}
 			HideNBT.setGunShootDelay(gun.getGunTag(), shootDelay);
@@ -392,6 +391,7 @@ public class GunController {
 			magazineHolder.addMagazine(mag.name, mag.num);
 	}
 
+	private int prevAddReloadTime = 0;
 	/**
 	 * プレリロード マガジンを外す
 	 */
@@ -417,7 +417,8 @@ public class GunController {
 		SoundHandler.broadcastSound(Shooter, 0, 0, 0,
 				gun.getGunData().SOUND_RELOAD, false, SOUND_RELOAD);
 		reloadProgress = modifyData.RELOAD_TICK + addReloadTime;
-
+		//複数回リロード用に追加時間を保存
+		prevAddReloadTime = addReloadTime;
 		// ReloadAll以外で空きスロットがある場合何もしない
 		if (magazine.getList().size() < modifyData.LOAD_NUM && !modifyData.RELOAD_ALL) {
 			return true;
@@ -464,6 +465,8 @@ public class GunController {
 			// 全リロードの場合ループ
 			if (modifyData.RELOAD_ALL)
 				reload();
+			else
+				preReload(prevAddReloadTime);
 		}
 	}
 
@@ -476,35 +479,6 @@ public class GunController {
 			}
 		}
 		magazine.getList().clear();
-	}
-
-	/**
-	 * インベントリにマガジンを追加 入りきらない場合ドロップ ホットバーに追加しない
-	 */
-	private void addMagazineToInventory(String name, int num, Container inv, Entity entity) {
-		// プレイヤーの場合はホットバーに入れないように
-
-		for (int i = 0; i < inv.inventoryItemStacks.size(); i++) {
-			ItemStack item = inv.inventoryItemStacks.get(i);
-			if (ItemMagazine.isMagazine(item, name, num) && item.getCount() < item.getMaxStackSize()) {
-				item.setCount(item.getCount() + 1);
-				inv.detectAndSendChanges();
-				return;
-			}
-		}
-		int i = 0;
-		// プレイヤーの場合ホットバーを除外
-		if (entity instanceof EntityPlayer)
-			i = 9;
-		for (; i < inv.inventoryItemStacks.size(); i++) {
-			ItemStack item = inv.inventoryItemStacks.get(i);
-			if (item == ItemStack.EMPTY) {
-				inv.inventoryItemStacks.set(i, ItemMagazine.makeMagazine(name, num));
-				inv.detectAndSendChanges();
-				return;
-			}
-		}
-		entity.entityDropItem(ItemMagazine.makeMagazine(name, num), 1);
 	}
 
 	public void saveToNBT() {
@@ -554,7 +528,7 @@ public class GunController {
 	/**利用可能なすべてのマガジンを返す NBTの文字列じゃないことに注意*/
 	public String[] getUseMagazines() {
 		String name = HideNBT.getGunUseingBullet(gun.getGunTag());
-		if (name == null)
+	if (name == null)
 			return ArrayUtils.EMPTY_STRING_ARRAY;
 		return name.equals(LOAD_ANY) ? getUseMagazineList() : new String[] { name };
 	}
