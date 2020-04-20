@@ -12,7 +12,7 @@ import org.lwjgl.opengl.GL12;
 import gamedata.HidePlayerData;
 import gamedata.HidePlayerData.ClientPlayerData;
 import gamedata.LoadedMagazine.Magazine;
-import guns.GunController;
+import guns.CommonGun;
 import handler.PlayerHandler.EquipMode;
 import helper.HideNBT;
 import hidemod.HideMod;
@@ -73,7 +73,7 @@ public class RenderHandler {
 		int y = scaledresolution.getScaledHeight();
 
 		if (event.isCancelable() && event.getType() == ElementType.CROSSHAIRS) {
-			ClientPlayerData data = HidePlayerData.getClientData(HideMod.getPlayer());
+			ClientPlayerData data = HidePlayerData.getClientData(HideMod.getPlayer().getUniqueID());
 			//	if (EquipMode.getEquipMode(data.gunMain, data.gunOff) != EquipMode.None)
 			//		event.setCanceled(true);
 			writeHitMarker(x, y);
@@ -96,23 +96,22 @@ public class RenderHandler {
 		// System.out.println("render");
 	}
 
-
 	/** 画面右下に 残弾 射撃モード 使用する弾を描画 */
 	private static void writeGunInfo(int x, int y) {
-		ClientPlayerData data = HidePlayerData.getClientData(HideMod.getPlayer());
+		ClientPlayerData data = HidePlayerData.getClientData(HideMod.getPlayer().getUniqueID());
 		if (data == null)
 			return;
-		EquipMode em = data.gunManager.CurrentEquipMode;
+		EquipMode em = data.CurrentEquipMode;
 		if (em == EquipMode.Main) {
-			writeGunInfo(x, y, data.gunManager.getGunMain());
+			writeGunInfo(x, y, data.gunMain);
 		} else if (em == EquipMode.Off) {
-			writeGunInfo(x, y, data.gunManager.getGunOff());
+			writeGunInfo(x, y, data.gunOff);
 		} else if (em == EquipMode.Dual) {
-			writeGunInfo(x, y, data.gunManager.getGunMain());
-			writeGunInfo(x - 120, y, data.gunManager.getGunOff());
+			writeGunInfo(x, y, data.gunMain);
+			writeGunInfo(x - 120, y, data.gunOff);
 		} else if (em == EquipMode.OtherDual) {
-			writeGunInfo(x, y, data.gunManager.getGunMain());
-			writeGunInfo(x - 120, y, data.gunManager.getGunOff());
+			writeGunInfo(x, y, data.gunMain);
+			writeGunInfo(x - 120, y, data.gunOff);
 		}
 
 	}
@@ -120,7 +119,7 @@ public class RenderHandler {
 	static ItemStack stack = new ItemStack(ItemMagazine.INSTANCE);
 
 	/** 銃のステータスGUI描画 */
-	private static void writeGunInfo(int x, int y, GunController gun) {
+	private static void writeGunInfo(int x, int y, CommonGun gun) {
 		if (gun == null || !gun.isGun()) {
 			return;
 		}

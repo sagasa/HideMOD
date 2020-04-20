@@ -7,7 +7,7 @@ import java.util.Map;
 import com.mojang.realmsclient.gui.ChatFormatting;
 
 import gamedata.LoadedMagazine.Magazine;
-import guns.GunController;
+import guns.CommonGun;
 import helper.HideNBT;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
@@ -58,7 +58,7 @@ public class ItemGun extends HideItem<GunData> {
 		HideNBT.setGunShootDelay(hideTag, 0);
 		HideNBT.setGunFireMode(hideTag,
 				GunFireMode.getFireMode(Arrays.asList(data.FIREMODE).iterator().next().toString()));
-		HideNBT.setGunUseingBullet(hideTag, GunController.LOAD_ANY);
+		HideNBT.setGunUseingBullet(hideTag, CommonGun.LOAD_ANY);
 		return item;
 	}
 
@@ -93,7 +93,7 @@ public class ItemGun extends HideItem<GunData> {
 		tooltip.add(ChatFormatting.GRAY + "FireMode : " + HideNBT.getGunFireMode(hideTag));
 		String useBullet = HideNBT.getGunUseingBullet(hideTag);
 		tooltip.add(ChatFormatting.GRAY + "UseBullet : "
-				+ (GunController.LOAD_ANY.equals(useBullet) ? GunController.LOAD_ANY
+				+ (CommonGun.LOAD_ANY.equals(useBullet) ? CommonGun.LOAD_ANY
 						: ItemMagazine.getMagazineName(useBullet)));
 		for (Magazine magazine : HideNBT.getGunLoadedMagazines(hideTag).getList()) {
 			if (magazine != null) {

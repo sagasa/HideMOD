@@ -2,7 +2,7 @@ package entity;
 
 import java.util.List;
 
-import guns.GunController;
+import guns.CommonGun;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -19,7 +19,7 @@ public class EntityDrivable extends Entity {
 	//=======================
 	// 実装してほしいです
 
-	public List<GunController> guns;
+	public List<CommonGun> guns;
 	//=======================
 
     private static final DataParameter<Float> DAMAGE = EntityDataManager.createKey(EntityDrivable.class, DataSerializers.FLOAT);

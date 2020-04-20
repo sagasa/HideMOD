@@ -3,9 +3,8 @@ package handler;
 import entity.EntityDrivable;
 import gamedata.HidePlayerData;
 import gamedata.HidePlayerData.ClientPlayerData;
-import gamedata.HidePlayerData.CommonPlayerData;
 import gamedata.HidePlayerData.ServerPlayerData;
-import guns.GunController;
+import guns.CommonGun;
 import handler.client.HideViewHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -43,8 +42,8 @@ public class PlayerHandler {
 	 */
 	private static void gunStateUpdate(EntityPlayer player, Side side) {
 		// 共通処理
-		CommonPlayerData data = HidePlayerData.getData(player, side);
-		data.gunManager.tickUpdate(player, side);
+	//	CommonPlayerData data = HidePlayerData.getData(player, side);
+	//	data.tickUpdate();
 	}
 
 	/** EntityDrivableに乗っているかどうかを取得 */
@@ -64,7 +63,7 @@ public class PlayerHandler {
 		}
 
 		/** プレイヤーから装備の状態を取得 */
-		public static EquipMode getEquipMode(GunController main, GunController off) {
+		public static EquipMode getEquipMode(CommonGun main, CommonGun off) {
 			// 状態検知
 			if (main.isGun() && off.isGun() && main.getGunData().USE_DUALWIELD && off.getGunData().USE_DUALWIELD
 					&& off.getGunData().USE_SECONDARY) {
@@ -102,20 +101,49 @@ public class PlayerHandler {
 	private static void ClientUpdate() {
 		EntityPlayer player = Minecraft.getMinecraft().player;
 		//TODO 兵器の場合
-		ClientPlayerData data = HidePlayerData.getClientData(player);
-		data.gunManager.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ).setRotate(player.rotationYaw,
-				player.rotationPitch);
+		ClientPlayerData data = HidePlayerData.getClientData();
+		data.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ, player.rotationYaw, player.rotationPitch);
 	}
 
 	/** サーバーTick処理 プログレスを進める */
 	private static void ServerTick(EntityPlayerMP player) {
 		// if(player.getRidingEntity() instanceof)
+		ServerPlayerData data = HidePlayerData.getServerData(player.getUniqueID());
+
+
 		// アイテムの場合同期用
 		if (isOnEntityDrivable(player)) {
 
-		}else {
+		} else {
+			/*
+			if (PlayerHandler.isOnEntityDrivable(player)) {
+
+			} else {
+				ItemStack main = player.getHeldItemMainhand();
+				ItemStack off = player.getHeldItemOffhand();
+
+				int currentslot = player.inventory.currentItem;
+				//銃に持ち替えたor外したorNBTが違うorスロットが違う
+				if ((gunMain.isGun() ^ ItemGun.isGun(main)) || (gunMain.isGun() && ItemGun.isGun(main)
+						&& (!gunMain.NBTEquals(HideNBT.getHideTag(main)) || currentslot != currentSlot))) {
+					// アイテムではなくスロットにバインド
+					Supplier<NBTTagCompound> gunTag = () -> HideNBT.getHideTag(player.inventory.getStackInSlot(currentslot));
+					gunMain.setGun(ItemGun.getGunData(main), gunTag, player);
+				}
+				currentSlot = currentslot;
+				if ((gunOff.isGun() ^ ItemGun.isGun(off)) || (gunOff.isGun() && ItemGun.isGun(off)
+						&& !gunOff.NBTEquals(HideNBT.getHideTag(off)))) {
+					// アイテムではなくスロットにバインド
+					Supplier<NBTTagCompound> gunTag = () -> HideNBT.getHideTag(player.getHeldItemOffhand());
+					gunOff.setGun(ItemGun.getGunData(off), gunTag, player);
+				}
+			}
+			// アップデート
+			gunMain.tickUpdate();
+			gunOff.tickUpdate();
+
 			ServerPlayerData data = HidePlayerData.getServerData(player);
-			HideEntityDataManager.setADSState(player, data.adsRes);
+			HideEntityDataManager.setADSState(player, data.adsRes);//*/
 		}
 
 	}

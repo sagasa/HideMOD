@@ -60,7 +60,7 @@ public class PacketInput implements IMessage, IMessageHandler<PacketInput, IMess
 		// EntityPlayer Player = ctx.getServerHandler().playerEntity;
 		// System.out.println(ctx.side);
 
-		ServerPlayerData data = HidePlayerData.getServerData(ctx.getServerHandler().player);
+		ServerPlayerData data = HidePlayerData.getServerData(ctx.getServerHandler().player.getUniqueID());
 		if (m.mode == GUN_BULLET)
 			data.changeAmmo = true;
 		else if (m.mode == GUN_MODE)

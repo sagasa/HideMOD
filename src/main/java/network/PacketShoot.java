@@ -4,7 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import gamedata.HidePlayerData;
-import guns.GunController;
+import guns.CommonGun;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -85,11 +85,10 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 				lag = lag < 0 ? 0 : lag;
 				//	System.out.println("lag = " + lag);
 				// System.out.println("射撃パケット受信" + (m.offset + (float) lag));
-				GunController gun = HidePlayerData.getServerData(player).gunManager.getGunController(m.isMain);
+				CommonGun gun = HidePlayerData.getServerData(player.getUniqueID()).gunMain;
 				if (gun == null) {
 					log.warn("cant make bullet by cant find gun: player = " + player.getName());
 				}
-				gun.setShooter(player);
 				gun.shoot(m.isADS, m.offset, m.x, m.y, m.z, m.yaw, m.pitch);
 			});
 		}

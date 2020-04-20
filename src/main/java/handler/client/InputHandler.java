@@ -69,8 +69,8 @@ public class InputHandler {
 		}
 		FireKeyCode = mc.gameSettings.keyBindAttack.getKeyCode();
 		//銃火器への操作
-		ClientPlayerData data = HidePlayerData.getClientData(player);
-		EquipMode em = data.gunManager.CurrentEquipMode;
+		ClientPlayerData data = HidePlayerData.getClientData(player.getUniqueID());
+		EquipMode em = data.CurrentEquipMode;
 		if (em != EquipMode.None) {
 
 			if (CHANGE_FIREMODE.isPressed()) {
@@ -87,10 +87,10 @@ public class InputHandler {
 		//adsにかかる時間 0でADS不能
 		int adsTick = 1;
 		if (em.hasMain()) {
-			adsTick += data.gunManager.getGunMain().getGunData().ADS_TICK;
+			adsTick += data.gunMain.getGunData().ADS_TICK;
 		}
 		if (em.hasOff()) {
-			adsTick += data.gunManager.getGunOff().getGunData().ADS_TICK;
+			adsTick += data.gunOff.getGunData().ADS_TICK;
 		}
 		if (adsTick < 0)
 			adsTick = 0;
@@ -209,8 +209,8 @@ public class InputHandler {
 					EntityPlayerSP player = Minecraft.getMinecraft().player;
 					if (player == null)
 						continue;
-					ClientPlayerData data = HidePlayerData.getClientData(player);
-					data.gunManager.clientGunUpdate((Minecraft.getSystemTime() - lastTickMillis) / 50f, fire);
+					ClientPlayerData data = HidePlayerData.getClientData(player.getUniqueID());
+					data.clientGunUpdate((Minecraft.getSystemTime() - lastTickMillis) / 50f, fire);
 
 					time = Minecraft.getSystemTime() - time;
 					time = Math.max(20 - time, 1);

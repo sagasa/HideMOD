@@ -1,6 +1,5 @@
 package handler;
 
-import gamedata.HidePlayerData;
 import handler.client.HideItemRender;
 import handler.client.HideScope;
 import handler.client.HideSoundManager;
@@ -8,7 +7,6 @@ import handler.client.InputHandler;
 import handler.client.RecoilHandler;
 import handler.client.RenderHandler;
 import items.ItemGun;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.util.SoundEvent;
@@ -84,7 +82,7 @@ public class HideEventHandler {
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedOutEvent event) {
 		//切断時に銃の制御系を初期化
-		HidePlayerData.getServerData(event.player).gunManager.saveAndClear();
+	//TODO	HidePlayerData.getServerData(event.player).gunManager.saveAndClear();
 	}
 
 	//=== クライアント ===
@@ -102,7 +100,7 @@ public class HideEventHandler {
 	public void onEvent(ClientDisconnectionFromServerEvent event) {
 		InputHandler.stopWatcher();
 		//切断時に銃の制御系を初期化
-		HidePlayerData.getClientData(Minecraft.getMinecraft().player).gunManager.saveAndClear();
+	//TODO	HidePlayerData.getClientData(Minecraft.getMinecraft().player.getUniqueID()).gunManager.saveAndClear();
 	}
 
 	@SubscribeEvent
