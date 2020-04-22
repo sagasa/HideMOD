@@ -102,7 +102,9 @@ public class PlayerHandler {
 		EntityPlayer player = Minecraft.getMinecraft().player;
 		//TODO 兵器の場合
 		ClientPlayerData data = HidePlayerData.getClientData();
+
 		data.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ, player.rotationYaw, player.rotationPitch);
+		data.tickUpdate();
 	}
 
 	/** サーバーTick処理 プログレスを進める */

@@ -79,8 +79,8 @@ public abstract class CommonGun {
 
 	/**GunDataの更新が必要か*/
 	public boolean NBTEquals(NBTTagCompound hideTag) {
-		return HideNBT.getGunAttachments(gun.getGunTag()).equals(HideNBT.getGunAttachments(hideTag)) &&
-				HideNBT.getTag(gun.getGunTag(), HideNBT.DATA_NAME).equals(HideNBT.getTag(hideTag, HideNBT.DATA_NAME));
+		return hideTag != null ^ isGun() || (HideNBT.getGunAttachments(gun.getGunTag()).equals(HideNBT.getGunAttachments(hideTag)) &&
+				HideNBT.getTag(gun.getGunTag(), HideNBT.DATA_NAME).equals(HideNBT.getTag(hideTag, HideNBT.DATA_NAME)));
 	}
 
 	public boolean stateEquals(CommonGun other) {

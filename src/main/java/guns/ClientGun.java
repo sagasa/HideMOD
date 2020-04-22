@@ -156,10 +156,17 @@ public class ClientGun extends CommonGun {
 	}
 
 	public void setGun(NBTTagCompound gunTag) {
-		GunData data = PackData.getGunData(gunTag.getString(HideNBT.DATA_NAME));
+		if (gunTag == null) {
+			gun = null;
+			return;
+		}
+		System.out.println(NBTEquals(gunTag));
+		if (!NBTEquals(gunTag)) {
+			GunData data = PackData.getGunData(gunTag.getString(HideNBT.DATA_NAME));
 
-		gun = data == null ? null : () -> gunTag;
-		updateCustomize();
+			gun = data == null ? null : () -> gunTag;
+			updateCustomize();
+		}
 	}
 
 	@Override

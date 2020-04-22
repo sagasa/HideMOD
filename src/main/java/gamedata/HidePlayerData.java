@@ -183,19 +183,23 @@ public class HidePlayerData {
 			ItemStack main = player.getHeldItemMainhand();
 			ItemStack off = player.getHeldItemOffhand();
 
+			gunMain.setGun(HideNBT.getHideTag(main));
+			gunOff.setGun(HideNBT.getHideTag(off));
+
+
 			int currentslot = player.inventory.currentItem;
 			//銃に持ち替えたor外したorNBTが違うorスロットが違う
 			if ((gunMain.isGun() ^ ItemGun.isGun(main)) || (gunMain.isGun() && ItemGun.isGun(main)
 					&& (!gunMain.NBTEquals(HideNBT.getHideTag(main)) || currentslot != currentSlot))) {
 				// アイテムではなくスロットにバインド
 				Supplier<NBTTagCompound> gunTag = () -> HideNBT.getHideTag(player.inventory.getStackInSlot(currentslot));
-				gunMain.setGun(ItemGun.getGunData(main), gunTag, player);
+				//gunMain.setGun(ItemGun.getGunData(main), gunTag, player);
 			}
 			if ((gunOff.isGun() ^ ItemGun.isGun(off)) || (gunOff.isGun() && ItemGun.isGun(off)
 					&& !gunOff.NBTEquals(HideNBT.getHideTag(off)))) {
 				// アイテムではなくスロットにバインド
 				Supplier<NBTTagCompound> gunTag = () -> HideNBT.getHideTag(player.getHeldItemOffhand());
-				gunOff.setGun(ItemGun.getGunData(off), gunTag, player);
+				//gunOff.setGun(ItemGun.getGunData(off), gunTag, player);
 			}
 		}
 	}
