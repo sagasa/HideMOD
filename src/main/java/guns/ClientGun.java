@@ -160,7 +160,7 @@ public class ClientGun extends CommonGun {
 			gun = null;
 			return;
 		}
-		System.out.println(NBTEquals(gunTag));
+		System.out.println("NBT " + NBTEquals(gunTag));
 		if (!NBTEquals(gunTag)) {
 			GunData data = PackData.getGunData(gunTag.getString(HideNBT.DATA_NAME));
 

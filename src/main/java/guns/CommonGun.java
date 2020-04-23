@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -79,7 +78,14 @@ public abstract class CommonGun {
 
 	/**GunDataの更新が必要か*/
 	public boolean NBTEquals(NBTTagCompound hideTag) {
-		return hideTag != null ^ isGun() || (HideNBT.getGunAttachments(gun.getGunTag()).equals(HideNBT.getGunAttachments(hideTag)) &&
+		if (isGun()) {
+			System.out.println((HideNBT.getGunAttachments(gun.getGunTag()).equals(HideNBT.getGunAttachments(hideTag)) + " " +
+					HideNBT.getTag(gun.getGunTag(), HideNBT.DATA_NAME).equals(HideNBT.getTag(hideTag, HideNBT.DATA_NAME))));
+
+		} else {
+			return false;
+		}
+		return (hideTag != null) != isGun() && (HideNBT.getGunAttachments(gun.getGunTag()).equals(HideNBT.getGunAttachments(hideTag)) &&
 				HideNBT.getTag(gun.getGunTag(), HideNBT.DATA_NAME).equals(HideNBT.getTag(hideTag, HideNBT.DATA_NAME)));
 	}
 
@@ -331,7 +337,7 @@ public abstract class CommonGun {
 				.collect(Collectors.toList());
 	}
 
-	public void setGun(GunData gunData, Supplier<NBTTagCompound> gunTag, EntityPlayer player) {
+	public void setGun(EntityPlayer player) {
 
 		magazineHolder = new IMagazineHolder() {
 			@Override

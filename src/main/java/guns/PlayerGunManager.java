@@ -36,14 +36,14 @@ public class PlayerGunManager {
 					&& (!gunMain.NBTEquals(HideNBT.getHideTag(main)) || currentslot != currentSlot))) {
 				// アイテムではなくスロットにバインド
 				Supplier<NBTTagCompound> gunTag = () -> HideNBT.getHideTag(player.inventory.getStackInSlot(currentslot));
-				gunMain.setGun(ItemGun.getGunData(main), gunTag, player);
+				//gunMain.setGun(ItemGun.getGunData(main), gunTag, player);
 			}
 			currentSlot = currentslot;
 			if ((gunOff.isGun() ^ ItemGun.isGun(off)) || (gunOff.isGun() && ItemGun.isGun(off)
 					&& !gunOff.NBTEquals(HideNBT.getHideTag(off)))) {
 				// アイテムではなくスロットにバインド
 				Supplier<NBTTagCompound> gunTag = () -> HideNBT.getHideTag(player.getHeldItemOffhand());
-				gunOff.setGun(ItemGun.getGunData(off), gunTag, player);
+			//	gunOff.setGun(ItemGun.getGunData(off), gunTag, player);
 			}
 		}
 		// アップデート

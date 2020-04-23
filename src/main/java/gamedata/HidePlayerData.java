@@ -173,8 +173,6 @@ public class HidePlayerData {
 		//前Tickとの変化比較用
 		private int currentSlot;
 
-
-
 		@Override
 		public void tickUpdate() {
 			// TODO 自動生成されたメソッド・スタブ
@@ -182,10 +180,6 @@ public class HidePlayerData {
 
 			ItemStack main = player.getHeldItemMainhand();
 			ItemStack off = player.getHeldItemOffhand();
-
-			gunMain.setGun(HideNBT.getHideTag(main));
-			gunOff.setGun(HideNBT.getHideTag(off));
-
 
 			int currentslot = player.inventory.currentItem;
 			//銃に持ち替えたor外したorNBTが違うorスロットが違う
@@ -201,6 +195,12 @@ public class HidePlayerData {
 				Supplier<NBTTagCompound> gunTag = () -> HideNBT.getHideTag(player.getHeldItemOffhand());
 				//gunOff.setGun(ItemGun.getGunData(off), gunTag, player);
 			}
+
+			gunMain.setGun(player);
+			gunOff.setGun(player);
+
+			gunMain.setGun(HideNBT.getHideTag(main));
+			gunOff.setGun(HideNBT.getHideTag(off));
 		}
 	}
 }
