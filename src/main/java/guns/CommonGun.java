@@ -2,7 +2,6 @@ package guns;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,14 +9,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import entity.EntityBullet;
 import gamedata.LoadedMagazine;
 import gamedata.LoadedMagazine.Magazine;
-import handler.SoundHandler;
 import helper.HideAdder;
 import helper.HideNBT;
 import items.ItemMagazine;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
@@ -26,7 +22,6 @@ import net.minecraft.util.EnumHand;
 import pack.PackData;
 import types.base.GunFireMode;
 import types.items.GunData;
-import types.items.MagazineData;
 
 /** 銃の制御系
  * TickUpdateを要求
@@ -39,29 +34,55 @@ public abstract class CommonGun {
 
 	public static final byte SOUND_RELOAD = HideAdder.SoundCate.getNumber();
 
-	protected EntityPlayer owner;
 	protected ShootPoints shootPoint = ShootPoints.DefaultShootPoint;
-	protected IGuns gun;
+	protected NBTTagCompound gun;
 	protected IMagazineHolder magazineHolder;
 	protected EnumHand hand;
 
 	// ===============クライアント,サーバー共通部分==================
 	protected GunData modifyData = null;
 
-	/** リロードの状況保存0でリロード完了処理 */
-	protected int reloadProgress = -1;
-
 	public CommonGun(EnumHand hand) {
 		this.hand = hand;
 	}
 
+	//銃の情報の比較用キャッシング
+	private String gunName;
+	private List<String> gunAttachments;
+
+	/**NBTを読んで銃のデータ更新の必要があれば更新する*/
+	public boolean updateTag(NBTTagCompound gunTag) {
+		if (gunTag == null) {
+			gun = null;
+			gunName = null;
+			updateData();
+			return false;
+		}
+		List<String> attachments = HideNBT.getGunAttachments(gunTag);
+		String name = gunTag.getString(HideNBT.DATA_NAME);
+		//データ更新の必要があるなら
+		if (!(attachments.equals(gunAttachments) && name.equals(gunName))) {
+			gunName = name;
+			gunAttachments = attachments;
+
+			gun = PackData.getGunData(gunTag.getString(HideNBT.DATA_NAME)) == null ? null : gunTag;
+			updateCustomize();
+			updateData();
+			return true;
+		}
+		gun = gunTag;
+		return false;
+	}
+
+	/**武器のデータが変わったら呼び出される*/
+	abstract protected void updateData();
+
 	/** カスタムとオリジナルから修正版のGunDataを作成
 	 * カスタムパーツが見つからなければスキップ*/
 	protected void updateCustomize() {
-		System.out.println("updateCastomize");
 		if (isGun()) {
-			modifyData = (GunData) PackData.getGunData(gun.getGunTag().getString(HideNBT.DATA_NAME)).clone();
-			HideNBT.getGunAttachments(gun.getGunTag()).stream().map(str -> PackData.getAttachmentData(str))
+			modifyData = (GunData) PackData.getGunData(gun.getString(HideNBT.DATA_NAME)).clone();
+			HideNBT.getGunAttachments(gun).stream().map(str -> PackData.getAttachmentData(str))
 					.filter(data -> data != null).forEach(part -> {
 						modifyData.applyChange(part.CHANGE_LIST);
 					});
@@ -76,19 +97,6 @@ public abstract class CommonGun {
 		return gun != null && magazineHolder != null;
 	}
 
-	/**GunDataの更新が必要か*/
-	public boolean NBTEquals(NBTTagCompound hideTag) {
-		if (isGun()) {
-			System.out.println((HideNBT.getGunAttachments(gun.getGunTag()).equals(HideNBT.getGunAttachments(hideTag)) + " " +
-					HideNBT.getTag(gun.getGunTag(), HideNBT.DATA_NAME).equals(HideNBT.getTag(hideTag, HideNBT.DATA_NAME))));
-
-		} else {
-			return false;
-		}
-		return (hideTag != null) != isGun() && (HideNBT.getGunAttachments(gun.getGunTag()).equals(HideNBT.getGunAttachments(hideTag)) &&
-				HideNBT.getTag(gun.getGunTag(), HideNBT.DATA_NAME).equals(HideNBT.getTag(hideTag, HideNBT.DATA_NAME)));
-	}
-
 	public boolean stateEquals(CommonGun other) {
 		return this.modifyData.ITEM_SHORTNAME.equals(other.modifyData.ITEM_SHORTNAME)
 				&& this.getFireMode() == other.getFireMode();
@@ -99,7 +107,7 @@ public abstract class CommonGun {
 	}
 
 	public NBTTagCompound getGunTag() {
-		return gun.getGunTag();
+		return gun;
 	}
 
 	// 射撃アップデート
@@ -108,29 +116,6 @@ public abstract class CommonGun {
 	public LoadedMagazine magazine;
 
 	public abstract void tickUpdate();
-
-	/** 保存時のShootDelay補完用 */
-	protected long lastShootTime = 0;
-
-	/** サーバーサイド */
-	public void shoot(boolean isADS, float offset, double x, double y, double z, float yaw, float pitch) {
-		shoot(modifyData, magazine.getNextBullet(), owner, isADS, offset, x, y, z, yaw, pitch);
-		stopReload();
-		lastShootTime = System.currentTimeMillis();
-	}
-
-	/** エンティティを生成 ShootNumに応じた数弾を出す */
-	private static void shoot(GunData gundata, MagazineData bulletdata, Entity shooter, boolean isADS, float offset,
-			double x, double y, double z, float yaw, float pitch) {
-		if (bulletdata != null && bulletdata.BULLETDATA != null) {
-			SoundHandler.broadcastSound(shooter, 0, 0, 0, gundata.SOUND_SHOOT, true);
-			for (int i = 0; i < bulletdata.BULLETDATA.SHOOT_NUM; i++) {
-				EntityBullet bullet = new EntityBullet(gundata, bulletdata, shooter, isADS, offset, x, y, z, yaw,
-						pitch);
-				shooter.world.spawnEntity(bullet);
-			}
-		}
-	}
 
 	/** RPMをミリ秒に変換 */
 	protected int RPMtoMillis(float rPM) {
@@ -142,141 +127,15 @@ public abstract class CommonGun {
 		return millis / 50f;
 	}
 
-	protected void stopReload() {
-		if (reloadProgress != -1) {
-			reloadProgress = -1;
-			SoundHandler.bloadcastCancel(owner.world, owner.getEntityId(), SOUND_RELOAD);
-		}
-	}
-
-	/**
-	 * リロード まだリロード処理が残ればtrue サーバーサイド
-	 */
-
-	/** リロードの必要があるかかチェック */
-	public boolean needReload() {
-		// ReloadAll以外で空きスロットがある場合何もしない
-		if (magazine.getList().size() < modifyData.LOAD_NUM) {
-			return true;
-		}
-		Iterator<Magazine> itr = magazine.getList().iterator();
-		while (itr.hasNext()) {
-			Magazine mag = itr.next();
-			MagazineData magData = PackData.getBulletData(mag.name);
-			if (magData == null || mag.num < magData.MAGAZINE_SIZE) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**オプションを考慮したマガジン排出処理*/
-	private void exitMagazine(Magazine mag) {
-		MagazineData magData = PackData.getBulletData(mag.name);
-		if (magData != null && (0 < mag.num || !magData.MAGAZINE_BREAK))
-			magazineHolder.addMagazine(mag.name, mag.num);
-	}
-
-	private int prevAddReloadTime = 0;
-
-	/**
-	 * プレリロード マガジンを外す
-	 */
-	public boolean preReload(int addReloadTime) {
-		// ReloadAllの場合リロード可能なマガジンをすべて取り外す
-		// ReloadAll以外+アンロードが許可されている+空スロットがない場合同じ種類で1番少ないマガジンを取り外す
-		// リロードカウントを始める
-		if (!isGun() || !needReload())
-			return false;
-		//リロード中ならdsq
-		if (reloadProgress != -1) {
-			unload();
-			return false;
-		}
-
-		//空のスロットがない+アンロードが許可されていないなら止める
-		magazine.removeEmpty();
-		if (magazine.getList().size() >= modifyData.LOAD_NUM && !modifyData.UNLOAD_IN_RELOADING) {
-			return false;
-		}
-		//リロード開始
-		// 音
-		SoundHandler.broadcastSound(owner, 0, 0, 0,
-				modifyData.SOUND_RELOAD, false, SOUND_RELOAD);
-		reloadProgress = modifyData.RELOAD_TICK + addReloadTime;
-		//複数回リロード用に追加時間を保存
-		prevAddReloadTime = addReloadTime;
-		// ReloadAll以外で空きスロットがある場合何もしない
-		if (magazine.getList().size() < modifyData.LOAD_NUM && !modifyData.RELOAD_ALL) {
-			return true;
-		}
-		//最小のマガジンを検出
-		float min = 1f;
-		Magazine minMag = null;
-		Iterator<Magazine> itr = magazine.getList().iterator();
-		while (itr.hasNext()) {
-			Magazine mag = itr.next();
-			MagazineData magData = PackData.getBulletData(mag.name);
-			//存在しないマガジンなら排出
-			if (magData == null) {
-				itr.remove();
-			}
-			//reloadAllなら問答無用で排出
-			else if (modifyData.RELOAD_ALL && mag.num < magData.MAGAZINE_SIZE) {
-				exitMagazine(mag);
-				itr.remove();
-			} else {
-				float dia = mag.num / magData.MAGAZINE_SIZE;
-				if (dia < min) {
-					min = dia;
-					minMag = mag;
-				}
-			}
-		}
-		if (!modifyData.RELOAD_ALL && minMag != null) {
-			magazine.getList().remove(minMag);
-			exitMagazine(minMag);
-		}
-		return true;
-	}
-
-	protected void reload() {
-		if (magazine.getList().size() >= modifyData.LOAD_NUM) {
-			log.info(magazine.getList());
-			log.info("reload stop! magazine is full");
-			return;
-		}
-		Magazine mag = magazineHolder.useMagazine(getUseMagazines());
-		if (mag.num > 0) {
-			magazine.addMagazinetoLast(mag);
-			// 全リロードの場合ループ
-			if (modifyData.RELOAD_ALL)
-				reload();
-			else
-				preReload(prevAddReloadTime);
-		}
-	}
-
-	/** 弾排出 */
-	public void unload() {
-		for (Magazine mag : magazine.getList()) {
-			System.out.println("reload exit " + magazine);
-			if (PackData.getBulletData(mag.name) != null) {
-				magazineHolder.addMagazine(mag.name, mag.num);
-			}
-		}
-		magazine.getList().clear();
-	}
-
 	public void saveToNBT() {
-		HideNBT.setGunLoadedMagazines(gun.getGunTag(), magazine);
+		HideNBT.setGunLoadedMagazines(gun, magazine);
 	}
 
 	/** 次の射撃モードを取得 */
 	public GunFireMode getNextFireMode() {
 		if (!isGun())
 			return null;
-		GunFireMode now = HideNBT.getGunFireMode(gun.getGunTag());
+		GunFireMode now = HideNBT.getGunFireMode(gun);
 		List<String> modes = Arrays.asList(modifyData.FIREMODE);
 		int index = modes.indexOf(now.toString()) + 1;
 		if (index > modes.size() - 1) {
@@ -289,7 +148,7 @@ public abstract class CommonGun {
 	public String getNextUseMagazine() {
 		if (!isGun())
 			return null;
-		String now = HideNBT.getGunUseingBullet(gun.getGunTag());
+		String now = HideNBT.getGunUseingBullet(gun);
 		List<String> modes = Arrays.asList(getUseMagazineList());
 		int index = modes.indexOf(now.toString()) + 1;
 		if (index > modes.size() - 1) {
@@ -314,14 +173,14 @@ public abstract class CommonGun {
 
 	/**利用可能なすべてのマガジンを返す NBTの文字列じゃないことに注意*/
 	public String[] getUseMagazines() {
-		String name = HideNBT.getGunUseingBullet(gun.getGunTag());
+		String name = HideNBT.getGunUseingBullet(gun);
 		if (name == null)
 			return ArrayUtils.EMPTY_STRING_ARRAY;
 		return name.equals(LOAD_ANY) ? getUseMagazineList() : new String[] { name };
 	}
 
 	public String getUseMagazine() {
-		return HideNBT.getGunUseingBullet(gun.getGunTag());
+		return HideNBT.getGunUseingBullet(gun);
 	}
 
 	public String[] getUseMagazineList() {
@@ -329,7 +188,7 @@ public abstract class CommonGun {
 	}
 
 	public GunFireMode getFireMode() {
-		return HideNBT.getGunFireMode(gun.getGunTag());
+		return HideNBT.getGunFireMode(gun);
 	}
 
 	public List<GunFireMode> getFireModeList() {
@@ -401,11 +260,6 @@ public abstract class CommonGun {
 					player.dropItem(ItemMagazine.makeMagazine(name, amount), true);
 			}
 		};
-	}
-
-	/**銃の元にできるインターフェース*/
-	public interface IGuns {
-		public NBTTagCompound getGunTag();
 	}
 
 	public interface IMagazineHolder {

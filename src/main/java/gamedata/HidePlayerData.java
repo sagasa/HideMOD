@@ -1,14 +1,12 @@
 package gamedata;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Supplier;
+import java.util.concurrent.ConcurrentHashMap;
 
 import guns.ClientGun;
-import guns.CommonGun;
 import guns.ServerGun;
 import handler.PlayerHandler.EquipMode;
 import helper.HideNBT;
@@ -16,8 +14,8 @@ import items.ItemGun;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -27,33 +25,25 @@ import types.base.GunFireMode;
  * プレイヤーに紐付けされる変数s サーバーとクライアントを分けてある
  */
 public class HidePlayerData {
-	private static ClientPlayerData ClientData = new ClientPlayerData();
-	private static Map<UUID, ClientPlayerData> ClientDataMap = new HashMap<>();
-	private static Map<UUID, ServerPlayerData> ServerDataMap = new HashMap<>();
+
+	private static Map<UUID, ServerPlayerData> ServerDataMap = new ConcurrentHashMap<>();
 
 	/**自プレイヤーのデータ*/
 	@SideOnly(Side.CLIENT)
 	public static ClientPlayerData getClientData() {
-		return ClientData;
+		return ClientPlayerData.ClientData;
 	}
 
-	@SideOnly(Side.CLIENT)
-	/** プレイヤーデータを取得 無かったらPut */
-	public static ClientPlayerData getClientData(UUID player) {
-		ClientPlayerData data = ClientDataMap.get(player);
-		if (data == null) {
-			data = new ClientPlayerData();
-			ClientDataMap.put(player, data);
-		}
-		return data;
+	public static void clearServerData(EntityPlayer player) {
+		ServerDataMap.remove(player.getUniqueID());
 	}
 
 	/** プレイヤーデータを取得 無かったらPut */
-	public static ServerPlayerData getServerData(UUID player) {
-		ServerPlayerData data = ServerDataMap.get(player);
+	public static ServerPlayerData getServerData(EntityPlayerMP player) {
+		ServerPlayerData data = ServerDataMap.get(player.getUniqueID());
 		if (data == null) {
-			data = new ServerPlayerData();
-			ServerDataMap.put(player, data);
+			data = new ServerPlayerData(player);
+			ServerDataMap.put(player.getUniqueID(), data);
 		}
 		return data;
 	}
@@ -67,10 +57,15 @@ public class HidePlayerData {
 
 		public EquipMode CurrentEquipMode = EquipMode.None;
 
-		public abstract void tickUpdate();
 	}
 
 	public static class ServerPlayerData extends CommonPlayerData {
+
+		public ServerPlayerData(EntityPlayerMP player) {
+			gunMain = new ServerGun(EnumHand.MAIN_HAND, player);
+			gunOff = new ServerGun(EnumHand.OFF_HAND, player);
+
+		}
 
 		/**サーバー側で処理*/
 		public boolean reload = false;
@@ -79,15 +74,26 @@ public class HidePlayerData {
 		/**サーバー側で処理*/
 		public boolean changeFireMode = false;
 
-		public ServerGun gunMain = new ServerGun(EnumHand.MAIN_HAND);
-		public ServerGun gunOff = new ServerGun(EnumHand.OFF_HAND);
+		public ServerGun gunMain;
+		public ServerGun gunOff;
 
-		public ItemStack itemMain = ItemStack.EMPTY;
-		public ItemStack itemOff = ItemStack.EMPTY;
+		public void tickUpdate(EntityPlayer player) {
 
-		@Override
-		public void tickUpdate() {
-			List<CommonGun> guns = new ArrayList<>();
+			gunMain.setGun(player);
+			gunOff.setGun(player);
+
+			ItemStack main = player.getHeldItemMainhand();
+			ItemStack off = player.getHeldItemOffhand();
+
+			gunMain.tickUpdate();
+			gunOff.tickUpdate();
+
+			gunMain.updateTag(ItemGun.isGun(main) ? HideNBT.getHideTag(main) : null);
+			gunOff.updateTag(ItemGun.isGun(off) ? HideNBT.getHideTag(off) : null);
+
+			CurrentEquipMode = EquipMode.getEquipMode(gunMain, gunOff);
+
+			List<ServerGun> guns = new ArrayList<>();
 
 			if (CurrentEquipMode.hasMain())
 				guns.add(gunMain);
@@ -107,15 +113,19 @@ public class HidePlayerData {
 			}
 			if (reload) {
 				reload = false;
-				for (CommonGun gun : guns) {
+				for (ServerGun gun : guns) {
 					// リロード
 					gun.preReload(0);
+					System.out.println("reload req");
 				}
 			}
 		}
 	}
 
+	@SideOnly(Side.CLIENT)
 	public static class ClientPlayerData extends CommonPlayerData {
+		private static ClientPlayerData ClientData = new ClientPlayerData();
+
 		private static boolean dualToggle = false;
 		private static boolean lastTrigger = false;
 
@@ -170,37 +180,23 @@ public class HidePlayerData {
 		//ADS用のカウンタ
 		public int adsstate = 0;
 
-		//前Tickとの変化比較用
-		private int currentSlot;
-
-		@Override
 		public void tickUpdate() {
 			// TODO 自動生成されたメソッド・スタブ
 			EntityPlayer player = Minecraft.getMinecraft().player;
+			gunMain.setGun(player);
+			gunOff.setGun(player);
 
 			ItemStack main = player.getHeldItemMainhand();
 			ItemStack off = player.getHeldItemOffhand();
 
-			int currentslot = player.inventory.currentItem;
-			//銃に持ち替えたor外したorNBTが違うorスロットが違う
-			if ((gunMain.isGun() ^ ItemGun.isGun(main)) || (gunMain.isGun() && ItemGun.isGun(main)
-					&& (!gunMain.NBTEquals(HideNBT.getHideTag(main)) || currentslot != currentSlot))) {
-				// アイテムではなくスロットにバインド
-				Supplier<NBTTagCompound> gunTag = () -> HideNBT.getHideTag(player.inventory.getStackInSlot(currentslot));
-				//gunMain.setGun(ItemGun.getGunData(main), gunTag, player);
-			}
-			if ((gunOff.isGun() ^ ItemGun.isGun(off)) || (gunOff.isGun() && ItemGun.isGun(off)
-					&& !gunOff.NBTEquals(HideNBT.getHideTag(off)))) {
-				// アイテムではなくスロットにバインド
-				Supplier<NBTTagCompound> gunTag = () -> HideNBT.getHideTag(player.getHeldItemOffhand());
-				//gunOff.setGun(ItemGun.getGunData(off), gunTag, player);
-			}
+			//銃ではないならNullで初期化
+			gunMain.updateTag(ItemGun.isGun(main) ? HideNBT.getHideTag(main) : null);
+			gunOff.updateTag(ItemGun.isGun(off) ? HideNBT.getHideTag(off) : null);
 
-			gunMain.setGun(player);
-			gunOff.setGun(player);
+			CurrentEquipMode = EquipMode.getEquipMode(gunMain, gunOff);
 
-			gunMain.setGun(HideNBT.getHideTag(main));
-			gunOff.setGun(HideNBT.getHideTag(off));
+			gunMain.tickUpdate();
+			gunOff.tickUpdate();
 		}
 	}
 }

@@ -69,10 +69,9 @@ public class InputHandler {
 		}
 		FireKeyCode = mc.gameSettings.keyBindAttack.getKeyCode();
 		//銃火器への操作
-		ClientPlayerData data = HidePlayerData.getClientData(player.getUniqueID());
+		ClientPlayerData data = HidePlayerData.getClientData();
 		EquipMode em = data.CurrentEquipMode;
 		if (em != EquipMode.None) {
-
 			if (CHANGE_FIREMODE.isPressed()) {
 				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_MODE));
 			}
@@ -209,7 +208,7 @@ public class InputHandler {
 					EntityPlayerSP player = Minecraft.getMinecraft().player;
 					if (player == null)
 						continue;
-					ClientPlayerData data = HidePlayerData.getClientData(player.getUniqueID());
+					ClientPlayerData data = HidePlayerData.getClientData();
 					data.clientGunUpdate((Minecraft.getSystemTime() - lastTickMillis) / 50f, fire);
 
 					time = Minecraft.getSystemTime() - time;

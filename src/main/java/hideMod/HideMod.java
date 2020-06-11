@@ -86,6 +86,8 @@ public class HideMod {
 			defaultResourcePacks.add(new ResourceLoader());
 
 			Minecraft.getMinecraft().refreshResources();
+
+			Minecraft.getMinecraft().getFramebuffer().enableStencil();
 			System.out.println(defaultResourcePacks);
 		}
 	}

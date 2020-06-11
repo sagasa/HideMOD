@@ -8,14 +8,11 @@ import handler.client.RecoilHandler;
 import helper.HideMath;
 import helper.HideNBT;
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import network.PacketShoot;
-import pack.PackData;
 import types.base.GunFireMode;
-import types.items.GunData;
 import types.items.MagazineData;
 
 public class ClientGun extends CommonGun {
@@ -151,22 +148,14 @@ public class ClientGun extends CommonGun {
 		}
 	}
 
-	public void setMagazine(LoadedMagazine magazine) {
-		this.magazine = magazine;
+	public void syncMag() {
+		if (!isGun())
+			return;
+		magazine = HideNBT.getGunLoadedMagazines(gun);
 	}
 
-	public void setGun(NBTTagCompound gunTag) {
-		if (gunTag == null) {
-			gun = null;
-			return;
-		}
-		System.out.println("NBT " + NBTEquals(gunTag));
-		if (!NBTEquals(gunTag)) {
-			GunData data = PackData.getGunData(gunTag.getString(HideNBT.DATA_NAME));
-
-			gun = data == null ? null : () -> gunTag;
-			updateCustomize();
-		}
+	public void setMagazine(LoadedMagazine magazine) {
+		this.magazine = magazine;
 	}
 
 	@Override
@@ -178,6 +167,14 @@ public class ClientGun extends CommonGun {
 		//if (magazine.getList().size() != mag.getList().size())
 		//	magazine = mag;
 
+	}
+
+	@Override
+	protected void updateData() {
+		if (!isGun())
+			return;
+		syncMag();
+		shootDelay = HideNBT.getGunShootDelay(gun);
 	}
 
 }

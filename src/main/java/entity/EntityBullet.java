@@ -78,6 +78,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	public EntityBullet(GunData gun, MagazineData magazine, Entity shooter, boolean isADS, float offset, double x,
 			double y, double z, float yaw, float pitch) {
 		this(shooter.world);
+		//	System.out.println("off "+offset);
 		magazineData = magazine;
 		bulletData = magazine.BULLETDATA;
 		gunData = gun;
@@ -102,7 +103,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		motionX /= f2;
 		motionZ /= f2;
 		motionY /= f2;
-
+		onUpdate(addtick);
+		addtick=0;
 		setPosition(posX, posY, posZ);
 	}
 
@@ -128,6 +130,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	private void onUpdate(float tick) {
+
+
 		this.lastTickPosX = this.posX;
 		this.lastTickPosY = this.posY;
 		this.lastTickPosZ = this.posZ;
@@ -186,6 +190,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		DamageSource damagesource = new HideDamage(HideDamageCase.GUN_BULLET, Shooter);
 		if (bulletData.HIT_IGNORING_ARMOR)
 			damagesource.setDamageBypassesArmor();
+
 
 		// Entityとの衝突
 		Iterator<Hit> HitEntitys = RayTracer.getHitEntity(this, world, lvo, lvend).iterator();

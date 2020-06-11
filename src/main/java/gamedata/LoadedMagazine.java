@@ -29,10 +29,7 @@ public class LoadedMagazine {
 		}
 
 		public boolean magEquals(Magazine obj) {
-			if (obj != null && name.equals(obj.name) && num == obj.num) {
-				return true;
-			}
-			return false;
+			return obj != null && name.equals(obj.name) && num == obj.num;
 		}
 	}
 
@@ -109,7 +106,7 @@ public class LoadedMagazine {
 	public boolean magEquals(LoadedMagazine loadmag) {
 		if (loadmag != null && magazineList.size() == loadmag.magazineList.size()) {
 			for (int i = 0; i < magazineList.size(); i++)
-				if (magazineList.get(i).magEquals(loadmag.magazineList.get(i)))
+				if (!magazineList.get(i).magEquals(loadmag.magazineList.get(i)))
 					return false;
 			return true;
 		}

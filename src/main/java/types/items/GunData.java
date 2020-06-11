@@ -24,7 +24,7 @@ public class GunData extends ItemData {
 	@Info(Cate = 2)
 	public boolean MODEL_SCOPE = false;
 	/** スコープ名 : String型 */
-	@Info(isResourceName = true)
+	@Info(isResourceName = true, resourceHeader = "scopes/")
 	public String SCOPE_NAME = "";
 	/** スコープの表示サイズ */
 	@Info(Cate = 2, Min = 0.1f, Max = 1f)

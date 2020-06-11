@@ -14,8 +14,8 @@ import gamedata.HidePlayerData.ClientPlayerData;
 import gamedata.LoadedMagazine.Magazine;
 import guns.CommonGun;
 import handler.PlayerHandler.EquipMode;
+import helper.HideMath;
 import helper.HideNBT;
-import hidemod.HideMod;
 import items.ItemGun;
 import items.ItemMagazine;
 import model.AnimationType;
@@ -71,18 +71,21 @@ public class RenderHandler {
 		// "+mc.displayHeight);
 		int x = scaledresolution.getScaledWidth();
 		int y = scaledresolution.getScaledHeight();
-
+		ClientPlayerData data = HidePlayerData.getClientData();
 		if (event.isCancelable() && event.getType() == ElementType.CROSSHAIRS) {
-			ClientPlayerData data = HidePlayerData.getClientData(HideMod.getPlayer().getUniqueID());
 			//	if (EquipMode.getEquipMode(data.gunMain, data.gunOff) != EquipMode.None)
 			//		event.setCanceled(true);
 			writeHitMarker(x, y);
+
+			event.setCanceled(HideViewHandler.writeScope());
+			writeGunInfo(x - 120, y - 65);
+
 			/** スコープ */
-			HideScope.renderOnGUI();
+			//HideScope.renderOnGUI();
 		}
 		if (!event.isCancelable() && event.getType() == ElementType.HOTBAR) {
 			// 開始位置
-			writeGunInfo(x - 120, y - 65);
+
 		}
 		//
 		/*
@@ -92,13 +95,17 @@ public class RenderHandler {
 		 * ItemStack(Item.getByNameOrId("hidemod:gun_ar"),1) , i, j);
 		 * RenderHelper.disableStandardItemLighting();
 		 */
-
+		if (data.adsRes == 0)
+			HideViewHandler.clearADS();
+		else {
+			HideViewHandler.setADS(data.gunMain.getGunData().SCOPE_NAME, HideMath.completion(1, data.gunMain.getGunData().SCOPE_DIA, data.adsRes), data.gunMain.getGunData().SCOPE_SIZE);
+		}
 		// System.out.println("render");
 	}
 
 	/** 画面右下に 残弾 射撃モード 使用する弾を描画 */
 	private static void writeGunInfo(int x, int y) {
-		ClientPlayerData data = HidePlayerData.getClientData(HideMod.getPlayer().getUniqueID());
+		ClientPlayerData data = HidePlayerData.getClientData();
 		if (data == null)
 			return;
 		EquipMode em = data.CurrentEquipMode;

@@ -59,6 +59,10 @@ public class HideDamage extends DamageSource {
 
 	/** ダメージを与える 無敵時間を無効化 ダメージが入ったらtrue */
 	public static boolean Attack(EntityLivingBase victim, HideDamage damageSource, float damage) {
+		//FF判定
+		if (victim instanceof EntityPlayer && damageSource.Attacker instanceof EntityPlayer && !((EntityPlayer) victim).canAttackPlayer((EntityPlayer) damageSource.Attacker))
+			return false;
+
 		boolean value = victim.attackEntityFrom(damageSource, damage);
 		victim.hurtResistantTime = 0;
 		// リフレクションで改変が必要な変数にぶち抜く

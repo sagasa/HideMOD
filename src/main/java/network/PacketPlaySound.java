@@ -6,6 +6,7 @@ import handler.SoundHandler;
 import handler.client.HideSoundManager;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.SoundCategory;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -140,9 +141,11 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 		if (ctx.side == Side.SERVER) {
 			ctx.getServerHandler().player.getServer().addScheduledTask(() -> {
 				EntityPlayer player = ctx.getServerHandler().player;
-				SoundHandler.broadcastSound(ctx.getServerHandler().player.world, m.entityID, m.Name, m.X, m.Y, m.Z,
-						m.Range, m.Vol, m.Pitch,
-						m.UseDelay, m.UseDecay, m.Excepting, m.trackID);
+				Entity e = player.world.getEntityByID(m.entityID);
+				if (e != null)
+					SoundHandler.broadcastSound(ctx.getServerHandler().player.world, e, m.Name, m.X, m.Y, m.Z,
+							m.Range, m.Vol, m.Pitch,
+							m.UseDelay, m.UseDecay, m.Excepting, m.trackID);
 			});
 		} else
 			Minecraft.getMinecraft().addScheduledTask(() -> playSound(m));

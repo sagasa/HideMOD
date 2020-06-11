@@ -42,8 +42,8 @@ public class PlayerHandler {
 	 */
 	private static void gunStateUpdate(EntityPlayer player, Side side) {
 		// 共通処理
-	//	CommonPlayerData data = HidePlayerData.getData(player, side);
-	//	data.tickUpdate();
+		//	CommonPlayerData data = HidePlayerData.getData(player, side);
+		//	data.tickUpdate();
 	}
 
 	/** EntityDrivableに乗っているかどうかを取得 */
@@ -110,9 +110,9 @@ public class PlayerHandler {
 	/** サーバーTick処理 プログレスを進める */
 	private static void ServerTick(EntityPlayerMP player) {
 		// if(player.getRidingEntity() instanceof)
-		ServerPlayerData data = HidePlayerData.getServerData(player.getUniqueID());
+		ServerPlayerData data = HidePlayerData.getServerData(player);
 
-
+		data.tickUpdate(player);
 		// アイテムの場合同期用
 		if (isOnEntityDrivable(player)) {
 

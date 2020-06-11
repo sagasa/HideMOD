@@ -18,6 +18,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import network.PacketHit;
 import network.PacketInput;
 import network.PacketPlaySound;
+import network.PacketSyncMag;
 import network.PacketShoot;
 import network.PacketSync;
 
@@ -42,6 +43,7 @@ public class PacketHandler {
 		INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 6, Side.SERVER);
 		INSTANCE.registerMessage(PacketSync.class, PacketSync.class, 10, Side.CLIENT);
 		INSTANCE.registerMessage(PacketSync.class, PacketSync.class, 11, Side.SERVER);
+		INSTANCE.registerMessage(PacketSyncMag.class, PacketSyncMag.class, 12, Side.CLIENT);
 
 		//		INSTANCE.registerMessage(PacketSync.class, PacketSync.class, 5, Side.SERVER);
 	}

@@ -4,10 +4,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import gamedata.HidePlayerData;
-import guns.CommonGun;
+import guns.ServerGun;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -80,12 +81,11 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 		// System.out.println(ctx.side);
 		if (ctx.side == Side.SERVER) {
 			ctx.getServerHandler().player.getServer().addScheduledTask(() -> {
-				EntityPlayer player = ctx.getServerHandler().player;
+				EntityPlayerMP player = ctx.getServerHandler().player;
 				double lag = player.world.getTotalWorldTime() - m.worldTime;
 				lag = lag < 0 ? 0 : lag;
-				//	System.out.println("lag = " + lag);
-				// System.out.println("射撃パケット受信" + (m.offset + (float) lag));
-				CommonGun gun = HidePlayerData.getServerData(player.getUniqueID()).gunMain;
+				player.sendMessage(new TextComponentString("Lag = " + lag + " Offset = " + m.offset));
+				ServerGun gun = HidePlayerData.getServerData(player).gunMain;
 				if (gun == null) {
 					log.warn("cant make bullet by cant find gun: player = " + player.getName());
 				}

@@ -51,6 +51,9 @@ public class PackData implements Cloneable {
 	/** サウンド 登録名 - byte[] MAP */
 	Map<String, byte[]> SOUND_MAP = new HashMap<>();
 
+	/** サイトの画像 登録名 - byte[] MAP */
+	Map<String, byte[]> SCOPE_MAP = new HashMap<>();
+
 	/** テクスチャ 登録名 - byte[] MAP */
 	Map<String, byte[]> TEXTURE_MAP = new HashMap<>();
 
@@ -145,6 +148,7 @@ public class PackData implements Cloneable {
 			data.ICON_MAP.putAll(ICON_MAP);
 			data.MAGAZINE_DATA_MAP.putAll(MAGAZINE_DATA_MAP);
 			data.MODEL_MAP.putAll(MODEL_MAP);
+			data.SCOPE_MAP.putAll(SCOPE_MAP);
 			data.SOUND_MAP.putAll(SOUND_MAP);
 			data.TEXTURE_MAP.putAll(TEXTURE_MAP);
 			return data;

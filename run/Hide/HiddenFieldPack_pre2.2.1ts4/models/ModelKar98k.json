@@ -1,0 +1,50 @@
+{
+  "rootBone": {
+    "children": [],
+    "models": [
+      {
+        "partName": "",
+        "defaultModel": "gunModel",
+        "item_model": {}
+      },
+      {
+        "partName": "",
+        "defaultModel": "defaultBarrelModel",
+        "item_model": {}
+      },
+      {
+        "partName": "",
+        "defaultModel": "defaultStockModel",
+        "item_model": {}
+      },
+      {
+        "partName": "",
+        "defaultModel": "defaultGripModel",
+        "item_model": {}
+      },
+      {
+        "partName": "",
+        "defaultModel": "slideModel",
+        "item_model": {}
+      },
+      {
+        "partName": "",
+        "defaultModel": "ammoModel",
+        "item_model": {}
+      }
+    ],
+    "script": ""
+  },
+  "scaleX": 0.125,
+  "texture": "kar98k",
+  "offset" : {
+    "X":6,
+    "Y":2.5,
+    "Z":0.5
+  },
+  "offsetFirstPerson" : {
+    "X":-2,
+    "Y":0,
+    "Z":0
+  }
+}

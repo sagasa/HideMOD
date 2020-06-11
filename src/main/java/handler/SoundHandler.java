@@ -19,24 +19,23 @@ public class SoundHandler {
 	 * @param exept */
 	public static void broadcastSound(Entity e, double x, double y, double z, Sound sound, boolean excepting,
 			byte cate) {
-		broadcastSound(e.world, e.getEntityId(), sound.NAME, x, y, z, sound.RANGE, sound.VOL, sound.PITCH,
+		broadcastSound(e.world, e, sound.NAME, x, y, z, sound.RANGE, sound.VOL, sound.PITCH,
 				sound.USE_DELAY,
 				sound.USE_DECAY, excepting, cate);
 	}
 
 	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用 */
-	public static void broadcastSound(World world, int entityID, String soundName, double x, double y, double z,
+	public static void broadcastSound(World world, Entity e, String soundName, double x, double y, double z,
 			float range, float vol,
 			float pitch, boolean useDelay, boolean useDecay, boolean excepting, byte cate) {
-		Entity e = world.getEntityByID(entityID);
 		// 同じワールドのプレイヤーの距離を計算してパケットを送信
 		for (EntityPlayer player : world.playerEntities) {
 			double distance = new Vec3d(e.posX, e.posY, e.posZ)
 					.distanceTo(new Vec3d(player.posX, player.posY, player.posZ));
-			if ((!excepting || player.getEntityId() != entityID) && distance < range) {
+			if ((!excepting || player != e) && distance < range) {
 				// パケット
 				PacketHandler.INSTANCE.sendTo(
-						new PacketPlaySound(entityID, cate, soundName, x, y, z, vol, pitch, range, useDelay, useDecay),
+						new PacketPlaySound(e.getEntityId(), cate, soundName, x, y, z, vol, pitch, range, useDelay, useDecay),
 						(EntityPlayerMP) player);
 			}
 		}

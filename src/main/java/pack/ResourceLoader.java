@@ -42,13 +42,12 @@ public class ResourceLoader implements IResourcePack {
 		if (resource.getResourcePath().equals("sounds.json")) {
 			return makeSoundJson();
 		}
-		Pattern itemModel = Pattern.compile("^models\\/item\\/");
-		Pattern json = Pattern.compile("\\.json$");
+		final Pattern itemModel = Pattern.compile("^models\\/item\\/");
+		final Pattern json = Pattern.compile("\\.json$");
 		//*
 		if (itemModel.matcher(resource.getResourcePath()).find()) {
 			String registerName = json.matcher(itemModel.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
-
 
 			return new ByteArrayInputStream(NoModelJson.replace("TEXTURE", HideMod.MOD_ID + ":default_m14_scope").getBytes());
 			/*
@@ -63,8 +62,8 @@ public class ResourceLoader implements IResourcePack {
 			*/
 		}
 		//*/
-		Pattern itemTexture = Pattern.compile("^textures\\/");
-		Pattern png = Pattern.compile("\\.png$");
+		final Pattern itemTexture = Pattern.compile("^textures\\/");
+		final Pattern png = Pattern.compile("\\.png$");
 		if (itemTexture.matcher(resource.getResourcePath()).find()) {
 			String iconName = png.matcher(itemTexture.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
@@ -72,7 +71,7 @@ public class ResourceLoader implements IResourcePack {
 				return new ByteArrayInputStream(PackData.currentData.ICON_MAP.get(iconName));
 			}
 		}
-		Pattern modelSkin = Pattern.compile("^skin\\/");
+		final Pattern modelSkin = Pattern.compile("^skin\\/");
 		if (modelSkin.matcher(resource.getResourcePath()).find()) {
 			String skinName = png.matcher(modelSkin.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
@@ -80,8 +79,16 @@ public class ResourceLoader implements IResourcePack {
 				return new ByteArrayInputStream(PackData.currentData.TEXTURE_MAP.get(skinName));
 			}
 		}
-		Pattern Sound = Pattern.compile("^sounds\\/");
-		Pattern ogg = Pattern.compile("\\.ogg$");
+		final Pattern scopeTex = Pattern.compile("^scopes\\/");
+		if (scopeTex.matcher(resource.getResourcePath()).find()) {
+			String name = png.matcher(scopeTex.matcher(resource.getResourcePath()).replaceAll(""))
+					.replaceAll("");
+			if (PackData.currentData.SCOPE_MAP.containsKey(name)) {
+				return new ByteArrayInputStream(PackData.currentData.SCOPE_MAP.get(name));
+			}
+		}
+		final Pattern Sound = Pattern.compile("^sounds\\/");
+		final Pattern ogg = Pattern.compile("\\.ogg$");
 		if (Sound.matcher(resource.getResourcePath()).find()) {
 			String iconName = ogg.matcher(Sound.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
 			if (PackData.currentData.SOUND_MAP.containsKey(iconName)) {
@@ -105,7 +112,7 @@ public class ResourceLoader implements IResourcePack {
 	}
 
 	/** Jsonの内容！！！ */
-	public  static InputStream makeItemModel(ItemData item) {
+	public static InputStream makeItemModel(ItemData item) {
 		String data;
 		if (PackData.getModel(item.ITEM_MODELNAME) != null) {
 			data = HasModelJson.replace("TEXTURE", item.ITEM_ICONNAME);
@@ -123,8 +130,8 @@ public class ResourceLoader implements IResourcePack {
 		if (resource.getResourcePath().equals("sounds.json")) {
 			return true;
 		}
-		Pattern itemModel = Pattern.compile("^models\\/item\\/");
-		Pattern json = Pattern.compile("\\.json$");
+		final Pattern itemModel = Pattern.compile("^models\\/item\\/");
+		final Pattern json = Pattern.compile("\\.json$");
 		if (itemModel.matcher(resource.getResourcePath()).find()) {
 			String registerName = json.matcher(itemModel.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
@@ -137,8 +144,8 @@ public class ResourceLoader implements IResourcePack {
 				return true;
 			}
 		}
-		Pattern itemTexture = Pattern.compile("^textures\\/");
-		Pattern png = Pattern.compile("\\.png$");
+		final Pattern itemTexture = Pattern.compile("^textures\\/");
+		final Pattern png = Pattern.compile("\\.png$");
 		if (itemTexture.matcher(resource.getResourcePath()).find()) {
 			String iconName = png.matcher(itemTexture.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
@@ -146,19 +153,27 @@ public class ResourceLoader implements IResourcePack {
 				return true;
 			}
 		}
-		Pattern modelSkin = Pattern.compile("^skin\\/");
-		if (modelSkin.matcher(resource.getResourcePath()).find()) {
-			String skinName = png.matcher(modelSkin.matcher(resource.getResourcePath()).replaceAll(""))
+		final Pattern scopeTex = Pattern.compile("^scopes\\/");
+		if (scopeTex.matcher(resource.getResourcePath()).find()) {
+			String name = png.matcher(scopeTex.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
-			if (PackData.currentData.TEXTURE_MAP.containsKey(skinName) && !skinName.equals("sample")) {
+			if (PackData.currentData.SCOPE_MAP.containsKey(name)) {
 				return true;
 			}
 		}
-		Pattern Sound = Pattern.compile("^sounds\\/");
-		Pattern ogg = Pattern.compile("\\.ogg$");
+		final Pattern modelSkin = Pattern.compile("^skin\\/");
+		if (modelSkin.matcher(resource.getResourcePath()).find()) {
+			String skinName = png.matcher(modelSkin.matcher(resource.getResourcePath()).replaceAll(""))
+					.replaceAll("");
+			if (PackData.currentData.TEXTURE_MAP.containsKey(skinName)) {
+				return true;
+			}
+		}
+		final Pattern Sound = Pattern.compile("^sounds\\/");
+		final Pattern ogg = Pattern.compile("\\.ogg$");
 		if (Sound.matcher(resource.getResourcePath()).find()) {
-			String iconName = ogg.matcher(Sound.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
-			if (PackData.currentData.SOUND_MAP.containsKey(iconName)) {
+			String name = ogg.matcher(Sound.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
+			if (PackData.currentData.SOUND_MAP.containsKey(name)) {
 				return true;
 			}
 		}

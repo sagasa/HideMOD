@@ -18,6 +18,7 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.util.Strings;
 
 import com.google.gson.Gson;
 
@@ -84,6 +85,8 @@ public class PackLoader {
 					checkAndAddToMap(PackData.readData.ICON_MAP, cash.Icons, packDomain);
 					// Texture登録
 					checkAndAddToMap(PackData.readData.TEXTURE_MAP, cash.Textures, packDomain);
+					// Scope登録
+					checkAndAddToMap(PackData.readData.SCOPE_MAP, cash.Scopes, packDomain);
 					// Sound登録
 					checkAndAddToMap(PackData.readData.SOUND_MAP, cash.Sounds, packDomain);
 					// Model登録
@@ -109,6 +112,7 @@ public class PackLoader {
 		private Map<String, byte[]> Icons = new HashMap<>();
 		private Map<String, byte[]> Textures = new HashMap<>();
 		private Map<String, byte[]> Sounds = new HashMap<>();
+		private Map<String, byte[]> Scopes = new HashMap<>();
 		private Map<String, Map<String, HideVertex[]>> Models = new HashMap<>();
 		private Map<String, HideModel> ModelInfos = new HashMap<>();
 
@@ -183,6 +187,12 @@ public class PackLoader {
 				String n = PackPattern.MODEL_INFO.trim(name);
 				ModelInfos.put(n, gson.fromJson(new String(data, Charset.forName("UTF-8")), HideModel.class));
 				LOGGER.info("add model[" + n + "] to PackReader");
+			}
+			// scope
+			if (PackPattern.SCOPE.mache(name)) {
+				String n = PackPattern.SCOPE.trim(name);
+				Scopes.put(n, data);
+				LOGGER.info("add scope[" + n + "] to PackReader");
 			}
 			// texture
 			if (PackPattern.TEXTURE.mache(name)) {
@@ -284,7 +294,7 @@ public class PackLoader {
 		try {
 			for (DataPath path : data.getFieldsByType(data.getClass(), null, new ArrayList<>(), true)) {
 				// Nullの判定部分
-				if (path.field.isAccessible()&&!Modifier.isTransient(path.field.getModifiers()) && !path.field.getType().isPrimitive() && path.field.get(data)==null) {
+				if (path.field.isAccessible() && !Modifier.isTransient(path.field.getModifiers()) && !path.field.getType().isPrimitive() && path.field.get(data) == null) {
 					LOGGER.error("null is not allow at" + data.getClass().getSimpleName() + "."
 							+ path.field.getName());
 					return false;
@@ -318,7 +328,7 @@ public class PackLoader {
 			if (info == null)
 				return v;
 			if (info.isResourceName())
-				return appendModDomain(appendPackDomain(v, Domain));
+				return appendModDomain(appendPackDomain(v, info.resourceHeader(), Domain));
 			if (info.isName())
 				return appendPackDomain(v, Domain);
 			return v;
@@ -328,7 +338,7 @@ public class PackLoader {
 			if (info == null)
 				return v;
 			if (info.isResourceName())
-				return Arrays.asList(v).stream().map(name -> appendModDomain(appendPackDomain(name, Domain)))
+				return Arrays.asList(v).stream().map(name -> appendModDomain(appendPackDomain(name, info.resourceHeader(), Domain)))
 						.collect(Collectors.toList()).toArray(v);
 			if (info.isName())
 				return Arrays.asList(v).stream().map(name -> appendPackDomain(name, Domain))
@@ -340,13 +350,18 @@ public class PackLoader {
 
 	/** ドメインを追加 */
 	private static String appendPackDomain(String name, String domain) {
-		return domain + "_" + toRegisterName(name);
+		return appendPackDomain(name, Strings.EMPTY, domain);
+	}
+
+	/** ドメインを追加 */
+	private static String appendPackDomain(String name, String header, String domain) {
+		return Strings.isEmpty(name) ? Strings.EMPTY : header + domain + "_" + toRegisterName(name);
 	}
 
 	/** ドメインを追加(リソース用) */
 	private static String appendModDomain(String name) {
 		if (!name.contains(":")) {
-			name = HideMod.MOD_ID + ":" + name;
+			name = Strings.isEmpty(name) ? Strings.EMPTY : HideMod.MOD_ID + ":" + name;
 		}
 		return name;
 	}
