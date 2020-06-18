@@ -3,8 +3,10 @@ package model;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.util.Strings;
 import org.lwjgl.opengl.GL11;
 
+import hidemod.HideMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GLAllocation;
@@ -115,12 +117,17 @@ public class HideModel extends DataBase {
 	}
 
 	@SideOnly(Side.CLIENT)
-	public void render(boolean firstPerson,IRenderProperty prop) {
+	public void render(boolean firstPerson, IRenderProperty prop) {
 		if (modelParts != null) {
+
 			if (TexResource == null) {
+				if (Strings.isEmpty(texture)) {
+					TexResource = new ResourceLocation(HideMod.MOD_ID , "sample.png");
+				}else {
+					String tex = texture.replace(":", ":skin/");
+					TexResource = new ResourceLocation(tex);
+				}
 				System.out.println(texture);
-				String tex = texture.replace(":", ":skin/");
-				TexResource = new ResourceLocation(tex);
 			}
 
 			//System.out.println("render");

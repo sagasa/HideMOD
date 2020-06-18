@@ -201,6 +201,8 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 			System.out.println(data.ITEM_ICONNAME + " " + data.ITEM_DISPLAYNAME);
 			if (model == null) {
 				modelCash.put(type, bakeItemModel(data.ITEM_ICONNAME, true));
+			}else {
+				System.out.println(model.texture);
 			}
 			modelCash.put(type, bakeItemModel(data.ITEM_ICONNAME, false));
 		}
