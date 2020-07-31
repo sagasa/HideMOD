@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import entity.EntityBullet;
+import entity.EntityDebugAABB;
+import entity.render.RenderAABB;
 import entity.render.RenderBullet;
 import helper.HideNBT;
 import hidemod.HideMod;
@@ -124,6 +126,12 @@ public class PackData implements Cloneable {
 			@Override
 			public Render createRenderFor(RenderManager manager) {
 				return new RenderBullet(manager);
+			}
+		});
+		RenderingRegistry.registerEntityRenderingHandler(EntityDebugAABB.class, new IRenderFactory<EntityDebugAABB>() {
+			@Override
+			public Render createRenderFor(RenderManager manager) {
+				return new RenderAABB(manager);
 			}
 		});
 	}

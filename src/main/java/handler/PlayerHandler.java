@@ -13,6 +13,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import network.PacketPlayerMotion;
 
 /***/
 public class PlayerHandler {
@@ -21,7 +22,7 @@ public class PlayerHandler {
 
 	/** プレイヤーのTick処理 */
 	public static void PlayerTick(PlayerTickEvent event) {
-		if (event.phase == Phase.START) {
+		if (event.phase == Phase.END) {
 			// サイドで処理を分ける
 			if (event.side == Side.CLIENT) {
 				// 自分のキャラクターのみ
@@ -102,7 +103,7 @@ public class PlayerHandler {
 		EntityPlayer player = Minecraft.getMinecraft().player;
 		//TODO 兵器の場合
 		ClientPlayerData data = HidePlayerData.getClientData();
-
+		PacketHandler.INSTANCE.sendToServer(new PacketPlayerMotion(player.posX - player.lastTickPosX, player.posY - player.lastTickPosY, player.posZ - player.lastTickPosZ));
 		data.setPos(player.posX, player.posY + player.getEyeHeight(), player.posZ, player.rotationYaw, player.rotationPitch);
 		data.tickUpdate();
 	}

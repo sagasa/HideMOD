@@ -1,9 +1,9 @@
 package guns;
 
 import gamedata.LoadedMagazine;
-import handler.HideEntityDataManager;
 import handler.PacketHandler;
 import handler.client.HideSoundManager;
+import handler.client.HideViewHandler;
 import handler.client.RecoilHandler;
 import helper.HideMath;
 import helper.HideNBT;
@@ -127,7 +127,7 @@ public class ClientGun extends CommonGun {
 		if (bullet != null) {
 			// クライアントなら
 			Minecraft mc = Minecraft.getMinecraft();
-			boolean isADS = HideEntityDataManager.getADSState(mc.player) == 1;
+			boolean isADS = HideViewHandler.isADS;
 
 			offset += completionTick;
 

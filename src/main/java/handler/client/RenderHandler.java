@@ -98,7 +98,7 @@ public class RenderHandler {
 		if (data.adsRes == 0)
 			HideViewHandler.clearADS();
 		else {
-			HideViewHandler.setADS(data.gunMain.getGunData().SCOPE_NAME, HideMath.completion(1, data.gunMain.getGunData().SCOPE_DIA, data.adsRes), data.gunMain.getGunData().SCOPE_SIZE);
+			HideViewHandler.setADS(data.gunMain.getGunData().USE_SCOPE ? data.gunMain.getGunData().SCOPE_NAME : null, HideMath.completion(1, data.gunMain.getGunData().SCOPE_DIA, data.adsRes), data.gunMain.getGunData().SCOPE_SIZE);
 		}
 		// System.out.println("render");
 	}
@@ -246,7 +246,7 @@ public class RenderHandler {
 		if (ItemGun.isGun(item)) {
 			HideModel model = PackData.getModel(ItemGun.getGunData(item).ITEM_MODELNAME);
 			if (model != null) {
-				if (mc.gameSettings.thirdPersonView != 0)
+				if (mc.gameSettings.thirdPersonView != 0 || (HideViewHandler.isADS && HideViewHandler.isScope))//TODO モデルにサイトを付けたバージョンに対応しなきゃ
 					return;
 				int side = 1;
 				if (mc.gameSettings.mainHand == EnumHandSide.LEFT)

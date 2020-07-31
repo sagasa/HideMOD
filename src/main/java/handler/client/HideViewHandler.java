@@ -23,6 +23,7 @@ public class HideViewHandler {
 	public static int HitMarkerTime = 0;
 	public static boolean HitMarker_H = false;
 
+	public static boolean isScope = false;
 	public static boolean isADS = false;
 	private static float defaultFOV;
 	private static float defaultMS;
@@ -36,7 +37,9 @@ public class HideViewHandler {
 			clearADS();
 		}
 		//
-		scopeImage = Strings.isNullOrEmpty(scope) ? null : new ResourceLocation(scope);
+		isScope = !Strings.isNullOrEmpty(scope);
+
+		scopeImage = isScope ? new ResourceLocation(scope) : null;
 
 		scopeSize = size;
 		GameSettings setting = Minecraft.getMinecraft().gameSettings;
@@ -59,6 +62,7 @@ public class HideViewHandler {
 			// マウス感度
 			setting.mouseSensitivity = defaultMS;
 			isADS = false;
+			isScope = false;
 		}
 	}
 

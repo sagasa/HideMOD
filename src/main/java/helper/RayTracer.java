@@ -5,11 +5,15 @@ import java.util.Collections;
 import java.util.List;
 
 import entity.EntityBullet;
+import entity.EntityDebugAABB;
+import gamedata.HidePlayerData;
+import gamedata.HidePlayerData.ServerPlayerData;
 import model.ModelPart;
 import model.ModelPart.HidePolygon;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.util.EnumFacing;
@@ -54,6 +58,10 @@ public class RayTracer {
 			return 0;
 		}
 	}
+
+	/**補完*/
+	public static float Comp = 2;
+	public static boolean debug = false;
 
 	/** 当たったブロックを取得
 	 * 欠陥 距離0の時にブロックが取得できない */
@@ -183,20 +191,49 @@ public class RayTracer {
 		return head.calculateIntercept(lv0, lvt) != null;
 	}
 
+	/**エンティティの最大補完距離*/
+	private static final double ExpandSize = 3;
+
 	/** ベクトルに触れたエンティティを返す EntityBulletと雪玉と矢は例外 */
-	public List<Hit> getHitEntity(Entity owner, World w, Vec3d lv0, Vec3d lvt) {
-		AxisAlignedBB aabb = new AxisAlignedBB(lv0.x, lv0.y, lv0.z, lvt.x, lvt.y, lvt.z).expand(1, 1, 1);
+	public List<Hit> getHitEntity(Entity owner, World w, Vec3d lv0, Vec3d lvt, float offset) {
+		offset *= -1;
+		AxisAlignedBB aabb = new AxisAlignedBB(lv0.x, lv0.y, lv0.z, lvt.x, lvt.y, lvt.z).expand(ExpandSize, ExpandSize, ExpandSize).expand(-ExpandSize, -ExpandSize, -ExpandSize);
 		List<Hit> allInterceptEntity = new ArrayList<>();
 		for (Object e : w.getEntitiesWithinAABBExcludingEntity(owner, aabb)) {
 			Entity entity = (Entity) e;
 			// 例外なら戻る
-			if (entity instanceof EntityBullet || entity instanceof EntityArrow || entity instanceof EntityThrowable
+			if (entity instanceof EntityBullet || entity instanceof EntityDebugAABB || entity instanceof EntityArrow || entity instanceof EntityThrowable
 					|| entity.isDead || entity.getEntityBoundingBox() == null || entity == owner) {
 				continue;
 			}
 			// ヒットボックスを取得して
+			AxisAlignedBB entityAABB = entity.getEntityBoundingBox();
+			if (offset != 0) {
+				if (debug)
+					w.spawnEntity(new EntityDebugAABB(w, entityAABB, 0.2f, 1, 0.2f));
+				// 補完用速度
+				double x, y, z;
+				if (entity instanceof EntityPlayerMP) {
+					ServerPlayerData data = HidePlayerData.getServerData((EntityPlayerMP) entity);
+					x = (data.lastPosX) * offset;
+					y = (data.lastPosY) * offset / 5;
+					z = (data.lastPosZ) * offset;
+					System.out.println(entity.posX - entity.lastTickPosX + " " + data.lastPosX);
+				} else {
+					x = (entity.posX - entity.lastTickPosX) * offset;
+					y = (entity.posY - entity.lastTickPosY) * offset;
+					z = (entity.posZ - entity.lastTickPosZ) * offset;
+				}
 
-			RayTraceResult lmop1 = entity.getEntityBoundingBox().calculateIntercept(lv0, lvt);
+				//w.spawnEntity(new EntityDebugAABB(w, entityAABB.offset(new Vec3d(-x, -y, -z)), 0.2f, 0.2f, 1));
+
+				entityAABB = entityAABB.offset(x, y, z);
+				if (debug) {
+					System.out.println(offset + " " + new Vec3d(x, y, z));
+					w.spawnEntity(new EntityDebugAABB(w, entityAABB, 0.2f, 0.2f, 1));
+				}
+			}
+			RayTraceResult lmop1 = entityAABB.calculateIntercept(lv0, lvt);
 			// System.out.println(lmop1+entity.getEntityBoundingBox().expand(0.2, 0.2,
 			// 0.2).toString());
 			if (lmop1 != null) {

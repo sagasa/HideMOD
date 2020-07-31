@@ -67,6 +67,8 @@ public class HidePlayerData {
 
 		}
 
+		public double lastPosX, lastPosY, lastPosZ;
+
 		/**サーバー側で処理*/
 		public boolean reload = false;
 		/**サーバー側で処理*/

@@ -5,10 +5,10 @@ import org.apache.logging.log4j.Logger;
 
 import gamedata.HidePlayerData;
 import guns.ServerGun;
+import helper.RayTracer;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -83,8 +83,10 @@ public class PacketShoot implements IMessage, IMessageHandler<PacketShoot, IMess
 			ctx.getServerHandler().player.getServer().addScheduledTask(() -> {
 				EntityPlayerMP player = ctx.getServerHandler().player;
 				double lag = player.world.getTotalWorldTime() - m.worldTime;
+				lag += RayTracer.Comp;//TODO 危険 未来に弾を置いている
+				//player.sendMessage(new TextComponentString("Lag = " + lag + " Offset = " + m.offset));
 				lag = lag < 0 ? 0 : lag;
-				player.sendMessage(new TextComponentString("Lag = " + lag + " Offset = " + m.offset));
+				m.offset += lag;
 				ServerGun gun = HidePlayerData.getServerData(player).gunMain;
 				if (gun == null) {
 					log.warn("cant make bullet by cant find gun: player = " + player.getName());

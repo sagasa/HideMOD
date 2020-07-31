@@ -8,6 +8,8 @@ import handler.client.InputHandler;
 import handler.client.RecoilHandler;
 import handler.client.RenderHandler;
 import items.ItemGun;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockContainer;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.util.SoundEvent;
@@ -22,6 +24,7 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerEvent.StopTracking;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
@@ -73,6 +76,7 @@ public class HideEventHandler {
 	public void onEvent(PlayerTickEvent event) {
 		PlayerHandler.PlayerTick(event);
 	}
+
 
 	// ========接続イベント=========
 	@SubscribeEvent
@@ -126,6 +130,19 @@ public class HideEventHandler {
 	public void onEvent(BreakEvent event) {
 		if (event.isCancelable() && ItemGun.isGun(event.getPlayer().inventory.getCurrentItem())) {
 			event.setCanceled(true);
+		}
+	}
+
+	//- インタラクト --
+	@SubscribeEvent()
+	public void rightClick(RightClickBlock event) {
+		//ブロックインタラクト
+		if (ItemGun.isGun(event.getEntityPlayer().inventory.getCurrentItem()) && !event.getEntityPlayer().isSneaking()) {
+			Block block = event.getWorld().getBlockState(event.getPos()).getBlock();
+			// コンテナ
+			if (block instanceof BlockContainer) {
+				event.setCanceled(true);
+			}
 		}
 	}
 

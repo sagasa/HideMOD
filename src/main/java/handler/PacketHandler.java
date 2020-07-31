@@ -18,9 +18,10 @@ import net.minecraftforge.fml.relauncher.Side;
 import network.PacketHit;
 import network.PacketInput;
 import network.PacketPlaySound;
-import network.PacketSyncMag;
+import network.PacketPlayerMotion;
 import network.PacketShoot;
 import network.PacketSync;
+import network.PacketSyncMag;
 
 public class PacketHandler {
 
@@ -41,6 +42,7 @@ public class PacketHandler {
 		INSTANCE.registerMessage(PacketHit.class, PacketHit.class, 4, Side.CLIENT);
 		INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 5, Side.CLIENT);
 		INSTANCE.registerMessage(PacketPlaySound.class, PacketPlaySound.class, 6, Side.SERVER);
+		INSTANCE.registerMessage(PacketPlayerMotion.class, PacketPlayerMotion.class, 9, Side.SERVER);
 		INSTANCE.registerMessage(PacketSync.class, PacketSync.class, 10, Side.CLIENT);
 		INSTANCE.registerMessage(PacketSync.class, PacketSync.class, 11, Side.SERVER);
 		INSTANCE.registerMessage(PacketSyncMag.class, PacketSyncMag.class, 12, Side.CLIENT);
@@ -59,7 +61,7 @@ public class PacketHandler {
 	/** バッファに文字列を書き込む */
 	public static void writeString(ByteBuf buf, String str) {
 		buf.writeInt(str.length());
-		buf.writeBytes(str.getBytes());
+		buf.writeBytes(str.getBytes(Charset.forName("UTF-8")));
 	}
 
 	/** バッファから文字列を読み込む */

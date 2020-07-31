@@ -92,9 +92,11 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		setPosition(posX, posY, posZ);
 		// 精度の概念
 		float accuracy = isADS ? gun.ACCURACY_ADS : gun.ACCURACY;
-		double d = (float) Math.atan(accuracy / 50);
-		rotationPitch = (float) HideMath.normal(rotationPitch, d);
-		rotationYaw = (float) HideMath.normal(rotationYaw, d);
+		double d = (float) Math.toDegrees(Math.atan(accuracy / 50));
+		//縦拡散
+		double d2 = rand.nextDouble() * d;
+		rotationPitch = (float) HideMath.normal(rotationPitch, d2);
+		rotationYaw = (float) HideMath.normal(rotationYaw, d - d2);
 		// 向いている方向をモーションに
 		motionX = -Math.sin(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
 		motionZ = Math.cos(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
@@ -104,7 +106,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		motionZ /= f2;
 		motionY /= f2;
 		onUpdate(addtick);
-		addtick=0;
+		addtick = 0;
 		setPosition(posX, posY, posZ);
 	}
 
@@ -123,14 +125,14 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	public void onUpdate() {
-		if (lastWorldTick != 0) {
-			onUpdate(world.getTotalWorldTime() - lastWorldTick);
-			lastWorldTick = world.getTotalWorldTime();
+		if (lastWorldTick == 0) {
+			lastWorldTick = world.getTotalWorldTime() - 1;
 		}
+		onUpdate(world.getTotalWorldTime() - lastWorldTick);
+		lastWorldTick = world.getTotalWorldTime();
 	}
 
 	private void onUpdate(float tick) {
-
 
 		this.lastTickPosX = this.posX;
 		this.lastTickPosY = this.posY;
@@ -187,13 +189,12 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 				break;
 			}
 		}
-		DamageSource damagesource = new HideDamage(HideDamageCase.GUN_BULLET, Shooter);
+		DamageSource damagesource = new HideDamage(HideDamageCase.GUN_BULLET, Shooter, gunData.ITEM_DISPLAYNAME);
 		if (bulletData.HIT_IGNORING_ARMOR)
 			damagesource.setDamageBypassesArmor();
 
-
 		// Entityとの衝突
-		Iterator<Hit> HitEntitys = RayTracer.getHitEntity(this, world, lvo, lvend).iterator();
+		Iterator<Hit> HitEntitys = RayTracer.getHitEntity(this, world, lvo, lvend, addtick).iterator();
 		while (HitEntitys.hasNext() && bulletPower > 0) {
 			Hit hit = HitEntitys.next();
 			Entity e = hit.entityHit;
@@ -300,7 +301,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 					}
 				}
 
-				DamageSource damagesource = new HideDamage(HideDamageCase.GUN_Explosion, Shooter);
+				DamageSource damagesource = new HideDamage(HideDamageCase.GUN_Explosion, Shooter, gunData.ITEM_DISPLAYNAME);
 				// ダメージを与える
 				HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 			}
@@ -328,8 +329,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			decayAmount = decayDistance * bulletData.DECAY_DAMAGE_COE_LIVING;
 			// 最大変化量を超えていないか
 			float maxAmount = bulletData.DECAY_DAMAGE_MAX_LIVING;
-			decayAmount = Math.abs(decayAmount) < maxAmount ? decayAmount : maxAmount;
-			damage += decayAmount;
+			decayAmount = MathHelper.clamp(decayAmount, -maxAmount, maxAmount);
+			damage -= decayAmount;
 			break;
 		case Player:
 			damage = bulletData.HIT_DAMAGE_PLAYER;
@@ -342,8 +343,8 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			decayAmount = decayDistance * bulletData.DECAY_DAMAGE_COE_PLAYER;
 			// 最大変化量を超えていないか
 			maxAmount = bulletData.DECAY_DAMAGE_MAX_PLAYER;
-			decayAmount = Math.abs(decayAmount) < maxAmount ? decayAmount : maxAmount;
-			damage += decayAmount;
+			decayAmount = MathHelper.clamp(decayAmount, -maxAmount, maxAmount);
+			damage -= decayAmount;
 			break;
 		case Vehicle:
 			break;
@@ -372,9 +373,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		buffer.writeDouble(motionX);
 		buffer.writeDouble(motionY);
 		buffer.writeDouble(motionZ);
-		lastWorldTick = world.getTotalWorldTime();
-		buffer.writeDouble(lastWorldTick);
-		buffer.writeFloat(addtick);
+		buffer.writeDouble(world.getTotalWorldTime());
 	}
 
 	@Override
@@ -386,8 +385,6 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		motionZ = buffer.readDouble();
 		float tickt = (float) (world.getTotalWorldTime() - buffer.readDouble());
 		tickt = tickt < 0 ? 0 : tickt;
-		tickt += buffer.readFloat();
-		lastWorldTick = world.getTotalWorldTime();
 		onUpdate(tickt);
 	}
 

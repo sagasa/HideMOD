@@ -51,8 +51,9 @@ public class HideDamage extends DamageSource {
 		recentlyHit.setAccessible(true);
 	}
 
-	public HideDamage(HideDamageCase Case, Entity attacker) {
+	public HideDamage(HideDamageCase Case, Entity attacker,String tool) {
 		super(Case.langName);
+		this.Tool = tool;
 		this.Attacker = attacker;
 		this.DamageCase = Case;
 	}
@@ -81,7 +82,7 @@ public class HideDamage extends DamageSource {
 
 	@Override
 	public ITextComponent getDeathMessage(EntityLivingBase p_151519_1_) {
-		return new TextComponentString("[Kill] " + Attacker.getName() + " ==[Gun]=>> " + p_151519_1_.getName());
+		return new TextComponentString("[Kill] " + Attacker.getName() + " ==[" + Tool + "]=>> " + p_151519_1_.getName());
 	}
 
 	public enum HideDamageCase {

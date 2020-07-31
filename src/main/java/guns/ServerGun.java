@@ -121,16 +121,26 @@ public class ServerGun extends CommonGun {
 
 	/** リロードの必要があるかかチェック */
 	public boolean needReload() {
+
 		// ReloadAll以外で空きスロットがある場合何もしない
 		if (magazine.getList().size() < modifyData.LOAD_NUM) {
 			return true;
 		}
+		Magazine maxMag = magazineHolder.getMaxMagazine(getUseMagazines());
+
+		if (maxMag.num == 0)
+			return false;
+		MagazineData maxData = PackData.getBulletData(maxMag.name);
+		float maxLoad = maxMag.num / (float) maxData.MAGAZINE_SIZE;
 		Iterator<Magazine> itr = magazine.getList().iterator();
 		while (itr.hasNext()) {
 			Magazine mag = itr.next();
 			MagazineData magData = PackData.getBulletData(mag.name);
 			if (magData == null || mag.num < magData.MAGAZINE_SIZE) {
-				return true;
+				//それ以上のマガジンがあるかチェック
+				float minLoad = mag.num / (float) magData.MAGAZINE_SIZE;
+				if (minLoad < maxLoad)
+					return true;
 			}
 		}
 		return false;
@@ -180,6 +190,7 @@ public class ServerGun extends CommonGun {
 		if (magazine.getList().size() < modifyData.LOAD_NUM && !modifyData.RELOAD_ALL) {
 			return true;
 		}
+
 		//最小のマガジンを検出
 		float min = 1f;
 		Magazine minMag = null;
@@ -196,7 +207,7 @@ public class ServerGun extends CommonGun {
 				exitMagazine(mag);
 				itr.remove();
 			} else {
-				float dia = mag.num / magData.MAGAZINE_SIZE;
+				float dia = mag.num / (float) magData.MAGAZINE_SIZE;
 				if (dia < min) {
 					min = dia;
 					minMag = mag;
@@ -217,6 +228,7 @@ public class ServerGun extends CommonGun {
 			log.info("reload stop! magazine is full");
 			return;
 		}
+
 		Magazine mag = magazineHolder.useMagazine(getUseMagazines());
 		if (mag.num > 0) {
 			magazine.addMagazinetoLast(mag);

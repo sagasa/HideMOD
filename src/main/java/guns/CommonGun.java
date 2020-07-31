@@ -119,7 +119,7 @@ public abstract class CommonGun {
 
 	/** RPMをミリ秒に変換 */
 	protected int RPMtoMillis(float rPM) {
-		return (int) (60000 / rPM);
+		return 0 < rPM ? (int) (60000 / rPM) : 0;
 	}
 
 	/** ミリ秒をTickに変換 */
@@ -243,15 +243,26 @@ public abstract class CommonGun {
 			}
 
 			@Override
-			public int getMaxBulletCount(String... name) {
-				int num = 0;
-				for (ItemStack item : player.inventory.mainInventory)
+			public Magazine getMaxMagazine(String... name) {
+				InventoryPlayer inv = player.inventory;
+				Magazine mag = new Magazine(null, 0);
+				int index = -1;
+				for (int i = 0; i < inv.mainInventory.size(); i++) {
+					ItemStack item = inv.mainInventory.get(i);
+					//
 					for (String str : name)
 						if (ItemMagazine.isMagazine(item, str)) {
-							num = Math.max(num, HideNBT.getMagazineBulletNum(item));
+							int bulletNum = HideNBT.getMagazineBulletNum(item);
+							//	System.out.println("find mag " + item + " " + bulletNum);
+							if (bulletNum > mag.num) {
+								index = i;
+								mag.num = bulletNum;
+								mag.name = str;
+							}
 							break;
 						}
-				return num;
+				}
+				return mag;
 			}
 
 			@Override
@@ -266,9 +277,10 @@ public abstract class CommonGun {
 		/**指定された弾の数*/
 		public int getBulletCount(String... name);
 
-		public int getMaxBulletCount(String... name);
+		/**指定されたマガジンの中で1番残弾が多いものを返す*/
+		public Magazine getMaxMagazine(String... name);
 
-		/**指定されたマガジンの中で1番残弾が多いものを消費してその残弾数を返す*/
+		/**指定されたマガジンの中で1番残弾が多いものを消費して返す*/
 		public Magazine useMagazine(String... name);
 
 		public void addMagazine(String name, int amount);

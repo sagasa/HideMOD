@@ -11,10 +11,11 @@ import types.items.MagazineData;
 
 /** 装填済みのマガジン管理用 変更通知機能付き */
 public class LoadedMagazine {
-	private List<Magazine> magazineList = new ArrayList<>();
+	private List<Magazine> magazineList = new ArrayList();
 
 	/** 単体のマガジン */
 	public static class Magazine {
+		public static final Magazine EMPTY_MAG = new Magazine(null, 0);
 		public String name;
 		public int num;
 
@@ -122,5 +123,28 @@ public class LoadedMagazine {
 			}
 		}
 		return num;
+	}
+
+	/**最小のマガジン装填率のマガジンを返す ぜんぶFullならnull*/
+	public Magazine getMinMag() {
+		//最小のマガジンを検出
+		float min = 1f;
+		Magazine minMag = null;
+		Iterator<Magazine> itr = magazineList.iterator();
+		while (itr.hasNext()) {
+			Magazine mag = itr.next();
+			MagazineData magData = PackData.getBulletData(mag.name);
+			//存在しないマガジンなら排出
+			if (magData == null) {
+				itr.remove();
+			} else {
+				float dia = mag.num / (float) magData.MAGAZINE_SIZE;
+				if (dia < min) {
+					min = dia;
+					minMag = mag;
+				}
+			}
+		}
+		return minMag;
 	}
 }
