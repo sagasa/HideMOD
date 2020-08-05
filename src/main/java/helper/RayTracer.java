@@ -197,15 +197,12 @@ public class RayTracer {
 		double x, y, z;
 		if (entity instanceof EntityPlayerMP) {
 			ServerPlayerData data = HidePlayerData.getServerData((EntityPlayerMP) entity);
-			x = (data.lastPosX) * -offsetTick;
-			y = (data.lastPosY) * -offsetTick / 5;
-			z = (data.lastPosZ) * -offsetTick;
-			System.out.println(entity.posX - entity.lastTickPosX + " " + data.lastPosX);
-		} else {
-			x = (entity.posX - entity.lastTickPosX) * -offsetTick;
-			y = (entity.posY - entity.lastTickPosY) * -offsetTick;
-			z = (entity.posZ - entity.lastTickPosZ) * -offsetTick;
+			System.out.println("offset " + offsetTick + " comp = " + data.Comp.getCompVec(offsetTick).subtract(entity.getPositionVector()));
+			return data.Comp.getCompVec(offsetTick).subtract(entity.getPositionVector());
 		}
+		x = (entity.posX - entity.lastTickPosX) * -offsetTick;
+		y = (entity.posY - entity.lastTickPosY) * -offsetTick;
+		z = (entity.posZ - entity.lastTickPosZ) * -offsetTick;
 		return new Vec3d(x, y, z);
 	}
 

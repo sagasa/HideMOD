@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import guns.ClientGun;
 import guns.ServerGun;
+import handler.HideComplementSystem;
 import handler.PlayerHandler.EquipMode;
 import helper.HideNBT;
 import items.ItemGun;
@@ -68,6 +69,7 @@ public class HidePlayerData {
 		}
 
 		public double lastPosX, lastPosY, lastPosZ;
+		public HideComplementSystem Comp = new HideComplementSystem();
 
 		/**サーバー側で処理*/
 		public boolean reload = false;
@@ -96,6 +98,8 @@ public class HidePlayerData {
 			CurrentEquipMode = EquipMode.getEquipMode(gunMain, gunOff);
 
 			List<ServerGun> guns = new ArrayList<>();
+
+			Comp.update(player.getPositionVector());
 
 			if (CurrentEquipMode.hasMain())
 				guns.add(gunMain);

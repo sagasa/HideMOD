@@ -194,18 +194,18 @@ public class ServerGun extends CommonGun {
 		//最小のマガジンを検出
 		float min = 1f;
 		Magazine minMag = null;
-		Iterator<Magazine> itr = magazine.getList().iterator();
-		while (itr.hasNext()) {
-			Magazine mag = itr.next();
+
+		for (int i = magazine.getList().size() - 1; 0 <= i; i--) {
+			Magazine mag = magazine.getList().get(i);
 			MagazineData magData = PackData.getBulletData(mag.name);
 			//存在しないマガジンなら排出
 			if (magData == null) {
-				itr.remove();
+				magazine.getList().remove(i);
 			}
 			//reloadAllなら問答無用で排出
 			else if (modifyData.RELOAD_ALL && mag.num < magData.MAGAZINE_SIZE) {
 				exitMagazine(mag);
-				itr.remove();
+				magazine.getList().remove(i);
 			} else {
 				float dia = mag.num / (float) magData.MAGAZINE_SIZE;
 				if (dia < min) {
@@ -214,6 +214,7 @@ public class ServerGun extends CommonGun {
 				}
 			}
 		}
+
 		if (!modifyData.RELOAD_ALL && minMag != null) {
 			magazine.getList().remove(minMag);
 			exitMagazine(minMag);
