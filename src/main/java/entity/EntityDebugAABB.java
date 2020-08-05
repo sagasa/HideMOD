@@ -71,10 +71,16 @@ public class EntityDebugAABB extends Entity implements IEntityAdditionalSpawnDat
 		buf.writeDouble(aabb.maxX);
 		buf.writeDouble(aabb.maxY);
 		buf.writeDouble(aabb.maxZ);
+		buf.writeFloat(r);
+		buf.writeFloat(g);
+		buf.writeFloat(b);
 	}
 
 	@Override
 	public void readSpawnData(ByteBuf buf) {
 		aabb = new AxisAlignedBB(buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readDouble());
+		r = buf.readFloat();
+		g = buf.readFloat();
+		b = buf.readFloat();
 	}
 }

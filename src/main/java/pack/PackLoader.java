@@ -26,7 +26,7 @@ import helper.ArrayEditor;
 import hidemod.HideMod;
 import model.HideModel;
 import model.HideModel.HideVertex;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.Loader;
 import types.Info;
 import types.PackInfo;
 import types.base.DataBase;
@@ -49,12 +49,16 @@ public class PackLoader {
 	/** gson オプションはなし */
 	private static Gson gson = new Gson();
 
+	public static void reloadInGame() {
+		load();
+	}
+
 	/**
 	 * ディレクトリからパックを検索し読み込む アイテム登録はしていないので注意
 	 */
-	public static void load(FMLPreInitializationEvent event) {
+	public static void load() {
 		// パックのディレクトリを参照作成
-		HideDir = new File(event.getModConfigurationDirectory().getParentFile(), "/Hide/");
+		HideDir = new File(Loader.instance().getConfigDir().getParentFile(), "/Hide/");
 
 		if (!HideDir.exists()) {
 			HideDir.mkdirs();
@@ -101,7 +105,7 @@ public class PackLoader {
 			}
 		}
 		LOGGER.info("copy to currentData");
-		PackData.currentData = PackData.readData.clone();
+		PackData.currentData.from(PackData.readData);
 	}
 
 	/** ファイルから読み込むモジュール */

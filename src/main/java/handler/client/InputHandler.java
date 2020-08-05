@@ -174,8 +174,10 @@ public class InputHandler {
 	}
 
 	public static void stopWatcher() {
-		isStart = false;
-		Watcher.stop = true;
+		if (Watcher != null) {
+			isStart = false;
+			Watcher.stop = true;
+		}
 	}
 
 	/** 入力を監視するデーモンスレッド */

@@ -3,6 +3,8 @@ package hidemod;
 import java.util.List;
 
 import helper.RayTracer;
+import hide.core.HideBase;
+import hide.core.sync.HideSync;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -32,6 +34,10 @@ public class HideGunCommand extends CommandBase {
 		if (args[0].equalsIgnoreCase("debug")) {
 			RayTracer.debug = !RayTracer.debug;
 			sender.sendMessage(new TextComponentString("now debug rect = " + RayTracer.debug));
+			return;
+		} else if (args[0].equalsIgnoreCase("reload")) {
+			notifyCommandListener(sender, this, 1, "commands.hide.reload.success", new Object[] {});
+			HideSync.makeReq(HideBase.HideDirEntry, getCommandSenderAsPlayer(sender));
 			return;
 		}
 		RayTracer.Comp = Float.valueOf(args[0]);

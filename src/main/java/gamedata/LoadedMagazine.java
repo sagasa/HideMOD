@@ -1,8 +1,8 @@
 package gamedata;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.Nonnull;
 
@@ -11,7 +11,7 @@ import types.items.MagazineData;
 
 /** 装填済みのマガジン管理用 変更通知機能付き */
 public class LoadedMagazine {
-	private List<Magazine> magazineList = new ArrayList();
+	private List<Magazine> magazineList = new CopyOnWriteArrayList<>();
 
 	/** 単体のマガジン */
 	public static class Magazine {

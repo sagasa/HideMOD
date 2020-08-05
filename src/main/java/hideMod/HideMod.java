@@ -12,6 +12,7 @@ import handler.PacketHandler;
 import handler.client.HideItemRender;
 import handler.client.InputHandler;
 import helper.HideDamage;
+import hide.core.HideBase;
 import items.ItemGun;
 import items.ItemMagazine;
 import net.minecraft.client.Minecraft;
@@ -73,7 +74,7 @@ public class HideMod {
 	public void preInit(FMLPreInitializationEvent event) {
 		ModeDir = new File(event.getModConfigurationDirectory().getParentFile(), "/mods/");
 		// パック読み込み
-		PackLoader.load(event);
+		PackLoader.load();
 		// パケットの初期設定
 		PacketHandler.init();
 		// ダメージの初期設定
@@ -100,6 +101,8 @@ public class HideMod {
 			HideHook.initHookClient();
 			System.out.println(defaultResourcePacks);
 		}
+
+		HideBase.HideDirEntry.setChangeListener(PackLoader::reloadInGame);
 	}
 
 	@EventHandler

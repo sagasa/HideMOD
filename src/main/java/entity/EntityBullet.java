@@ -216,9 +216,9 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 					// ヘッドショットを判定するEntity
 					if (e instanceof EntityPlayer || e instanceof EntityZombie || e instanceof EntityPigZombie
 							|| e instanceof EntitySkeleton || e instanceof EntityVillager) {
-						isHeadShot = RayTracer.isHeadShot(e, lvo, lvend);
+						isHeadShot = RayTracer.isHeadShot(e, lvo, lvend, addtick);
 						if (isHeadShot) {
-							damage *= 2;
+							damage *= bulletData.HIT_DAMAGE_HEAD;
 						}
 					}
 					// ダメージを与える

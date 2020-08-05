@@ -10,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 
 public class HideDamage extends DamageSource {
 
@@ -51,7 +52,7 @@ public class HideDamage extends DamageSource {
 		recentlyHit.setAccessible(true);
 	}
 
-	public HideDamage(HideDamageCase Case, Entity attacker,String tool) {
+	public HideDamage(HideDamageCase Case, Entity attacker, String tool) {
 		super(Case.langName);
 		this.Tool = tool;
 		this.Attacker = attacker;
@@ -82,7 +83,29 @@ public class HideDamage extends DamageSource {
 
 	@Override
 	public ITextComponent getDeathMessage(EntityLivingBase p_151519_1_) {
-		return new TextComponentString("[Kill] " + Attacker.getName() + " ==[" + Tool + "]=>> " + p_151519_1_.getName());
+		ITextComponent text = new TextComponentString("[");
+		setColor(text, TextFormatting.GOLD);
+		text.appendSibling(setColor("Kill", TextFormatting.DARK_RED));
+		text.appendSibling(setColor("]", TextFormatting.GOLD));
+		text.appendSibling(setColor(" ", TextFormatting.WHITE));
+		text.appendSibling(Attacker.getDisplayName());
+		text.appendSibling(setColor(" == ", TextFormatting.GOLD));
+		text.appendSibling(setColor(Tool, TextFormatting.WHITE));
+		text.appendSibling(setColor(" =>>", TextFormatting.GOLD));
+		text.appendSibling(setColor(" ", TextFormatting.WHITE));
+		text.appendSibling(p_151519_1_.getDisplayName());
+		return text;
+	}
+
+	private ITextComponent setColor(String string, TextFormatting format) {
+		ITextComponent text = new TextComponentString(string);
+		text.getStyle().setColor(format);
+		return text;
+	}
+
+	private ITextComponent setColor(ITextComponent text, TextFormatting format) {
+		text.getStyle().setColor(format);
+		return text;
 	}
 
 	public enum HideDamageCase {

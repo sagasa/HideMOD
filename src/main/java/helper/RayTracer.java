@@ -184,19 +184,36 @@ public class RayTracer {
 	}
 
 	/** 部位ダメージ判定 */
-	public boolean isHeadShot(Entity tirget, Vec3d lv0, Vec3d lvt) {
+	public boolean isHeadShot(Entity tirget, Vec3d lv0, Vec3d lvt, float offset) {
 		// 頭の判定
 		AxisAlignedBB head = new AxisAlignedBB(tirget.posX - 0.3, tirget.posY + 1.2, tirget.posZ - 0.3,
-				tirget.posX + 0.3, tirget.posY + 1.8, tirget.posZ + 0.3);
+				tirget.posX + 0.3, tirget.posY + 1.8, tirget.posZ + 0.3).offset(getOffsetVec(tirget, offset));
 		return head.calculateIntercept(lv0, lvt) != null;
+	}
+
+	/**補完用位置*/
+	private Vec3d getOffsetVec(Entity entity, float offsetTick) {
+		// 補完用速度
+		double x, y, z;
+		if (entity instanceof EntityPlayerMP) {
+			ServerPlayerData data = HidePlayerData.getServerData((EntityPlayerMP) entity);
+			x = (data.lastPosX) * -offsetTick;
+			y = (data.lastPosY) * -offsetTick / 5;
+			z = (data.lastPosZ) * -offsetTick;
+			System.out.println(entity.posX - entity.lastTickPosX + " " + data.lastPosX);
+		} else {
+			x = (entity.posX - entity.lastTickPosX) * -offsetTick;
+			y = (entity.posY - entity.lastTickPosY) * -offsetTick;
+			z = (entity.posZ - entity.lastTickPosZ) * -offsetTick;
+		}
+		return new Vec3d(x, y, z);
 	}
 
 	/**エンティティの最大補完距離*/
 	private static final double ExpandSize = 3;
 
 	/** ベクトルに触れたエンティティを返す EntityBulletと雪玉と矢は例外 */
-	public List<Hit> getHitEntity(Entity owner, World w, Vec3d lv0, Vec3d lvt, float offset) {
-		offset *= -1;
+	public List<Hit> getHitEntity(Entity owner, World w, Vec3d lv0, Vec3d lvt, final float offset) {
 		AxisAlignedBB aabb = new AxisAlignedBB(lv0.x, lv0.y, lv0.z, lvt.x, lvt.y, lvt.z).expand(ExpandSize, ExpandSize, ExpandSize).expand(-ExpandSize, -ExpandSize, -ExpandSize);
 		List<Hit> allInterceptEntity = new ArrayList<>();
 		for (Object e : w.getEntitiesWithinAABBExcludingEntity(owner, aabb)) {
@@ -211,25 +228,12 @@ public class RayTracer {
 			if (offset != 0) {
 				if (debug)
 					w.spawnEntity(new EntityDebugAABB(w, entityAABB, 0.2f, 1, 0.2f));
-				// 補完用速度
-				double x, y, z;
-				if (entity instanceof EntityPlayerMP) {
-					ServerPlayerData data = HidePlayerData.getServerData((EntityPlayerMP) entity);
-					x = (data.lastPosX) * offset;
-					y = (data.lastPosY) * offset / 5;
-					z = (data.lastPosZ) * offset;
-					System.out.println(entity.posX - entity.lastTickPosX + " " + data.lastPosX);
-				} else {
-					x = (entity.posX - entity.lastTickPosX) * offset;
-					y = (entity.posY - entity.lastTickPosY) * offset;
-					z = (entity.posZ - entity.lastTickPosZ) * offset;
-				}
 
 				//w.spawnEntity(new EntityDebugAABB(w, entityAABB.offset(new Vec3d(-x, -y, -z)), 0.2f, 0.2f, 1));
-
-				entityAABB = entityAABB.offset(x, y, z);
+				Vec3d off = getOffsetVec(entity, offset);
+				entityAABB = entityAABB.offset(off);
 				if (debug) {
-					System.out.println(offset + " " + new Vec3d(x, y, z));
+					System.out.println(offset + " " + off);
 					w.spawnEntity(new EntityDebugAABB(w, entityAABB, 0.2f, 0.2f, 1));
 				}
 			}

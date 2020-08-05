@@ -33,7 +33,7 @@ import types.items.GunData;
 import types.items.ItemData;
 import types.items.MagazineData;
 
-public class PackData implements Cloneable {
+public class PackData {
 	/*=================== 配信するもの ========================*/
 	/**パックの情報*/
 	List<PackInfo> PACK_INFO = new ArrayList<>();
@@ -146,23 +146,26 @@ public class PackData implements Cloneable {
 		}
 	}
 
-	/**シャドーコピーだから注意*/
+	//
+	public void from(PackData from) {
+		ATTACHMENT_DATA_MAP.putAll(from.ATTACHMENT_DATA_MAP);
+		GUN_DATA_MAP.putAll(from.GUN_DATA_MAP);
+		ICON_MAP.putAll(from.ICON_MAP);
+		MAGAZINE_DATA_MAP.putAll(from.MAGAZINE_DATA_MAP);
+		MODEL_MAP.putAll(from.MODEL_MAP);
+		SCOPE_MAP.putAll(from.SCOPE_MAP);
+		SOUND_MAP.putAll(from.SOUND_MAP);
+		TEXTURE_MAP.putAll(from.TEXTURE_MAP);
+	}
+
+	private void clearAndCopy(Map to, Map from) {
+		to.clear();
+		to.putAll(from);
+	}
+
 	@Override
-	public PackData clone() {
-		try {
-			PackData data = (PackData) super.clone();
-			data.ATTACHMENT_DATA_MAP.putAll(ATTACHMENT_DATA_MAP);
-			data.GUN_DATA_MAP.putAll(GUN_DATA_MAP);
-			data.ICON_MAP.putAll(ICON_MAP);
-			data.MAGAZINE_DATA_MAP.putAll(MAGAZINE_DATA_MAP);
-			data.MODEL_MAP.putAll(MODEL_MAP);
-			data.SCOPE_MAP.putAll(SCOPE_MAP);
-			data.SOUND_MAP.putAll(SOUND_MAP);
-			data.TEXTURE_MAP.putAll(TEXTURE_MAP);
-			return data;
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
-			return null;
-		}
+	protected Object clone() throws CloneNotSupportedException {
+		// TODO 自動生成されたメソッド・スタブ
+		return super.clone();
 	}
 }
