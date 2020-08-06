@@ -16,7 +16,10 @@ public class HideComplementSystem {
 		length += p;
 		if (length < 0) {
 			length += MAX_COMP_TICK;
+		} else if (MAX_COMP_TICK <= length) {
+			length -= MAX_COMP_TICK;
 		}
+
 		return compArray[length];
 	}
 
