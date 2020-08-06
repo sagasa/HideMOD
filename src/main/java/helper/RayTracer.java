@@ -26,7 +26,7 @@ import net.minecraft.world.World;
 
 public class RayTracer {
 	/** 比較用の数値とベクトルのクラス */
-	public class Hit extends RayTraceResult implements Comparable {
+	public static class Hit extends RayTraceResult implements Comparable {
 		public double range;
 
 		public Hit(Entity e, Vec3d hitvec, double range) {
@@ -39,6 +39,7 @@ public class RayTracer {
 			this.typeOfHit = Type.MISS;
 			this.range = range;
 		}
+
 
 		public Hit(BlockPos block, Vec3d hetvec) {
 			super(hetvec, null, block);
