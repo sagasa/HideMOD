@@ -53,6 +53,7 @@ public class HideCollisionDetector {
                     Vector R = ABi.multiply(rayPosVec).getColumn(0);
                     if(R.get(0) >= 0 && R.get(1) >= 0 && R.get(0)+R.get(1) < 1){
                         System.out.println("GetCrossingVector! "+crossingVec);
+                        break;
                     }
                 }
             }
