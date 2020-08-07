@@ -1,24 +1,21 @@
 package helper;
 
 import net.minecraft.util.math.Vec3d;
-import org.la4j.Vector;
 
 public class HideMathHelper {
-    public static Vector cross3dProduct(Vector a, Vector b){
-        Vector vec = Vector.fromArray(new double[] {a.get(2)*a.get(3)-a.get(3)*a.get(2), a.get(3)*a.get(1)-a.get(1)*a.get(3), a.get(1)*a.get(2)-a.get(2)*a.get(1)});
+    public static Vec3d cross3dProduct(Vec3d a, Vec3d b){
+        Vec3d vec = new Vec3d(a.y*b.z-a.z*b.y, a.z*b.x-a.x*b.z, a.x*b.y-a.y*b.x);
         return vec;
     }
-    public static Vector normalize(Vector a){
-        float scale = (float) a.norm();
-        Vector vec = Vector.fromArray(new double[] {a.get(0)/scale, a.get(1)/scale, a.get(2)/scale});
+    public static Vec3d normalize(Vec3d a){
+        float scale = (float) a.lengthSquared();
+        Vec3d vec = new Vec3d(a.x/scale, a.y/scale, a.z/scale);
         return vec;
     }
-    public static Vector transformVec3d(Vec3d a){
-        Vector vec = Vector.fromArray(new double[] {a.x, a.y, a.z});
-        return vec;
+    public static float getDistance(Vec3d a, Vec3d b){
+        return (float) Math.sqrt(Math.pow(a.x-b.x, 2) + Math.pow(a.y-b.y, 2) + Math.pow(a.z-b.y, 2));
     }
-    public static Vector scaler(Vector a, float b){
-        Vector vec = a.multiply(b);
-        return vec;
+    public static float innerProduct3d(Vec3d a, Vec3d b) {
+        return (float) (a.x*b.x+a.y*b.y+a.z*b.z);
     }
 }
