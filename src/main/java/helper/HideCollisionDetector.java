@@ -59,6 +59,12 @@ public class HideCollisionDetector {
             }
         }
     }
+    
+    public void isProximity(List<RayTracer.Hit> list, Vec3d startv, Vec3d endv, Vec3d center, float radius){
+        if(HideMathHelper.getDistance(startv,center) <= radius && HideMathHelper.getDistance(endv, center) <= radius){
+            //do something
+        }
+    }
 
     private boolean canIntersect(Vec3d startv, Vec3d endv, Vec3d normal, Vec3d origin){
         return (HideMathHelper.innerProduct3d(normal,startv)-HideMathHelper.innerProduct3d(normal,origin))*(HideMathHelper.innerProduct3d(normal,endv)-HideMathHelper.innerProduct3d(normal,origin))<= 0;
