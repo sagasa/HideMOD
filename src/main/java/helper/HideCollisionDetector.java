@@ -70,7 +70,7 @@ public class HideCollisionDetector {
             Vec3d ray = endv.subtract(startv);
             Vec3d rayProjection = ray.scale(HideMathHelper.innerProduct3d(vec,ray)/ray.lengthSquared());
             Vec3d shortestToCollision = vec.subtract(rayProjection);
-            if(rayProjection.lengthVector()-HideMathHelper.getDistance(collisionVec.get(3*n), vecPos) < radius ){
+            if(shortestToCollision.lengthVector()-HideMathHelper.getDistance(collisionVec.get(3*n), vecPos) < radius ){
                 //do something
             }
         }
