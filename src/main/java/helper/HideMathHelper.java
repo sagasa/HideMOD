@@ -8,7 +8,7 @@ public class HideMathHelper {
         return vec;
     }
     public static Vec3d normalize(Vec3d a){
-        float scale = (float) a.lengthSquared();
+        float scale = (float) a.lengthVector();
         Vec3d vec = new Vec3d(a.x/scale, a.y/scale, a.z/scale);
         return vec;
     }

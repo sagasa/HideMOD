@@ -59,10 +59,20 @@ public class HideCollisionDetector {
             }
         }
     }
-    
-    public void isProximity(List<RayTracer.Hit> list, Vec3d startv, Vec3d endv, Vec3d center, float radius){
-        if(HideMathHelper.getDistance(startv,center) <= radius && HideMathHelper.getDistance(endv, center) <= radius){
-            //do something
+
+    public void isProximity(List<RayTracer.Hit> list, Vec3d startv, Vec3d endv, float radius){
+        for(int n=0; n<collisionVec.size()/3; n++) {
+            Vec3d vecPos = new Vec3d(0,0,0);
+            for(int m=0; m<3; m++){
+                vecPos.add(collisionVec.get(3*n+m)).scale(0.3333333F);
+            }
+            Vec3d vec = vecPos.subtract(startv);
+            Vec3d ray = endv.subtract(startv);
+            Vec3d rayProjection = ray.scale(HideMathHelper.innerProduct3d(vec,ray)/ray.lengthSquared());
+            Vec3d shortestToCollision = vec.subtract(rayProjection);
+            if(rayProjection.lengthVector()-HideMathHelper.getDistance(collisionVec.get(3*n), vecPos) < radius ){
+                //do something
+            }
         }
     }
 
