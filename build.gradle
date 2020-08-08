@@ -36,6 +36,11 @@ minecraft {
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 }
 
+configurations {
+    shade
+    compile.extendsFrom shade
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
     // you may put jars on which you depend on in ./libs
@@ -58,6 +63,7 @@ dependencies {
     // for more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    shade 'org.la4j:la4j:0.6.0'
 
 }
 
