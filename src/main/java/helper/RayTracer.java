@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import akka.util.Switch;
 import entity.EntityBullet;
 import entity.EntityDebugAABB;
 import gamedata.HidePlayerData;
@@ -12,6 +13,7 @@ import model.ModelPart;
 import model.ModelPart.HidePolygon;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.projectile.EntityArrow;
@@ -22,7 +24,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import org.la4j.LinearAlgebra;
+import org.la4j.Matrix;
+import org.la4j.Vector;
 
 public class RayTracer {
 	/** 比較用の数値とベクトルのクラス */
@@ -178,17 +184,30 @@ public class RayTracer {
 				RayTraceResult raytraceresult1 = iblockstate1.collisionRayTrace(world, blockpos, lv0, lvt);
 				if (raytraceresult1 != null) {
 					hitBlocks.add(raytraceresult1);
+
+					Vec3d ray = lvt.subtract(lv0);
+					AxisAlignedBB aabbBlock = block1.getBoundingBox(iblockstate1,world,blockpos);
+					List<Vec3d> crossingList = getCrossing(lv0.subtract(new Vec3d(blockpos.getX(),blockpos.getY(),blockpos.getZ())),ray,aabbBlock);
+					float distance = crossingList.size()!=2 ? 0 : HideMathHelper.getDistance(crossingList.get(0),crossingList.get(1));
+					//TODO distanceが通過距離 ↓削除しといて
+					System.out.println("Pent Dist. :"+distance);
+					//probability:確率 defaultThickness:鉄格子とかの厚み materialThickness 材質（たとえば鉄格子だったら鉄ブロック）の厚み
+					System.out.println(generateSigmoidFunction(0.58F,distance,0.125F,1F));
 				}
 			}
+
 		}
+
+		//IBlockState bs = world.getBlockState(hitBlocks.get(0).getBlockPos());
+
 		return hitBlocks.toArray(new RayTraceResult[hitBlocks.size()]);
 	}
 
 	/** 部位ダメージ判定 */
-	public boolean isHeadShot(Entity tirget, Vec3d lv0, Vec3d lvt, float offset) {
+	public boolean isHeadShot(Entity target, Vec3d lv0, Vec3d lvt, float offset) {
 		// 頭の判定
-		AxisAlignedBB head = new AxisAlignedBB(tirget.posX - 0.3, tirget.posY + 1.2, tirget.posZ - 0.3,
-				tirget.posX + 0.3, tirget.posY + 1.8, tirget.posZ + 0.3).offset(getOffsetVec(tirget, offset));
+		AxisAlignedBB head = new AxisAlignedBB(target.posX - 0.3, target.posY + 1.2, target.posZ - 0.3,
+				target.posX + 0.3, target.posY + 1.8, target.posZ + 0.3).offset(getOffsetVec(target, offset));
 		return head.calculateIntercept(lv0, lvt) != null;
 	}
 
@@ -309,5 +328,62 @@ public class RayTracer {
 	private static float getDet(Vec3d vec0, Vec3d vec1, Vec3d vec2) {
 		return (float) ((vec0.x * vec1.y * vec2.z) + (vec0.y * vec1.z * vec2.x) + (vec0.z * vec1.x * vec2.y)
 				- (vec0.x * vec1.z * vec2.y) - (vec0.y * vec1.x * vec2.z) - (vec0.z * vec1.y * vec2.x));
+	}
+
+	public List<Vec3d> getCrossing(Vec3d start, Vec3d ray, AxisAlignedBB aabb){
+		List<Vec3d> crossing = new ArrayList<>();
+
+		double vxy0x = start.x - (start.z / ray.z) * ray.x;
+		double vxy0y = start.y - (start.z / ray.z) * ray.y;
+
+		double vxy1x = start.x - ((start.z-aabb.maxZ) / ray.z) * ray.x;
+		double vxy1y = start.y - ((start.z-aabb.maxZ) / ray.z) * ray.y;
+
+		double vyz0y = start.y - (start.x/ ray.x) * ray.y;
+		double vyz0z = start.z - (start.x/ ray.x) * ray.z;
+
+		double vyz1y = start.y - ((start.x-aabb.maxX) / ray.x) * ray.y;
+		double vyz1z = start.z - ((start.x-aabb.maxX) / ray.x) * ray.z;
+
+		double vzx0z = start.z - (start.y / ray.y) * ray.z;
+		double vzx0x = start.x - (start.y / ray.y) * ray.x;
+
+		double vzx1z = start.z - ((start.y-aabb.maxY) / ray.y) * ray.z;
+		double vzx1x = start.x - ((start.y-aabb.maxY) / ray.y) * ray.x;
+
+		Vec3d vec1 = new Vec3d(aabb.minX, aabb.minY, aabb.minZ);
+		Vec3d vec2 = new Vec3d(aabb.maxX,aabb.maxY,aabb.maxZ);
+		System.out.println(vec1+"/"+vec2);
+		System.out.println(new Vec3d(aabb.minX, vyz0y, vyz0z));
+		System.out.println(new Vec3d(aabb.maxX, vyz1y, vyz1z));
+
+
+		if(vxy0x <= aabb.maxX && vxy0x >= aabb.minX && vxy0y <= aabb.maxY && vxy0y >= aabb.minY){
+			crossing.add(new Vec3d(vxy0x,vxy0y,aabb.minZ));
+		}
+		if(vxy1x <= aabb.maxX && vxy1x >= aabb.minX && vxy1y <= aabb.maxY && vxy1y >= aabb.minY){
+			crossing.add(new Vec3d(vxy1x,vxy1y,aabb.maxZ));
+		}
+		if(vyz0y <= aabb.maxY && vyz0y >= aabb.minY && vyz0z <= aabb.maxZ && vyz0z >= aabb.minZ) {
+			crossing.add(new Vec3d(aabb.minX, vyz0y, vyz0z));
+		}
+		if(vyz1y <= aabb.maxY && vyz1y >= aabb.minY && vyz1z <= aabb.maxZ && vyz1z >= aabb.minZ) {
+			crossing.add(new Vec3d(aabb.maxX, vyz1y, vyz1z));
+		}
+		if (vzx0z <= aabb.maxZ && vzx0z >= aabb.minZ && vzx0x <= aabb.maxX && vzx0x >= aabb.minX ) {
+			crossing.add(new Vec3d(vzx0x, aabb.minY, vzx0z));
+		}
+		if (vzx1z <= aabb.maxZ && vzx1z >= aabb.minZ && vzx1x <= aabb.maxX && vzx1x >= aabb.minX) {
+			crossing.add(new Vec3d(vzx1x, aabb.maxY, vzx1z));
+		}
+
+		System.out.println(crossing);
+
+		return crossing;
+	}
+
+	public float generateSigmoidFunction(float probability, float distance, float defaultThickness, float materialThickness){
+		float t = 1 - ((1-probability)/(1-defaultThickness))*(materialThickness-distance);
+		return t > 1 ? 1 : t;
 	}
 }

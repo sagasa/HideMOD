@@ -13,7 +13,7 @@ public class HideMathHelper {
         return vec;
     }
     public static float getDistance(Vec3d a, Vec3d b){
-        return (float) Math.sqrt(Math.pow(a.x-b.x, 2) + Math.pow(a.y-b.y, 2) + Math.pow(a.z-b.y, 2));
+        return (float) Math.sqrt(Math.pow(a.x-b.x, 2) + Math.pow(a.y-b.y, 2) + Math.pow(a.z-b.z, 2));
     }
     public static float innerProduct3d(Vec3d a, Vec3d b) {
         return (float) (a.x*b.x+a.y*b.y+a.z*b.z);

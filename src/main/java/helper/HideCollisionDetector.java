@@ -30,9 +30,10 @@ public class HideCollisionDetector {
             //単位ベクトル化
             Vec3d unitVec = HideMathHelper.normalize(normalVec);
             Vec3d origin = new Vec3d(collisionVec.get(3*n).x,collisionVec.get(3*n).y,collisionVec.get(3*n).z);
+            Vec3d fromCollisionSurfaceToStartVec = new Vec3d(startv.x-collisionVec.get(3*n).x,startv.y-collisionVec.get(3*n).y,startv.z-collisionVec.get(3*n).z);
             if(HideMathHelper.innerProduct3d(ray,unitVec) != 0 && canIntersect(startv, endv, normalVec, origin)){
                 //コリジョンに届くrayを生成
-                float t = (float) (-HideMathHelper.innerProduct3d(startv,unitVec)/HideMathHelper.innerProduct3d(ray,unitVec));
+                float t = -HideMathHelper.innerProduct3d(fromCollisionSurfaceToStartVec,unitVec)/HideMathHelper.innerProduct3d(ray,unitVec);
                 if(t>=0 && t<=1) {
                     //交点の座標を取得
                     Vec3d crossingVec = ray.scale(t).add(startv);
