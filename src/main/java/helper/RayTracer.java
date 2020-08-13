@@ -371,8 +371,6 @@ public class RayTracer {
 			crossing.add(new Vec3d(vzx1x, aabb.maxY, vzx1z));
 		}
 
-		System.out.println(crossing);
-
 		return crossing;
 	}
 
