@@ -191,7 +191,7 @@ public class RayTracer {
 					float distance = crossingList.size()!=2 ? 0 : HideMathHelper.getDistance(crossingList.get(0),crossingList.get(1));
 					//TODO distanceが通過距離 ↓削除しといて
 					System.out.println("Pent Dist. :"+distance);
-					//probability:確率 defaultThickness:鉄格子とかの厚み materialThickness 材質（たとえば鉄格子だったら鉄ブロック）の厚み
+					//このmethodは透過しない確率を返す probability:透過しない確率 defaultThickness:鉄格子とかの厚み materialThickness 材質（たとえば鉄格子だったら鉄ブロック）の厚み
 					System.out.println(generateSigmoidFunction(0.58F,distance,0.125F,1F));
 				}
 			}
@@ -350,13 +350,7 @@ public class RayTracer {
 
 		double vzx1z = start.z - ((start.y-aabb.maxY) / ray.y) * ray.z;
 		double vzx1x = start.x - ((start.y-aabb.maxY) / ray.y) * ray.x;
-
-		Vec3d vec1 = new Vec3d(aabb.minX, aabb.minY, aabb.minZ);
-		Vec3d vec2 = new Vec3d(aabb.maxX,aabb.maxY,aabb.maxZ);
-		System.out.println(vec1+"/"+vec2);
-		System.out.println(new Vec3d(aabb.minX, vyz0y, vyz0z));
-		System.out.println(new Vec3d(aabb.maxX, vyz1y, vyz1z));
-
+		
 
 		if(vxy0x <= aabb.maxX && vxy0x >= aabb.minX && vxy0y <= aabb.maxY && vxy0y >= aabb.minY){
 			crossing.add(new Vec3d(vxy0x,vxy0y,aabb.minZ));
