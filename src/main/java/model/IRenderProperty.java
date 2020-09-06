@@ -1,10 +1,9 @@
 package model;
 
-import java.util.List;
-import java.util.Map;
-
 public interface IRenderProperty {
-	abstract public Map<AnimationType, Float> getRenderPropery();
+	Float getAnimationProp(AnimationType type);
 
-	abstract public Map<String, List<String>> getPartPropery();
+	Float getYaw();
+
+	Float getPitch();
 }

@@ -98,6 +98,9 @@ public class PlayerHandler {
 		}
 	}
 
+
+
+
 	@SideOnly(Side.CLIENT)
 	private static void ClientUpdate() {
 		EntityPlayer player = Minecraft.getMinecraft().player;

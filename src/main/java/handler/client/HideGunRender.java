@@ -1,10 +1,5 @@
 package handler.client;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import items.ItemGun;
 import model.AnimationType;
 import model.HideModel;
@@ -55,13 +50,18 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 
 	static IRenderProperty prop = new IRenderProperty() {
 		@Override
-		public Map<AnimationType, Float> getRenderPropery() {
-			return new EnumMap<>(AnimationType.class);
+		public Float getAnimationProp(AnimationType type) {
+			return null;
 		}
 
 		@Override
-		public Map<String, List<String>> getPartPropery() {
-			return new HashMap<>();
+		public Float getYaw() {
+			return null;
+		}
+
+		@Override
+		public Float getPitch() {
+			return null;
 		}
 	};
 

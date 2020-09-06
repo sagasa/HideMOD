@@ -1,13 +1,13 @@
 package handler.client;
 
 import java.awt.Rectangle;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.FloatBuffer;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
 
 import gamedata.HidePlayerData;
 import gamedata.HidePlayerData.ClientPlayerData;
@@ -23,6 +23,7 @@ import model.HideModel;
 import model.IRenderProperty;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -180,8 +181,58 @@ public class RenderHandler {
 		GlStateManager.disableBlend();
 	}
 
+	static FloatBuffer fb = BufferUtils.createFloatBuffer(16);
+	static Matrix4f moveFrom;
+	static Matrix4f moveTo;
+
+	static {
+		moveTo = new Matrix4f();
+		moveTo.rotate(1f, new Vector3f(1, 0, 0));
+		moveFrom = new Matrix4f();
+	}
+
+	private static String name(FloatBuffer buf) {
+		StringBuilder sb = new StringBuilder("FB = [");
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				sb.append(buf.get(i * 4 + j));
+				sb.append(" ");
+			}
+			sb.append("\n");
+		}
+		sb.append("]");
+		return sb.toString();
+	}
+
+	static int count = 0;
+
 	/** プレイヤーハンドラを参照してヒットマーク描画 */
 	static void writeHitMarker(int x, int y) {
+		count++;
+		GL11.glPushMatrix();
+
+		//GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb);
+		System.out.println(GL11.glGetInteger(GL11.GL_MATRIX_MODE) + " " + fb);
+
+		Gui.drawRect(50, 50, 100, 100, 0xAAAAAAAA);
+
+		Gui.drawRect(100, 50, 150, 100, 0xAA0000FF);
+
+		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb);
+		System.out.println(name(fb));
+
+		float f = count % 100 / 100f;
+		Matrix4f.add(Matrix4f.scale(new Vector3f(f, f, f), moveTo, null), Matrix4f.scale(new Vector3f(1 - f, 1 - f, 1 - f), moveFrom, null), null).store(fb);
+		fb.position(0);
+		GL11.glMultMatrix(fb);
+
+		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb);
+		System.out.println(name(fb));
+
+		Gui.drawRect(150, 50, 200, 100, 0xAAFF00AA);
+
+		GL11.glPopMatrix();
+
 		GlStateManager.enableAlpha();
 		GlStateManager.enableBlend();
 		mc.renderEngine.bindTexture(HitMarker);
@@ -229,15 +280,25 @@ public class RenderHandler {
 	}
 
 	static IRenderProperty prop = new IRenderProperty() {
+
 		@Override
-		public Map<AnimationType, Float> getRenderPropery() {
-			return new EnumMap<>(AnimationType.class);
+		public Float getAnimationProp(AnimationType type) {
+			// TODO 自動生成されたメソッド・スタブ
+			return null;
 		}
 
 		@Override
-		public Map<String, List<String>> getPartPropery() {
-			return new HashMap<>();
+		public Float getYaw() {
+			// TODO 自動生成されたメソッド・スタブ
+			return null;
 		}
+
+		@Override
+		public Float getPitch() {
+			// TODO 自動生成されたメソッド・スタブ
+			return null;
+		}
+
 	};
 
 	/** 自分の持ってる銃の描画 アニメーションとパーツの稼働はこのメゾットのみ */
@@ -264,14 +325,14 @@ public class RenderHandler {
 				OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, f, f1);
 
 				GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-				GlStateManager.enableRescaleNormal();
+				//GlStateManager.enableRescaleNormal();
 				GlStateManager.alphaFunc(516, 0.1F);
 				GlStateManager.enableBlend();
 				GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 
 				model.render(true, prop);
 
-				GlStateManager.disableRescaleNormal();
+				//GlStateManager.disableRescaleNormal();
 				GlStateManager.disableBlend();
 				RenderHelper.disableStandardItemLighting();
 				mc.entityRenderer.disableLightmap();
@@ -282,4 +343,7 @@ public class RenderHandler {
 		} //*/
 	}
 
+	public static void renderPoly() {
+
+	}
 }

@@ -1,6 +1,7 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -25,12 +26,12 @@ public class Bone extends DataBase {
 	}
 
 	public void render(IRenderProperty property) {
-		Map<AnimationType, Float> renderProp = Propertis != null && Propertis.getRenderPropery() != null ? Propertis.getRenderPropery() : property.getRenderPropery();
-		Map<String, List<String>> parts = Propertis != null && Propertis.getPartPropery() != null ? Propertis.getPartPropery() : property.getPartPropery();
+		//Map<AnimationType, Float> renderProp = Propertis != null && Propertis.getAnimationProp() != null ? Propertis.getAnimationProp() : property.getAnimationProp();
+		//Map<String, List<String>> parts = Propertis != null && Propertis.getPartPropery() != null ? Propertis.getPartPropery() : property.getPartPropery();
 		for (AnimationType type : animation.keySet()) {
-				AnimationKey.applyAnimation(animation.get(type), renderProp.get(type));
+			//	AnimationKey.applyAnimation(animation.get(type), renderProp.get(type));
 		}
-		models.forEach(model -> rootModel.render(model.getModel(property.getPartPropery())));
+		models.forEach(model -> rootModel.render(model.getModel(Collections.EMPTY_SET)));
 		children.forEach(bone -> bone.render(property));
 	}
 }
