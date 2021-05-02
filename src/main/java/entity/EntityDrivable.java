@@ -2,7 +2,7 @@ package entity;
 
 import java.util.List;
 
-import guns.CommonGun;
+import hide.guns.CommonGun;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;

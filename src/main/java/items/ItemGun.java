@@ -6,9 +6,9 @@ import java.util.Map;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 
-import gamedata.LoadedMagazine.Magazine;
-import guns.CommonGun;
-import helper.HideNBT;
+import hide.guns.CommonGun;
+import hide.guns.HideGunNBT;
+import hide.guns.data.LoadedMagazine.Magazine;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -53,12 +53,12 @@ public class ItemGun extends HideItem<GunData> {
 			return item;
 		}
 		// タグがなければ書き込む;
-		NBTTagCompound hideTag = HideNBT.getHideTag(item);
-		hideTag.setString(HideNBT.DATA_NAME, data.ITEM_SHORTNAME);
-		HideNBT.setGunShootDelay(hideTag, 0);
-		HideNBT.setGunFireMode(hideTag,
+		NBTTagCompound hideTag = HideGunNBT.getHideTag(item);
+		hideTag.setString(HideGunNBT.DATA_NAME, data.ITEM_SHORTNAME);
+		HideGunNBT.setGunShootDelay(hideTag, 0);
+		HideGunNBT.setGunFireMode(hideTag,
 				GunFireMode.getFireMode(Arrays.asList(data.FIREMODE).iterator().next().toString()));
-		HideNBT.setGunUseingBullet(hideTag, CommonGun.LOAD_ANY);
+		HideGunNBT.setGunUseingBullet(hideTag, CommonGun.LOAD_ANY);
 		return item;
 	}
 
@@ -89,13 +89,13 @@ public class ItemGun extends HideItem<GunData> {
 	public void addInformation(ItemStack stack, World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
 		super.addInformation(stack, worldIn, tooltip, flagIn);
 		// 破損チェック
-		NBTTagCompound hideTag = HideNBT.getHideTag(stack);
-		tooltip.add(ChatFormatting.GRAY + "FireMode : " + HideNBT.getGunFireMode(hideTag));
-		String useBullet = HideNBT.getGunUseingBullet(hideTag);
+		NBTTagCompound hideTag = HideGunNBT.getHideTag(stack);
+		tooltip.add(ChatFormatting.GRAY + "FireMode : " + HideGunNBT.getGunFireMode(hideTag));
+		String useBullet = HideGunNBT.getGunUseingBullet(hideTag);
 		tooltip.add(ChatFormatting.GRAY + "UseBullet : "
 				+ (CommonGun.LOAD_ANY.equals(useBullet) ? CommonGun.LOAD_ANY
 						: ItemMagazine.getMagazineName(useBullet)));
-		for (Magazine magazine : HideNBT.getGunLoadedMagazines(hideTag).getList()) {
+		for (Magazine magazine : HideGunNBT.getGunLoadedMagazines(hideTag).getList()) {
 			if (magazine != null) {
 				tooltip.add(ItemMagazine.getMagazineName(magazine.name) + "x" + magazine.num);
 			} else {
@@ -119,7 +119,7 @@ public class ItemGun extends HideItem<GunData> {
 		if (item != null && !(item.getItem() instanceof ItemGun)) {
 			return null;
 		}
-		return PackData.getGunData(HideNBT.getHideTag(item).getString(HideNBT.DATA_NAME));
+		return PackData.getGunData(HideGunNBT.getHideTag(item).getString(HideGunNBT.DATA_NAME));
 	}
 
 	@Override

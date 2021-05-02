@@ -5,14 +5,18 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
-import entity.EntityBullet;
-import entity.EntityDebugAABB;
-import handler.HideEventHandler;
-import handler.PacketHandler;
 import handler.client.HideItemRender;
 import handler.client.InputHandler;
 import helper.HideDamage;
+import hide.common.HideEventHandler;
+import hide.common.PacketHandler;
+import hide.common.entity.EntityDebugAABB;
 import hide.core.HideBase;
+import hide.core.HideSubSystem;
+import hide.guns.HideGunCommand;
+import hide.guns.HideGunSystem;
+import hide.guns.entiry.EntityBullet;
+import hide.ux.HideUXSystem;
 import items.ItemGun;
 import items.ItemMagazine;
 import net.minecraft.client.Minecraft;
@@ -29,6 +33,11 @@ import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -57,16 +66,26 @@ public class HideMod {
 
 	public static Logger LOGGER;
 
+	private HideSubSystem subSystem = new HideSubSystem();
+
 	/* イニシャライズ */
 	@EventHandler
 	public void construct(FMLConstructionEvent event) {
 		MinecraftForge.EVENT_BUS.register(new HideEventHandler());
+		subSystem.register(event, new HideGunSystem());
+		subSystem.register(event, new HideUXSystem());
 	}
 	//
 
 	@EventHandler
 	public void start(FMLServerStartingEvent event) {
+		subSystem.serverStart(event);
 		event.registerServerCommand(new HideGunCommand());
+	}
+
+	@EventHandler
+	public void serverStop(FMLServerStoppedEvent event) {
+		subSystem.serverStop(event);
 	}
 
 	// アイテム登録
@@ -130,5 +149,14 @@ public class HideMod {
 	@SideOnly(Side.CLIENT)
 	public static EntityPlayer getPlayer() {
 		return Minecraft.getMinecraft().player;
+	}
+
+	/**Mod内ネットID*/
+	private static int netID;
+	public static final SimpleNetworkWrapper NETWORK = NetworkRegistry.INSTANCE.newSimpleChannel("HideMod");
+	/**自動でIDを割り振る登録ラッパー*/
+	public static <REQ extends IMessage, REPLY extends IMessage> void registerNetMsg(Class<? extends IMessageHandler<REQ, REPLY>> messageHandler, Class<REQ> requestMessageType, Side side) {
+		NETWORK.registerMessage(messageHandler, requestMessageType, netID, side);
+		netID++;
 	}
 }

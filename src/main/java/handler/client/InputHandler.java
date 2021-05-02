@@ -9,18 +9,18 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import entity.EntityDrivable;
-import gamedata.HidePlayerData;
-import gamedata.HidePlayerData.ClientPlayerData;
-import handler.PacketHandler;
-import handler.PlayerHandler;
-import handler.PlayerHandler.EquipMode;
+import hide.core.HidePlayerDataManager;
+import hide.guns.PlayerData;
+import hide.guns.PlayerData.ClientPlayerData;
+import hide.guns.PlayerData.EquipMode;
+import hide.ux.network.PacketInput;
+import hidemod.HideMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import network.PacketInput;
 
 @SideOnly(Side.CLIENT)
 public class InputHandler {
@@ -69,17 +69,17 @@ public class InputHandler {
 		}
 		FireKeyCode = mc.gameSettings.keyBindAttack.getKeyCode();
 		//銃火器への操作
-		ClientPlayerData data = HidePlayerData.getClientData();
+		ClientPlayerData data = HidePlayerDataManager.getClientData(ClientPlayerData.class);
 		EquipMode em = data.CurrentEquipMode;
 		if (em != EquipMode.None) {
 			if (CHANGE_FIREMODE.isPressed()) {
-				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_MODE));
+				HideMod.NETWORK.sendToServer(new PacketInput(PacketInput.GUN_MODE));
 			}
 			if (RELOAD.isPressed()) {
-				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_RELOAD));
+				HideMod.NETWORK.sendToServer(new PacketInput(PacketInput.GUN_RELOAD));
 			}
 			if (CHANGE_BULLET.isPressed()) {
-				PacketHandler.INSTANCE.sendToServer(new PacketInput(PacketInput.GUN_BULLET));
+				HideMod.NETWORK.sendToServer(new PacketInput(PacketInput.GUN_BULLET));
 			}
 		}
 
@@ -107,18 +107,18 @@ public class InputHandler {
 		float oldADS = data.adsRes;
 		data.adsRes = data.adsstate == 0 ? 0 : data.adsstate / (float) adsTick;
 		if (oldADS != data.adsRes) {
-			PacketHandler.INSTANCE.sendToServer(new PacketInput(data.adsRes));
+			HideMod.NETWORK.sendToServer(new PacketInput(data.adsRes));
 		}
 
 		// 兵器に乗っているか
-		if (!PlayerHandler.isOnEntityDrivable(player)) {
+		if (!PlayerData.isOnEntityDrivable(player)) {
 			// アイテムの銃の処理
 
 		} else {
 			// Drivable用入力操作
 			if (player.movementInput.forwardKeyDown == player.movementInput.backKeyDown) {
 				acceleration = 0F;
-				// PacketHandler.INSTANCE.sendToServer(new
+				// HideMod.NETWORK.sendToServer(new
 				// PacketInput(PacketInput.DRIVABLE_LEFT));
 			} else if (player.movementInput.forwardKeyDown) {
 				acceleration = 1F;
@@ -127,7 +127,7 @@ public class InputHandler {
 			}
 
 			if (acceleration_changed_detector != acceleration) {
-				//TODO	PacketHandler.INSTANCE.sendToServer(new PacketAcceleration(acceleration));
+				//TODO	HideMod.NETWORK.sendToServer(new PacketAcceleration(acceleration));
 				if (player.getRidingEntity() != null && player.getRidingEntity() instanceof EntityDrivable) {
 					EntityDrivable drivable = (EntityDrivable) player.getRidingEntity();
 					drivable.setAcceleration(acceleration);
@@ -136,7 +136,7 @@ public class InputHandler {
 			}
 
 			if (player.movementInput.rightKeyDown == player.movementInput.leftKeyDown) {
-				// PacketHandler.INSTANCE.sendToServer(new
+				// HideMod.NETWORK.sendToServer(new
 				// PacketInput(PacketInput.DRIVABLE_RIGHT));
 				rotate = 0F;
 			} else if (player.movementInput.rightKeyDown) {
@@ -146,7 +146,7 @@ public class InputHandler {
 			}
 
 			if (rotate_changed_detector != rotate) {
-				//TODO	PacketHandler.INSTANCE.sendToServer(new PacketRotate(rotate));
+				//TODO	HideMod.NETWORK.sendToServer(new PacketRotate(rotate));
 				if (player.getRidingEntity() != null && player.getRidingEntity() instanceof EntityDrivable) {
 					EntityDrivable drivable = (EntityDrivable) player.getRidingEntity();
 					drivable.setRotate(rotate);
@@ -210,7 +210,7 @@ public class InputHandler {
 					EntityPlayerSP player = Minecraft.getMinecraft().player;
 					if (player == null)
 						continue;
-					ClientPlayerData data = HidePlayerData.getClientData();
+					ClientPlayerData data = HidePlayerDataManager.getClientData(ClientPlayerData.class);
 					data.clientGunUpdate((Minecraft.getSystemTime() - lastTickMillis) / 50f, fire);
 
 					time = Minecraft.getSystemTime() - time;

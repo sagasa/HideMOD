@@ -6,23 +6,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import entity.EntityBullet;
-import entity.EntityDebugAABB;
-import entity.render.RenderAABB;
-import entity.render.RenderBullet;
-import helper.HideNBT;
+import hide.common.entity.EntityDebugAABB;
+import hide.common.entity.RenderAABB;
+import hide.guns.HideGunNBT;
+import hide.guns.entiry.EntityBullet;
+import hide.guns.entiry.RenderBullet;
 import hidemod.HideMod;
 import items.ItemGun;
 import items.ItemMagazine;
 import model.HideModel;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.event.RegistryEvent.Register;
-import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -70,10 +67,10 @@ public class PackData {
 	public static ItemData getItemData(ItemStack item) {
 		Class<? extends Item> clazz = item.getItem().getClass();
 		if (ItemGun.class.equals(clazz)) {
-			return PackData.getGunData(HideNBT.getHideTag(item).getString(HideNBT.DATA_NAME));
+			return PackData.getGunData(HideGunNBT.getHideTag(item).getString(HideGunNBT.DATA_NAME));
 		}
 		if (ItemMagazine.class.equals(clazz)) {
-			return PackData.getBulletData(HideNBT.getHideTag(item).getString(HideNBT.DATA_NAME));
+			return PackData.getBulletData(HideGunNBT.getHideTag(item).getString(HideGunNBT.DATA_NAME));
 		}
 		return null;
 	}
@@ -122,18 +119,8 @@ public class PackData {
 	/** モデル登録 */
 	@SideOnly(Side.CLIENT)
 	public static void registerModel() {
-		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, new IRenderFactory<EntityBullet>() {
-			@Override
-			public Render createRenderFor(RenderManager manager) {
-				return new RenderBullet(manager);
-			}
-		});
-		RenderingRegistry.registerEntityRenderingHandler(EntityDebugAABB.class, new IRenderFactory<EntityDebugAABB>() {
-			@Override
-			public Render createRenderFor(RenderManager manager) {
-				return new RenderAABB(manager);
-			}
-		});
+		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, RenderBullet::new);
+		RenderingRegistry.registerEntityRenderingHandler(EntityDebugAABB.class, RenderAABB::new);
 	}
 
 	@SideOnly(Side.CLIENT)

@@ -37,7 +37,6 @@ import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.ICustomModelLoader;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
@@ -68,18 +67,6 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 			GL11.glPopMatrix();//*/
 	}
 
-	public static void register(ModelBakeEvent e) {
-		//e.getModelRegistry().putObject(new ModelResourceLocation("hidemod:gun", "inventory"), dummyModel);
-		System.out.println("call Bake Event");
-
-		/*	((SimpleReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new IResourceManagerReloadListener() {
-				@Override
-				public void onResourceManagerReload(IResourceManager resourceManager) {
-					System.out.println("call Reload Event "+resourceManager.getResourceDomains());
-
-				}
-			});//*/
-	}
 
 	public static void registerLoader() {
 		System.out.println("Register ModelLoader");

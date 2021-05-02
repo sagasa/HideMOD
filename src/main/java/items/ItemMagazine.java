@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 
-import helper.HideNBT;
+import hide.guns.HideGunNBT;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
@@ -27,7 +27,7 @@ public class ItemMagazine extends HideItem<MagazineData> {
 
 	/** アイテムスタックを作成 残弾指定 */
 	public static ItemStack makeMagazine(String name, int ammoNum) {
-		return HideNBT.setMagazineBulletNum(makeMagazine(name), ammoNum);
+		return HideGunNBT.setMagazineBulletNum(makeMagazine(name), ammoNum);
 	}
 
 	/** アイテムスタックを作成 */
@@ -50,9 +50,9 @@ public class ItemMagazine extends HideItem<MagazineData> {
 		if (!(item.getItem() instanceof ItemMagazine)) {
 			return item;
 		}
-		NBTTagCompound hideTag = HideNBT.getHideTag(item);
-		hideTag.setString(HideNBT.DATA_NAME, data.ITEM_SHORTNAME);
-		HideNBT.setMagazineBulletNum(hideTag, data.MAGAZINE_SIZE);
+		NBTTagCompound hideTag = HideGunNBT.getHideTag(item);
+		hideTag.setString(HideGunNBT.DATA_NAME, data.ITEM_SHORTNAME);
+		HideGunNBT.setMagazineBulletNum(hideTag, data.MAGAZINE_SIZE);
 		return item;
 	}
 
@@ -103,7 +103,7 @@ public class ItemMagazine extends HideItem<MagazineData> {
 	public static boolean isMagazine(ItemStack item, String str, int size) {
 		if (item != null && ItemMagazine.getMagazineData(item) != null
 				&& ItemMagazine.getMagazineData(item).ITEM_SHORTNAME.equals(str)
-				&& HideNBT.getMagazineBulletNum(item) == size) {
+				&& HideGunNBT.getMagazineBulletNum(item) == size) {
 			return true;
 		}
 		return false;
@@ -111,12 +111,12 @@ public class ItemMagazine extends HideItem<MagazineData> {
 
 	/** 残弾数取得 */
 	public static int getBulletNum(ItemStack stack) {
-		return HideNBT.getMagazineBulletNum(stack);
+		return HideGunNBT.getMagazineBulletNum(stack);
 	}
 
 	/** 残弾数書き込み */
 	public static ItemStack setBulletNum(ItemStack stack, int num) {
-		HideNBT.setMagazineBulletNum(stack, num);
+		HideGunNBT.setMagazineBulletNum(stack, num);
 		return stack;
 	}
 
@@ -152,7 +152,7 @@ public class ItemMagazine extends HideItem<MagazineData> {
 		if (!(item.getItem() instanceof ItemMagazine)) {
 			return null;
 		}
-		return PackData.getBulletData(HideNBT.getHideTag(item).getString(HideNBT.DATA_NAME));
+		return PackData.getBulletData(HideGunNBT.getHideTag(item).getString(HideGunNBT.DATA_NAME));
 	}
 
 	/** その名前の弾は存在するか */

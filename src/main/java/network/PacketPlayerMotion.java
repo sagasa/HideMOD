@@ -1,7 +1,7 @@
 package network;
 
-import gamedata.HidePlayerData;
-import gamedata.HidePlayerData.ServerPlayerData;
+import hide.core.HidePlayerDataManager;
+import hide.guns.PlayerData.ServerPlayerData;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -43,7 +43,7 @@ public class PacketPlayerMotion implements IMessage, IMessageHandler<PacketPlaye
 		// SamplePacketMod.proxy.getEntityPlayerInstance();
 		// サーバーへ送った際に、EntityPlayerインスタンス（EntityPlayerMPインスタンス）はこのように取れる。
 		// EntityPlayer Player = ctx.getServerHandler().playerEntity;
-		ServerPlayerData data = HidePlayerData.getServerData(ctx.getServerHandler().player);
+		ServerPlayerData data = HidePlayerDataManager.getServerData(ServerPlayerData.class, ctx.getServerHandler().player);
 		data.lastPosX = m.x;
 		data.lastPosY = m.y;
 		data.lastPosZ = m.z;

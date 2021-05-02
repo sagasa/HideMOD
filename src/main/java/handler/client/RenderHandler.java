@@ -9,13 +9,14 @@ import org.lwjgl.opengl.GL12;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
-import gamedata.HidePlayerData;
-import gamedata.HidePlayerData.ClientPlayerData;
-import gamedata.LoadedMagazine.Magazine;
-import guns.CommonGun;
-import handler.PlayerHandler.EquipMode;
 import helper.HideMath;
-import helper.HideNBT;
+import hide.core.HidePlayerDataManager;
+import hide.guns.CommonGun;
+import hide.guns.HideGunNBT;
+import hide.guns.PlayerData.ClientPlayerData;
+import hide.guns.PlayerData.EquipMode;
+import hide.guns.data.HideEntityDataManager;
+import hide.guns.data.LoadedMagazine.Magazine;
 import items.ItemGun;
 import items.ItemMagazine;
 import model.AnimationType;
@@ -72,7 +73,7 @@ public class RenderHandler {
 		// "+mc.displayHeight);
 		int x = scaledresolution.getScaledWidth();
 		int y = scaledresolution.getScaledHeight();
-		ClientPlayerData data = HidePlayerData.getClientData();
+		ClientPlayerData data = HidePlayerDataManager.getClientData(ClientPlayerData.class);
 		if (event.isCancelable() && event.getType() == ElementType.CROSSHAIRS) {
 			//	if (EquipMode.getEquipMode(data.gunMain, data.gunOff) != EquipMode.None)
 			//		event.setCanceled(true);
@@ -106,7 +107,7 @@ public class RenderHandler {
 
 	/** 画面右下に 残弾 射撃モード 使用する弾を描画 */
 	private static void writeGunInfo(int x, int y) {
-		ClientPlayerData data = HidePlayerData.getClientData();
+		ClientPlayerData data = HidePlayerDataManager.getClientData(ClientPlayerData.class);
 		if (data == null)
 			return;
 		EquipMode em = data.CurrentEquipMode;
@@ -158,7 +159,7 @@ public class RenderHandler {
 					GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 					// 表示用アイテムスタック
 					ItemMagazine.makeMagazineNBT(stack, data);
-					HideNBT.setMagazineBulletNum(stack, magazine.num);
+					HideGunNBT.setMagazineBulletNum(stack, magazine.num);
 					mc.getRenderItem().renderItemIntoGUI(stack, x + 1 + offset, y + 1);
 					mc.getRenderItem().renderItemOverlayIntoGUI(mc.fontRenderer, stack, x + 1 + offset, y + 1, null);
 					GL11.glDisable(GL12.GL_RESCALE_NORMAL);
@@ -166,6 +167,13 @@ public class RenderHandler {
 				}
 			}
 			offset += 16;
+		}
+		float reload = HideEntityDataManager.getReloadState(mc.player);
+		if (0.01f <= reload) {
+			int left = x + 1 + offset;
+			int top = y + 1;
+			reload = 1 - reload;
+			Gui.drawRect(left, top, (int) (left + 16 * reload), top + 16, 0xFFAAAAAA);
 		}
 		// 射撃モードを描画
 		mc.fontRenderer.drawString(gun.getFireMode().toString().toUpperCase(), x + 40, y + 39, 0xFFFFFF);
@@ -208,31 +216,33 @@ public class RenderHandler {
 
 	/** プレイヤーハンドラを参照してヒットマーク描画 */
 	static void writeHitMarker(int x, int y) {
-		count++;
-		GL11.glPushMatrix();
+		/*
+				count++;
+				GL11.glPushMatrix();
 
-		//GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb);
-		System.out.println(GL11.glGetInteger(GL11.GL_MATRIX_MODE) + " " + fb);
 
-		Gui.drawRect(50, 50, 100, 100, 0xAAAAAAAA);
+				//GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb);
+				System.out.println(GL11.glGetInteger(GL11.GL_MATRIX_MODE) + " " + fb);
 
-		Gui.drawRect(100, 50, 150, 100, 0xAA0000FF);
+				Gui.drawRect(50, 50, 100, 100, 0xAAAAAAAA);
 
-		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb);
-		System.out.println(name(fb));
+				Gui.drawRect(100, 50, 150, 100, 0xAA0000FF);
 
-		float f = count % 100 / 100f;
-		Matrix4f.add(Matrix4f.scale(new Vector3f(f, f, f), moveTo, null), Matrix4f.scale(new Vector3f(1 - f, 1 - f, 1 - f), moveFrom, null), null).store(fb);
-		fb.position(0);
-		GL11.glMultMatrix(fb);
+				GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb);
+				System.out.println(name(fb));
 
-		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb);
-		System.out.println(name(fb));
+				float f = count % 100 / 100f;
+				Matrix4f.add(Matrix4f.scale(new Vector3f(f, f, f), moveTo, null), Matrix4f.scale(new Vector3f(1 - f, 1 - f, 1 - f), moveFrom, null), null).store(fb);
+				fb.position(0);
+				GL11.glMultMatrix(fb);
 
-		Gui.drawRect(150, 50, 200, 100, 0xAAFF00AA);
+				GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb);
+				System.out.println(name(fb));
 
-		GL11.glPopMatrix();
+				Gui.drawRect(150, 50, 200, 100, 0xAAFF00AA);
 
+				GL11.glPopMatrix();
+		//*/
 		GlStateManager.enableAlpha();
 		GlStateManager.enableBlend();
 		mc.renderEngine.bindTexture(HitMarker);

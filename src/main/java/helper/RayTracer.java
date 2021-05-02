@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import entity.EntityBullet;
-import entity.EntityDebugAABB;
-import gamedata.HidePlayerData;
-import gamedata.HidePlayerData.ServerPlayerData;
+import hide.common.entity.EntityDebugAABB;
+import hide.core.HidePlayerDataManager;
+import hide.guns.PlayerData.ServerPlayerData;
+import hide.guns.entiry.EntityBullet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -58,7 +58,7 @@ public class RayTracer {
 	}
 
 	/**補完*/
-	public static float Comp = 2;
+	public static float Comp = 3;
 	public static boolean debug = false;
 
 	public static HideCollisionDetector collisionDetector = new HideCollisionDetector(new ArrayList<>());
@@ -220,8 +220,8 @@ public class RayTracer {
 		// 補完用速度
 		double x, y, z;
 		if (entity instanceof EntityPlayerMP) {
-			ServerPlayerData data = HidePlayerData.getServerData((EntityPlayerMP) entity);
-			System.out.println("offset " + offsetTick + " comp = " + data.Comp.getCompVec(offsetTick).subtract(entity.getPositionVector()));
+			ServerPlayerData data = HidePlayerDataManager.getServerData(ServerPlayerData.class,(EntityPlayerMP) entity);
+			//System.out.println("offset " + offsetTick + " comp = " + data.Comp.getCompVec(offsetTick).subtract(entity.getPositionVector()));
 			return data.Comp.getCompVec(offsetTick).subtract(entity.getPositionVector());
 		}
 		x = (entity.posX - entity.lastTickPosX) * -offsetTick;
@@ -236,8 +236,8 @@ public class RayTracer {
 	/** ベクトルに触れたエンティティを返す EntityBulletと雪玉と矢は例外 */
 	public List<Hit> getHitEntity(Entity owner, World w, Vec3d lv0, Vec3d lvt, final float offset) {
 		List<Hit> list = new ArrayList<>();
-		collisionDetector.isHit(list, lv0, lvt);
-		System.out.println(list);
+		//collisionDetector.isHit(list, lv0, lvt);
+		//System.out.println(list);
 
 
 		AxisAlignedBB aabb = new AxisAlignedBB(lv0.x, lv0.y, lv0.z, lvt.x, lvt.y, lvt.z).expand(ExpandSize, ExpandSize, ExpandSize).expand(-ExpandSize, -ExpandSize, -ExpandSize);

@@ -2,7 +2,7 @@ package items;
 
 import java.util.Map;
 
-import helper.HideNBT;
+import hide.guns.HideGunNBT;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -35,7 +35,7 @@ public abstract class HideItem<T extends ItemData> extends Item {
 	public T getData(ItemStack stack) {
 		if (!isHideItem(stack))
 			return null;
-		return dagaMap.get(HideNBT.getHideTag(stack).getString(HideNBT.DATA_NAME));
+		return dagaMap.get(HideGunNBT.getHideTag(stack).getString(HideGunNBT.DATA_NAME));
 	}
 
 	public abstract ItemStack makeItem(T data);
