@@ -13,6 +13,7 @@ import hide.common.PacketHandler;
 import hide.common.entity.EntityDebugAABB;
 import hide.core.HideBase;
 import hide.core.HideSubSystem;
+import hide.gltf.GltfLoader;
 import hide.guns.HideGunCommand;
 import hide.guns.HideGunSystem;
 import hide.guns.entiry.EntityBullet;
@@ -130,6 +131,8 @@ public class HideMod {
 		if (FMLCommonHandler.instance().getSide().isClient()) {
 			initClient();
 		}
+
+		GltfLoader.test();
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -154,6 +157,7 @@ public class HideMod {
 	/**Mod内ネットID*/
 	private static int netID;
 	public static final SimpleNetworkWrapper NETWORK = NetworkRegistry.INSTANCE.newSimpleChannel("HideMod");
+
 	/**自動でIDを割り振る登録ラッパー*/
 	public static <REQ extends IMessage, REPLY extends IMessage> void registerNetMsg(Class<? extends IMessageHandler<REQ, REPLY>> messageHandler, Class<REQ> requestMessageType, Side side) {
 		NETWORK.registerMessage(messageHandler, requestMessageType, netID, side);

@@ -64,7 +64,6 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
     shade 'org.la4j:la4j:0.6.0'
-
 }
 
 processResources {

@@ -2,10 +2,14 @@ package hide.common;
 
 import handler.client.HideScope;
 import handler.client.RenderHandler;
+import hide.gltf.GltfLoader;
 import hide.guns.data.HideEntityDataManager;
 import hide.guns.gui.RecoilHandler;
 import hide.ux.HideSoundManager;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
@@ -52,8 +56,6 @@ public class HideEventHandler {
 	public void onEvent(EntityEvent.EntityConstructing event) {
 		HideEntityDataManager.onEntityInit(event);
 	}
-
-
 
 	// ========接続イベント=========
 	@SubscribeEvent
@@ -129,6 +131,16 @@ public class HideEventHandler {
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onEvent(RenderItemInFrameEvent event) {
+		// System.out.println(event.target+"Stop");
+		//System.out.println(event);
+	}
+
+	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
+	public void onRenderTest(RenderWorldLastEvent event) {
+		EntityPlayer p = Minecraft.getMinecraft().player;
+		GlStateManager.translate(-p.posX, -p.posY, -p.posZ);
+		GltfLoader.render();
 		// System.out.println(event.target+"Stop");
 		//System.out.println(event);
 	}
