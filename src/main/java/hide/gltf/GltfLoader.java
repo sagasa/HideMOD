@@ -48,7 +48,7 @@ public class GltfLoader {
 	public static void test() {
 		System.out.println("==================MODEL LOAD TEST==================");
 		long time = System.currentTimeMillis();
-		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "fuck.glb")))) {
+		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "addempty.glb")))) {
 			test = loadGlb("test", ins, Side.SERVER);
 		} catch (IOException | GltfException e) {
 			e.printStackTrace();

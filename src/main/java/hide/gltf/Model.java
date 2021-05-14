@@ -15,17 +15,17 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import de.javagl.jgltf.impl.v2.GlTF;
 import de.javagl.jgltf.model.AnimationModel;
 import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.NodeModel;
+import hide.gltf.base.IDisposable;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 
-public class Model {
+public class Model implements IDisposable {
 
 	private GlTF model;
 
@@ -42,17 +42,6 @@ public class Model {
 		for (HideAnimation hideAnimation : animations.values()) {
 			hideAnimation.apply(0.5f);
 		}
-		//render();
-		for (HideAnimation hideAnimation : animations.values()) {
-			hideAnimation.apply(0.1f);
-		}
-		//render();
-
-		Vector4f pos = new Vector4f(1, 0, 0, 1);
-		Matrix4f mat = new Matrix4f();
-		mat.scale(new Vector3f(2, 2, 2));
-
-		System.out.println(mul(mat, pos));
 	}
 
 	List<HideNode> rootNodes = new ArrayList<>();
@@ -73,7 +62,6 @@ public class Model {
 		GlStateManager.disableTexture2D();
 		GlStateManager.enableBlend();
 		GlStateManager.disableCull();
-
 
 		//GlStateManager.translate(0, 2, 0);
 
@@ -126,12 +114,6 @@ public class Model {
 		TEST_MVP_MAT = GL20.glGetUniformLocation(TEST_SHADER, "u_WorldViewProjectionMat");
 		TEST_MAT_1 = GL20.glGetUniformLocation(TEST_SHADER, "u_ModelViewMatrix");
 		TEST_MAT_2 = GL20.glGetUniformLocation(TEST_SHADER, "u_ProjectionMatrix");
-
-		System.out.println("\n" + GL20.glGetProgramInfoLog(TEST_SHADER, GL20.glGetProgrami(TEST_SHADER, GL20.GL_INFO_LOG_LENGTH)));
-
-		System.out.println(SKIN_SHADER + " " + BONE_MAT_INDEX + " " + WORLD_VIEW_PROJECTION_INDEX);
-
-		System.out.println(TEST_SHADER + " " + TEST_MVP_MAT + " " + TEST_MAT_1 + " " + TEST_MAT_2);
 	}
 
 	private static int makeProgram(String vert_path, String frag_path) {
@@ -147,8 +129,9 @@ public class Model {
 
 		// リンク
 		GL20.glLinkProgram(programId);
-		if (GL20.glGetProgrami(programId, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
-			System.out.println("\n" + GL20.glGetProgramInfoLog(programId, GL20.glGetProgrami(programId, GL20.GL_INFO_LOG_LENGTH)));
+		int length = GL20.glGetProgrami(programId, GL20.GL_INFO_LOG_LENGTH);
+		if (0 < length) {
+			System.out.println("\n" + GL20.glGetProgramInfoLog(programId, length));
 		}
 
 		GL20.glDeleteShader(vShaderId);
@@ -179,5 +162,10 @@ public class Model {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	@Override
+	public void dispose() {
+
 	}
 }

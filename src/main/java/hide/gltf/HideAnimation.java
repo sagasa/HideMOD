@@ -116,6 +116,23 @@ public class HideAnimation {
 			return value;
 		}
 
+		void set(float[] value) {
+			switch (path) {
+			case rotation:
+				node.setRotation(value);
+				break;
+			case scale:
+				node.setScale(value);
+				break;
+			case translation:
+				node.setTranslation(value);
+				break;
+			case weights:
+				node.setWeights(value);
+				break;
+			}
+		}
+
 		void linearInterpolator(int index0, int index1, float alpha) {
 			float[] value = get();
 			for (int i = 0; i < value.length; i++) {
@@ -123,6 +140,7 @@ public class HideAnimation {
 				float b = output.get(index1 * elementCount + i);
 				value[i] = a + alpha * (b - a);
 			}
+			set(value);
 			//System.out.println(ArrayUtils.toString(value));
 		}
 	}

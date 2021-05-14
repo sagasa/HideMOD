@@ -2,7 +2,7 @@
 // 出力カラー
 layout(location = 0) out vec4 out_FragColor;
 
-varying vec4 test_color;
+in vec4 test_color;
 
 void main(void) {
     // 緑色を出力(RGBA)

@@ -1,7 +1,10 @@
 package hide.gltf;
 
+import static hide.gltf.TransformMatUtil.*;
+
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,11 +17,8 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLContext;
 
-import com.mojang.realmsclient.util.Pair;
-
 import de.javagl.jgltf.model.AccessorModel;
 import de.javagl.jgltf.model.BufferViewModel;
-import de.javagl.jgltf.model.MathUtils;
 import de.javagl.jgltf.model.MeshModel;
 import de.javagl.jgltf.model.MeshPrimitiveModel;
 import de.javagl.jgltf.model.NodeModel;
@@ -49,81 +49,36 @@ public class HideNode implements IDisposable {
 			children.add(new HideNode(child));
 		}
 
+		boolean hasWeight = node.getMeshModels().size() != 0;
 		for (MeshModel mesh : node.getMeshModels()) {
 			for (MeshPrimitiveModel primitive : mesh.getMeshPrimitiveModels()) {
+				hasWeight = hasWeight && !primitive.getTargets().isEmpty();
 				renders.add(new MeshPrimitiveRender(primitive));
 			}
 		}
 
+		if (hasWeight) {
+			node.setOnWeightChange(() -> {
+				node.getWeights();
+
+
+
+			});
+		}
+		System.out.println("hasWeight " + hasWeight + " " + node.getName());
+
 		useSkin = node.getSkinModel() != null;
-		skinModel = node.getSkinModel();
 		if (useSkin) {
+			skinModel = node.getSkinModel();
 			inverseMatrices = getVBO(skinModel.getInverseBindMatrices());
 			boneMat = BufferUtils.createFloatBuffer(inverseMatrices.numComponents * inverseMatrices.count);
-			System.out.println(inverseMatrices.count + " " + skinModel.getJoints().size());
-			float[] cash = new float[16];
-			int count = 0;
-			boneMat.rewind();
-			for (NodeModel joint : node.getSkinModel().getJoints()) {
-				computeGlobalTransform(joint, cash);
-				boneMat.put(cash);
-			}
+			node.setOnMatChange(() -> {
+				boneMat.rewind();
+				computeJointMatrix(nodeModel, boneMat);
+				System.out.println("CalcBoneMat");
+			});
 		}
-	}
 
-	private float[] computeGlobalTransform(NodeModel nodeModel, float[] result) {
-		float[] localResult = result;
-		float[] tempLocalTransform = new float[16];
-		NodeModel currentNode = nodeModel;
-		MathUtils.setIdentity4x4(localResult);
-		while (currentNode != null && currentNode.getParent() != null) {
-			computeLocalTransform(currentNode, tempLocalTransform);
-
-			MathUtils.mul4x4(tempLocalTransform, localResult, localResult);
-			currentNode = currentNode.getParent();
-
-		}
-		return localResult;
-	}
-
-	public static float[] computeLocalTransform(NodeModel nodeModel, float[] result) {
-		float[] localResult = result;
-		float[] s;
-		if (nodeModel.getMatrix() != null) {
-
-			s = nodeModel.getMatrix();
-			System.arraycopy(s, 0, localResult, 0, s.length);
-			return localResult;
-
-		} else {
-			MathUtils.setIdentity4x4(localResult);
-			if (nodeModel.getTranslation() != null) {
-				s = nodeModel.getTranslation();
-				localResult[12] = s[0];
-				localResult[13] = s[1];
-				localResult[14] = s[2];
-			}
-			float[] m;
-			if (nodeModel.getRotation() != null) {
-
-				s = nodeModel.getRotation();
-				m = new float[16];
-				MathUtils.quaternionToMatrix4x4(s, m);
-				MathUtils.mul4x4(localResult, m, localResult);
-			}
-			if (nodeModel.getScale() != null) {
-
-				s = nodeModel.getScale();
-				m = new float[16];
-				MathUtils.setIdentity4x4(m);
-				m[0] = s[0];
-				m[5] = s[1];
-				m[10] = s[2];
-				m[15] = 1.0F;
-				MathUtils.mul4x4(localResult, m, localResult);
-			}
-			return localResult;
-		}
 	}
 
 	static void read(FloatBuffer fb, boolean transpose) {
@@ -163,7 +118,7 @@ public class HideNode implements IDisposable {
 
 		FloatBuffer fb = BufferUtils.createFloatBuffer(16);
 
-		fb.put(computeLocalTransform(nodeModel, new float[16]));
+		fb.put(getLocalTransform(nodeModel));
 		fb.rewind();
 
 		GL11.glMultMatrix(fb);
@@ -176,32 +131,6 @@ public class HideNode implements IDisposable {
 		GlStateManager.color(0.5f, 1.0f, 0.5f, 0.5f);
 
 		if (useSkin) {
-			float[] cash = new float[16];
-			int count = 0;
-			boneMat.rewind();
-			for (NodeModel joint : skinModel.getJoints()) {
-				computeGlobalTransform(joint, cash);
-				boneMat.put(cash);
-			}
-			boneMat.rewind();
-			//System.out.println("start bone data");
-			for (NodeModel joint : skinModel.getJoints()) {
-				//	read(boneMat);
-			}
-
-			/*
-			boneMat.rewind();
-			System.out.println("BoneMat");
-			while (0 < boneMat.remaining()){
-				for (int i = 0; i < 4; i++) {
-					for (int j = 0; j < 4; j++) {
-						System.out.print(boneMat.get());
-					}
-					System.out.println();
-				}
-			}
-			//*/
-			boneMat.rewind();
 
 			GL20.glUseProgram(Model.SKIN_SHADER);
 
@@ -214,14 +143,9 @@ public class HideNode implements IDisposable {
 			mat.limit(16);
 
 			GL20.glUniformMatrix4(Model.WORLD_VIEW_PROJECTION_INDEX, false, mat);
-			GL20.glUniformMatrix4(Model.BONE_MAT_INDEX, false, boneMat);
 
-			FloatBuffer test = BufferUtils.createFloatBuffer(16);
-			test.put(computeLocalTransform(skinModel.getJoints().get(0), new float[16]));
-			test.rewind();
-			read(test, false);
-			test.rewind();
-			//GL20.glUniformMatrix4(Model.TEST_MAT_0, false, test);
+			boneMat.rewind();
+			GL20.glUniformMatrix4(Model.BONE_MAT_INDEX, false, boneMat);
 		}
 
 		for (MeshPrimitiveRender meshPrimitiveRender : renders) {
@@ -304,7 +228,8 @@ public class HideNode implements IDisposable {
 	class MeshPrimitiveRender implements IDisposable {
 
 		private int vao = -1;
-		private final List<Pair<Integer, VBOModel>> index_vbo = new ArrayList<>();
+		private final Map<Attribute, VBOModel> attributeMap = new EnumMap<>(Attribute.class);
+		private final VBOModel indicesVBO;
 		private final int drawMode;
 		private final int vertexCount;
 		private final int componentType;
@@ -317,14 +242,18 @@ public class HideNode implements IDisposable {
 			componentType = indices.getComponentType();
 			offset = indices.getByteOffset();
 
+			primitive.getTargets();
+
 			for (Entry<String, AccessorModel> entry : primitive.getAttributes().entrySet()) {
 				Attribute attribute = Attribute.valueOf(entry.getKey());
 				if (attribute != null) {
-					index_vbo.add(Pair.of(attribute.index, getVBO(entry.getValue())));
+					attributeMap.put(attribute, getVBO(entry.getValue()));
 				}
 			}
-			getVBO(indices).target = GL15.GL_ELEMENT_ARRAY_BUFFER;
-			index_vbo.add(Pair.of(-1, getVBO(indices)));
+
+			indicesVBO = getVBO(indices);
+			indicesVBO.target = GL15.GL_ELEMENT_ARRAY_BUFFER;
+
 		}
 
 		private void bind() {
@@ -334,15 +263,14 @@ public class HideNode implements IDisposable {
 			}
 
 			//バッファバインド
-			for (Pair<Integer, VBOModel> entry : index_vbo) {
-				VBOModel vbo = entry.second();
-				int index = entry.first();
-
+			for (Entry<Attribute, VBOModel> entry : attributeMap.entrySet()) {
+				VBOModel vbo = entry.getValue();
+				int index = entry.getKey().index;
 				vbo.bind();
-				if (index != -1) {
-					vbo.bindAttribPointer(index);
-				}
+				vbo.bindAttribPointer(index);
 			}
+
+			indicesVBO.bind();
 
 			if (GL30Supported) {
 				GL30.glBindVertexArray(0);
