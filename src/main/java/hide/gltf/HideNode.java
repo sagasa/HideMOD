@@ -2,6 +2,7 @@ package hide.gltf;
 
 import static hide.gltf.TransformMatUtil.*;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -23,11 +24,13 @@ import de.javagl.jgltf.model.MeshModel;
 import de.javagl.jgltf.model.MeshPrimitiveModel;
 import de.javagl.jgltf.model.NodeModel;
 import de.javagl.jgltf.model.SkinModel;
+import hide.gltf.Model.HideMaterial;
+import hide.gltf.Model.HideShader;
 import hide.gltf.base.IDisposable;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Matrix4f;
 
 public class HideNode implements IDisposable {
+
 
 	private static boolean GL30Supported = GLContext.getCapabilities().OpenGL30;
 
@@ -36,6 +39,8 @@ public class HideNode implements IDisposable {
 	List<MeshPrimitiveRender> renders = new ArrayList<>();
 
 	public final NodeModel nodeModel;
+	private final Model model;
+	private final HideShader shader;
 
 	//skin render
 	private final boolean useSkin;
@@ -43,10 +48,11 @@ public class HideNode implements IDisposable {
 	private VBOModel inverseMatrices;
 	private FloatBuffer boneMat;
 
-	public HideNode(NodeModel node) {
+	public HideNode(NodeModel node, Model model) {
 		nodeModel = node;
+		this.model = model;
 		for (NodeModel child : node.getChildren()) {
-			children.add(new HideNode(child));
+			children.add(new HideNode(child, model));
 		}
 
 		boolean hasWeight = node.getMeshModels().size() != 0;
@@ -59,108 +65,67 @@ public class HideNode implements IDisposable {
 
 		if (hasWeight) {
 			node.setOnWeightChange(() -> {
-				node.getWeights();
-
-
-
+				Model.profiler.startSection("hide.updateWeight");
+				for (MeshPrimitiveRender meshPrimitiveRender : renders) {
+					meshPrimitiveRender.calcWeight(node.getWeights());
+				}
+				Model.profiler.endSection();
 			});
 		}
-		System.out.println("hasWeight " + hasWeight + " " + node.getName());
 
 		useSkin = node.getSkinModel() != null;
+		shader = useSkin ? Model.SKIN_SHADER : Model.BASE_SHADER;
 		if (useSkin) {
 			skinModel = node.getSkinModel();
 			inverseMatrices = getVBO(skinModel.getInverseBindMatrices());
 			boneMat = BufferUtils.createFloatBuffer(inverseMatrices.numComponents * inverseMatrices.count);
 			node.setOnMatChange(() -> {
-				boneMat.rewind();
-				computeJointMatrix(nodeModel, boneMat);
+
 				System.out.println("CalcBoneMat");
 			});
 		}
 
 	}
 
-	static void read(FloatBuffer fb, boolean transpose) {
-		float[] data = new float[16];
-		fb.get(data);
-		if (transpose) {
-			Matrix4f mat = new Matrix4f(data);
-			mat.transpose();
-			data[0] = mat.m00;
-			data[1] = mat.m01;
-			data[2] = mat.m02;
-			data[3] = mat.m03;
-			data[4] = mat.m10;
-			data[5] = mat.m11;
-			data[6] = mat.m12;
-			data[7] = mat.m13;
-			data[8] = mat.m20;
-			data[9] = mat.m21;
-			data[10] = mat.m22;
-			data[11] = mat.m23;
-			data[12] = mat.m30;
-			data[13] = mat.m31;
-			data[14] = mat.m32;
-			data[15] = mat.m33;
-		}
-		System.out.println(String.format("pos[%.2f,%.2f,%.2f]", data[12], data[13], data[14]));
-		System.out.println(String.format("scale[%.2f,%.2f,%.2f]",
-				Math.sqrt(data[0] * data[0] + data[4] * data[4] + data[8] * data[8]), //X軸
-				Math.sqrt(data[1] * data[1] + data[5] * data[5] + data[9] * data[9]), //Y軸
-				Math.sqrt(data[2] * data[2] + data[6] * data[6] + data[10] * data[10])//Z軸
-		));
-
-	}
-
 	public void render() {
+		Model.profiler.startSection("hide.render");
 		GL11.glPushMatrix();
 
 		FloatBuffer fb = BufferUtils.createFloatBuffer(16);
-
 		fb.put(getLocalTransform(nodeModel));
 		fb.rewind();
-
 		GL11.glMultMatrix(fb);
 
+		Model.profiler.endStartSection("hide.render.debug");
+		GlStateManager.disableTexture2D();
 		GlStateManager.color(1f, 0.5f, 0.5f, 1);
 		GL11.glPointSize(5);
 		GL11.glBegin(GL11.GL_POINTS);
 		GL11.glVertex3f(0, 0, 0);
 		GL11.glEnd();
-		GlStateManager.color(0.5f, 1.0f, 0.5f, 0.5f);
+		GlStateManager.enableTexture2D();
+		Model.profiler.endStartSection("hide.render.calcBone");
 
+		shader.use();
 		if (useSkin) {
-
-			GL20.glUseProgram(Model.SKIN_SHADER);
-
-			FloatBuffer mat = BufferUtils.createFloatBuffer(32);
-			GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, mat);
-			mat.position(16);
-			GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, mat);
-			HideNode.mul(mat, 16, mat, 0, mat, 0);
-			mat.position(0);
-			mat.limit(16);
-
-			GL20.glUniformMatrix4(Model.WORLD_VIEW_PROJECTION_INDEX, false, mat);
-
 			boneMat.rewind();
-			GL20.glUniformMatrix4(Model.BONE_MAT_INDEX, false, boneMat);
+			computeJointMatrix(nodeModel, boneMat);
+			boneMat.rewind();
+			GL20.glUniformMatrix4(Model.SKIN_BONE_MAT_INDEX, false, boneMat);
 		}
-
+		Model.profiler.endStartSection("hide.render.draw");
 		for (MeshPrimitiveRender meshPrimitiveRender : renders) {
 			meshPrimitiveRender.render();
 		}
 
-		if (useSkin) {
-			GL20.glUseProgram(0);
-		}
-
+		GL20.glUseProgram(0);
+		Model.profiler.endSection();
 		for (HideNode node : children) {
 			node.render();
 		}
 
 		GL11.glPopMatrix();
+
 	}
 
 	private Map<AccessorModel, VBOModel> vboMap = new HashMap<>();
@@ -187,62 +152,32 @@ public class HideNode implements IDisposable {
 		}
 	}
 
-	static void mul(FloatBuffer left, int left_i, FloatBuffer right, int right_i, FloatBuffer dest, int dest_i) {
 
-		float m00 = left.get(left_i + 0) * right.get(right_i + 0) + left.get(left_i + 4) * right.get(right_i + 1) + left.get(left_i + 8) * right.get(right_i + 2) + left.get(left_i + 12) * right.get(right_i + 3);
-		float m01 = left.get(left_i + 1) * right.get(right_i + 0) + left.get(left_i + 5) * right.get(right_i + 1) + left.get(left_i + 9) * right.get(right_i + 2) + left.get(left_i + 13) * right.get(right_i + 3);
-		float m02 = left.get(left_i + 2) * right.get(right_i + 0) + left.get(left_i + 6) * right.get(right_i + 1) + left.get(left_i + 10) * right.get(right_i + 2) + left.get(left_i + 14) * right.get(right_i + 3);
-		float m03 = left.get(left_i + 3) * right.get(right_i + 0) + left.get(left_i + 7) * right.get(right_i + 1) + left.get(left_i + 11) * right.get(right_i + 2) + left.get(left_i + 15) * right.get(right_i + 3);
-		float m10 = left.get(left_i + 0) * right.get(right_i + 4) + left.get(left_i + 4) * right.get(right_i + 5) + left.get(left_i + 8) * right.get(right_i + 6) + left.get(left_i + 12) * right.get(right_i + 7);
-		float m11 = left.get(left_i + 1) * right.get(right_i + 4) + left.get(left_i + 5) * right.get(right_i + 5) + left.get(left_i + 9) * right.get(right_i + 6) + left.get(left_i + 13) * right.get(right_i + 7);
-		float m12 = left.get(left_i + 2) * right.get(right_i + 4) + left.get(left_i + 6) * right.get(right_i + 5) + left.get(left_i + 10) * right.get(right_i + 6) + left.get(left_i + 14) * right.get(right_i + 7);
-		float m13 = left.get(left_i + 3) * right.get(right_i + 4) + left.get(left_i + 7) * right.get(right_i + 5) + left.get(left_i + 11) * right.get(right_i + 6) + left.get(left_i + 15) * right.get(right_i + 7);
-		float m20 = left.get(left_i + 0) * right.get(right_i + 8) + left.get(left_i + 4) * right.get(right_i + 9) + left.get(left_i + 8) * right.get(right_i + 10) + left.get(left_i + 12) * right.get(right_i + 11);
-		float m21 = left.get(left_i + 1) * right.get(right_i + 8) + left.get(left_i + 5) * right.get(right_i + 9) + left.get(left_i + 9) * right.get(right_i + 10) + left.get(left_i + 13) * right.get(right_i + 11);
-		float m22 = left.get(left_i + 2) * right.get(right_i + 8) + left.get(left_i + 6) * right.get(right_i + 9) + left.get(left_i + 10) * right.get(right_i + 10) + left.get(left_i + 14) * right.get(right_i + 11);
-		float m23 = left.get(left_i + 3) * right.get(right_i + 8) + left.get(left_i + 7) * right.get(right_i + 9) + left.get(left_i + 11) * right.get(right_i + 10) + left.get(left_i + 15) * right.get(right_i + 11);
-		float m30 = left.get(left_i + 0) * right.get(right_i + 12) + left.get(left_i + 4) * right.get(right_i + 13) + left.get(left_i + 8) * right.get(right_i + 14) + left.get(left_i + 12) * right.get(right_i + 15);
-		float m31 = left.get(left_i + 1) * right.get(right_i + 12) + left.get(left_i + 5) * right.get(right_i + 13) + left.get(left_i + 9) * right.get(right_i + 14) + left.get(left_i + 13) * right.get(right_i + 15);
-		float m32 = left.get(left_i + 2) * right.get(right_i + 12) + left.get(left_i + 6) * right.get(right_i + 13) + left.get(left_i + 10) * right.get(right_i + 14) + left.get(left_i + 14) * right.get(right_i + 15);
-		float m33 = left.get(left_i + 3) * right.get(right_i + 12) + left.get(left_i + 7) * right.get(right_i + 13) + left.get(left_i + 11) * right.get(right_i + 14) + left.get(left_i + 15) * right.get(right_i + 15);
-
-		dest.position(dest_i);
-		dest.put(m00);
-		dest.put(m01);
-		dest.put(m02);
-		dest.put(m03);
-		dest.put(m10);
-		dest.put(m11);
-		dest.put(m12);
-		dest.put(m13);
-		dest.put(m20);
-		dest.put(m21);
-		dest.put(m22);
-		dest.put(m23);
-		dest.put(m30);
-		dest.put(m31);
-		dest.put(m32);
-		dest.put(m33);
-	}
 
 	class MeshPrimitiveRender implements IDisposable {
 
 		private int vao = -1;
+		private final boolean hasTargets;
 		private final Map<Attribute, VBOModel> attributeMap = new EnumMap<>(Attribute.class);
 		private final VBOModel indicesVBO;
+		private final HideMaterial material;
 		private final int drawMode;
 		private final int vertexCount;
 		private final int componentType;
 		private final long offset;
+		//モーフィング
+		private List<Map<Attribute, VBOModel>> targets = new ArrayList<>();
+		private final Map<Attribute, VBOModel> target = new EnumMap<>(Attribute.class);
 
 		public MeshPrimitiveRender(MeshPrimitiveModel primitive) {
+			material = model.matMap.get(primitive.getMaterialModel());
 			drawMode = primitive.getMode();
 			AccessorModel indices = primitive.getIndices();
 			vertexCount = indices.getCount();
 			componentType = indices.getComponentType();
 			offset = indices.getByteOffset();
 
-			primitive.getTargets();
+			hasTargets = !primitive.getTargets().isEmpty();
 
 			for (Entry<String, AccessorModel> entry : primitive.getAttributes().entrySet()) {
 				Attribute attribute = Attribute.valueOf(entry.getKey());
@@ -251,9 +186,51 @@ public class HideNode implements IDisposable {
 				}
 			}
 
+			//モーフィングがあるなら
+			if (hasTargets) {
+				for (Map<String, AccessorModel> src : primitive.getTargets()) {
+					Map<Attribute, VBOModel> map = new EnumMap<>(Attribute.class);
+					for (Entry<String, AccessorModel> entry : src.entrySet()) {
+						Attribute attribute = Attribute.valueOf(entry.getKey());
+						if (attribute != null)
+							map.put(attribute, getVBO(entry.getValue()));
+					}
+					targets.add(map);
+				}
+				for (String str : primitive.getTargets().get(0).keySet()) {
+					Attribute attribute = Attribute.valueOf(str);
+					if (attribute != null) {
+						VBOModel vbo = new VBOModel(primitive.getAttributes().get(str));
+						vbo.setData(BufferUtils.createByteBuffer(vbo.buffer.limit()));
+						target.put(attribute, vbo);
+						System.out.println(attribute);
+					}
+				}
+			}
+
 			indicesVBO = getVBO(indices);
 			indicesVBO.target = GL15.GL_ELEMENT_ARRAY_BUFFER;
 
+			System.out.println(primitive.getMaterialModel().getValues());
+
+		}
+
+		void calcWeight(float[] weight) {
+			for (Attribute attribute : target.keySet()) {
+				ByteBuffer out = target.get(attribute).buffer;
+				for (int j = 0; j < out.limit(); j += 4) {
+					//float f = weight[j];
+					float sum = attributeMap.get(attribute).buffer.getFloat(j);
+					for (int i = 0; i < weight.length; i++) {
+						//Model.profiler.endStartSection("hide.updateWeight.sum");
+						sum += targets.get(i).get(attribute).buffer.getFloat(j) * weight[i];
+
+						//Model.profiler.endSection();
+					}
+					out.putFloat(j, sum);
+				}
+				target.get(attribute).uploadData();
+			}
 		}
 
 		private void bind() {
@@ -263,9 +240,14 @@ public class HideNode implements IDisposable {
 			}
 
 			//バッファバインド
-			for (Entry<Attribute, VBOModel> entry : attributeMap.entrySet()) {
-				VBOModel vbo = entry.getValue();
-				int index = entry.getKey().index;
+			for (Attribute attribute : attributeMap.keySet()) {
+				VBOModel vbo;
+				if (hasTargets && target.containsKey(attribute)) {
+					vbo = target.get(attribute);
+				} else {
+					vbo = attributeMap.get(attribute);
+				}
+				int index = attribute.index;
 				vbo.bind();
 				vbo.bindAttribPointer(index);
 			}
@@ -286,6 +268,8 @@ public class HideNode implements IDisposable {
 				bind();
 			}
 
+			shader.material(material);
+
 			GL11.glDrawElements(drawMode, vertexCount, componentType, offset);
 
 			if (GL30Supported) {
@@ -297,12 +281,18 @@ public class HideNode implements IDisposable {
 		public void dispose() {
 			if (vao != -1)
 				GL30.glDeleteVertexArrays(vao);
+			for (VBOModel vbo : target.values()) {
+				vbo.dispose();
+			}
 		}
 	}
 
 	private class VBOModel implements IDisposable {
 		private int target = GL15.GL_ARRAY_BUFFER;
-		private final int vbo;
+
+		private int vbo = -1;
+
+		private ByteBuffer buffer;
 
 		private final int count;
 		private final int numComponents;
@@ -314,11 +304,7 @@ public class HideNode implements IDisposable {
 			BufferViewModel buf = accessor.getBufferViewModel();
 			if (buf.getTarget() != null)
 				target = buf.getTarget();
-			vbo = GL15.glGenBuffers();
-			GL15.glBindBuffer(target, vbo);
-			buf.getBufferViewData().rewind();
-			GL15.glBufferData(target, buf.getBufferViewData(), GL15.GL_STATIC_DRAW);
-
+			buffer = buf.getBufferViewData();
 			count = accessor.getCount();
 			numComponents = accessor.getElementType().getNumComponents();
 			componentType = accessor.getComponentType();
@@ -326,7 +312,26 @@ public class HideNode implements IDisposable {
 			byteOffset = accessor.getByteOffset();
 		}
 
+		/**要注意*/
+		void setData(ByteBuffer buf) {
+			buffer = buf;
+			uploadData();
+		}
+
+		void uploadData() {
+			if (vbo != -1) {
+				GL15.glBindBuffer(target, vbo);
+				GL15.glBufferData(target, buffer, GL15.GL_STATIC_DRAW);
+			}
+		}
+
 		void bind() {
+			if (vbo == -1) {
+				vbo = GL15.glGenBuffers();
+				GL15.glBindBuffer(target, vbo);
+				buffer.rewind();
+				GL15.glBufferData(target, buffer, GL15.GL_STATIC_DRAW);
+			}
 			GL15.glBindBuffer(target, vbo);
 		}
 
@@ -337,7 +342,9 @@ public class HideNode implements IDisposable {
 
 		@Override
 		public void dispose() {
-			GL15.glDeleteBuffers(vbo);
+			if (vbo != -1) {
+				GL15.glDeleteBuffers(vbo);
+			}
 		}
 	}
 

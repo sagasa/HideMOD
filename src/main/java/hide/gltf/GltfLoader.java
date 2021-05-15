@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -27,6 +28,7 @@ import hidemod.HideMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureUtil;
+import net.minecraft.profiler.Profiler.Result;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
@@ -42,13 +44,25 @@ public class GltfLoader {
 	static Model test;
 
 	public static void render() {
-		test.render();
+
+		GL11.glPushMatrix();
+		for (int i = 0; i < 1; i++) {
+			test.render();
+			GL11.glTranslatef(10, 0, 0);
+		}
+		GL11.glPopMatrix();
+
+
+		for (Result res : Model.profiler.getProfilingData("hide")) {
+			//System.out.println(res.profilerName+" "+res.totalUsePercentage+" "+res.usePercentage);
+		}
+
 	}
 
 	public static void test() {
 		System.out.println("==================MODEL LOAD TEST==================");
 		long time = System.currentTimeMillis();
-		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "addempty.glb")))) {
+		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "test.glb")))) {
 			test = loadGlb("test", ins, Side.SERVER);
 		} catch (IOException | GltfException e) {
 			e.printStackTrace();

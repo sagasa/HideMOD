@@ -11,10 +11,8 @@ uniform int u_hasNormalTexture;
 uniform int u_hasOcclusionTexture;
 uniform int u_hasEmissiveTexture;
 
-
 in vec2 v_TexCoord;
 in vec4 test_color;
-
 
 void main(void) {
     // 緑色を出力(RGBA)
