@@ -1,5 +1,6 @@
 package hide.ux;
 
+import hide.types.effects.Sound;
 import hide.ux.network.PacketPlaySound;
 import hidemod.HideMod;
 import net.minecraft.entity.Entity;
@@ -7,7 +8,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import types.effect.Sound;
 
 public class SoundHandler {
 	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用
@@ -20,9 +20,9 @@ public class SoundHandler {
 	 * @param exept */
 	public static void broadcastSound(Entity e, double x, double y, double z, Sound sound, boolean excepting,
 			byte cate) {
-		broadcastSound(e.world, e, sound.NAME, x, y, z, sound.RANGE, sound.VOL, sound.PITCH,
-				sound.USE_DELAY,
-				sound.USE_DECAY, excepting, cate);
+		broadcastSound(e.world, e, sound.get(Sound.Name), x, y, z, sound.get(Sound.Range), sound.get(Sound.Volume), sound.get(Sound.Pitch),
+				sound.get(Sound.UseDelay),
+				sound.get(Sound.UseDecay), excepting, cate);
 	}
 
 	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用 */

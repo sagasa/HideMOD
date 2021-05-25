@@ -1,5 +1,6 @@
 package hide.ux;
 
+import hide.types.effects.Sound;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.ITickableSound;
 import net.minecraft.client.audio.PositionedSound;
@@ -7,7 +8,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.Vec3d;
-import types.effect.Sound;
 
 //TODO サウンドカテゴリ追加したい…にゃあ
 /**多機能サウンドクラス

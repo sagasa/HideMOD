@@ -14,6 +14,7 @@ import org.lwjgl.util.vector.Vector3f;
 
 import com.google.common.collect.ImmutableSet;
 
+import hide.types.items.ItemData;
 import hidemod.HideMod;
 import model.HideModel;
 import net.minecraft.block.state.IBlockState;
@@ -44,7 +45,6 @@ import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import pack.PackData;
-import types.items.ItemData;
 
 @SideOnly(Side.CLIENT)
 public class HideItemRender extends TileEntityItemStackRenderer {
@@ -82,9 +82,9 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 
 	private static void registerTexture(Collection<? extends ItemData> items) {
 		for (ItemData data : items) {
-			if (!data.ITEM_ICONNAME.isEmpty())
-				textures.add(new ResourceLocation(data.ITEM_ICONNAME));
-			HideModel model = PackData.getModel(data.ITEM_MODELNAME);
+			if (!data.get(ItemData.IconName).isEmpty())
+				textures.add(new ResourceLocation(data.get(ItemData.IconName)));
+			HideModel model = PackData.getModel(data.get(ItemData.ModelName));
 			if (model != null && !model.texture.isEmpty())
 				System.out.println(model.texture);
 			//		textures.add(new ResourceLocation(model.texture));
@@ -182,16 +182,16 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 	private static final Map<String, IBakedModel> modelCash = new HashMap<>();
 
 	private static IBakedModel getHideItemModel(ItemData data) {
-		String type = data.ITEM_ICONNAME + data.ITEM_MODELNAME;
+		String type = data.get(ItemData.IconName) + data.get(ItemData.ModelName);
 		if (!modelCash.containsKey(type)) {
-			HideModel model = PackData.getModel(data.ITEM_MODELNAME);
-			System.out.println(data.ITEM_ICONNAME + " " + data.ITEM_DISPLAYNAME);
+			HideModel model = PackData.getModel(data.get(ItemData.ModelName));
+			System.out.println(data.get(ItemData.IconName) + " " + data.get(ItemData.DisplayName));
 			if (model == null) {
-				modelCash.put(type, bakeItemModel(data.ITEM_ICONNAME, true));
+				modelCash.put(type, bakeItemModel(data.get(ItemData.IconName), true));
 			}else {
 				System.out.println(model.texture);
 			}
-			modelCash.put(type, bakeItemModel(data.ITEM_ICONNAME, false));
+			modelCash.put(type, bakeItemModel(data.get(ItemData.IconName), false));
 		}
 		return modelCash.get(type);
 	}

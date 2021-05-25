@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.logging.log4j.util.Strings;
 import org.lwjgl.opengl.GL11;
 
+import hide.types.base.DataBase;
 import hidemod.HideMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -16,8 +17,6 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import types.Info;
-import types.base.DataBase;
 
 public class HideModel extends DataBase {
 
@@ -64,7 +63,7 @@ public class HideModel extends DataBase {
 	}
 
 	// 共通
-	@Info(isResourceName = true)
+	//@Info(isResourceName = true)
 	public String texture = "";
 	public Bone rootBone = new Bone();
 

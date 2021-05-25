@@ -13,6 +13,7 @@ import hide.core.HidePlayerDataManager;
 import hide.guns.PlayerData;
 import hide.guns.PlayerData.ClientPlayerData;
 import hide.guns.PlayerData.EquipMode;
+import hide.types.items.GunData;
 import hide.ux.network.PacketInput;
 import hidemod.HideMod;
 import net.minecraft.client.Minecraft;
@@ -86,10 +87,10 @@ public class InputHandler {
 		//adsにかかる時間 0でADS不能
 		int adsTick = 1;
 		if (em.hasMain()) {
-			adsTick += data.gunMain.getGunData().ADS_TICK;
+			adsTick += data.gunMain.getGunData().get(GunData.ADSTick);
 		}
 		if (em.hasOff()) {
-			adsTick += data.gunOff.getGunData().ADS_TICK;
+			adsTick += data.gunOff.getGunData().get(GunData.ADSTick);
 		}
 		if (adsTick < 0)
 			adsTick = 0;

@@ -6,8 +6,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.Nonnull;
 
+import hide.types.items.MagazineData;
 import pack.PackData;
-import types.items.MagazineData;
 
 /** 装填済みのマガジン管理用 変更通知機能付き */
 public class LoadedMagazine {

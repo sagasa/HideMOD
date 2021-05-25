@@ -4,16 +4,17 @@ import java.util.EnumMap;
 
 import handler.client.HideViewHandler;
 import helper.HideMath;
+import hide.types.effects.Recoil;
+import hide.types.items.GunData;
+import hide.types.util.DataView.ViewCache;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import types.effect.Recoil;
-import types.items.GunData;
 
 @SideOnly(Side.CLIENT)
 public class RecoilHandler {
-	private static int recoilPower = 0;
+	private static float recoilPower = 0;
 
 	private static EnumMap<EnumHand, RecoilCash> recoilcash = new EnumMap<>(EnumHand.class);
 
@@ -33,7 +34,7 @@ public class RecoilHandler {
 		private float yawShakeTick = -1;
 		private float pitchShakeTick = -1;
 
-		private GunData nowGun = null;
+		private ViewCache<GunData> nowGun = null;
 
 		private void clearRecoil() {
 			yawShakeTo = pitchShakeTo = 0;
@@ -45,27 +46,27 @@ public class RecoilHandler {
 		 *
 		 * @param shooter
 		 */
-		private void addRecoil(GunData data) {
+		private void addRecoil(ViewCache<GunData> data) {
 			nowGun = data;
-			Recoil recoil = getRecoil(data);
-			float yawrecoil = getYawRecoil(recoil);
-			float pitchrecoil = getPitchRecoil(recoil);
+			ViewCache<Recoil> recoil = getRecoil(data);
+			float yawrecoil = getHorizontalRecoil(recoil);
+			float pitchrecoil = getVerticalRecoil(recoil);
 
 			// リコイル戻し
-			yawReturnTo = yawrecoil;
-			pitchReturnTo = pitchrecoil;
+			yawReturnTo = getHorizontalReturn(recoil, yawrecoil);
+			pitchReturnTo = getVerticalReturn(recoil, pitchrecoil);
 
 			// リコイル
 			yawShakeTo += yawrecoil;
-			yawShakeTick = recoil.YAW_RECOIL_TICK;
+			yawShakeTick = recoil.get(Recoil.HorizontalRecoilTick).get(recoilPower);
 
 			pitchShakeTo += pitchrecoil;
-			pitchShakeTick = recoil.PITCH_RECOIL_TICK;
+			pitchShakeTick = recoil.get(Recoil.VerticalRecoilTick).get(recoilPower);
 
 			pitchReturnTick = yawReturnTick = -1;
 			// リコイルパワー加算
-			recoilPower = recoilPower + getRecoil(data).POWER_SHOOT > 100 ? 100
-					: recoilPower + getRecoil(data).POWER_SHOOT;
+			recoilPower = recoilPower + getRecoil(data).get(Recoil.PowerShoot) > 1f ? 1f
+					: recoilPower + getRecoil(data).get(Recoil.PowerShoot);
 		}
 
 		/** Tick毎の変化 */
@@ -75,14 +76,14 @@ public class RecoilHandler {
 				return;
 			}
 			//
-			Recoil recoil = getRecoil(nowGun);
+			ViewCache<Recoil> recoil = getRecoil(nowGun);
 			if (yawShakeTick >= 0) {
 				float coe = yawShakeTo * tick / (yawShakeTick + 1);
 				yawShakeTo -= coe;
 				Minecraft.getMinecraft().player.rotationYaw += coe;
 				yawShakeTick -= tick;
 				if (yawShakeTick < 0) {
-					yawReturnTick = recoil.YAW_RETURN_TICK;
+					yawReturnTick = recoil.get(Recoil.HorizontalReturnTick).get(recoilPower);
 				}
 			}
 			if (pitchShakeTick >= 0) {
@@ -91,7 +92,7 @@ public class RecoilHandler {
 				Minecraft.getMinecraft().player.rotationPitch -= coe;
 				pitchShakeTick -= tick;
 				if (pitchShakeTick < 0) {
-					pitchReturnTick = recoil.PITCH_RETURN_TICK;
+					pitchReturnTick = recoil.get(Recoil.VerticalRecoilTick).get(recoilPower);
 				}
 			}
 
@@ -108,7 +109,7 @@ public class RecoilHandler {
 				pitchReturnTick -= tick;
 			}
 			if (recoilPower > 0) {
-				recoilPower = recoilPower - recoil.POWER_TICK < 0 ? 0 : recoilPower - recoil.POWER_TICK;
+				recoilPower = recoilPower - recoil.get(Recoil.PowerTick) < 0 ? 0 : recoilPower - recoil.get(Recoil.PowerTick);
 			}
 			// 適応が終わったら止める
 			if (pitchReturnTick == -1 && yawReturnTick == -1 && pitchShakeTick == -1 && yawShakeTick == -1) {
@@ -132,7 +133,7 @@ public class RecoilHandler {
 		lastTime = now;
 	}
 
-	public static void addRecoil(GunData modifyData, EnumHand hand) {
+	public static void addRecoil(ViewCache<GunData> modifyData, EnumHand hand) {
 		recoilcash.get(hand).addRecoil(modifyData);
 	}
 
@@ -140,42 +141,44 @@ public class RecoilHandler {
 		recoilcash.get(hand).clearRecoil();
 	}
 
-	/** 現在のリコイルパワー(0-100)を取得 */
-	public static int getRecoilPower() {
+	/** 現在のリコイルパワー(0-1)を取得 */
+	public static float getRecoilPower() {
 		return recoilPower;
 	}
 
 	/** プレイヤーの状態から使用するリコイルを取得 */
-	private static Recoil getRecoil(GunData data) {
+	private static ViewCache<Recoil> getRecoil(ViewCache<GunData> data) {
 		boolean sneak = Minecraft.getMinecraft().player != null ? Minecraft.getMinecraft().player.isSneaking() : false;
 		return getRecoil(data, sneak, HideViewHandler.isADS);
 	}
 
+	private static ViewCache<Recoil> DefaultRecoil = new ViewCache<>(Recoil.class);
+
 	// 状態から取得 使えなかった場合前を参照
-	private static Recoil getRecoil(GunData data, boolean isSneak, boolean isADS) {
+	private static ViewCache<Recoil> getRecoil(ViewCache<GunData> data, boolean isSneak, boolean isADS) {
 		if (!isSneak) {
 			if (isADS) {
-				Recoil recoil = data.RECOIL_ADS;
-				if (recoil.USE) {
+				ViewCache<Recoil> recoil = data.getData(GunData.RecoilADS);
+				if (recoil.get(Recoil.Use)) {
 					return recoil;
 				}
 				return getRecoil(data, false, false);
 			} else {
-				Recoil recoil = data.RECOIL_DEFAULT;
-				if (recoil.USE) {
+				ViewCache<Recoil> recoil = data.getData(GunData.Recoil);
+				if (recoil.get(Recoil.Use)) {
 					return recoil;
 				}
-				return new Recoil();
+				return DefaultRecoil;
 			}
 		} else {
 			if (isADS) {
-				Recoil recoil = data.RECOIL_SNEAK_ADS;
-				if (recoil.USE) {
+				ViewCache<Recoil> recoil = data.getData(GunData.RecoilSneakADS);
+				if (recoil.get(Recoil.Use)) {
 					return recoil;
 				}
 			} else {
-				Recoil recoil = data.RECOIL_SNEAK;
-				if (recoil.USE) {
+				ViewCache<Recoil> recoil = data.getData(GunData.RecoilSneak);
+				if (recoil.get(Recoil.Use)) {
 					return recoil;
 				}
 			}
@@ -183,29 +186,27 @@ public class RecoilHandler {
 		}
 	}
 
-	/** yaw軸の戻る先を取得 */
-	static private float getYawReturn(Recoil data, float base) {
-		float shake = data.MIN_YAW_RETURN + ((data.MAX_YAW_RETURN - data.MIN_YAW_RETURN) / 100 * recoilPower);
-		return base * shake;
+	/** 横の戻る先を取得 */
+	static private float getHorizontalReturn(ViewCache<Recoil> data, float base) {
+		return base * data.get(Recoil.HorizontalReturn).get(recoilPower);
 	}
 
-	/** yaw軸のぶれる先を取得 */
-	static private float getYawRecoil(Recoil data) {
-		float base = data.MIN_YAW_BASE + (data.MAX_YAW_BASE - data.MIN_YAW_BASE / 100 * recoilPower);
-		float spread = data.MIN_YAW_SPREAD + ((data.MAX_YAW_SPREAD - data.MIN_YAW_SPREAD) / 100 * recoilPower);
+	/** 横のぶれる先を取得 */
+	static private float getHorizontalRecoil(ViewCache<Recoil> recoil) {
+		float base = recoil.get(Recoil.HorizontalBase).get(recoilPower);
+		float spread = recoil.get(Recoil.HorizontalSpread).get(recoilPower);
 		return (float) HideMath.normal(base, spread);
 	}
 
-	/** pitch軸の戻る先を取得 */
-	static private float getPitchReturn(Recoil data, float base) {
-		float shake = data.MIN_PITCH_RETURN + ((data.MAX_PITCH_RETURN - data.MIN_PITCH_RETURN) / 100 * recoilPower);
-		return base * shake;
+	/** 縦の戻る先を取得 */
+	static private float getVerticalReturn(ViewCache<Recoil> data, float base) {
+		return base * data.get(Recoil.VerticalReturn).get(recoilPower);
 	}
 
-	/** pitch軸のぶれる先を取得 */
-	static private float getPitchRecoil(Recoil data) {
-		float base = data.MIN_PITCH_BASE + (data.MAX_PITCH_BASE - data.MIN_PITCH_BASE / 100 * recoilPower);
-		float spread = data.MIN_PITCH_SPREAD + ((data.MAX_PITCH_SPREAD - data.MIN_PITCH_SPREAD) / 100 * recoilPower);
+	/** 縦のぶれる先を取得 */
+	static private float getVerticalRecoil(ViewCache<Recoil> data) {
+		float base = data.get(Recoil.VerticalBase).get(recoilPower);
+		float spread = data.get(Recoil.VerticalSpread).get(recoilPower);
 		return (float) HideMath.normal(base, spread);
 	}
 }

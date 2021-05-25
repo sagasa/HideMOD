@@ -3,11 +3,11 @@ package items;
 import java.util.Map;
 
 import hide.guns.HideGunNBT;
+import hide.types.items.ItemData;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
-import types.items.ItemData;
 
 public abstract class HideItem<T extends ItemData> extends Item {
 	public HideItem(String name, Map<String, T> data) {
@@ -43,7 +43,7 @@ public abstract class HideItem<T extends ItemData> extends Item {
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
 		ItemData data = getData(stack);
-		return data == null ? defaultName : data.ITEM_DISPLAYNAME;
+		return data == null ? defaultName : data.get(ItemData.DisplayName);
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public abstract class HideItem<T extends ItemData> extends Item {
 		ItemData data = getData(stack);
 		if (data == null)
 			return 0;
-		return data.ITEM_STACK_SIZE;
+		return data.get(ItemData.StackSize);
 	}
 
 	/**サブタイプに銃を書き込む*/

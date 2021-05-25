@@ -17,6 +17,9 @@ import hide.guns.PlayerData.ClientPlayerData;
 import hide.guns.PlayerData.EquipMode;
 import hide.guns.data.HideEntityDataManager;
 import hide.guns.data.LoadedMagazine.Magazine;
+import hide.types.items.GunData;
+import hide.types.items.ItemData;
+import hide.types.items.MagazineData;
 import items.ItemGun;
 import items.ItemMagazine;
 import model.AnimationType;
@@ -46,7 +49,6 @@ import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import pack.PackData;
-import types.items.MagazineData;
 
 @SideOnly(Side.CLIENT)
 public class RenderHandler {
@@ -100,7 +102,8 @@ public class RenderHandler {
 		if (data.adsRes == 0)
 			HideViewHandler.clearADS();
 		else {
-			HideViewHandler.setADS(data.gunMain.getGunData().USE_SCOPE ? data.gunMain.getGunData().SCOPE_NAME : null, HideMath.completion(1, data.gunMain.getGunData().SCOPE_DIA, data.adsRes), data.gunMain.getGunData().SCOPE_SIZE);
+			HideViewHandler.setADS(data.gunMain.getGunData().get(GunData.UseScope) ? data.gunMain.getGunData().get(GunData.ScopeName) : null, HideMath.completion(1, data.gunMain.getGunData().get(GunData.ScopeZoom), data.adsRes),
+					data.gunMain.getGunData().get(GunData.ScopeSize));
 		}
 		// System.out.println("render");
 	}
@@ -315,7 +318,7 @@ public class RenderHandler {
 	public static void RenderHand(RenderHandEvent event) {//*
 		ItemStack item = mc.player.getHeldItemMainhand();
 		if (ItemGun.isGun(item)) {
-			HideModel model = PackData.getModel(ItemGun.getGunData(item).ITEM_MODELNAME);
+			HideModel model = PackData.getModel(ItemGun.getGunData(item).get(ItemData.ModelName));
 			if (model != null) {
 				if (mc.gameSettings.thirdPersonView != 0 || (HideViewHandler.isADS && HideViewHandler.isScope))//TODO モデルにサイトを付けたバージョンに対応しなきゃ
 					return;

@@ -6,7 +6,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import types.base.DataBase;
+import hide.types.base.DataBase;
 
 /** モデルのアニメーション用 */
 public class Bone extends DataBase {

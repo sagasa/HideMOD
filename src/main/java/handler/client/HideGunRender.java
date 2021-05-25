@@ -1,5 +1,6 @@
 package handler.client;
 
+import hide.types.items.GunData;
 import items.ItemGun;
 import model.AnimationType;
 import model.HideModel;
@@ -87,7 +88,7 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 			//RenderHandler.makeDot();
 
 			//	System.out.println(ItemGun.getGunData(p_188358_2_).ITEM_MODELNAME+ItemGun.getGunData(p_188358_2_).ITEM_ICONNAME);
-			HideModel model = PackData.getModel(ItemGun.getGunData(p_188358_2_).ITEM_MODELNAME);
+			HideModel model = PackData.getModel(ItemGun.getGunData(p_188358_2_).get(GunData.ModelName));
 			if (model != null) {
 				model.render(false, prop);
 			}

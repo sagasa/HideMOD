@@ -5,14 +5,15 @@ import helper.HideMath;
 import hide.guns.data.LoadedMagazine;
 import hide.guns.gui.RecoilHandler;
 import hide.guns.network.PacketShoot;
+import hide.types.items.GunData;
+import hide.types.items.GunFireMode;
+import hide.types.items.MagazineData;
 import hide.ux.HideSoundManager;
 import hidemod.HideMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import types.base.GunFireMode;
-import types.items.MagazineData;
 
 public class ClientGun extends CommonGun {
 
@@ -86,27 +87,27 @@ public class ClientGun extends CommonGun {
 				shootDelay = 0;
 			}
 			shoot(MillistoTick(shootDelay));
-			shootDelay += RPMtoMillis(modifyData.RPM);
+			shootDelay += RPMtoMillis(dataView.get(GunData.RPM));
 			stopshoot = true;
 		} else if (firemode == GunFireMode.FULLAUTO && !stopshoot && shootDelay <= 0 && trigger) {
 			while (shootDelay <= 0 && !stopshoot) {
 				shoot(MillistoTick(shootDelay));
-				shootDelay += RPMtoMillis(modifyData.RPM);
+				shootDelay += RPMtoMillis(dataView.get(GunData.RPM));
 			}
 		} else if (firemode == GunFireMode.BURST && !stopshoot) {
 			// 射撃開始
 			if (trigger && shootNum == -1 && shootDelay <= 0 && !stopshoot) {
-				shootNum = modifyData.BURST_BULLET_NUM;
+				shootNum = dataView.get(GunData.BurstCount);
 			}
 			while (shootNum > 0 && shootDelay <= 0 && !stopshoot) {
 				shoot(MillistoTick(shootDelay));
-				shootDelay += RPMtoMillis(modifyData.BURST_RPM);
+				shootDelay += RPMtoMillis(dataView.get(GunData.BurstRPM));
 				shootNum--;
 			}
 			if (shootNum == 0) {
 				stopshoot = true;
 				shootNum = -1;
-				shootDelay += RPMtoMillis(modifyData.RPM);
+				shootDelay += RPMtoMillis(dataView.get(GunData.RPM));
 			}
 			if (stopshoot) {
 				shootNum = -1;
@@ -115,7 +116,7 @@ public class ClientGun extends CommonGun {
 		} else if (firemode == GunFireMode.MINIGUN && !stopshoot && shootDelay <= 0 && trigger) {
 			while (shootDelay <= 0 && !stopshoot) {
 				shoot(MillistoTick(shootDelay));
-				shootDelay += RPMtoMillis(modifyData.RPM);
+				shootDelay += RPMtoMillis(dataView.get(GunData.RPM));
 			}
 		}
 	}
@@ -130,9 +131,9 @@ public class ClientGun extends CommonGun {
 
 			offset += completionTick;
 
-			HideSoundManager.playSound(mc.player, 0, 0, 0, modifyData.SOUND_SHOOT);
+			HideSoundManager.playSound(mc.player, 0, 0, 0, dataView.getData(GunData.SoundShoot));
 
-			RecoilHandler.addRecoil(modifyData, hand);
+			RecoilHandler.addRecoil(dataView.getView(), hand);
 			double x = HideMath.completion(oldX, X, offset);
 			double y = HideMath.completion(oldY, Y, offset);
 			double z = HideMath.completion(oldZ, Z, offset);

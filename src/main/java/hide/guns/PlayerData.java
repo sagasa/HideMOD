@@ -8,6 +8,8 @@ import handler.client.HideViewHandler;
 import hide.common.HideComplement;
 import hide.core.HidePlayerDataManager;
 import hide.core.HidePlayerDataManager.IHidePlayerData;
+import hide.types.items.GunData;
+import hide.types.items.GunFireMode;
 import hidemod.HideMod;
 import items.ItemGun;
 import net.minecraft.client.Minecraft;
@@ -21,7 +23,6 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import network.PacketPlayerMotion;
-import types.base.GunFireMode;
 
 /**銃のプレイヤーごとの情報+処理*/
 public abstract class PlayerData implements IHidePlayerData {
@@ -232,8 +233,8 @@ public abstract class PlayerData implements IHidePlayerData {
 		/** プレイヤーから装備の状態を取得 */
 		public static EquipMode getEquipMode(CommonGun main, CommonGun off) {
 			// 状態検知
-			if (main.isGun() && off.isGun() && main.getGunData().USE_DUALWIELD && off.getGunData().USE_DUALWIELD
-					&& off.getGunData().USE_SECONDARY) {
+			if (main.isGun() && off.isGun() && main.getGunData().get(GunData.UseDualwield) && off.getGunData().get(GunData.UseDualwield)
+					&& off.getGunData().get(GunData.UseSecondary)) {
 				// 両手持ち可能な状態かつ両手に銃を持っている
 				if (main.stateEquals(off)) {
 					// メインとサブが同じ武器なら
@@ -241,7 +242,7 @@ public abstract class PlayerData implements IHidePlayerData {
 				}
 				// 違ったら
 				return OtherDual;
-			} else if (!main.isGun() && off.isGun() && off.getGunData().USE_SECONDARY) {
+			} else if (!main.isGun() && off.isGun() && off.getGunData().get(GunData.UseSecondary)) {
 				// サブだけに銃を持っているなら
 				return Off;
 			} else if (main.isGun()) {

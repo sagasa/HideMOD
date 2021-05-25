@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,17 +22,17 @@ import org.apache.logging.log4j.util.Strings;
 import com.google.gson.Gson;
 
 import helper.ArrayEditor;
+import hide.types.base.DataBase;
+import hide.types.base.DataBase.DataEntry;
+import hide.types.base.Info;
+import hide.types.items.GunData;
+import hide.types.items.ItemData;
+import hide.types.items.MagazineData;
+import hide.types.pack.PackInfo;
 import hidemod.HideMod;
 import model.HideModel;
 import model.HideModel.HideVertex;
 import net.minecraftforge.fml.common.Loader;
-import types.Info;
-import types.PackInfo;
-import types.base.DataBase;
-import types.base.DataBase.DataPath;
-import types.items.GunData;
-import types.items.ItemData;
-import types.items.MagazineData;
 
 /** パックの読み取り */
 public class PackLoader {
@@ -77,8 +76,8 @@ public class PackLoader {
 						LOGGER.error("error : Missing PackInfo");
 						return;
 					}
-					LOGGER.info("Start check and add pack[" + cash.Pack.PACK_NAME + "]");
-					String packDomain = toRegisterName(cash.Pack.PACK_ROOTNAME);
+					LOGGER.info("Start check and add pack[" + cash.Pack.get(PackInfo.PackName) + "]");
+					String packDomain = toRegisterName(cash.Pack.get(PackInfo.PackDomain));
 					// パックの登録
 					PackData.readData.PACK_INFO.add(cash.Pack);
 					// 銃登録
@@ -97,7 +96,7 @@ public class PackLoader {
 					cash.ModelInfos.entrySet()
 							.forEach(entry -> entry.getValue().setModel(cash.Models.get(entry.getKey())));
 					checkAndAddToMap(PackData.readData.MODEL_MAP, cash.ModelInfos, packDomain);
-					LOGGER.info("End check and add pack[" + cash.Pack.PACK_NAME + "]");
+					LOGGER.info("End check and add pack[" + cash.Pack.get(PackInfo.PackName) + "]");
 					LOGGER.info("End read file[" + file.getName() + "]");
 				} catch (IOException e1) {
 					LOGGER.error("error : IOException");
@@ -160,18 +159,18 @@ public class PackLoader {
 			if (PackPattern.GUN.mache(name)) {
 				GunData newGun = gson.fromJson(new String(data, Charset.forName("UTF-8")), GunData.class);
 				Guns.add(newGun);
-				LOGGER.info("add gun[" + newGun.ITEM_DISPLAYNAME + "] to PackReader");
+				LOGGER.info("add gun[" + newGun.get(ItemData.DisplayName) + "] to PackReader");
 			}
 			// magazine認識
 			else if (PackPattern.MAGAZINE.mache(name)) {
 				MagazineData newBullet = gson.fromJson(new String(data, Charset.forName("UTF-8")), MagazineData.class);
 				Magazines.add(newBullet);
-				LOGGER.info("add bullet[" + newBullet.ITEM_DISPLAYNAME + "] to PackReader");
+				LOGGER.info("add bullet[" + newBullet.get(ItemData.DisplayName) + "] to PackReader");
 			}
 			// packInfo認識
 			else if (PackPattern.PACKINFO.mache(name)) {
 				Pack = gson.fromJson(new String(data, Charset.forName("UTF-8")), PackInfo.class);
-				LOGGER.debug("set pack[" + Pack.PACK_NAME + "] to PackReader");
+				LOGGER.debug("set pack[" + Pack.get(PackInfo.PackName) + "] to PackReader");
 			}
 			// Resources認識
 			// Icon
@@ -260,7 +259,7 @@ public class PackLoader {
 		for (T data : from) {
 			// ショートネームを登録名に書き換え アイテムとリソースで別処理
 			setDomain(packDomain, data);
-			String name = data.ITEM_SHORTNAME;
+			String name = data.getSystemName();
 
 			// 重複しないかどうか
 			if (to.containsKey(name)) {
@@ -295,31 +294,20 @@ public class PackLoader {
 
 	/** アノテーションをもとにデータチェック */
 	private static boolean checkData(DataBase data) {
-		try {
-			for (DataPath path : data.getFieldsByType(data.getClass(), null, new ArrayList<>(), true)) {
-				// Nullの判定部分
-				if (path.field.isAccessible() && !Modifier.isTransient(path.field.getModifiers()) && !path.field.getType().isPrimitive() && path.field.get(data) == null) {
+		//表示名が空ならfalse
+		for (DataEntry<?> entry : data.getEntries().values()) {
+			Info info = entry.Info;
+			if (info != null && info.NoEmpty)
+				if (entry.Default.getClass().isArray() && ((Object[]) data.get(entry)).length == 0) {
 					LOGGER.error("null is not allow at" + data.getClass().getSimpleName() + "."
-							+ path.field.getName());
+							+ entry.getName());
+					return false;
+				} else if (List.class.isAssignableFrom(entry.Default.getClass())
+						&& ((List) data.get(entry)).size() == 0) {
+					LOGGER.error("emply list is not allow at" + data.getClass().getSimpleName() + "."
+							+ entry.getName());
 					return false;
 				}
-				// 空リストの判別部分
-				if (path.field.getAnnotation(Info.class) != null && path.field.getAnnotation(Info.class).noEmpty()) {
-					if (path.field.getType().isArray() && ((String[]) path.field.get(data)).length == 0) {
-						LOGGER.error("emply list is not allow at" + data.getClass().getSimpleName() + "."
-								+ path.field.getName());
-						return false;
-					} else if (List.class.isAssignableFrom(path.field.getType())
-							&& ((List) path.field.get(data)).size() == 0) {
-						LOGGER.error("emply list is not allow at" + data.getClass().getSimpleName() + "."
-								+ path.field.getName());
-						return false;
-					}
-				}
-			}
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
-			return false;
 		}
 		return true;
 	}
@@ -327,6 +315,23 @@ public class PackLoader {
 	/** アノテーションをもとに名前を更新 */
 	private static void setDomain(String Domain, DataBase data) {
 		// アノテーションが付いたフィールドの値を更新
+
+		for (DataEntry<?> entry : data.getEntries().values()) {
+			Info info = entry.Info;
+
+			if(info.IsResourceName) {
+
+			}
+
+			String value=(String) data.getEntry(entry).;
+			if (info.isResourceName())
+				return appendModDomain(appendPackDomain(v, info.resourceHeader(), Domain));
+			if (info.isName())
+				return appendPackDomain(v, Domain);
+
+			data.getEntry(entry);
+		}
+
 		DataBase.changeFieldsByType(data, String.class, (v, f) -> {
 			Info info = f.getAnnotation(Info.class);
 			if (info == null)

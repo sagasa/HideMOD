@@ -3,8 +3,8 @@ package model;
 import java.util.Collections;
 import java.util.List;
 
+import hide.types.base.DataBase;
 import net.minecraft.client.renderer.GlStateManager;
-import types.base.DataBase;
 
 /**アニメーション用*/
 public class AnimationKey extends DataBase implements Comparable<AnimationKey> {

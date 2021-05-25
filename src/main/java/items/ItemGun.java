@@ -9,6 +9,9 @@ import com.mojang.realmsclient.gui.ChatFormatting;
 import hide.guns.CommonGun;
 import hide.guns.HideGunNBT;
 import hide.guns.data.LoadedMagazine.Magazine;
+import hide.types.items.GunData;
+import hide.types.items.GunFireMode;
+import hide.types.items.ItemData;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -17,8 +20,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import pack.PackData;
-import types.base.GunFireMode;
-import types.items.GunData;
 
 public class ItemGun extends HideItem<GunData> {
 	/** モデル描画 */
@@ -54,10 +55,10 @@ public class ItemGun extends HideItem<GunData> {
 		}
 		// タグがなければ書き込む;
 		NBTTagCompound hideTag = HideGunNBT.getHideTag(item);
-		hideTag.setString(HideGunNBT.DATA_NAME, data.ITEM_SHORTNAME);
+		hideTag.setString(HideGunNBT.DATA_NAME, data.get(ItemData.ShortName));
 		HideGunNBT.setGunShootDelay(hideTag, 0);
 		HideGunNBT.setGunFireMode(hideTag,
-				GunFireMode.getFireMode(Arrays.asList(data.FIREMODE).iterator().next().toString()));
+				GunFireMode.getFireMode(Arrays.asList(data.get(GunData.FireMode)).iterator().next().toString()));
 		HideGunNBT.setGunUseingBullet(hideTag, CommonGun.LOAD_ANY);
 		return item;
 	}
@@ -65,7 +66,7 @@ public class ItemGun extends HideItem<GunData> {
 	/** データ破損チェック */
 	public static boolean isNormalData(GunData data) {
 		// 弾が登録されているか
-		if (data.MAGAZINE_USE.length == 0) {
+		if (data.get(GunData.UseMagazine).length == 0) {
 			return false;
 		}
 		return true;

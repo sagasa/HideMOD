@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import types.base.DataBase;
+import hide.types.base.DataBase;
 
 /** 条件によって表示モデルを変更するためのクラス */
 public class ModelSelector extends DataBase {

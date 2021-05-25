@@ -9,12 +9,12 @@ import java.util.regex.Pattern;
 
 import com.google.common.collect.ImmutableSet;
 
+import hide.types.items.ItemData;
 import hidemod.HideMod;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.data.MetadataSerializer;
 import net.minecraft.util.ResourceLocation;
-import types.items.ItemData;
 
 /** デフォルトリソースパックに割り込んでリソースを押し込む */
 public class ResourceLoader implements IResourcePack {
@@ -114,10 +114,10 @@ public class ResourceLoader implements IResourcePack {
 	/** Jsonの内容！！！ */
 	public static InputStream makeItemModel(ItemData item) {
 		String data;
-		if (PackData.getModel(item.ITEM_MODELNAME) != null) {
-			data = HasModelJson.replace("TEXTURE", item.ITEM_ICONNAME);
+		if (PackData.getModel(item.get(ItemData.ModelName)) != null) {
+			data = HasModelJson.replace("TEXTURE", item.get(ItemData.IconName));
 		} else {
-			data = NoModelJson.replace("TEXTURE", item.ITEM_ICONNAME);
+			data = NoModelJson.replace("TEXTURE", item.get(ItemData.IconName));
 		}
 		return new ByteArrayInputStream(data.getBytes());
 	}

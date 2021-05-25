@@ -1,9 +1,9 @@
-package types.base;
+package hide.types.items;
 
-public enum GunFireMode{
+public enum GunFireMode {
 	SEMIAUTO, FULLAUTO, MINIGUN, BURST;
-	public static GunFireMode getFireMode(String s){
-		switch(s){
+	public static GunFireMode getFireMode(String s) {
+		switch (s) {
 		case "fullauto":
 			return FULLAUTO;
 		case "semiauto":
@@ -15,8 +15,9 @@ public enum GunFireMode{
 		}
 		return SEMIAUTO;
 	}
-	public static String getFireMode(GunFireMode mode){
-		switch(mode){
+
+	public static String getFireMode(GunFireMode mode) {
+		switch (mode) {
 		case BURST:
 			return "burst";
 		case FULLAUTO:
@@ -28,6 +29,7 @@ public enum GunFireMode{
 		}
 		return "semiauto";
 	}
+
 	@Override
 	public String toString() {
 		return getFireMode(this);

@@ -11,6 +11,10 @@ import hide.common.entity.RenderAABB;
 import hide.guns.HideGunNBT;
 import hide.guns.entiry.EntityBullet;
 import hide.guns.entiry.RenderBullet;
+import hide.types.items.GunData;
+import hide.types.items.ItemData;
+import hide.types.items.MagazineData;
+import hide.types.pack.PackInfo;
 import hidemod.HideMod;
 import items.ItemGun;
 import items.ItemMagazine;
@@ -24,11 +28,6 @@ import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
-import types.PackInfo;
-import types.attachments.AttachmentsData;
-import types.items.GunData;
-import types.items.ItemData;
-import types.items.MagazineData;
 
 public class PackData {
 	/*=================== 配信するもの ========================*/

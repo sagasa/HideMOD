@@ -1,5 +1,6 @@
 package hide.ux.network;
 
+import hide.types.effects.Sound;
 import hide.ux.HideEntitySound;
 import hide.ux.HideSoundManager;
 import hide.ux.SoundHandler;
@@ -14,7 +15,6 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import types.effect.Sound;
 
 public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySound, IMessage> {
 

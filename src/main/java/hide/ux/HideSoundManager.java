@@ -5,12 +5,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import hide.types.effects.Sound;
+import hide.types.util.DataView.ViewCache;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.SoundCategory;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import types.effect.Sound;
 
 @SideOnly(Side.CLIENT)
 public class HideSoundManager {
@@ -39,7 +40,7 @@ public class HideSoundManager {
 		}
 	}
 
-	public void playSound(Sound sound, HideSoundType type) {
+	public void playSound(ViewCache<Sound> sound, HideSoundType type) {
 		updateSound();
 		stopSound(type);
 		sounds.put(type, playSound(entity, X, Y, Z, sound));
@@ -54,9 +55,9 @@ public class HideSoundManager {
 
 	//============= クライアントサイドでの再生メゾット ==============
 
-	public static HideEntitySound playSound(Entity entity, double x, double y, double z, Sound sound) {
-		return playSound(entity, sound.NAME, x, y, z, sound.RANGE, sound.VOL, sound.PITCH, sound.USE_DELAY,
-				sound.USE_DECAY);
+	public static HideEntitySound playSound(Entity entity, double x, double y, double z, ViewCache<Sound> viewCache) {
+		return playSound(entity, viewCache.NAME, x, y, z, viewCache.RANGE, viewCache.VOL, viewCache.PITCH, viewCache.USE_DELAY,
+				viewCache.USE_DECAY);
 	}
 
 	public static HideEntitySound playSound(Entity entity, String soundName, double x, double y, double z, float range,

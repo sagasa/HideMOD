@@ -6,6 +6,8 @@ import java.util.Map;
 import com.mojang.realmsclient.gui.ChatFormatting;
 
 import hide.guns.HideGunNBT;
+import hide.types.items.ItemData;
+import hide.types.items.MagazineData;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
@@ -13,7 +15,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import pack.PackData;
-import types.items.MagazineData;
 
 public class ItemMagazine extends HideItem<MagazineData> {
 
@@ -51,8 +52,8 @@ public class ItemMagazine extends HideItem<MagazineData> {
 			return item;
 		}
 		NBTTagCompound hideTag = HideGunNBT.getHideTag(item);
-		hideTag.setString(HideGunNBT.DATA_NAME, data.ITEM_SHORTNAME);
-		HideGunNBT.setMagazineBulletNum(hideTag, data.MAGAZINE_SIZE);
+		hideTag.setString(HideGunNBT.DATA_NAME, data.get(ItemData.ShortName));
+		HideGunNBT.setMagazineBulletNum(hideTag, data.get(MagazineData.MagazineSize));
 		return item;
 	}
 
@@ -67,7 +68,7 @@ public class ItemMagazine extends HideItem<MagazineData> {
 	@Override
 	public String getItemStackDisplayName(ItemStack stack) {
 		MagazineData data = getMagazineData(stack);
-		return data != null ? data.ITEM_DISPLAYNAME : null;
+		return data != null ? data.get(ItemData.DisplayName) : null;
 	}
 
 	// =========================================================
@@ -94,7 +95,7 @@ public class ItemMagazine extends HideItem<MagazineData> {
 
 	public static boolean isMagazine(ItemStack item, String str) {
 		if (item != null && ItemMagazine.getMagazineData(item) != null
-				&& ItemMagazine.getMagazineData(item).ITEM_SHORTNAME.equals(str)) {
+				&& ItemMagazine.getMagazineData(item).get(ItemData.ShortName).equals(str)) {
 			return true;
 		}
 		return false;
@@ -102,7 +103,7 @@ public class ItemMagazine extends HideItem<MagazineData> {
 
 	public static boolean isMagazine(ItemStack item, String str, int size) {
 		if (item != null && ItemMagazine.getMagazineData(item) != null
-				&& ItemMagazine.getMagazineData(item).ITEM_SHORTNAME.equals(str)
+				&& ItemMagazine.getMagazineData(item).get(ItemData.ShortName).equals(str)
 				&& HideGunNBT.getMagazineBulletNum(item) == size) {
 			return true;
 		}
@@ -123,7 +124,7 @@ public class ItemMagazine extends HideItem<MagazineData> {
 	/** 装弾数取得 */
 	public static int getMagazineSize(ItemStack stack) {
 		MagazineData data = getMagazineData(stack);
-		return data == null ? 0 : data.MAGAZINE_SIZE;
+		return data == null ? 0 : data.get(MagazineData.MagazineSize);
 	}
 
 	/** アップデート 表示更新など */
@@ -139,7 +140,7 @@ public class ItemMagazine extends HideItem<MagazineData> {
 	/** 表示名取得 */
 	public static String getMagazineName(String name) {
 		MagazineData data = PackData.getBulletData(name);
-		return data == null ? "None" : data.ITEM_DISPLAYNAME;
+		return data == null ? "None" : data.get(ItemData.DisplayName);
 	}
 
 	/** BulletData取得 */

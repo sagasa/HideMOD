@@ -12,6 +12,12 @@ import org.apache.logging.log4j.Logger;
 import helper.HideAdder;
 import hide.guns.data.LoadedMagazine;
 import hide.guns.data.LoadedMagazine.Magazine;
+import hide.types.items.GunData;
+import hide.types.items.GunFireMode;
+import hide.types.items.ItemData;
+import hide.types.items.MagazineData;
+import hide.types.util.DataView;
+import hide.types.util.DataView.ViewCache;
 import items.ItemMagazine;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -19,8 +25,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import pack.PackData;
-import types.base.GunFireMode;
-import types.items.GunData;
 
 /** 銃の制御系
  * TickUpdateを要求
@@ -39,7 +43,7 @@ public abstract class CommonGun {
 	protected EnumHand hand;
 
 	// ===============クライアント,サーバー共通部分==================
-	protected GunData modifyData = null;
+	protected DataView<GunData> dataView = new DataView<>(GunData.class, 1);
 
 	public CommonGun(EnumHand hand) {
 		this.hand = hand;
@@ -80,11 +84,8 @@ public abstract class CommonGun {
 	 * カスタムパーツが見つからなければスキップ*/
 	protected void updateCustomize() {
 		if (isGun()) {
-			modifyData = (GunData) PackData.getGunData(gun.getString(HideGunNBT.DATA_NAME)).clone();
-			HideGunNBT.getGunAttachments(gun).stream().map(str -> PackData.getAttachmentData(str))
-					.filter(data -> data != null).forEach(part -> {
-						modifyData.applyChange(part.CHANGE_LIST);
-					});
+			dataView.setBase((GunData) PackData.getGunData(gun.getString(HideGunNBT.DATA_NAME)));
+
 		}
 	}
 
@@ -97,12 +98,12 @@ public abstract class CommonGun {
 	}
 
 	public boolean stateEquals(CommonGun other) {
-		return this.modifyData.ITEM_SHORTNAME.equals(other.modifyData.ITEM_SHORTNAME)
+		return this.dataView.get(ItemData.ShortName).equals(other.dataView.get(ItemData.ShortName))
 				&& this.getFireMode() == other.getFireMode();
 	}
 
-	public GunData getGunData() {
-		return modifyData;
+	public ViewCache<GunData> getGunData() {
+		return dataView.getView();
 	}
 
 	public NBTTagCompound getGunTag() {
@@ -135,12 +136,12 @@ public abstract class CommonGun {
 		if (!isGun())
 			return null;
 		GunFireMode now = HideGunNBT.getGunFireMode(gun);
-		List<String> modes = Arrays.asList(modifyData.FIREMODE);
-		int index = modes.indexOf(now.toString()) + 1;
+		List<GunFireMode> modes = Arrays.asList(dataView.get(GunData.FireMode));
+		int index = modes.indexOf(now) + 1;
 		if (index > modes.size() - 1) {
 			index = 0;
 		}
-		return GunFireMode.getFireMode(modes.get(index));
+		return modes.get(index);
 	}
 
 	/** 次の使用する弾を取得 */
@@ -166,8 +167,8 @@ public abstract class CommonGun {
 
 	/**利用可能なすべてのマガジンの中で最大の保持できる弾薬数*/
 	public int getMaxBulletAmount() {
-		return modifyData.LOAD_NUM * Arrays.stream(getUseMagazines())
-				.map(str -> PackData.getBulletData(str).MAGAZINE_SIZE).max(Comparator.naturalOrder()).get();
+		return dataView.get(GunData.LoadSize) * Arrays.stream(getUseMagazines())
+				.map(str -> PackData.getBulletData(str).get(MagazineData.MagazineSize)).max(Comparator.naturalOrder()).get();
 	}
 
 	/**利用可能なすべてのマガジンを返す NBTの文字列じゃないことに注意*/
@@ -183,7 +184,7 @@ public abstract class CommonGun {
 	}
 
 	public String[] getUseMagazineList() {
-		return modifyData.MAGAZINE_USE;
+		return dataView.get(GunData.UseMagazine);
 	}
 
 	public GunFireMode getFireMode() {
@@ -191,8 +192,7 @@ public abstract class CommonGun {
 	}
 
 	public List<GunFireMode> getFireModeList() {
-		return Arrays.asList(modifyData.FIREMODE).stream().map(str -> GunFireMode.getFireMode(str))
-				.collect(Collectors.toList());
+		return Arrays.asList(dataView.get(GunData.FireMode)).stream().collect(Collectors.toList());
 	}
 
 	public void setGun(EntityPlayer player) {
