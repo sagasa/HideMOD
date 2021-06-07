@@ -66,12 +66,12 @@ public class LoadedMagazine {
 			// 弾の消費処理
 			Magazine mag = magazineList.get(last);
 			mag.num--;
-			if (magazineList.size() > 0 && mag.num <= 0 && PackData.getBulletData(mag.name).MAGAZINE_BREAK) {
+			if (magazineList.size() > 0 && mag.num <= 0 && PackData.getBulletData(mag.name).get(MagazineData.MagazineBreak)) {
 				magazineList.remove(last);
 			}
 			return mag;
 		}
-		if (magazineList.get(last).num <= 0 && PackData.getBulletData(magazineList.get(last).name).MAGAZINE_BREAK) {
+		if (magazineList.get(last).num <= 0 && PackData.getBulletData(magazineList.get(last).name).get(MagazineData.MagazineBreak)) {
 			// System.out.println("Size "+ magazineList.size());
 			magazineList.remove(last);
 		}
@@ -138,7 +138,7 @@ public class LoadedMagazine {
 			if (magData == null) {
 				itr.remove();
 			} else {
-				float dia = mag.num / (float) magData.MAGAZINE_SIZE;
+				float dia = mag.num / (float) magData.get(MagazineData.MagazineSize);
 				if (dia < min) {
 					min = dia;
 					minMag = mag;

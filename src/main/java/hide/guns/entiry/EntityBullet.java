@@ -11,8 +11,7 @@ import helper.RayTracer;
 import helper.RayTracer.Hit;
 import hide.guns.network.PacketHit;
 import hide.types.effects.Explosion;
-import hide.types.items.GunData;
-import hide.types.items.ItemData;
+import hide.types.guns.ProjectileData;
 import hide.types.util.DataView.ViewCache;
 import hide.ux.SoundHandler;
 import hidemod.HideMod;
@@ -62,7 +61,9 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 	private float addtick;
 	public Entity Shooter;
-	private ViewCache<GunData> gunData;
+	private ViewCache<ProjectileData> dataView;
+
+	private String toolName;
 
 	/** 当たったエンティティのリスト 多段ヒット防止用 */
 	private List<Entity> AlreadyHit;
@@ -76,26 +77,26 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	/** 消えるまでの距離 */
 	public float life = 0;
 
-	public EntityBullet(ViewCache<GunData> viewCache, Entity shooter, boolean isADS, float offset, double x,
+	public EntityBullet(ViewCache<ProjectileData> viewCache, Entity shooter, boolean isADS, float offset, double x,
 			double y, double z, float yaw, float pitch) {
 		this(shooter.world);
 		//	System.out.println("off "+offset);
-
-		gunData = viewCache;
+		dataView = viewCache;
 		Shooter = shooter;
 		AlreadyHit = new ArrayList<>();
 		addtick = offset;
-		bulletPower = gunData.get(GunData.BulletPower);
-		life = gunData.get(GunData.Range);
+		bulletPower = dataView.get(ProjectileData.BulletPower);
+		life = dataView.get(ProjectileData.Range);
 
 		setLocationAndAngles(x, y, z, yaw, pitch);
 		setPosition(posX, posY, posZ);
 		// 精度の概念
-		float accuracy;
+		float accuracy = dataView.get(ProjectileData.Accuracy);
 		if (shooter.isSneaking()) {
-			accuracy = isADS ? viewCache.get(GunData.AccuracyADS) : viewCache.get(GunData.Accuracy);
-		} else {
-			accuracy = isADS ? viewCache.get(GunData.AccuracySneak) : viewCache.get(GunData.AccuracySneakADS);
+			accuracy = dataView.get(ProjectileData.AccuracySneak, accuracy);
+		}
+		if (isADS) {
+			accuracy = dataView.get(ProjectileData.AccuracyADS, accuracy);
 		}
 
 		double d = (float) Math.toDegrees(Math.atan(accuracy / 50));
@@ -107,7 +108,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		motionX = -Math.sin(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
 		motionZ = Math.cos(Math.toRadians(rotationYaw)) * Math.cos(Math.toRadians(rotationPitch));
 		motionY = -Math.sin(Math.toRadians(rotationPitch));
-		float f2 = MathHelper.sqrt(motionX * motionX + motionZ * motionZ + motionY * motionY) / gunData.get(GunData.BulletSpeed);
+		float f2 = MathHelper.sqrt(motionX * motionX + motionZ * motionZ + motionY * motionY) / dataView.get(ProjectileData.BulletSpeed);
 		motionX /= f2;
 		motionZ /= f2;
 		motionY /= f2;
@@ -185,23 +186,16 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 					|| block instanceof BlockVine) {
 				continue;
 			}
-			boolean flag = false;
-			for (String name : bulletData.THROUGH_BLOCK) {
-				if (Block.isEqualTo(Block.getBlockFromName(name), block)) {
-					flag = true;
-					break;
-				}
-			}
-			if (!flag) {
-				isHittoBlock = true;
-				lvend = endPos = pos.hitVec;
-				blockState = state;
-				break;
-			}
+
+			isHittoBlock = true;
+			lvend = endPos = pos.hitVec;
+			blockState = state;
+			break;
+
 		}
-		DamageSource damagesource = new HideDamage(HideDamageCase.GUN_BULLET, Shooter, gunData.get(GunData.DisplayName));
-		if (gunData.HIT_IGNORING_ARMOR)
-			damagesource.setDamageBypassesArmor();
+		DamageSource damagesource = new HideDamage(HideDamageCase.GUN_BULLET, Shooter, toolName);
+		//if (gunData.HIT_IGNORING_ARMOR)
+		//	damagesource.setDamageBypassesArmor();
 
 		// Entityとの衝突
 		Iterator<Hit> HitEntitys = RayTracer.getHitEntity(this, world, lvo, lvend, addtick).iterator();
@@ -228,14 +222,14 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 							|| e instanceof EntitySkeleton || e instanceof EntityVillager) {
 						isHeadShot = RayTracer.isHeadShot(e, lvo, lvend, addtick);
 						if (isHeadShot) {
-							damage *= gunData.get(GunData.HeadMultiplier);
+							damage *= dataView.get(ProjectileData.HeadMultiplier);
 						}
 					}
 					// ダメージを与える
 					boolean isDamaged = HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 
 					// 爆発があるなら
-					explode(hit.hitVec, gunData.getData(GunData.ExplosionHitEntity));
+					//explode(hit.hitVec, dataView.getData(ProjectileData.Explosion));//TODO
 
 					// ヒットマーク
 					if (Shooter instanceof EntityPlayerMP && isDamaged && damage > 0.5) {
@@ -261,13 +255,12 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 
 		// 消去処理
 		if (isHittoBlock || bulletPower <= 0 || life <= 0) {
-			if (isHittoBlock) {
-				explode(endPos, gunData.getData(GunData.ExplosionHitGround));
-			}
-			if (life <= 0) {
-				explode(endPos, gunData.getData(GunData.ExplosionTimeout));
-			}
+			if (life <= 0 && dataView.get(ProjectileData.ExplosionOnTimeout)) {
+				explode(endPos, dataView.getData(ProjectileData.Explosion));
+			} else
+				explode(endPos, dataView.getData(ProjectileData.Explosion));
 			setDead();
+
 		}
 	}
 
@@ -315,12 +308,12 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 					}
 				}
 
-				DamageSource damagesource = new HideDamage(HideDamageCase.GUN_Explosion, Shooter, gunData.get(ItemData.DisplayName));
+				DamageSource damagesource = new HideDamage(HideDamageCase.GUN_Explosion, Shooter, toolName);
 				// ダメージを与える
 				HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 			}
 			// サウンド
-			SoundHandler.broadcastSound(this, endPos.x, endPos.y, endPos.z, explosion.get(Explosion.Sound), false);
+			SoundHandler.broadcastSound(this, endPos.x, endPos.y, endPos.z, explosion.getData(Explosion.Sound), false);
 			// TODO エフェクト サウンドの対象を座標に変えなきゃ
 		}
 	}
@@ -330,10 +323,10 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		float damage = 0;
 		switch (target) {
 		case Living:
-			damage = gunData.get(GunData.DamageLiving).get(distance);
+			damage = dataView.get(ProjectileData.DamageLiving).get(distance);
 			break;
 		case Player:
-			damage = gunData.get(GunData.DamagePlayer).get(distance);
+			damage = dataView.get(ProjectileData.DamagePlayer).get(distance);
 			break;
 		case Vehicle:
 			break;

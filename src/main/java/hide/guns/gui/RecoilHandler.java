@@ -5,7 +5,8 @@ import java.util.EnumMap;
 import handler.client.HideViewHandler;
 import helper.HideMath;
 import hide.types.effects.Recoil;
-import hide.types.items.GunData;
+import hide.types.guns.ProjectileData;
+import hide.types.util.DataView;
 import hide.types.util.DataView.ViewCache;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.EnumHand;
@@ -34,7 +35,7 @@ public class RecoilHandler {
 		private float yawShakeTick = -1;
 		private float pitchShakeTick = -1;
 
-		private ViewCache<GunData> nowGun = null;
+		private ViewCache<ProjectileData> nowGun = null;
 
 		private void clearRecoil() {
 			yawShakeTo = pitchShakeTo = 0;
@@ -46,15 +47,17 @@ public class RecoilHandler {
 		 *
 		 * @param shooter
 		 */
-		private void addRecoil(ViewCache<GunData> data) {
-			nowGun = data;
-			ViewCache<Recoil> recoil = getRecoil(data);
+		private void addRecoil(ViewCache<ProjectileData> viewCache) {
+			nowGun = viewCache;
+			ViewCache<Recoil> recoil = getRecoil(viewCache);
 			float yawrecoil = getHorizontalRecoil(recoil);
 			float pitchrecoil = getVerticalRecoil(recoil);
 
 			// リコイル戻し
 			yawReturnTo = getHorizontalReturn(recoil, yawrecoil);
 			pitchReturnTo = getVerticalReturn(recoil, pitchrecoil);
+
+			System.out.println("recoil " + yawrecoil + " " + pitchrecoil);
 
 			// リコイル
 			yawShakeTo += yawrecoil;
@@ -65,8 +68,9 @@ public class RecoilHandler {
 
 			pitchReturnTick = yawReturnTick = -1;
 			// リコイルパワー加算
-			recoilPower = recoilPower + getRecoil(data).get(Recoil.PowerShoot) > 1f ? 1f
-					: recoilPower + getRecoil(data).get(Recoil.PowerShoot);
+			recoilPower += recoil.get(Recoil.PowerShoot);
+			if (1f < recoilPower)
+				recoilPower = 1f;
 		}
 
 		/** Tick毎の変化 */
@@ -109,7 +113,9 @@ public class RecoilHandler {
 				pitchReturnTick -= tick;
 			}
 			if (recoilPower > 0) {
-				recoilPower = recoilPower - recoil.get(Recoil.PowerTick) < 0 ? 0 : recoilPower - recoil.get(Recoil.PowerTick);
+				recoilPower -= recoil.get(Recoil.PowerTick) * tick;
+				if (recoilPower < 0)
+					recoilPower = 0;
 			}
 			// 適応が終わったら止める
 			if (pitchReturnTick == -1 && yawReturnTick == -1 && pitchShakeTick == -1 && yawShakeTick == -1) {
@@ -133,8 +139,8 @@ public class RecoilHandler {
 		lastTime = now;
 	}
 
-	public static void addRecoil(ViewCache<GunData> modifyData, EnumHand hand) {
-		recoilcash.get(hand).addRecoil(modifyData);
+	public static void addRecoil(ViewCache<ProjectileData> viewCache, EnumHand hand) {
+		recoilcash.get(hand).addRecoil(viewCache);
 	}
 
 	public static void clearRecoil(EnumHand hand) {
@@ -147,43 +153,19 @@ public class RecoilHandler {
 	}
 
 	/** プレイヤーの状態から使用するリコイルを取得 */
-	private static ViewCache<Recoil> getRecoil(ViewCache<GunData> data) {
+	private static ViewCache<Recoil> getRecoil(ViewCache<ProjectileData> viewCache) {
 		boolean sneak = Minecraft.getMinecraft().player != null ? Minecraft.getMinecraft().player.isSneaking() : false;
-		return getRecoil(data, sneak, HideViewHandler.isADS);
+		return getRecoil(viewCache, sneak, HideViewHandler.isADS);
 	}
 
-	private static ViewCache<Recoil> DefaultRecoil = new ViewCache<>(Recoil.class);
+	private static DataView<Recoil> recoilView = new DataView<>(Recoil.class, 2);
 
 	// 状態から取得 使えなかった場合前を参照
-	private static ViewCache<Recoil> getRecoil(ViewCache<GunData> data, boolean isSneak, boolean isADS) {
-		if (!isSneak) {
-			if (isADS) {
-				ViewCache<Recoil> recoil = data.getData(GunData.RecoilADS);
-				if (recoil.get(Recoil.Use)) {
-					return recoil;
-				}
-				return getRecoil(data, false, false);
-			} else {
-				ViewCache<Recoil> recoil = data.getData(GunData.Recoil);
-				if (recoil.get(Recoil.Use)) {
-					return recoil;
-				}
-				return DefaultRecoil;
-			}
-		} else {
-			if (isADS) {
-				ViewCache<Recoil> recoil = data.getData(GunData.RecoilSneakADS);
-				if (recoil.get(Recoil.Use)) {
-					return recoil;
-				}
-			} else {
-				ViewCache<Recoil> recoil = data.getData(GunData.RecoilSneak);
-				if (recoil.get(Recoil.Use)) {
-					return recoil;
-				}
-			}
-			return getRecoil(data, false, isADS);
-		}
+	private static ViewCache<Recoil> getRecoil(ViewCache<ProjectileData> viewCache, boolean isSneak, boolean isADS) {
+		recoilView.setBase(viewCache.getData(ProjectileData.Recoil));
+		recoilView.setModifier(0, isADS ? viewCache.getData(ProjectileData.RecoilADS) : null);
+		recoilView.setModifier(1, isSneak ? viewCache.getData(ProjectileData.RecoilSneak) : null);
+		return recoilView.getView();
 	}
 
 	/** 横の戻る先を取得 */

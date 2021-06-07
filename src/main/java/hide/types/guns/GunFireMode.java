@@ -1,4 +1,4 @@
-package hide.types.items;
+package hide.types.guns;
 
 public enum GunFireMode {
 	SEMIAUTO, FULLAUTO, MINIGUN, BURST;

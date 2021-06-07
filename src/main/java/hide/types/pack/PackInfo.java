@@ -1,6 +1,6 @@
 package hide.types.pack;
 
-import hide.types.items.NamedData;
+import hide.types.base.NamedData;
 
 /** 親子関係は利用しない */
 public class PackInfo extends NamedData {

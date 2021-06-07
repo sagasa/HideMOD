@@ -1,6 +1,5 @@
 package hide.ux.network;
 
-import hide.types.effects.Sound;
 import hide.ux.HideEntitySound;
 import hide.ux.HideSoundManager;
 import hide.ux.SoundHandler;
@@ -66,10 +65,7 @@ public class PacketPlaySound implements IMessage, IMessageHandler<PacketPlaySoun
 		trackID = track;
 	}
 
-	/** クライアント→クライアント 指定位置で再生 */
-	public PacketPlaySound(Sound sound, double x, double y, double z) {
-		this(sound.NAME, x, y, z, sound.VOL, sound.PITCH, sound.RANGE, sound.USE_DELAY, sound.USE_DECAY, true);
-	}
+
 
 	/** クライアント→クライアント 指定位置で再生 */
 	public PacketPlaySound(String soundName, double x, double y, double z, float vol, float pitch, float range,

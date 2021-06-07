@@ -1,6 +1,7 @@
 package hide.ux;
 
 import hide.types.effects.Sound;
+import hide.types.util.DataView;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.ITickableSound;
 import net.minecraft.client.audio.PositionedSound;
@@ -73,15 +74,15 @@ public class HideEntitySound extends PositionedSound implements ITickableSound {
 
 	/** エンティティに追従する音
 	 * @param e 追従先*/
-	protected HideEntitySound(Sound sound, Entity e, SoundCategory categoryIn) {
+	protected HideEntitySound(DataView<Sound> sound, Entity e, SoundCategory categoryIn) {
 		this(sound, e, 0, 0, 0, categoryIn);
 	}
 
 	/** エンティティに追従する音
 	 * @param e 追従先
 	 * @param move エンティティと音源の位置関係*/
-	protected HideEntitySound(Sound sound, Entity e, double x, double y, double z, SoundCategory categoryIn) {
-		this(e, sound.NAME, x, y, z, sound.VOL, sound.PITCH, sound.RANGE, sound.USE_DELAY, sound.USE_DECAY, categoryIn);
+	protected HideEntitySound(DataView<Sound> sound, Entity e, double x, double y, double z, SoundCategory categoryIn) {
+		this(e, sound.get(Sound.Name), x, y, z, sound.get(Sound.Volume), sound.get(Sound.Pitch), sound.get(Sound.Range), sound.get(Sound.UseDelay), sound.get(Sound.UseDecay), categoryIn);
 	}
 
 	@Override

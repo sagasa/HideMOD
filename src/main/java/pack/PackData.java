@@ -11,6 +11,8 @@ import hide.common.entity.RenderAABB;
 import hide.guns.HideGunNBT;
 import hide.guns.entiry.EntityBullet;
 import hide.guns.entiry.RenderBullet;
+import hide.types.base.NamedData;
+import hide.types.items.AttachmentsData;
 import hide.types.items.GunData;
 import hide.types.items.ItemData;
 import hide.types.items.MagazineData;
@@ -142,6 +144,20 @@ public class PackData {
 		SCOPE_MAP.putAll(from.SCOPE_MAP);
 		SOUND_MAP.putAll(from.SOUND_MAP);
 		TEXTURE_MAP.putAll(from.TEXTURE_MAP);
+
+		NamedData.resolvParent(GUN_DATA_MAP.values());
+		NamedData.resolvParent(MAGAZINE_DATA_MAP.values());
+	}
+
+	public void clear() {
+		ATTACHMENT_DATA_MAP.clear();
+		GUN_DATA_MAP.clear();
+		ICON_MAP.clear();
+		MAGAZINE_DATA_MAP.clear();
+		MODEL_MAP.clear();
+		SCOPE_MAP.clear();
+		SOUND_MAP.clear();
+		TEXTURE_MAP.clear();
 	}
 
 	private void clearAndCopy(Map to, Map from) {

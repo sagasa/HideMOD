@@ -2,10 +2,13 @@ package hide.guns;
 
 import java.util.Iterator;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import hide.guns.data.HideEntityDataManager;
 import hide.guns.data.LoadedMagazine.Magazine;
 import hide.guns.entiry.EntityBullet;
 import hide.guns.network.PacketSyncMag;
+import hide.types.guns.ProjectileData;
 import hide.types.items.GunData;
 import hide.types.items.MagazineData;
 import hide.types.util.DataView;
@@ -53,7 +56,7 @@ public class ServerGun extends CommonGun {
 
 			int shootdelay = HideGunNBT.getGunShootDelay(gun);
 			if (shootdelay != 0)
-				lastShootTime = System.currentTimeMillis() - RPMtoMillis(dataView.get(GunData.RPM)) + shootdelay;
+				lastShootTime = System.currentTimeMillis() - RPMtoMillis(dataView.get(ProjectileData.RPM)) + shootdelay;
 		}
 		stopReload();
 	}
@@ -81,7 +84,7 @@ public class ServerGun extends CommonGun {
 		}
 		//ShootDelayが残っていれば
 		if (lastShootTime != 0) {
-			int shootdelay = (int) (RPMtoMillis(dataView.get(GunData.RPM)) - (System.currentTimeMillis() - lastShootTime));
+			int shootdelay = (int) (RPMtoMillis(dataView.get(ProjectileData.RPM)) - (System.currentTimeMillis() - lastShootTime));
 			//残りが0になったら消しとく
 			if (0 < shootdelay) {
 				HideGunNBT.setGunShootDelay(gun, shootdelay);
@@ -99,7 +102,9 @@ public class ServerGun extends CommonGun {
 
 	/** サーバーサイド */
 	public void shoot(boolean isADS, float offset, double x, double y, double z, float yaw, float pitch) {
-		shoot(dataView, magazine.getNextBullet(), owner, isADS, offset, x, y, z, yaw, pitch);
+		dataView.setModifier(0, magazine.getNextBullet().get(MagazineData.Data));
+
+		shoot(dataView, owner, isADS, offset, x, y, z, yaw, pitch);
 		stopReload();
 
 		World world = owner.world;
@@ -112,16 +117,13 @@ public class ServerGun extends CommonGun {
 	}
 
 	/** エンティティを生成 ShootNumに応じた数弾を出す */
-	private static void shoot(DataView<GunData> dataView, MagazineData bulletdata, Entity shooter, boolean isADS, float offset,
+	private static void shoot(DataView<ProjectileData> dataView, Entity shooter, boolean isADS, float offset,
 			double x, double y, double z, float yaw, float pitch) {
-		if (bulletdata != null && bulletdata.BULLETDATA != null) {
-			SoundHandler.broadcastSound(shooter, 0, 0, 0, dataView.get(GunData.SoundShoot), true);
-			for (int i = 0; i < bulletdata.BULLETDATA.SHOOT_NUM; i++) {
-				EntityBullet bullet = new EntityBullet(dataView.getView(), shooter, isADS, offset, x, y, z, yaw,
-						pitch);
-				if (!bullet.isDead)
-					shooter.world.spawnEntity(bullet);
-			}
+		SoundHandler.broadcastSound(shooter, 0, 0, 0, dataView.getData(ProjectileData.SoundShoot), true);
+		for (int i = 0; i < dataView.get(ProjectileData.ShootCount); i++) {
+			EntityBullet bullet = new EntityBullet(dataView.getView(), shooter, isADS, offset, x, y, z, yaw, pitch);
+			if (!bullet.isDead)
+				shooter.world.spawnEntity(bullet);
 		}
 	}
 
@@ -140,7 +142,7 @@ public class ServerGun extends CommonGun {
 	public boolean needReload() {
 
 		// ReloadAll以外で空きスロットがある場合何もしない
-		if (magazine.getList().size() < dataView.get(GunData.LoadSize)) {
+		if (magazine.getList().size() < gunData.get(GunData.LoadSize)) {
 			return true;
 		}
 		Magazine maxMag = magazineHolder.getMaxMagazine(getUseMagazines());
@@ -148,14 +150,14 @@ public class ServerGun extends CommonGun {
 		if (maxMag.num == 0)
 			return false;
 		MagazineData maxData = PackData.getBulletData(maxMag.name);
-		float maxLoad = maxMag.num / (float) maxData.MAGAZINE_SIZE;
+		float maxLoad = maxMag.num / (float) maxData.get(MagazineData.MagazineSize);
 		Iterator<Magazine> itr = magazine.getList().iterator();
 		while (itr.hasNext()) {
 			Magazine mag = itr.next();
 			MagazineData magData = PackData.getBulletData(mag.name);
-			if (magData == null || mag.num < magData.MAGAZINE_SIZE) {
+			if (magData == null || mag.num < magData.get(MagazineData.MagazineSize)) {
 				//それ以上のマガジンがあるかチェック
-				float minLoad = mag.num / (float) magData.MAGAZINE_SIZE;
+				float minLoad = mag.num / (float) magData.get(MagazineData.MagazineSize);
 				if (minLoad < maxLoad)
 					return true;
 			}
@@ -166,7 +168,7 @@ public class ServerGun extends CommonGun {
 	/**オプションを考慮したマガジン排出処理*/
 	private void exitMagazine(Magazine mag) {
 		MagazineData magData = PackData.getBulletData(mag.name);
-		if (magData != null && (0 < mag.num || !magData.MAGAZINE_BREAK))
+		if (magData != null && (0 < mag.num || !magData.get(MagazineData.MagazineBreak)))
 			magazineHolder.addMagazine(mag.name, mag.num);
 	}
 
@@ -176,6 +178,8 @@ public class ServerGun extends CommonGun {
 	 * プレリロード マガジンを外す
 	 */
 	public boolean preReload(int addReloadTime) {
+		System.out.println(ArrayUtils.toString(gunData.get(GunData.UseMagazine)));
+
 		// ReloadAllの場合リロード可能なマガジンをすべて取り外す
 		// ReloadAll以外+アンロードが許可されている+空スロットがない場合同じ種類で1番少ないマガジンを取り外す
 		// リロードカウントを始める
@@ -189,7 +193,7 @@ public class ServerGun extends CommonGun {
 
 		//空のスロットがない+アンロードが許可されていないなら止める
 		magazine.removeEmpty();
-		if (magazine.getList().size() >= dataView.get(GunData.LoadSize) && !dataView.get(GunData.UnloadInReload)) {
+		if (magazine.getList().size() >= gunData.get(GunData.LoadSize) && !dataView.get(ProjectileData.UnloadInReload)) {
 			return false;
 		}
 		//リロードできる弾があるか
@@ -199,13 +203,13 @@ public class ServerGun extends CommonGun {
 		//リロード開始
 		// 音
 		SoundHandler.broadcastSound(owner, 0, 0, 0,
-				dataView.get(GunData.SoundReload), false, SOUND_RELOAD);
-		reloadTime = dataView.get(GunData.ReloadTick) + addReloadTime;
+				dataView.getData(ProjectileData.SoundReload), false, SOUND_RELOAD);
+		reloadTime = dataView.get(ProjectileData.ReloadTick) + addReloadTime;
 		reloadProgress = reloadTime;
 		//複数回リロード用に追加時間を保存
 		prevAddReloadTime = addReloadTime;
 		// ReloadAll以外で空きスロットがある場合何もしない
-		if (magazine.getList().size() < dataView.get(GunData.LoadSize) && !dataView.get(GunData.ReloadAll)) {
+		if (magazine.getList().size() < gunData.get(GunData.LoadSize) && !dataView.get(ProjectileData.ReloadAll)) {
 			return true;
 		}
 
@@ -221,11 +225,11 @@ public class ServerGun extends CommonGun {
 				magazine.getList().remove(i);
 			}
 			//reloadAllなら問答無用で排出
-			else if (dataView.get(GunData.ReloadAll) && mag.num < magData.MAGAZINE_SIZE) {
+			else if (dataView.get(ProjectileData.ReloadAll) && mag.num < magData.get(MagazineData.MagazineSize)) {
 				exitMagazine(mag);
 				magazine.getList().remove(i);
 			} else {
-				float dia = mag.num / (float) magData.MAGAZINE_SIZE;
+				float dia = mag.num / (float) magData.get(MagazineData.MagazineSize);
 				if (dia < min) {
 					min = dia;
 					minMag = mag;
@@ -233,7 +237,7 @@ public class ServerGun extends CommonGun {
 			}
 		}
 
-		if (!dataView.get(GunData.ReloadAll) && minMag != null) {
+		if (!dataView.get(ProjectileData.ReloadAll) && minMag != null) {
 			magazine.getList().remove(minMag);
 			exitMagazine(minMag);
 		}
@@ -242,7 +246,7 @@ public class ServerGun extends CommonGun {
 	}
 
 	protected void reload() {
-		if (magazine.getList().size() >= dataView.get(GunData.LoadSize)) {
+		if (magazine.getList().size() >= gunData.get(GunData.LoadSize)) {
 			log.info(magazine.getList());
 			log.info("reload stop! magazine is full");
 			return;
@@ -252,7 +256,7 @@ public class ServerGun extends CommonGun {
 		if (mag.num > 0) {
 			magazine.addMagazinetoLast(mag);
 			// 全リロードの場合ループ
-			if (dataView.get(GunData.ReloadAll))
+			if (dataView.get(ProjectileData.ReloadAll))
 				reload();
 			else
 				preReload(prevAddReloadTime);

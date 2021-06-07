@@ -1,6 +1,7 @@
 package hide.types.items;
 
 import hide.types.base.Info;
+import hide.types.base.NamedData;
 
 public class ItemData extends NamedData {
 

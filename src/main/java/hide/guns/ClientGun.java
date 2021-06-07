@@ -5,8 +5,8 @@ import helper.HideMath;
 import hide.guns.data.LoadedMagazine;
 import hide.guns.gui.RecoilHandler;
 import hide.guns.network.PacketShoot;
-import hide.types.items.GunData;
-import hide.types.items.GunFireMode;
+import hide.types.guns.GunFireMode;
+import hide.types.guns.ProjectileData;
 import hide.types.items.MagazineData;
 import hide.ux.HideSoundManager;
 import hidemod.HideMod;
@@ -87,27 +87,27 @@ public class ClientGun extends CommonGun {
 				shootDelay = 0;
 			}
 			shoot(MillistoTick(shootDelay));
-			shootDelay += RPMtoMillis(dataView.get(GunData.RPM));
+			shootDelay += RPMtoMillis(dataView.get(ProjectileData.RPM));
 			stopshoot = true;
 		} else if (firemode == GunFireMode.FULLAUTO && !stopshoot && shootDelay <= 0 && trigger) {
 			while (shootDelay <= 0 && !stopshoot) {
 				shoot(MillistoTick(shootDelay));
-				shootDelay += RPMtoMillis(dataView.get(GunData.RPM));
+				shootDelay += RPMtoMillis(dataView.get(ProjectileData.RPM));
 			}
 		} else if (firemode == GunFireMode.BURST && !stopshoot) {
 			// 射撃開始
 			if (trigger && shootNum == -1 && shootDelay <= 0 && !stopshoot) {
-				shootNum = dataView.get(GunData.BurstCount);
+				shootNum = dataView.get(ProjectileData.BurstCount);
 			}
 			while (shootNum > 0 && shootDelay <= 0 && !stopshoot) {
 				shoot(MillistoTick(shootDelay));
-				shootDelay += RPMtoMillis(dataView.get(GunData.BurstRPM));
+				shootDelay += RPMtoMillis(dataView.get(ProjectileData.BurstRPM));
 				shootNum--;
 			}
 			if (shootNum == 0) {
 				stopshoot = true;
 				shootNum = -1;
-				shootDelay += RPMtoMillis(dataView.get(GunData.RPM));
+				shootDelay += RPMtoMillis(dataView.get(ProjectileData.RPM));
 			}
 			if (stopshoot) {
 				shootNum = -1;
@@ -116,7 +116,7 @@ public class ClientGun extends CommonGun {
 		} else if (firemode == GunFireMode.MINIGUN && !stopshoot && shootDelay <= 0 && trigger) {
 			while (shootDelay <= 0 && !stopshoot) {
 				shoot(MillistoTick(shootDelay));
-				shootDelay += RPMtoMillis(dataView.get(GunData.RPM));
+				shootDelay += RPMtoMillis(dataView.get(ProjectileData.RPM));
 			}
 		}
 	}
@@ -131,7 +131,7 @@ public class ClientGun extends CommonGun {
 
 			offset += completionTick;
 
-			HideSoundManager.playSound(mc.player, 0, 0, 0, dataView.getData(GunData.SoundShoot));
+			HideSoundManager.playSound(mc.player, 0, 0, 0, dataView.getData(ProjectileData.SoundShoot));
 
 			RecoilHandler.addRecoil(dataView.getView(), hand);
 			double x = HideMath.completion(oldX, X, offset);

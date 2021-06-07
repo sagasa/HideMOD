@@ -1,6 +1,7 @@
 package hide.ux;
 
 import hide.types.effects.Sound;
+import hide.types.util.DataView.ViewCache;
 import hide.ux.network.PacketPlaySound;
 import hidemod.HideMod;
 import net.minecraft.entity.Entity;
@@ -12,17 +13,17 @@ import net.minecraft.world.World;
 public class SoundHandler {
 	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用
 	 * @param exept */
-	public static void broadcastSound(Entity e, double x, double y, double z, Sound sound, boolean excepting) {
+	public static void broadcastSound(Entity e, double x, double y, double z, ViewCache<Sound> sound, boolean excepting) {
 		broadcastSound(e, x, y, z, sound, excepting, (byte) 0);
 	}
 
 	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用
 	 * @param exept */
-	public static void broadcastSound(Entity e, double x, double y, double z, Sound sound, boolean excepting,
+	public static void broadcastSound(Entity e, double x, double y, double z, ViewCache<Sound> viewCache, boolean excepting,
 			byte cate) {
-		broadcastSound(e.world, e, sound.get(Sound.Name), x, y, z, sound.get(Sound.Range), sound.get(Sound.Volume), sound.get(Sound.Pitch),
-				sound.get(Sound.UseDelay),
-				sound.get(Sound.UseDecay), excepting, cate);
+		broadcastSound(e.world, e, viewCache.get(Sound.Name), x, y, z, viewCache.get(Sound.Range), viewCache.get(Sound.Volume), viewCache.get(Sound.Pitch),
+				viewCache.get(Sound.UseDelay),
+				viewCache.get(Sound.UseDecay), excepting, cate);
 	}
 
 	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用 */

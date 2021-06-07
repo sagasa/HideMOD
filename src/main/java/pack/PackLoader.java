@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -24,6 +23,7 @@ import com.google.gson.Gson;
 import helper.ArrayEditor;
 import hide.types.base.DataBase;
 import hide.types.base.DataBase.DataEntry;
+import hide.types.base.DataBase.ValueEntry;
 import hide.types.base.Info;
 import hide.types.items.GunData;
 import hide.types.items.ItemData;
@@ -48,6 +48,13 @@ public class PackLoader {
 	/** gson オプションはなし */
 	private static Gson gson = new Gson();
 
+	/**DataBase系クラスの初期化*/
+	static {
+		new GunData();
+		new MagazineData();
+		new PackInfo();
+	}
+
 	public static void reloadInGame() {
 		load();
 	}
@@ -62,6 +69,8 @@ public class PackLoader {
 		if (!HideDir.exists()) {
 			HideDir.mkdirs();
 		}
+
+		PackData.readData.clear();
 		// 使うパターン
 		Pattern zip = Pattern.compile("(.+).zip$");
 
@@ -157,19 +166,19 @@ public class PackLoader {
 		private void addToPack(byte[] data, String name) throws IOException {
 			// Gun認識
 			if (PackPattern.GUN.mache(name)) {
-				GunData newGun = gson.fromJson(new String(data, Charset.forName("UTF-8")), GunData.class);
+				GunData newGun = DataBase.fromJson(new String(data, Charset.forName("UTF-8")));
 				Guns.add(newGun);
 				LOGGER.info("add gun[" + newGun.get(ItemData.DisplayName) + "] to PackReader");
 			}
 			// magazine認識
 			else if (PackPattern.MAGAZINE.mache(name)) {
-				MagazineData newBullet = gson.fromJson(new String(data, Charset.forName("UTF-8")), MagazineData.class);
+				MagazineData newBullet = DataBase.fromJson(new String(data, Charset.forName("UTF-8")));
 				Magazines.add(newBullet);
 				LOGGER.info("add bullet[" + newBullet.get(ItemData.DisplayName) + "] to PackReader");
 			}
 			// packInfo認識
 			else if (PackPattern.PACKINFO.mache(name)) {
-				Pack = gson.fromJson(new String(data, Charset.forName("UTF-8")), PackInfo.class);
+				Pack = DataBase.fromJson(new String(data, Charset.forName("UTF-8")));
 				LOGGER.debug("set pack[" + Pack.get(PackInfo.PackName) + "] to PackReader");
 			}
 			// Resources認識
@@ -316,45 +325,38 @@ public class PackLoader {
 	private static void setDomain(String Domain, DataBase data) {
 		// アノテーションが付いたフィールドの値を更新
 
-		for (DataEntry<?> entry : data.getEntries().values()) {
-			Info info = entry.Info;
-
-			if(info.IsResourceName) {
-
+		for (DataEntry<?> entry : data.getKeySet()) {
+			if (DataBase.class.isAssignableFrom(entry.Default.getClass())) {
+				//再帰
+				DataBase db = (DataBase) data.getEntry(entry).getValue();
+				if (db != entry.Default) {
+					setDomain(Domain, db);
+				}
+				continue;
 			}
 
-			String value=(String) data.getEntry(entry).;
-			if (info.isResourceName())
-				return appendModDomain(appendPackDomain(v, info.resourceHeader(), Domain));
-			if (info.isName())
-				return appendPackDomain(v, Domain);
+			Info info = entry.Info;
+			if (info == null)
+				continue;
 
-			data.getEntry(entry);
+			//System.out.println("Acc " + entry + " " + entry.Info.IsName + " " + entry.Info.IsResourceName + " " + entry.Default.getClass().equals(String[].class));
+
+			if (entry.Default.getClass().equals(String.class)) {
+				ValueEntry<String> valueentry = (ValueEntry<String>) data.getEntry(entry);
+				String value = valueentry.getValue();
+				if (info.IsResourceName)
+					valueentry.setValue(appendModDomain(appendPackDomain(value, info.ResourceHeader, Domain)));
+				else if (info.IsName)
+					valueentry.setValue(appendPackDomain(value, Domain));
+			} else if (entry.Default.getClass().equals(String[].class)) {
+				ValueEntry<String[]> valueentry = (ValueEntry<String[]>) data.getEntry(entry);
+				String[] value = valueentry.getValue();
+				if (info.IsResourceName)
+					valueentry.setValue(Arrays.stream(value).map(name -> appendModDomain(appendPackDomain(name, info.ResourceHeader, Domain))).toArray(String[]::new));
+				else if (info.IsName)
+					valueentry.setValue(Arrays.stream(value).map(name -> appendPackDomain(name, Domain)).toArray(String[]::new));
+			}
 		}
-
-		DataBase.changeFieldsByType(data, String.class, (v, f) -> {
-			Info info = f.getAnnotation(Info.class);
-			if (info == null)
-				return v;
-			if (info.isResourceName())
-				return appendModDomain(appendPackDomain(v, info.resourceHeader(), Domain));
-			if (info.isName())
-				return appendPackDomain(v, Domain);
-			return v;
-		}, true);
-		DataBase.changeFieldsByType(data, String[].class, (v, f) -> {
-			Info info = f.getAnnotation(Info.class);
-			if (info == null)
-				return v;
-			if (info.isResourceName())
-				return Arrays.asList(v).stream().map(name -> appendModDomain(appendPackDomain(name, info.resourceHeader(), Domain)))
-						.collect(Collectors.toList()).toArray(v);
-			if (info.isName())
-				return Arrays.asList(v).stream().map(name -> appendPackDomain(name, Domain))
-						.collect(Collectors.toList())
-						.toArray(v);
-			return v;
-		}, true);
 	}
 
 	/** ドメインを追加 */

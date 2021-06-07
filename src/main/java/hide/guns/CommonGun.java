@@ -12,8 +12,9 @@ import org.apache.logging.log4j.Logger;
 import helper.HideAdder;
 import hide.guns.data.LoadedMagazine;
 import hide.guns.data.LoadedMagazine.Magazine;
+import hide.types.guns.GunFireMode;
+import hide.types.guns.ProjectileData;
 import hide.types.items.GunData;
-import hide.types.items.GunFireMode;
 import hide.types.items.ItemData;
 import hide.types.items.MagazineData;
 import hide.types.util.DataView;
@@ -43,7 +44,8 @@ public abstract class CommonGun {
 	protected EnumHand hand;
 
 	// ===============クライアント,サーバー共通部分==================
-	protected DataView<GunData> dataView = new DataView<>(GunData.class, 1);
+	protected DataView<ProjectileData> dataView = new DataView<>(ProjectileData.class, 1);
+	protected GunData gunData = null;
 
 	public CommonGun(EnumHand hand) {
 		this.hand = hand;
@@ -84,8 +86,8 @@ public abstract class CommonGun {
 	 * カスタムパーツが見つからなければスキップ*/
 	protected void updateCustomize() {
 		if (isGun()) {
-			dataView.setBase((GunData) PackData.getGunData(gun.getString(HideGunNBT.DATA_NAME)));
-
+			gunData = PackData.getGunData(gun.getString(HideGunNBT.DATA_NAME));
+			dataView.setBase((ProjectileData) gunData.get(GunData.Data));
 		}
 	}
 
@@ -102,7 +104,11 @@ public abstract class CommonGun {
 				&& this.getFireMode() == other.getFireMode();
 	}
 
-	public ViewCache<GunData> getGunData() {
+	public GunData getGunData() {
+		return gunData;
+	}
+
+	public ViewCache<ProjectileData> getProjectile() {
 		return dataView.getView();
 	}
 
@@ -136,7 +142,7 @@ public abstract class CommonGun {
 		if (!isGun())
 			return null;
 		GunFireMode now = HideGunNBT.getGunFireMode(gun);
-		List<GunFireMode> modes = Arrays.asList(dataView.get(GunData.FireMode));
+		List<GunFireMode> modes = Arrays.asList(gunData.get(GunData.FireMode));
 		int index = modes.indexOf(now) + 1;
 		if (index > modes.size() - 1) {
 			index = 0;
@@ -167,7 +173,7 @@ public abstract class CommonGun {
 
 	/**利用可能なすべてのマガジンの中で最大の保持できる弾薬数*/
 	public int getMaxBulletAmount() {
-		return dataView.get(GunData.LoadSize) * Arrays.stream(getUseMagazines())
+		return gunData.get(GunData.LoadSize) * Arrays.stream(getUseMagazines())
 				.map(str -> PackData.getBulletData(str).get(MagazineData.MagazineSize)).max(Comparator.naturalOrder()).get();
 	}
 
@@ -184,7 +190,7 @@ public abstract class CommonGun {
 	}
 
 	public String[] getUseMagazineList() {
-		return dataView.get(GunData.UseMagazine);
+		return gunData.get(GunData.UseMagazine);
 	}
 
 	public GunFireMode getFireMode() {
@@ -192,7 +198,7 @@ public abstract class CommonGun {
 	}
 
 	public List<GunFireMode> getFireModeList() {
-		return Arrays.asList(dataView.get(GunData.FireMode)).stream().collect(Collectors.toList());
+		return Arrays.asList(gunData.get(GunData.FireMode)).stream().collect(Collectors.toList());
 	}
 
 	public void setGun(EntityPlayer player) {

@@ -5,7 +5,7 @@ import java.util.List;
 
 import hide.guns.data.LoadedMagazine;
 import hide.guns.data.LoadedMagazine.Magazine;
-import hide.types.items.GunFireMode;
+import hide.types.guns.GunFireMode;
 import hide.types.items.MagazineData;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;

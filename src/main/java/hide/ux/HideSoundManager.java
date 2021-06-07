@@ -55,9 +55,9 @@ public class HideSoundManager {
 
 	//============= クライアントサイドでの再生メゾット ==============
 
-	public static HideEntitySound playSound(Entity entity, double x, double y, double z, ViewCache<Sound> viewCache) {
-		return playSound(entity, viewCache.NAME, x, y, z, viewCache.RANGE, viewCache.VOL, viewCache.PITCH, viewCache.USE_DELAY,
-				viewCache.USE_DECAY);
+	public static HideEntitySound playSound(Entity entity, double x, double y, double z, ViewCache<Sound> sound) {
+		return playSound(entity, sound.get(Sound.Name), x, y, z, sound.get(Sound.Range), sound.get(Sound.Volume), sound.get(Sound.Pitch), sound.get(Sound.UseDelay),
+				sound.get(Sound.UseDecay));
 	}
 
 	public static HideEntitySound playSound(Entity entity, String soundName, double x, double y, double z, float range,
