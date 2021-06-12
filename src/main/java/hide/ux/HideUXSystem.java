@@ -1,6 +1,7 @@
 package hide.ux;
 
 import hide.core.HideSubSystem.IHideSubSystem;
+import hide.ux.network.PacketHideParticle;
 import hide.ux.network.PacketInput;
 import hide.ux.network.PacketPlaySound;
 import hidemod.HideMod;
@@ -16,6 +17,8 @@ public class HideUXSystem implements IHideSubSystem {
 		HideMod.registerNetMsg(PacketPlaySound.class, PacketPlaySound.class, Side.CLIENT);
 		HideMod.registerNetMsg(PacketPlaySound.class, PacketPlaySound.class, Side.SERVER);
 		HideMod.registerNetMsg(PacketPlayerMotion.class, PacketPlayerMotion.class, Side.SERVER);
+
+		HideMod.registerNetMsg(PacketHideParticle.class, PacketHideParticle.class, Side.CLIENT);
 	}
 
 }

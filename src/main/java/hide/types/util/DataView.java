@@ -14,12 +14,10 @@ public class DataView<T extends DataBase> {
 
 	ViewCache<T> cache;
 
-	private Class<T> target;
 	int staticModifierSize;
 
 	public DataView(Class<T> clazz, int staticModifierSize) {
-		target = clazz;
-		cache = new ViewCache<>(target);
+		cache = new ViewCache<>(clazz);
 		this.staticModifierSize = staticModifierSize;
 		cache.staticModifier = new Object[staticModifierSize];
 	}
@@ -28,51 +26,21 @@ public class DataView<T extends DataBase> {
 		if (cache.baseData == base)
 			return;
 		dep();
-		cache.baseData = base;
-		cache.dataMap.forEach((k, v) -> {
-			if (k.Default instanceof DataBase && base.get(k) != k.Default)
-				((ViewCache) v.value).baseData = (DataBase) base.get(k);
-		});
-		cache.clearMap(cache.baseData);
+		cache.setBase(base);
 	}
 
 	public void setModifier(int index, IDataHolder value) {
 		if (cache.staticModifier[index] == value)
 			return;
+		//System.out.println("setMod " + index + " " + value);
 		dep();
-		cache.clearMap((IDataHolder) cache.staticModifier[index]);
-		cache.staticModifier[index] = value;
-		cache.dataMap.forEach((k, v) -> {
-			if (k.Default instanceof DataBase && value.get(k) != k.Default)
-				((ViewCache) v.value).staticModifier[index] = value.get(k);
-		});
-		cache.clearMap(value);
+		cache.setModifier(index, value);
 	}
 
 	public void setModifier(List<IDataHolder> modifier) {
 		if (cache.modifier.equals(modifier))
 			return;
-		clearModifier();
-		cache.modifier = modifier;
-		cache.dataMap.forEach((k, v) -> {
-			if (k.Default instanceof DataBase) {
-				((ViewCache) v.value).modifier = modifier.stream().filter(mod -> mod.get(k) != k.Default).map(mod -> mod.get(k)).collect(Collectors.toList());
-			}
-		});
-		modifier.forEach(mod -> cache.clearMap(mod));
-	}
-
-	public void clearModifier() {
-		if (cache.modifier.isEmpty())
-			return;
-		dep();
-		cache.modifier.forEach(mod -> cache.clearMap(mod));
-		cache.modifier.clear();
-		cache.dataMap.forEach((k, v) -> {
-			if (k.Default instanceof DataBase) {
-				((ViewCache) v.value).modifier = Collections.EMPTY_LIST;
-			}
-		});
+		cache.setModifier(modifier);
 	}
 
 	public ViewCache<T> getView() {
@@ -88,22 +56,73 @@ public class DataView<T extends DataBase> {
 	}
 
 	private void dep() {
-		ViewCache<T> old = cache;
-		cache = new ViewCache<>(target);
-		cache.baseData = old.baseData;
-		cache.modifier = old.modifier;
-		cache.staticModifier = old.staticModifier.clone();
-		cache.dataMap.putAll(old.dataMap);
+		cache = cache.dep();
 	}
 
 	public static class ViewCache<T extends DataBase> implements IDataHolder {
-		IDataHolder baseData;
-		DataMap<ViewEntry> dataMap;
-		Object[] staticModifier;
-		List<? extends IDataHolder> modifier = Collections.EMPTY_LIST;
+		private Class<T> target;
+		private IDataHolder baseData;
+		private DataMap<ViewEntry> dataMap;
+		private Object[] staticModifier;
+		private List<? extends IDataHolder> modifier = Collections.EMPTY_LIST;
 
 		public ViewCache(Class<T> clazz) {
+			target = clazz;
 			dataMap = new DataMap<>(clazz);
+		}
+
+		void setBase(IDataHolder base) {
+			if (baseData == base)
+				return;
+			clearMap(baseData);
+			baseData = base;
+			dataMap.forEach((k, v) -> {
+				if (k.Default instanceof DataBase)
+					((ViewCache) v.value).setBase(base == null ? null : (IDataHolder) base.get(k));
+			});
+			clearMap(baseData);
+		}
+
+		void setModifier(int index, IDataHolder value) {
+			if (staticModifier[index] == value)
+				return;
+			clearMap((IDataHolder) staticModifier[index]);
+			staticModifier[index] = value;
+			dataMap.forEach((k, v) -> {
+				if (k.Default instanceof DataBase)
+					((ViewCache) v.value).setModifier(index, value == null ? null : (IDataHolder) value.get(k));
+			});
+			clearMap(value);
+		}
+
+		void setModifier(List<IDataHolder> mod) {
+			if (mod == null)
+				mod = Collections.EMPTY_LIST;
+			if (modifier.equals(mod))
+				return;
+
+			modifier.forEach(m -> clearMap(m));
+			modifier = mod;
+			dataMap.forEach((k, v) -> {
+				if (k.Default instanceof DataBase) {
+					((ViewCache) v.value).setModifier(modifier.stream().map(m -> m.get(k)).collect(Collectors.toList()));
+				}
+			});
+			modifier.forEach(m -> clearMap(m));
+		}
+
+		private ViewCache<T> dep() {
+			ViewCache<T> cache = new ViewCache<>(target);
+			cache.baseData = baseData;
+			cache.modifier = modifier;
+			cache.staticModifier = staticModifier.clone();
+			dataMap.forEach((k, v) -> {
+				if (k.Default instanceof DataBase)
+					cache.dataMap.put(k, new ViewEntry(((ViewCache) v.value).dep(), null));
+				else
+					cache.dataMap.put(k, new ViewEntry(v.value, v.base));
+			});
+			return cache;
 		}
 
 		@Override
@@ -113,14 +132,19 @@ public class DataView<T extends DataBase> {
 
 		/**キャッシュを削除*/
 		private void clearMap(IDataHolder value) {
-			if (value == null)
-				return;
+			if (value == null) {
+
+				//return;
+			}
+			//System.out.println("clear req " + value);
 			//DataBase以外なら全削除
-			for (DataEntry<?> key : value instanceof DataBase ? ((DataBase) value).getKeySet() : dataMap.keySet()) {
-				//System.out.println("clear " + key);
+			//value instanceof DataBase ? ((DataBase) value).getKeySet() :
+			for (DataEntry<?> key : dataMap.keySet()) {
 				if (key.Default instanceof DataBase) {
-					if (dataMap.containsKey(key))
-						((ViewCache) dataMap.get(key).value).clearMap((DataBase) value.get(key));
+					if (dataMap.containsKey(key)) {
+						//System.out.println("clear " + key);
+						((ViewCache) dataMap.get(key).value).clearMap(value == null ? null : (IDataHolder) value.get(key));
+					}
 				} else
 					dataMap.remove(key);
 			}

@@ -24,6 +24,8 @@ public class PacketHandler {
 		 */
 
 		//		INSTANCE.registerMessage(PacketSync.class, PacketSync.class, 5, Side.SERVER);
+
+
 	}
 
 	/** EntityDataManager用のデータシリアライザ */

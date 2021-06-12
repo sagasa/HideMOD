@@ -14,6 +14,7 @@ import hide.types.effects.Explosion;
 import hide.types.guns.ProjectileData;
 import hide.types.util.DataView.ViewCache;
 import hide.ux.SoundHandler;
+import hide.ux.network.PacketHideParticle;
 import hidemod.HideMod;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
@@ -250,7 +251,18 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 		//パーティクル
 		if (isHittoBlock) {
 			WorldServer worldserver = (WorldServer) world;
-			worldserver.spawnParticle(EnumParticleTypes.BLOCK_CRACK, true, endPos.x, endPos.y, endPos.z, 5, 0.0, 0.0, 0.0, 1.0, Block.getStateId(blockState));
+			//worldserver.spawnParticle(EnumParticleTypes.BLOCK_CRACK, true, endPos.x, endPos.y, endPos.z, 5, 0.0, 0.0, 0.0, 1.0, Block.getStateId(blockState));
+
+			Vec3d vec = lvo.subtract(lvt).normalize().scale(0.3);
+			HideMod.NETWORK.sendToAll(new PacketHideParticle(EnumParticleTypes.BLOCK_CRACK.getParticleID(), Block.getStateId(blockState))
+					.spawnBox((float) endPos.x, (float) endPos.y, (float) endPos.z, 0, 0, 0, 8)
+					.setVelecity(0.02f)
+					.setVelecity3((float) vec.x, (float) vec.y, (float) vec.z));
+			vec = vec.scale(0.3);
+			HideMod.NETWORK.sendToAll(new PacketHideParticle(EnumParticleTypes.CLOUD.getParticleID())
+					.spawnBox((float) endPos.x, (float) endPos.y, (float) endPos.z, 0, 0, 0, 5)
+					.setVelecity(0.02f)
+					.setVelecity3((float) vec.x, (float) vec.y, (float) vec.z));
 		}
 
 		// 消去処理

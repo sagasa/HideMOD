@@ -28,6 +28,7 @@ public class HideHook {
 	@SideOnly(Side.CLIENT)
 	public static void hookOnSetAngle(ModelBiped model, Entity entity) {
 		if (ItemGun.isGun(((EntityLivingBase) entity).getHeldItemMainhand())) {
+
 			model.bipedRightArm.rotateAngleY = -0.1F + model.bipedHead.rotateAngleY;
 			model.bipedLeftArm.rotateAngleY = 0.1F + model.bipedHead.rotateAngleY + 0.4F;
 			model.bipedRightArm.rotateAngleX = -((float) Math.PI / 2F) + model.bipedHead.rotateAngleX;

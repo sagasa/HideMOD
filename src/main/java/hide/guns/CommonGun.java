@@ -88,6 +88,7 @@ public abstract class CommonGun {
 		if (isGun()) {
 			gunData = PackData.getGunData(gun.getString(HideGunNBT.DATA_NAME));
 			dataView.setBase((ProjectileData) gunData.get(GunData.Data));
+			dataView.setModifier(0, null);
 		}
 	}
 
