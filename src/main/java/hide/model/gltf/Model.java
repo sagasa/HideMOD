@@ -1,4 +1,4 @@
-package hide.gltf;
+package hide.model.gltf;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,8 +23,8 @@ import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.MaterialModel;
 import de.javagl.jgltf.model.NodeModel;
 import de.javagl.jgltf.model.TextureModel;
-import hide.gltf.base.ByteBufferInputStream;
-import hide.gltf.base.IDisposable;
+import hide.model.gltf.base.ByteBufferInputStream;
+import hide.model.gltf.base.IDisposable;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.texture.DynamicTexture;

@@ -1,6 +1,6 @@
-package hide.gltf;
+package hide.model.gltf;
 
-import static hide.gltf.TransformMatUtil.*;
+import static hide.model.gltf.TransformMatUtil.*;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -24,9 +24,9 @@ import de.javagl.jgltf.model.MeshModel;
 import de.javagl.jgltf.model.MeshPrimitiveModel;
 import de.javagl.jgltf.model.NodeModel;
 import de.javagl.jgltf.model.SkinModel;
-import hide.gltf.Model.HideMaterial;
-import hide.gltf.Model.HideShader;
-import hide.gltf.base.IDisposable;
+import hide.model.gltf.Model.HideMaterial;
+import hide.model.gltf.Model.HideShader;
+import hide.model.gltf.base.IDisposable;
 import net.minecraft.client.renderer.GlStateManager;
 
 public class HideNode implements IDisposable {

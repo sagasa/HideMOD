@@ -1,4 +1,4 @@
-package hide.gltf;
+package hide.model.gltf;
 
 import java.nio.FloatBuffer;
 import java.util.List;

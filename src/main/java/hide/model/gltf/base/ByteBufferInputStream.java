@@ -1,4 +1,4 @@
-package hide.gltf.base;
+package hide.model.gltf.base;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;

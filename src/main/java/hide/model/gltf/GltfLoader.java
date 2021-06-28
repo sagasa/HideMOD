@@ -1,4 +1,4 @@
-package hide.gltf;
+package hide.model.gltf;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -23,7 +23,7 @@ import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import de.javagl.jgltf.model.io.v2.GltfReaderV2;
 import de.javagl.jgltf.model.v2.GltfModelV2;
-import hide.gltf.base.ByteBufferInputStream;
+import hide.model.gltf.base.ByteBufferInputStream;
 import hidemod.HideMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;

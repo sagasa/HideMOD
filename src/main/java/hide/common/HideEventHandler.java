@@ -2,9 +2,9 @@ package hide.common;
 
 import handler.client.HideScope;
 import handler.client.RenderHandler;
-import hide.gltf.GltfLoader;
 import hide.guns.data.HideEntityDataManager;
 import hide.guns.gui.RecoilHandler;
+import hide.model.gltf.GltfLoader;
 import hide.ux.HideSoundManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;

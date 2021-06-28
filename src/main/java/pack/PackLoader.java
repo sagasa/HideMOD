@@ -189,8 +189,14 @@ public class PackLoader {
 				LOGGER.info("add icon[" + n + "] to PackReader");
 			}
 			// model
-			if (PackPattern.MODEL.mache(name)) {
-				String n = PackPattern.MODEL.trim(name);
+			if (PackPattern.MODEL_GLB.mache(name)) {
+				String n = PackPattern.MODEL_GLB.trim(name);
+				Models.put(n, ObjLoader.LoadModel(new ByteArrayInputStream(data)));
+				LOGGER.info("add model[" + n + "] to PackReader");
+			}
+			// model
+			if (PackPattern.MODEL_OBJ.mache(name)) {
+				String n = PackPattern.MODEL_OBJ.trim(name);
 				Models.put(n, ObjLoader.LoadModel(new ByteArrayInputStream(data)));
 				LOGGER.info("add model[" + n + "] to PackReader");
 			}
@@ -226,7 +232,7 @@ public class PackLoader {
 			GUN("guns", "json"), MAGAZINE("magazines", "json"), PACKINFO(Pattern.compile("^(.*)pack\\.json$"),
 					"json"), ICON("icons", "png"), SCOPE("scopes",
 							"png"), TEXTURE("textures", "png"), SOUND("sounds",
-									"ogg"), MODEL("models", "obj"), MODEL_INFO("models", "json");
+									"ogg"), MODEL_OBJ("models", "obj"), MODEL_GLB("models", "glb"), MODEL_INFO("models", "json");
 
 			private PackPattern(Pattern mache, String end) {
 				this.mache = mache;

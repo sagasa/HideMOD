@@ -1,4 +1,4 @@
-package hide.gltf;
+package hide.model.gltf;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -141,7 +141,6 @@ public class HideAnimation {
 				value[i] = a + alpha * (b - a);
 			}
 			set(value);
-			//System.out.println(ArrayUtils.toString(value));
 		}
 	}
 
