@@ -157,7 +157,7 @@ public class Model implements IDisposable {
 			GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, mat);
 			mat.position(16);
 			GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, mat);
-			TransformMatUtil.mul(mat, 16, mat, 0, mat, 0);
+			TransformMatUtil.mul4x4(mat, 16, mat, 0, mat, 0);
 			mat.position(0);
 			mat.limit(16);
 

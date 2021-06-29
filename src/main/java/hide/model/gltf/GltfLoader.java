@@ -1,6 +1,5 @@
 package hide.model.gltf;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.File;
@@ -8,21 +7,27 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import de.javagl.jgltf.impl.v2.GlTF;
-import de.javagl.jgltf.model.GltfModel;
-import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import de.javagl.jgltf.model.io.v2.GltfReaderV2;
-import de.javagl.jgltf.model.v2.GltfModelV2;
+import hide.model.gltf.HideAnimation.AnimationPath;
+import hide.model.gltf.animation.Skin;
+import hide.model.gltf.base.Accessor;
+import hide.model.gltf.base.BufferView;
 import hide.model.gltf.base.ByteBufferInputStream;
 import hidemod.HideMod;
 import net.minecraft.client.Minecraft;
@@ -52,7 +57,6 @@ public class GltfLoader {
 		}
 		GL11.glPopMatrix();
 
-
 		for (Result res : Model.profiler.getProfilingData("hide")) {
 			//System.out.println(res.profilerName+" "+res.totalUsePercentage+" "+res.usePercentage);
 		}
@@ -72,61 +76,19 @@ public class GltfLoader {
 	}
 
 	public static Model loadGlb(String modelname, InputStream stream, Side side) throws IOException, GltfException {
-		start();
-
-		//;
-
-		int magic = readUnsignedInt(stream);
-		int version = readUnsignedInt(stream);
-		int length = readUnsignedInt(stream);
-
-		if (magic != 0x46546C67)
-			throw new IllegalArgumentException("file is not GLB");
-		if (version != 2)
-			throw new IllegalArgumentException("GLB File is not v2");
-
-		// First chunk is always JSON
-		int chunkLength = readUnsignedInt(stream);
-		int chunkType = readUnsignedInt(stream);
-		byte[] data = new byte[chunkLength];
-		if (stream.read(data, 0, chunkLength) != chunkLength) {
-			throw new IOException("Failed to read file");
-		}
-		if (chunkType != JSON_CHUNK) {
-			throw new IOException("first chunk is not json");
-		}
-
-		GlTF gltf = reader.read(new ByteArrayInputStream(data));
-		JsonParser parser = new JsonParser();
-		JsonObject root = parser.parse(new String(data, StandardCharsets.UTF_8)).getAsJsonObject();
-
-		//System.out.println(gson.toJson(root));
-
-		lap("load json");
-
-		// Load BIN data
-		chunkLength = readUnsignedInt(stream);
-		chunkType = readUnsignedInt(stream);
-		data = new byte[chunkLength];
-		if (stream.read(data, 0, chunkLength) != chunkLength) {
-			throw new IOException("Failed to read GLB file");
-		}
-		if (chunkType != BIN_CHUNK) {
-			throw new IOException("Expected BIN data but didn't get it");
-		}
-
-		ByteBuffer binData = BufferUtils.createByteBuffer(data.length);
-		binData.put(data);
-		binData.rewind();
-
-		GltfModel model = new GltfModelV2(new GltfAssetV2(gltf, binData));
 
 		return new Model(model);
-		/*
-		meshCache.clear();
-		nodeCache.clear();
-		accessors.clear();
 
+		//*/
+	}
+
+	public List<Mesh> meshCache = new ArrayList<>();
+	public List<HideNode> nodeCache = new ArrayList<>();
+	public List<Accessor> accessors = new ArrayList<>();
+	public List<Skin> skins = new ArrayList<>();
+
+	private GltfLoader(InputStream stream, Side side) {
+		start();
 		lap("init stream");
 		int magic = readUnsignedInt(stream);
 		int version = readUnsignedInt(stream);
@@ -183,8 +145,7 @@ public class GltfLoader {
 		ArrayList<BufferView> bufferViews = new ArrayList<>();
 		for (JsonElement element : root.get("bufferViews").getAsJsonArray()) {
 			BufferView bufferView = gson.fromJson(element, BufferView.class);
-			bufferView.setData((ByteBuffer) binData.slice().position(bufferView.byteOffset)
-					.limit(bufferView.byteOffset + bufferView.byteLength));
+			bufferView.slice(binData);
 			bufferViews.add(bufferView);
 		}
 
@@ -207,6 +168,12 @@ public class GltfLoader {
 		}
 
 		lap("load mesh");
+
+		// Load skins
+		for (JsonElement element : root.get("skins").getAsJsonArray()) {
+			skins.add(gson.fromJson(element, Skin.class).register(accessors));
+		}
+		lap("load skins");
 
 		// Load textures
 		ArrayList<ResourceLocation> textures = new ArrayList<>();
@@ -231,7 +198,7 @@ public class GltfLoader {
 		// Load nodes
 		int[] sceneNodes = gson.fromJson(scene.get("nodes"), int[].class);
 		JsonArray nodeJsonArray = root.get("nodes").getAsJsonArray();
-		ArrayList<Node> rootNodes = new ArrayList<>();
+		ArrayList<HideNode> rootNodes = new ArrayList<>();
 		for (int index : sceneNodes) {
 			rootNodes.add(loadNode(nodeJsonArray, index));
 		}
@@ -242,8 +209,7 @@ public class GltfLoader {
 			for (JsonElement element : root.get("animations").getAsJsonArray()) {
 				JsonObject object = element.getAsJsonObject();
 				String name = getName(object, "default");
-				ArrayList<Sampler> samplers = gson.fromJson(object.get("samplers"), new TypeToken<ArrayList<Sampler>>() {
-				}.getType());
+				ArrayList<Sampler> samplers = gson.fromJson(object.get("samplers"), new TypeToken<ArrayList<Sampler>>() {}.getType());
 				ArrayList<Channel> channels = new ArrayList<>();
 
 				for (JsonElement channelElement : object.get("channels").getAsJsonArray()) {
@@ -274,7 +240,7 @@ public class GltfLoader {
 		}
 		lap("load end");
 		return new Model(new ArrayList<>(nodeCache.values()), rootNodes, animations, textures);
-		//*/
+
 	}
 
 	private static final ResourceLocation RESOURCE_LOCATION_EMPTY = new ResourceLocation("");
@@ -300,92 +266,89 @@ public class GltfLoader {
 		return RESOURCE_LOCATION_EMPTY;
 	}
 
-	/*
-		private static Node loadNode(JsonArray nodeJsonArray, int index) {
-			if (nodeCache.containsKey(index)) {
-				return nodeCache.get(index);
+	private HideNode loadNode(JsonArray nodeJsonArray, int index) {
+		if (nodeCache.containsKey(index)) {
+			return nodeCache.get(index);
+		}
+		JsonObject nodeJson = nodeJsonArray.get(index).getAsJsonObject();
+		HideNode node;
+		ArrayList<HideNode> children = null;
+
+		// Load children if there any
+		if (nodeJson.has("children")) {
+			int[] childrenIndexes = gson.fromJson(nodeJson.get("children"), int[].class);
+			children = new ArrayList<>(childrenIndexes.length);
+			for (int childIndex : childrenIndexes) {
+				children.add(loadNode(nodeJsonArray, childIndex));
 			}
-			JsonObject nodeJson = nodeJsonArray.get(index).getAsJsonObject();
-			Node node;
-			ArrayList<Node> children = null;
-
-			// Load children if there any
-			if (nodeJson.has("children")) {
-				int[] childrenIndexes = gson.fromJson(nodeJson.get("children"), int[].class);
-				children = new ArrayList<>(childrenIndexes.length);
-				for (int childIndex : childrenIndexes) {
-					children.add(loadNode(nodeJsonArray, childIndex));
-				}
-			}
-
-			// Load matrix, or TSR values
-			if (nodeJson.has("matrix")) {
-				node = new Node(children, gson.fromJson(nodeJson.get("matrix"), float[].class));
-			} else {
-				float[] translation = new float[] { 0, 0, 0 };
-				float[] rotation = new float[] { 0, 0, 0, 1 };
-				float[] scale = new float[] { 1, 1, 1 };
-				if (nodeJson.has("translation")) {
-					translation = gson.fromJson(nodeJson.get("translation"), float[].class);
-				}
-				if (nodeJson.has("rotation")) {
-					rotation = gson.fromJson(nodeJson.get("rotation"), float[].class);
-				}
-				if (nodeJson.has("scale")) {
-					scale = gson.fromJson(nodeJson.get("scale"), float[].class);
-				}
-				node = new Node(children, translation, rotation, scale);
-			}
-
-			// NOTE: depends on meshes being preloaded into the cache
-			if (nodeJson.has("mesh")) {
-				node.setMesh(meshCache.get(nodeJson.get("mesh").getAsInt()));
-			}
-
-			if (nodeJson.has("weights")) {
-				node.weights = gson.fromJson(nodeJson.get("weights"), float[].class);
-			}
-
-			node.name = getName(nodeJson, "default");
-			nodeCache.put(index, node);
-
-			return node;
 		}
 
-		private static String getName(JsonObject object, String defaultName) {
-			if (object.has("name")) {
-				return object.get("name").getAsString();
+		// Load matrix, or TSR values
+		if (nodeJson.has("matrix")) {
+			node = new HideNode(children, gson.fromJson(nodeJson.get("matrix"), float[].class));
+		} else {
+			float[] translation = new float[] { 0, 0, 0 };
+			float[] rotation = new float[] { 0, 0, 0, 1 };
+			float[] scale = new float[] { 1, 1, 1 };
+			if (nodeJson.has("translation")) {
+				translation = gson.fromJson(nodeJson.get("translation"), float[].class);
 			}
-			return defaultName;
+			if (nodeJson.has("rotation")) {
+				rotation = gson.fromJson(nodeJson.get("rotation"), float[].class);
+			}
+			if (nodeJson.has("scale")) {
+				scale = gson.fromJson(nodeJson.get("scale"), float[].class);
+			}
+			node = new HideNode(children, translation, rotation, scale);
 		}
 
-
-
-		private static float readFloat(ByteBuffer buf) throws IOException {
-			int arg0 = buf.get();
-			int arg1 = buf.get();
-			int arg2 = buf.get();
-			int arg3 = buf.get();
-
-			return Float.intBitsToFloat((arg0 << 0) + (arg1 << 8) + (arg2 << 16) + (arg3 << 24));
+		// NOTE: depends on meshes being preloaded into the cache
+		if (nodeJson.has("mesh")) {
+			node.setMesh(meshCache.get(nodeJson.get("mesh").getAsInt()));
 		}
 
-		private static Geometry loadPrimitive(MeshPrimitive primitive) {
-			Geometry geometry = new Geometry(primitive.mode.gl);
-
-			for (Entry<Attribute, Integer> attribute : primitive.attributes.entrySet()) {
-				Accessor accessor = GltfLoader.accessors.get(attribute.getValue());
-				//int itemBytes = accessor.type.size * accessor.componentType.size;
-				geometry.setBuffer(attribute.getKey(), accessor);
-			}
-
-			if (primitive.indices != null) {
-				Accessor accessor = GltfLoader.accessors.get(primitive.indices);
-				geometry.setIndices(accessor);
-			}
-
-			return geometry;
+		if (nodeJson.has("weights")) {
+			node.weights = gson.fromJson(nodeJson.get("weights"), float[].class);
 		}
+
+		node.name = getName(nodeJson, "default");
+		nodeCache.put(index, node);
+
+		return node;
+	}
+
+	private static String getName(JsonObject object, String defaultName) {
+		if (object.has("name")) {
+			return object.get("name").getAsString();
+		}
+		return defaultName;
+	}
+
+	private static float readFloat(ByteBuffer buf) throws IOException {
+		int arg0 = buf.get();
+		int arg1 = buf.get();
+		int arg2 = buf.get();
+		int arg3 = buf.get();
+
+		return Float.intBitsToFloat((arg0 << 0) + (arg1 << 8) + (arg2 << 16) + (arg3 << 24));
+	}
+
+	private static Geometry loadPrimitive(MeshPrimitive primitive) {
+		Geometry geometry = new Geometry(primitive.mode.gl);
+
+		for (Entry<Attribute, Integer> attribute : primitive.attributes.entrySet()) {
+			Accessor accessor = GltfLoader.accessors.get(attribute.getValue());
+			//int itemBytes = accessor.type.size * accessor.componentType.size;
+			geometry.setBuffer(attribute.getKey(), accessor);
+		}
+
+		if (primitive.indices != null) {
+			Accessor accessor = GltfLoader.accessors.get(primitive.indices);
+			geometry.setIndices(accessor);
+		}
+
+		return geometry;
+	}
 
 	//*/
 	private static int readUnsignedInt(InputStream stream) throws IOException {
@@ -417,5 +380,10 @@ public class GltfLoader {
 	private static void lap(String name) {
 		System.out.println("Time:" + (System.currentTimeMillis() - time) + " " + name);
 		time = System.currentTimeMillis();
+	}
+
+	public HideNode getNode(int index) {
+		// TODO 自動生成されたメソッド・スタブ
+		return null;
 	}
 }

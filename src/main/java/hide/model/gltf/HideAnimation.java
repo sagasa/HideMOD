@@ -9,8 +9,6 @@ import de.javagl.jgltf.model.AccessorFloatData;
 import de.javagl.jgltf.model.AccessorModel;
 import de.javagl.jgltf.model.AnimationModel;
 import de.javagl.jgltf.model.AnimationModel.Channel;
-import de.javagl.jgltf.model.AnimationModel.Interpolation;
-import de.javagl.jgltf.model.NodeModel;
 
 public class HideAnimation {
 
@@ -24,7 +22,7 @@ public class HideAnimation {
 		final AccessorFloatData output;
 		Interpolation interpolation;
 		final AnimationPath path;
-		final NodeModel node;
+		final HideNode node;
 		final int elementCount;
 
 		HideChannel(Channel channel) {
@@ -81,39 +79,24 @@ public class HideAnimation {
 			return alpha;
 		}
 
-		float[] get() {
+		float[] gen() {
 			float[] value = null;
 			switch (path) {
 			case rotation:
-				value = node.getRotation();
-				if (value == null) {
-					value = new float[4];
-					node.setRotation(value);
-				}
+				value = new float[4];
 				break;
 			case scale:
-				value = node.getScale();
-				if (value == null) {
-					value = new float[3];
-					node.setScale(value);
-				}
+				value = new float[3];
 				break;
 			case translation:
-				value = node.getTranslation();
-				if (value == null) {
-					value = new float[3];
-					node.setTranslation(value);
-				}
+				value = new float[3];
 				break;
 			case weights:
-				value = node.getWeights();
-				if (value == null) {
-					value = new float[elementCount];
-					node.setWeights(value);
-				}
+				value = new float[elementCount];
 				break;
 			}
 			return value;
+
 		}
 
 		void set(float[] value) {
@@ -134,7 +117,7 @@ public class HideAnimation {
 		}
 
 		void linearInterpolator(int index0, int index1, float alpha) {
-			float[] value = get();
+			float[] value = gen();
 			for (int i = 0; i < value.length; i++) {
 				float a = output.get(index0 * elementCount + i);
 				float b = output.get(index1 * elementCount + i);
@@ -142,6 +125,7 @@ public class HideAnimation {
 			}
 			set(value);
 		}
+
 	}
 
 	public HideAnimation(AnimationModel animation) {
@@ -162,6 +146,10 @@ public class HideAnimation {
 		for (HideChannel channel : channels) {
 			channel.apply(key);
 		}
+	}
+
+	enum Interpolation {
+		CUBICSPLINE, LINEAR, STEP;
 	}
 
 	enum AnimationPath {
