@@ -58,7 +58,7 @@ public class Model implements IDisposable {
 		}
 
 		for (NodeModel node : model.getSceneModels().get(0).getNodeModels()) {
-			rootNodes.add(new HideNode(node, this));
+			//rootNodes.add(new HideNode(node, this));
 			System.out.println(ArrayUtils.toString(node.getScale()));
 		}
 		for (AnimationModel animation : model.getAnimationModels()) {

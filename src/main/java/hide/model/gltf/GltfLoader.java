@@ -29,6 +29,7 @@ import hide.model.gltf.animation.Skin;
 import hide.model.gltf.base.Accessor;
 import hide.model.gltf.base.BufferView;
 import hide.model.gltf.base.ByteBufferInputStream;
+import hide.model.gltf.base.Material;
 import hidemod.HideMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -77,15 +78,36 @@ public class GltfLoader {
 
 	public static Model loadGlb(String modelname, InputStream stream, Side side) throws IOException, GltfException {
 
-		return new Model(model);
+		return new GltfLoader(stream, side);
 
 		//*/
 	}
 
-	public List<Mesh> meshCache = new ArrayList<>();
-	public List<HideNode> nodeCache = new ArrayList<>();
-	public List<Accessor> accessors = new ArrayList<>();
-	public List<Skin> skins = new ArrayList<>();
+	public Mesh getMesh(int index) {
+		return meshCache.get(index);
+	}
+
+	public HideNode getNode(int index) {
+		return nodeCache.get(index);
+	}
+
+	public Accessor getAccessor(int index) {
+		return accessors.get(index);
+	}
+
+	public Skin getSkin(int index) {
+		return skins.get(index);
+	}
+
+	public Material getMaterial(int index) {
+		return materials.get(index);
+	}
+
+	private List<Mesh> meshCache = new ArrayList<>();
+	private List<HideNode> nodeCache = new ArrayList<>();
+	private List<Accessor> accessors = new ArrayList<>();
+	private List<Skin> skins = new ArrayList<>();
+	private List<Material> materials = new ArrayList<>();
 
 	private GltfLoader(InputStream stream, Side side) {
 		start();
@@ -182,7 +204,7 @@ public class GltfLoader {
 			if (root.has("images")) {
 				root.get("images").getAsJsonArray().forEach(imageJson -> {
 					JsonObject imageObj = imageJson.getAsJsonObject();
-					ByteBuffer bufferView = bufferViews.get(imageObj.get("bufferView").getAsInt()).getData();
+					ByteBuffer bufferView = bufferViews.get(imageObj.get("bufferView").getAsInt()).getBuffer();
 					String mimeType = imageObj.get("mimeType").getAsString();
 					String name = getName(imageObj, "Image_" + textures.size());
 					textures.add(registerTexture(bufferView, modelname));
@@ -209,7 +231,8 @@ public class GltfLoader {
 			for (JsonElement element : root.get("animations").getAsJsonArray()) {
 				JsonObject object = element.getAsJsonObject();
 				String name = getName(object, "default");
-				ArrayList<Sampler> samplers = gson.fromJson(object.get("samplers"), new TypeToken<ArrayList<Sampler>>() {}.getType());
+				ArrayList<Sampler> samplers = gson.fromJson(object.get("samplers"), new TypeToken<ArrayList<Sampler>>() {
+				}.getType());
 				ArrayList<Channel> channels = new ArrayList<>();
 
 				for (JsonElement channelElement : object.get("channels").getAsJsonArray()) {
@@ -219,8 +242,8 @@ public class GltfLoader {
 					System.out.println(accessors.get(sampler.input).getComponentType());
 
 					Accessor ac = accessors.get(sampler.input);
-					ByteBuffer bb = accessors.get(sampler.input).getBufferView().getData();
-					FloatBuffer fb = accessors.get(sampler.input).getBufferView().getData().asFloatBuffer();
+					ByteBuffer bb = accessors.get(sampler.input).getBufferView().getBuffer();
+					FloatBuffer fb = accessors.get(sampler.input).getBufferView().getBuffer().asFloatBuffer();
 
 					System.out.println(accessors.get(sampler.input).getBufferView() + " " + bb);
 					for (int i = 0; i < ac.getCount(); i++) {
@@ -380,10 +403,5 @@ public class GltfLoader {
 	private static void lap(String name) {
 		System.out.println("Time:" + (System.currentTimeMillis() - time) + " " + name);
 		time = System.currentTimeMillis();
-	}
-
-	public HideNode getNode(int index) {
-		// TODO 自動生成されたメソッド・スタブ
-		return null;
 	}
 }

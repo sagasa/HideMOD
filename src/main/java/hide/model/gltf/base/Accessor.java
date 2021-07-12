@@ -3,6 +3,7 @@ package hide.model.gltf.base;
 import java.util.ArrayList;
 
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -17,11 +18,11 @@ public class Accessor {
 	private Number[] min;
 
 	private BufferView buffer;
+
 	public Accessor register(ArrayList<BufferView> bufArray) {
 		buffer = bufArray.get(bufferView);
 		return this;
 	}
-
 
 	public enum ComponentType {
 		@SerializedName("5120")
@@ -51,5 +52,20 @@ public class Accessor {
 		}
 	}
 
+	public int getCount() {
+		return count;
+	}
 
+	public ComponentType getComponentType() {
+		return componentType;
+	}
+
+	public int getByteOffset() {
+		return byteOffset;
+	}
+
+	void bindAttribPointer(int index) {
+		GL20.glEnableVertexAttribArray(index);
+		GL20.glVertexAttribPointer(index, elementType.size, componentType.gl, false, buffer.getByteStride(), byteOffset);
+	}
 }

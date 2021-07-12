@@ -20,6 +20,8 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLContext;
 
+import com.google.gson.annotations.SerializedName;
+
 import de.javagl.jgltf.model.AccessorModel;
 import de.javagl.jgltf.model.BufferViewModel;
 import de.javagl.jgltf.model.MeshModel;
@@ -27,6 +29,7 @@ import de.javagl.jgltf.model.MeshPrimitiveModel;
 import de.javagl.jgltf.model.NodeModel;
 import de.javagl.jgltf.model.SkinModel;
 import hide.model.gltf.HideNode.MeshPrimitiveRender;
+import hide.model.gltf.Mesh.MeshPrimitives.Attribute;
 import hide.model.gltf.Model.HideMaterial;
 import hide.model.gltf.Model.HideShader;
 import hide.model.gltf.animation.Skin;
@@ -37,9 +40,12 @@ public class HideNode implements IDisposable {
 
 	private static boolean GL30Supported = GLContext.getCapabilities().OpenGL30;
 
-	private int[] children = ArrayUtils.EMPTY_INT_ARRAY;
-	private int skin = -1;
-	private int mesh = -1;
+	@SerializedName("children")
+	private int[] childrenIndex = ArrayUtils.EMPTY_INT_ARRAY;
+	@SerializedName("skin")
+	private int skinIndex = -1;
+	@SerializedName("mesh")
+	private int meshIndex = -1;
 	private float[] matrix;
 	private float[] rotation;
 	private float[] scale;
@@ -47,7 +53,7 @@ public class HideNode implements IDisposable {
 	private float[] weights;
 
 	transient private float[] globalMatrix;
-	transient private boolean isValidMat = false;
+	transient private boolean isValidLocalMat = false;
 	transient private boolean isValidGlobalMat = false;
 	transient private boolean isValidWeight = false;
 
@@ -55,23 +61,23 @@ public class HideNode implements IDisposable {
 	transient private boolean useWeight;
 	transient private boolean useSkin;
 
-	transient private Mesh meshModel;
-	transient private Skin skinModel;
+	transient private Mesh mesh;
+	transient private Skin skin;
 
 	public Skin getSkin() {
-		return skinModel;
+		return skin;
 	}
 
-	transient List<HideNode> childrenNode = new ArrayList<>();
-	transient HideNode parentNode = null;
+	transient HideNode[] children = new HideNode[0];
+	transient HideNode parent = null;
 
 	public HideNode getParent() {
-		return parentNode;
+		return parent;
 	}
 
 	transient List<MeshPrimitiveRender> renders = new ArrayList<>();
 
-	transient public final NodeModel nodeModel_;
+	transient public NodeModel nodeModel_;
 	transient private HideShader shader;
 
 	//skin render
@@ -81,16 +87,22 @@ public class HideNode implements IDisposable {
 	transient private FloatBuffer boneMat;
 
 	public void register(GltfLoader loader) {
-		for (int index : children) {
-			HideNode child = loader.nodeCache.get(index);
-			child.parentNode = this;
-			childrenNode.add(child);
+		for (int i = 0; i < childrenIndex.length; i++) {
+			HideNode child = loader.getNode(childrenIndex[i]);
+			child.parent = this;
+			children[i] = child;
 		}
 
-		hasMesh = meshModel != null;
+		hasMesh = meshIndex != -1;
 
-		boolean hasWeight = meshModel.size() != 0;
+		if (hasMesh) {
+			mesh = loader.getMesh(meshIndex);
+		}
+
+		boolean hasWeight = mesh.size() != 0;
+
 		for (MeshModel mesh : node.getMeshModels()) {
+
 			for (MeshPrimitiveModel primitive : mesh.getMeshPrimitiveModels()) {
 				hasWeight = hasWeight && !primitive.getTargets().isEmpty();
 				renders.add(new MeshPrimitiveRender(primitive));
@@ -107,16 +119,12 @@ public class HideNode implements IDisposable {
 			});
 		}
 
-		useSkin = skin != -1;
+		useSkin = skinIndex != -1;
 		shader = useSkin ? Model.SKIN_SHADER : Model.BASE_SHADER;
 		if (useSkin) {
-			skinModel = loader.skins.get(skin);
-			inverseMatrices = getVBO(skinModel.getInverseBindMatrices());
+			skin = loader.skins.get(skinIndex);
+			inverseMatrices = getVBO(skin.getInverseBindMatrices());
 			boneMat = BufferUtils.createFloatBuffer(inverseMatrices.numComponents * inverseMatrices.count);
-			node.setOnMatChange(() -> {
-
-				System.out.println("CalcBoneMat");
-			});
 		}
 	}
 
@@ -125,7 +133,7 @@ public class HideNode implements IDisposable {
 		GL11.glPushMatrix();
 
 		FloatBuffer fb = BufferUtils.createFloatBuffer(16);
-		fb.put(getLocalTransform(nodeModel));
+		fb.put(getLocalMat());
 		fb.rewind();
 		GL11.glMultMatrix(fb);
 
@@ -153,7 +161,7 @@ public class HideNode implements IDisposable {
 
 		GL20.glUseProgram(0);
 		Model.profiler.endSection();
-		for (HideNode node : childrenNode) {
+		for (HideNode node : children) {
 			node.render();
 		}
 
@@ -180,7 +188,7 @@ public class HideNode implements IDisposable {
 			render.dispose();
 		}
 
-		for (HideNode node : childrenNode) {
+		for (HideNode node : children) {
 			node.dispose();
 		}
 	}
@@ -379,37 +387,27 @@ public class HideNode implements IDisposable {
 		}
 	}
 
-	public enum Attribute {
-		POSITION(0), NORMAL(1), TEXCOORD_0(2), TANGENT(3), COLOR_0(4), JOINTS_0(5), WEIGHTS_0(6);
-
-		public final int index;
-
-		Attribute(final int index) {
-			this.index = index;
-		}
-	}
-
 	public void setRotation(float[] value) {
 		if (!Arrays.equals(rotation, value)) {
 			rotation = value;
-			isValidMat = false;
-			isValidGlobalMat = false;
+			isValidLocalMat = false;
+			markInvalidGlobalMat();
 		}
 	}
 
 	public void setScale(float[] value) {
 		if (!Arrays.equals(scale, value)) {
 			scale = value;
-			isValidMat = false;
-			isValidGlobalMat = false;
+			isValidLocalMat = false;
+			markInvalidGlobalMat();
 		}
 	}
 
 	public void setTranslation(float[] value) {
 		if (!Arrays.equals(translation, value)) {
 			translation = value;
-			isValidMat = false;
-			isValidGlobalMat = false;
+			isValidLocalMat = false;
+			markInvalidGlobalMat();
 		}
 	}
 
@@ -420,11 +418,18 @@ public class HideNode implements IDisposable {
 		}
 	}
 
-	ThreadLocal<float[]> TMP_MAT4x4 = ThreadLocal.withInitial(() -> new float[16]);
+	private void markInvalidGlobalMat() {
+		isValidGlobalMat = false;
+		for (HideNode child : children) {
+			child.markInvalidGlobalMat();
+		}
+	}
+
+	private static final ThreadLocal<float[]> TMP_MAT4x4 = ThreadLocal.withInitial(() -> new float[16]);
 
 	public float[] getLocalMat() {
-		if (!isValidMat) {
-			setIdentity4x4(this.matrix);
+		if (!isValidLocalMat) {
+			setIdentity4x4(matrix);
 			float[] s;
 
 			s = this.translation;
@@ -437,7 +442,7 @@ public class HideNode implements IDisposable {
 			s = this.rotation;
 			m = TMP_MAT4x4.get();
 			quaternionToMatrix4x4(s, m);
-			mul4x4(this.matrix, m, this.matrix);
+			mul4x4(matrix, m, matrix);
 
 			s = this.scale;
 			setIdentity4x4(m);
@@ -445,8 +450,23 @@ public class HideNode implements IDisposable {
 			m[5] = s[1];
 			m[10] = s[2];
 			m[15] = 1.0F;
-			mul4x4(this.matrix, m, this.matrix);
+			mul4x4(matrix, m, matrix);
+			isValidLocalMat = true;
 		}
 		return matrix;
+	}
+
+	public float[] getGlobalMat() {
+		if (!isValidGlobalMat) {
+			HideNode currentNode = this;
+			setIdentity4x4(globalMatrix);
+			while (currentNode != null) {
+				mul4x4(currentNode.getLocalMat(), globalMatrix, globalMatrix);
+				currentNode = currentNode.getParent();
+			}
+			isValidGlobalMat = true;
+			System.out.println("CalcBoneMat");
+		}
+		return globalMatrix;
 	}
 }
