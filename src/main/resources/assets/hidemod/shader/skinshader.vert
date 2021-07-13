@@ -7,7 +7,7 @@ layout(location = 1) in vec4 in_Normal;
 layout(location = 2) in vec2 in_TexCoord;
 
 // ボーン番号
-layout(location = 5)  in vec4 in_BoneIndices;  
+layout(location = 5)  in vec4 in_BoneIndices;
 // ボーンウェイト
 layout(location = 6)  in vec4 in_BoneWeight;
 
@@ -15,10 +15,10 @@ layout(location = 6)  in vec4 in_BoneWeight;
 uniform mat4 u_WorldViewProjectionMatrix;
 
 // ボーンの変換行列
-uniform mat4 u_BoneMatrices[128];     
+uniform mat4 u_BoneMatrices[128];
 
 out vec2 v_TexCoord;
-out vec4 test_color;  
+out vec4 test_color;
 
 void main(void) {
     // スキニング用の変換行列を求める(最大４つのボーンの加重平均を求める）

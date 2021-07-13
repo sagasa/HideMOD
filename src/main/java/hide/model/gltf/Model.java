@@ -10,21 +10,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 
-import de.javagl.jgltf.impl.v2.GlTF;
-import de.javagl.jgltf.model.AnimationModel;
-import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.MaterialModel;
-import de.javagl.jgltf.model.NodeModel;
-import de.javagl.jgltf.model.TextureModel;
+import hide.model.gltf.animation.Animation;
 import hide.model.gltf.base.ByteBufferInputStream;
 import hide.model.gltf.base.IDisposable;
+import hide.model.gltf.base.Material;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -39,36 +35,25 @@ public class Model implements IDisposable {
 	public static Profiler profiler = new Profiler();
 
 
-	private GlTF model;
 
 	List<DynamicTexture> textures = new ArrayList<>();
 
 	List<HideNode> rootNodes = new ArrayList<>();
-	Map<String, HideAnimation> animations = new HashMap<>();
+	List<HideNode> nodes = new ArrayList<>();
+	Map<String, Animation> animations = new HashMap<>();
 	Map<MaterialModel, HideMaterial> matMap = new HashMap<>();
 
-	public Model(GltfModel model) {
-		// Client
-		for (TextureModel texture : model.getTextureModels()) {
-			textures.add(makeTexture(texture.getImageModel().getImageData()));
-		}
-
-		for (MaterialModel material : model.getMaterialModels()) {
-			matMap.put(material, new HideMaterial(material));
-		}
-
-		for (NodeModel node : model.getSceneModels().get(0).getNodeModels()) {
-			//rootNodes.add(new HideNode(node, this));
-			System.out.println(ArrayUtils.toString(node.getScale()));
-		}
-		for (AnimationModel animation : model.getAnimationModels()) {
-			System.out.println(animation.getName());
-			animations.put(animation.getName(), new HideAnimation(animation));
-		}
-
-		for (HideAnimation hideAnimation : animations.values()) {
+	public Model() {
+		for (Animation hideAnimation : animations.values()) {
 			hideAnimation.apply(0.5f);
 		}
+	}
+
+	public Model(List<HideNode> nodes, ArrayList<HideNode> root, HashMap<String, Animation> animations, List<Material> materials) {
+		this.rootNodes = root;
+		this.nodes = nodes;
+		this.animations = animations;
+
 	}
 
 	/**Client側処理*/
@@ -86,7 +71,7 @@ public class Model implements IDisposable {
 
 	public void render() {
 
-		for (HideAnimation hideAnimation : animations.values()) {
+		for (Animation hideAnimation : animations.values()) {
 			hideAnimation.apply(anim);
 		}
 		anim += 0.001f;
@@ -164,7 +149,7 @@ public class Model implements IDisposable {
 			GL20.glUniformMatrix4(WORLD_VIEW_PROJECTION_INDEX, false, mat);
 		}
 
-		public void material(HideMaterial material) {
+		public void material(Material material) {
 			GL13.glActiveTexture(GL13.GL_TEXTURE0);
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.baseColorTexture);
 			GL20.glUniform1i(BASE_COLOR_TEXTURE, 0);

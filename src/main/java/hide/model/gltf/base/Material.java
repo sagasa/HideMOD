@@ -1,6 +1,6 @@
 package hide.model.gltf.base;
 
-public class Material {
+public class Material implements IDisposable {
 
 	private MetallicRoughness pbrMetallicRoughness;
 	private NormalTextureInfo normalTexture;
@@ -24,6 +24,10 @@ public class Material {
 		private int texCoord;
 
 		transient private int texID;
+
+		public void regiser() {
+
+		}
 	}
 
 	public static class NormalTextureInfo extends TextureInfo {
@@ -34,11 +38,20 @@ public class Material {
 		private float strength;
 	}
 
-	public void regiser() {
+	public Material regiser() {
+		if(pbrMetallicRoughness.baseColorTexture!=null)
+			pbrMetallicRoughness.baseColorTexture.regiser();
+
+
+		return this;
+	}
+	@Override
+	public void dispose() {
 
 	}
-
 	public enum AlphaMode {
 		OPAQUE, MASK, BLEND
 	}
+
+
 }

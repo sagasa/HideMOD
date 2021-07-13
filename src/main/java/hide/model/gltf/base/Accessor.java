@@ -1,5 +1,6 @@
 package hide.model.gltf.base;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import org.lwjgl.opengl.GL11;
@@ -7,21 +8,34 @@ import org.lwjgl.opengl.GL20;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Accessor {
+public class Accessor implements IDisposable {
 
 	private int bufferView;
 	private int byteOffset;
 	private ComponentType componentType;
 	private ElementType elementType;
 	private int count;
-	private Number[] max;
-	private Number[] min;
+	public Number[] max;
+	public Number[] min;
 
-	private BufferView buffer;
+	transient private BufferView buffer;
 
 	public Accessor register(ArrayList<BufferView> bufArray) {
 		buffer = bufArray.get(bufferView);
 		return this;
+	}
+
+	/**新しくメモリを確保して同じプロパティのアクセサを作成*/
+	public Accessor copy() {
+		Accessor res = new Accessor();
+		res.byteOffset = byteOffset;
+		res.componentType = componentType;
+		res.elementType = elementType;
+		res.count = count;
+		res.max = max;
+		res.min = min;
+		res.buffer = buffer.copy();
+		return res;
 	}
 
 	public enum ComponentType {
@@ -60,12 +74,37 @@ public class Accessor {
 		return componentType;
 	}
 
+	public ElementType getElementType() {
+		return elementType;
+	}
+
 	public int getByteOffset() {
 		return byteOffset;
 	}
 
-	void bindAttribPointer(int index) {
+	public void setTarget(int target) {
+		buffer.setTarget(target);
+	}
+
+	public ByteBuffer getBuffer() {
+		return buffer.getBuffer();
+	}
+
+	public void uploadData() {
+		buffer.uploadData();
+	}
+
+	public void bind() {
+		buffer.bind();
+	}
+	public void bindAttribPointer(int index) {
 		GL20.glEnableVertexAttribArray(index);
 		GL20.glVertexAttribPointer(index, elementType.size, componentType.gl, false, buffer.getByteStride(), byteOffset);
 	}
+
+	@Override
+	public void dispose() {
+		buffer.dispose();
+	}
+
 }

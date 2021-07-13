@@ -1,102 +1,126 @@
 package hide.model.gltf;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.lwjgl.BufferUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GLContext;
 
 import com.google.gson.annotations.SerializedName;
 
-import de.javagl.jgltf.model.AccessorModel;
+import hide.model.gltf.Model.HideShader;
 import hide.model.gltf.base.Accessor;
+import hide.model.gltf.base.IDisposable;
 import hide.model.gltf.base.Material;
 
-public class Mesh {
+public class Mesh implements IDisposable {
+	private static boolean GL30Supported = GLContext.getCapabilities().OpenGL30;
 
 	MeshPrimitives[] primitives;
-	float[] weights;
+	private float[] weights = ArrayUtils.EMPTY_FLOAT_ARRAY;
 
-	public void register(GltfLoader loader) {
+	public boolean hasWeights() {
+		return weights.length != 0;
+	}
+
+	public void calcWeight(float[] weight) {
+		this.weights = weight;
+		for (MeshPrimitives meshPrimitives : primitives) {
+			meshPrimitives.calcWeight(weight);
+		}
+	}
+
+	public Mesh register(GltfLoader loader) {
+		for (MeshPrimitives meshPrimitives : primitives) {
+			meshPrimitives.register(loader);
+		}
+		return this;
+	}
+
+	public void render() {
+		for (MeshPrimitives meshPrimitives : primitives) {
+			meshPrimitives.render();
+		}
 
 	}
 
-	public static class MeshPrimitives {
-		private Map<Attribute, Integer> attributes;
+	public static class MeshPrimitives implements IDisposable {
+		@SerializedName("attributes")
+		private Map<Attribute, Integer> attributeIndex;
 		@SerializedName("indices")
 		private int indicesIndex;
 		@SerializedName("material")
 		private int materialIndex;
 		private Mode mode = Mode.TRIANGLES;
-		private Map<Attribute, Integer>[] targets = (Map<Attribute, Integer>[]) new Object[0];
+		@SerializedName("targets")
+		private Map<Attribute, Integer>[] targetsIndex;
 
+		transient private int vao = -1;
+		transient private HideShader shader;
 		transient private Material material;
+		transient private Accessor indices;
+		transient private Map<Attribute, Accessor> attributes;
+		transient private List<Map<Attribute, Accessor>> targets;
+		/**モーフィングがある場合の頂点データ*///TODO シェーダーでやりたい
+		transient private Map<Attribute, Accessor> target = Collections.emptyMap();
 		transient private int vertexCount;
 		transient private int offset;
 		transient private int componentType;
-		transient private int drawMode;
 
 		transient private boolean hasTarget;
 
-		public void register(GltfLoader loader) {
+		private void register(GltfLoader loader) {
 			material = loader.getMaterial(materialIndex);
-			Accessor indices = loader.getAccessor(indicesIndex);
+			indices = loader.getAccessor(indicesIndex);
+			attributes = new EnumMap<>(Attribute.class);
+			attributeIndex.forEach((att, index) -> attributes.put(att, loader.getAccessor(index)));
+
 			vertexCount = indices.getCount();
 			componentType = indices.getComponentType().gl;
 			offset = indices.getByteOffset();
 
-			hasTarget = targets.length != 0;
-
-			for (Entry<String, AccessorModel> entry : primitive.getAttributes().entrySet()) {
-				Attribute attribute = Attribute.valueOf(entry.getKey());
-				if (attribute != null) {
-					attributeMap.put(attribute, getVBO(entry.getValue()));
-				}
-			}
+			hasTarget = targetsIndex != null && targetsIndex.length != 0;
 
 			//モーフィングがあるなら
-			if (hasTargets) {
-				for (Map<String, AccessorModel> src : primitive.getTargets()) {
-					Map<Attribute, VBOModel> map = new EnumMap<>(Attribute.class);
-					for (Entry<String, AccessorModel> entry : src.entrySet()) {
-						Attribute attribute = Attribute.valueOf(entry.getKey());
-						if (attribute != null)
-							map.put(attribute, getVBO(entry.getValue()));
+			if (hasTarget) {
+				targets = new ArrayList<>();
+				target = new EnumMap<>(Attribute.class);
+				for (Map<Attribute, Integer> src : targetsIndex) {
+					Map<Attribute, Accessor> map = new EnumMap<>(Attribute.class);
+					for (Entry<Attribute, Integer> entry : src.entrySet()) {
+						map.put(entry.getKey(), loader.getAccessor(entry.getValue()));
 					}
 					targets.add(map);
 				}
-				for (String str : primitive.getTargets().get(0).keySet()) {
-					Attribute attribute = Attribute.valueOf(str);
-					if (attribute != null) {
-						VBOModel vbo = new VBOModel(primitive.getAttributes().get(str));
-						vbo.setData(BufferUtils.createByteBuffer(vbo.buffer.limit()));
-						target.put(attribute, vbo);
-						System.out.println(attribute);
-					}
+				for (Entry<Attribute, Accessor> entry : attributes.entrySet()) {
+					target.put(entry.getKey(), entry.getValue().copy());
 				}
 			}
 
-			indicesVBO = getVBO(indices);
-			indicesVBO.target = GL15.GL_ELEMENT_ARRAY_BUFFER;
-
-			System.out.println(primitive.getMaterialModel().getValues());
-
+			indices.setTarget(GL15.GL_ELEMENT_ARRAY_BUFFER);
 		}
 
 		void calcWeight(float[] weight) {
-			for (Attribute attribute : target.keySet()) {
-				ByteBuffer out = target.get(attribute).buffer;
-				for (int j = 0; j < out.limit(); j += 4) {
+			for (Entry<Attribute, Accessor> entry : target.entrySet()) {
+				Attribute attribute = entry.getKey();
+				Accessor outAccessor = entry.getValue();
+				ByteBuffer out = outAccessor.getBuffer();
+				for (int j = 0; j < out.limit(); j += outAccessor.getComponentType().size) {
 					//float f = weight[j];
-					float sum = attributeMap.get(attribute).buffer.getFloat(j);
+					float sum = attributes.get(attribute).getBuffer().getFloat(j);
 					for (int i = 0; i < weight.length; i++) {
 						//Model.profiler.endStartSection("hide.updateWeight.sum");
-						sum += targets.get(i).get(attribute).buffer.getFloat(j) * weight[i];
-
+						Map<Attribute, Accessor> map = targets.get(i);
+						if (map.containsKey(attribute))
+							sum += map.get(attribute).getBuffer().getFloat(j) * weight[i];
 						//Model.profiler.endSection();
 					}
 					out.putFloat(j, sum);
@@ -112,19 +136,19 @@ public class Mesh {
 			}
 
 			//バッファバインド
-			for (Attribute attribute : attributeMap.keySet()) {
-				VBOModel vbo;
-				if (hasTargets && target.containsKey(attribute)) {
+			for (Attribute attribute : attributes.keySet()) {
+				Accessor vbo;
+				if (hasTarget) {
 					vbo = target.get(attribute);
 				} else {
-					vbo = attributeMap.get(attribute);
+					vbo = attributes.get(attribute);
 				}
 				int index = attribute.index;
 				vbo.bind();
 				vbo.bindAttribPointer(index);
 			}
 
-			indicesVBO.bind();
+			indices.bind();
 
 			if (GL30Supported) {
 				GL30.glBindVertexArray(0);
@@ -142,7 +166,7 @@ public class Mesh {
 
 			shader.material(material);
 
-			GL11.glDrawElements(drawMode, vertexCount, componentType, offset);
+			GL11.glDrawElements(mode.gl, vertexCount, componentType, offset);
 
 			if (GL30Supported) {
 				GL30.glBindVertexArray(0);
@@ -153,8 +177,17 @@ public class Mesh {
 		public void dispose() {
 			if (vao != -1)
 				GL30.glDeleteVertexArrays(vao);
-			for (VBOModel vbo : target.values()) {
-				vbo.dispose();
+			indices.dispose();
+			for (Accessor accessor : target.values()) {
+				accessor.dispose();
+			}
+			for (Accessor accessor : attributes.values()) {
+				accessor.dispose();
+			}
+			for (Map<Attribute, Accessor> map : targets) {
+				for (Accessor accessor : map.values()) {
+					accessor.dispose();
+				}
 			}
 		}
 
@@ -184,5 +217,13 @@ public class Mesh {
 				this.index = index;
 			}
 		}
+	}
+
+	@Override
+	public void dispose() {
+		for (MeshPrimitives p : primitives) {
+			p.dispose();
+		}
+
 	}
 }

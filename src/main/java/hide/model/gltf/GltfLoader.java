@@ -7,7 +7,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,24 +17,20 @@ import org.lwjgl.opengl.GL11;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import de.javagl.jgltf.model.io.v2.GltfReaderV2;
-import hide.model.gltf.HideAnimation.AnimationPath;
+import hide.model.gltf.animation.Animation;
 import hide.model.gltf.animation.Skin;
 import hide.model.gltf.base.Accessor;
 import hide.model.gltf.base.BufferView;
 import hide.model.gltf.base.ByteBufferInputStream;
 import hide.model.gltf.base.Material;
-import hidemod.HideMod;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.profiler.Profiler.Result;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -78,7 +73,7 @@ public class GltfLoader {
 
 	public static Model loadGlb(String modelname, InputStream stream, Side side) throws IOException, GltfException {
 
-		return new GltfLoader(stream, side);
+		return new GltfLoader(modelname, stream, side).res;
 
 		//*/
 	}
@@ -109,7 +104,9 @@ public class GltfLoader {
 	private List<Skin> skins = new ArrayList<>();
 	private List<Material> materials = new ArrayList<>();
 
-	private GltfLoader(InputStream stream, Side side) {
+	private Model res;
+
+	private GltfLoader(String modelname, InputStream stream, Side side) throws GltfException, IOException {
 		start();
 		lap("init stream");
 		int magic = readUnsignedInt(stream);
@@ -179,50 +176,42 @@ public class GltfLoader {
 		}
 
 		lap("load accessor");
+		// Load textures
 
-		// Load meshes
-		for (JsonElement meshJson : root.get("meshes").getAsJsonArray()) {
-			ArrayList<Geometry> geometries = new ArrayList<>();
-			for (JsonElement primitive : meshJson.getAsJsonObject().get("primitives").getAsJsonArray()) {
-				geometries.add(loadPrimitive(gson.fromJson(primitive, MeshPrimitive.class)));
+		// Client
+		if (side == Side.CLIENT) {
+			ArrayList<DynamicTexture> textures = new ArrayList<>();
+			if (root.has("images")) {
+				root.get("images").getAsJsonArray().forEach(imageJson -> {
+					JsonObject imageObj = imageJson.getAsJsonObject();
+					ByteBuffer bufferView = bufferViews.get(imageObj.get("bufferView").getAsInt()).getBuffer();
+					textures.add(registerTexture(bufferView));
+				});
 			}
-			meshCache.add(new Mesh(geometries));
 		}
-
-		lap("load mesh");
-
+		lap("load texture");
 		// Load skins
 		for (JsonElement element : root.get("skins").getAsJsonArray()) {
 			skins.add(gson.fromJson(element, Skin.class).register(accessors));
 		}
 		lap("load skins");
-
-		// Load textures
-		ArrayList<ResourceLocation> textures = new ArrayList<>();
-		// Client
-		if (side == Side.CLIENT) {
-			if (root.has("images")) {
-				root.get("images").getAsJsonArray().forEach(imageJson -> {
-					JsonObject imageObj = imageJson.getAsJsonObject();
-					ByteBuffer bufferView = bufferViews.get(imageObj.get("bufferView").getAsInt()).getBuffer();
-					String mimeType = imageObj.get("mimeType").getAsString();
-					String name = getName(imageObj, "Image_" + textures.size());
-					textures.add(registerTexture(bufferView, modelname));
-				});
-			} else {
-				// todo default texture
-				textures.add(RESOURCE_LOCATION_EMPTY);
-			}
+		// Load meshes
+		for (JsonElement element : root.get("meshes").getAsJsonArray()) {
+			meshCache.add(gson.fromJson(element, Mesh.class).register(this));
 		}
 
-		lap("load texture");
+		lap("load mesh");
+
+
 
 		// Load nodes
-		int[] sceneNodes = gson.fromJson(scene.get("nodes"), int[].class);
-		JsonArray nodeJsonArray = root.get("nodes").getAsJsonArray();
+		for (JsonElement element : root.get("nodes").getAsJsonArray()) {
+			nodeCache.add(gson.fromJson(element, HideNode.class).register(this));
+		}
+
 		ArrayList<HideNode> rootNodes = new ArrayList<>();
-		for (int index : sceneNodes) {
-			rootNodes.add(loadNode(nodeJsonArray, index));
+		for (int index : gson.fromJson(scene.get("nodes"), int[].class)) {
+			rootNodes.add(getNode(index));
 		}
 
 		// Load animations
@@ -231,113 +220,22 @@ public class GltfLoader {
 			for (JsonElement element : root.get("animations").getAsJsonArray()) {
 				JsonObject object = element.getAsJsonObject();
 				String name = getName(object, "default");
-				ArrayList<Sampler> samplers = gson.fromJson(object.get("samplers"), new TypeToken<ArrayList<Sampler>>() {
-				}.getType());
-				ArrayList<Channel> channels = new ArrayList<>();
-
-				for (JsonElement channelElement : object.get("channels").getAsJsonArray()) {
-					JsonObject channelObject = channelElement.getAsJsonObject();
-					JsonObject targetObject = channelObject.get("target").getAsJsonObject();
-					Sampler sampler = samplers.get(channelObject.get("sampler").getAsInt());
-					System.out.println(accessors.get(sampler.input).getComponentType());
-
-					Accessor ac = accessors.get(sampler.input);
-					ByteBuffer bb = accessors.get(sampler.input).getBufferView().getBuffer();
-					FloatBuffer fb = accessors.get(sampler.input).getBufferView().getBuffer().asFloatBuffer();
-
-					System.out.println(accessors.get(sampler.input).getBufferView() + " " + bb);
-					for (int i = 0; i < ac.getCount(); i++) {
-						System.out.println(i + " " + " " + bb.getFloat());
-
-					}
-					bb.rewind();
-					channels.add(new Channel(
-							sampler,
-							accessors.get(sampler.input),
-							accessors.get(sampler.output),
-							nodeCache.get(targetObject.get("node").getAsInt()),
-							gson.fromJson(targetObject.get("path"), AnimationPath.class)));
-				}
-				animations.put(name, new Animation(channels));
+				animations.put(name, gson.fromJson(element, Animation.class).register(this));
 			}
 		}
 		lap("load end");
-		return new Model(new ArrayList<>(nodeCache.values()), rootNodes, animations, textures);
-
+		res = new Model(nodeCache, rootNodes, animations, materials);
 	}
-
-	private static final ResourceLocation RESOURCE_LOCATION_EMPTY = new ResourceLocation("");
 
 	/**Client側処理*/
 	@SideOnly(Side.CLIENT)
-	private static ResourceLocation registerTexture(ByteBuffer data, String name) {
+	private static DynamicTexture registerTexture(ByteBuffer data) {
 		try (ByteBufferInputStream is = new ByteBufferInputStream(data)) {
-
-			DynamicTexture texture = new DynamicTexture(TextureUtil.readBufferedImage(is));
-			lap("make dynamic texture");
-			// TODO we're assuming that we have one texture, and giving it the same name/id
-			// as the main model file. This is the same one as defined in the part
-			// definition file
-			ResourceLocation texResLoc = new ResourceLocation(HideMod.MOD_ID, name);
-
-			Minecraft.getMinecraft().getTextureManager().loadTexture(texResLoc, texture);
-
-			return texResLoc;
+			return new DynamicTexture(TextureUtil.readBufferedImage(is));
 		} catch (IOException e) {
-			//Tails.LOGGER.error("Failed to load texture " + name, e);
+			e.printStackTrace();
 		}
-		return RESOURCE_LOCATION_EMPTY;
-	}
-
-	private HideNode loadNode(JsonArray nodeJsonArray, int index) {
-		if (nodeCache.containsKey(index)) {
-			return nodeCache.get(index);
-		}
-		JsonObject nodeJson = nodeJsonArray.get(index).getAsJsonObject();
-		HideNode node;
-		ArrayList<HideNode> children = null;
-
-		// Load children if there any
-		if (nodeJson.has("children")) {
-			int[] childrenIndexes = gson.fromJson(nodeJson.get("children"), int[].class);
-			children = new ArrayList<>(childrenIndexes.length);
-			for (int childIndex : childrenIndexes) {
-				children.add(loadNode(nodeJsonArray, childIndex));
-			}
-		}
-
-		// Load matrix, or TSR values
-		if (nodeJson.has("matrix")) {
-			node = new HideNode(children, gson.fromJson(nodeJson.get("matrix"), float[].class));
-		} else {
-			float[] translation = new float[] { 0, 0, 0 };
-			float[] rotation = new float[] { 0, 0, 0, 1 };
-			float[] scale = new float[] { 1, 1, 1 };
-			if (nodeJson.has("translation")) {
-				translation = gson.fromJson(nodeJson.get("translation"), float[].class);
-			}
-			if (nodeJson.has("rotation")) {
-				rotation = gson.fromJson(nodeJson.get("rotation"), float[].class);
-			}
-			if (nodeJson.has("scale")) {
-				scale = gson.fromJson(nodeJson.get("scale"), float[].class);
-			}
-			node = new HideNode(children, translation, rotation, scale);
-		}
-
-		// NOTE: depends on meshes being preloaded into the cache
-		if (nodeJson.has("mesh")) {
-			node.setMesh(meshCache.get(nodeJson.get("mesh").getAsInt()));
-		}
-
-		if (nodeJson.has("weights")) {
-			node.weights = gson.fromJson(nodeJson.get("weights"), float[].class);
-		}
-
-		node.name = getName(nodeJson, "default");
-		nodeCache.put(index, node);
-
-		return node;
+		return null;
 	}
 
 	private static String getName(JsonObject object, String defaultName) {
@@ -354,23 +252,6 @@ public class GltfLoader {
 		int arg3 = buf.get();
 
 		return Float.intBitsToFloat((arg0 << 0) + (arg1 << 8) + (arg2 << 16) + (arg3 << 24));
-	}
-
-	private static Geometry loadPrimitive(MeshPrimitive primitive) {
-		Geometry geometry = new Geometry(primitive.mode.gl);
-
-		for (Entry<Attribute, Integer> attribute : primitive.attributes.entrySet()) {
-			Accessor accessor = GltfLoader.accessors.get(attribute.getValue());
-			//int itemBytes = accessor.type.size * accessor.componentType.size;
-			geometry.setBuffer(attribute.getKey(), accessor);
-		}
-
-		if (primitive.indices != null) {
-			Accessor accessor = GltfLoader.accessors.get(primitive.indices);
-			geometry.setIndices(accessor);
-		}
-
-		return geometry;
 	}
 
 	//*/

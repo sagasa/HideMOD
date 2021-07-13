@@ -17,13 +17,17 @@ public class BufferView implements IDisposable {
 				.limit(byteOffset + byteLength);
 	}
 
-	public int getByteOffset() {
-		return byteOffset;
+	/**新しくメモリを確保してコピーを作製*/
+	public BufferView copy() {
+		BufferView res = new BufferView();
+		res.byteLength = byteLength;
+		res.byteOffset = byteOffset;
+		res.byteStride = byteStride;
+		res.target = target;
+		res.buffer = buffer.duplicate();
+		return res;
 	}
 
-	public int getByteLength() {
-		return byteLength;
-	}
 
 	public ByteBuffer getBuffer() {
 		return buffer;
@@ -31,14 +35,14 @@ public class BufferView implements IDisposable {
 
 	transient private int vbo = -1;
 
-	void uploadData() {
+	public void uploadData() {
 		if (vbo != -1) {
 			GL15.glBindBuffer(target, vbo);
 			GL15.glBufferData(target, buffer, GL15.GL_STATIC_DRAW);
 		}
 	}
 
-	void bind() {
+	public void bind() {
 		if (vbo == -1) {
 			vbo = GL15.glGenBuffers();
 			GL15.glBindBuffer(target, vbo);
@@ -57,5 +61,9 @@ public class BufferView implements IDisposable {
 
 	public int getByteStride() {
 		return byteStride;
+	}
+
+	public void setTarget(int target) {
+		this.target = target;
 	}
 }

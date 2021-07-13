@@ -2,7 +2,6 @@ package hide.model.gltf.animation;
 
 import java.util.List;
 
-import de.javagl.jgltf.model.AccessorModel;
 import hide.model.gltf.HideNode;
 import hide.model.gltf.base.Accessor;
 
@@ -12,7 +11,7 @@ public class Skin {
 		return this;
 	}
 
-	public AccessorModel getInverseBindMatrices() {
+	public Accessor getInverseBindMatrices() {
 		// TODO 自動生成されたメソッド・スタブ
 		return null;
 	}
