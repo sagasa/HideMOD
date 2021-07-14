@@ -69,6 +69,7 @@ public class HideNode implements IDisposable {
 	transient private boolean hasWeight;
 
 	public HideNode register(GltfLoader loader) {
+		children = new HideNode[childrenIndex.length];
 		for (int i = 0; i < childrenIndex.length; i++) {
 			HideNode child = loader.getNode(childrenIndex[i]);
 			child.parent = this;

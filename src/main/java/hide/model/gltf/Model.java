@@ -12,7 +12,6 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 
@@ -150,31 +149,31 @@ public class Model implements IDisposable {
 		}
 
 		public void material(Material material) {
-			GL13.glActiveTexture(GL13.GL_TEXTURE0);
-			GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.baseColorTexture);
-			GL20.glUniform1i(BASE_COLOR_TEXTURE, 0);
-
-			GL20.glUniform1i(HAS_NORMAL_TEXTURE, material.normalTexture == -1 ? 0 : 1);
-			if (material.normalTexture == -1) {
-				GL13.glActiveTexture(GL13.GL_TEXTURE1);
-				GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.normalTexture);
-				GL20.glUniform1i(NORMAL_TEXTURE, 1);
-			}
-
-			GL20.glUniform1i(HAS_EMISSIVE_TEXTURE, material.emissiveTexture == -1 ? 0 : 1);
-			if (material.normalTexture == -1) {
-				GL13.glActiveTexture(GL13.GL_TEXTURE2);
-				GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.emissiveTexture);
-				GL20.glUniform1i(EMISSIVE_TEXTURE, 2);
-			}
-
-			GL20.glUniform1i(HAS_OCCLUSION_TEXTURE, material.occlusionTexture == -1 ? 0 : 1);
-			if (material.normalTexture == -1) {
-				GL13.glActiveTexture(GL13.GL_TEXTURE3);
-				GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.occlusionTexture);
-				GL20.glUniform1i(OCCLUSION_TEXTURE, 3);
-			}
-			GL13.glActiveTexture(GL13.GL_TEXTURE0);
+//			GL13.glActiveTexture(GL13.GL_TEXTURE0);
+//			GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.baseColorTexture);
+//			GL20.glUniform1i(BASE_COLOR_TEXTURE, 0);
+//
+//			GL20.glUniform1i(HAS_NORMAL_TEXTURE, material.normalTexture == -1 ? 0 : 1);
+//			if (material.normalTexture == -1) {
+//				GL13.glActiveTexture(GL13.GL_TEXTURE1);
+//				GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.normalTexture);
+//				GL20.glUniform1i(NORMAL_TEXTURE, 1);
+//			}
+//
+//			GL20.glUniform1i(HAS_EMISSIVE_TEXTURE, material.emissiveTexture == -1 ? 0 : 1);
+//			if (material.normalTexture == -1) {
+//				GL13.glActiveTexture(GL13.GL_TEXTURE2);
+//				GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.emissiveTexture);
+//				GL20.glUniform1i(EMISSIVE_TEXTURE, 2);
+//			}
+//
+//			GL20.glUniform1i(HAS_OCCLUSION_TEXTURE, material.occlusionTexture == -1 ? 0 : 1);
+//			if (material.normalTexture == -1) {
+//				GL13.glActiveTexture(GL13.GL_TEXTURE3);
+//				GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.occlusionTexture);
+//				GL20.glUniform1i(OCCLUSION_TEXTURE, 3);
+//			}
+//			GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		}
 	}
 

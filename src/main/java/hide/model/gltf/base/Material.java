@@ -1,5 +1,9 @@
 package hide.model.gltf.base;
 
+import java.util.ArrayList;
+
+import net.minecraft.client.renderer.texture.DynamicTexture;
+
 public class Material implements IDisposable {
 
 	private MetallicRoughness pbrMetallicRoughness;
@@ -51,6 +55,10 @@ public class Material implements IDisposable {
 	}
 	public enum AlphaMode {
 		OPAQUE, MASK, BLEND
+	}
+	public Material register(ArrayList<DynamicTexture> textures) {
+		// TODO 自動生成されたメソッド・スタブ
+		return this;
 	}
 
 

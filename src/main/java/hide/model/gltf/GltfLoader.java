@@ -179,8 +179,9 @@ public class GltfLoader {
 		// Load textures
 
 		// Client
+		ArrayList<DynamicTexture> textures = new ArrayList<>();
 		if (side == Side.CLIENT) {
-			ArrayList<DynamicTexture> textures = new ArrayList<>();
+
 			if (root.has("images")) {
 				root.get("images").getAsJsonArray().forEach(imageJson -> {
 					JsonObject imageObj = imageJson.getAsJsonObject();
@@ -188,7 +189,15 @@ public class GltfLoader {
 					textures.add(registerTexture(bufferView));
 				});
 			}
+
+
 		}
+
+		for (JsonElement element : root.get("materials").getAsJsonArray()) {
+			materials.add(gson.fromJson(element, Material.class).register(textures));
+			System.out.println("Add Mat");
+		}
+		System.out.println(root.get("materials").getAsJsonArray());
 		lap("load texture");
 		// Load skins
 		for (JsonElement element : root.get("skins").getAsJsonArray()) {
