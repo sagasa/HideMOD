@@ -13,7 +13,7 @@ public class BufferView implements IDisposable {
 	transient private ByteBuffer buffer;
 
 	public void slice(ByteBuffer from) {
-		from.slice().position(byteOffset)
+		buffer = (ByteBuffer) from.slice().position(byteOffset)
 				.limit(byteOffset + byteLength);
 	}
 

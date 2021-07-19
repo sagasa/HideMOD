@@ -18,6 +18,7 @@ import hide.model.gltf.Model.HideShader;
 import hide.model.gltf.animation.Skin;
 import hide.model.gltf.base.Accessor;
 import hide.model.gltf.base.IDisposable;
+import hide.model.gltf.base.Mesh;
 import net.minecraft.client.renderer.GlStateManager;
 
 public class HideNode implements IDisposable {
@@ -28,10 +29,11 @@ public class HideNode implements IDisposable {
 	private int skinIndex = -1;
 	@SerializedName("mesh")
 	private int meshIndex = -1;
+	private String name;
 	private float[] matrix;
-	private float[] rotation;
-	private float[] scale;
-	private float[] translation;
+	private float[] rotation = new float[] { 1, 0, 0, 0 };
+	private float[] scale = new float[] { 1, 1, 1 };
+	private float[] translation = new float[3];
 	private float[] weights;
 
 	transient private float[] globalMatrix;
@@ -76,14 +78,18 @@ public class HideNode implements IDisposable {
 			children[i] = child;
 		}
 
+		if (matrix == null) {
+			matrix = new float[16];
+		} else {
+			isValidLocalMat = true;
+		}
+
 		hasMesh = meshIndex != -1;
 
 		if (hasMesh) {
 			mesh = loader.getMesh(meshIndex);
-		} else
-			return this;
-
-		hasWeight = mesh.hasWeights();
+			hasWeight = mesh.hasWeights();
+		}
 
 		useSkin = skinIndex != -1;
 		shader = useSkin ? Model.SKIN_SHADER : Model.BASE_SHADER;
@@ -110,7 +116,10 @@ public class HideNode implements IDisposable {
 		fb.rewind();
 		fb.put(getLocalMat());
 		fb.rewind();
-		GL11.glMultMatrix(fb);
+		//GL11.glMultMatrix(fb);
+		fb.rewind();
+		System.out.println(name + " ");
+		read(getLocalMat(), true);
 
 		Model.profiler.endStartSection("hide.render.debug");
 		GlStateManager.disableTexture2D();
@@ -131,7 +140,10 @@ public class HideNode implements IDisposable {
 		}
 		Model.profiler.endStartSection("hide.render.draw");
 
-		mesh.render();
+		if (hasMesh) {
+			//	System.out.println("do MeshRender");
+			mesh.render();
+		}
 
 		GL20.glUseProgram(0);
 		Model.profiler.endSection();
@@ -194,7 +206,11 @@ public class HideNode implements IDisposable {
 
 	public float[] getLocalMat() {
 		if (!isValidLocalMat) {
+			System.out.println("calc local mat ");
 			setIdentity4x4(matrix);
+
+			read(matrix, true);
+
 			float[] s;
 
 			s = this.translation;
@@ -202,12 +218,19 @@ public class HideNode implements IDisposable {
 			this.matrix[13] = s[1];
 			this.matrix[14] = s[2];
 
-			float[] m;
+			System.out.println("translation");
 
+			read(matrix, true);
+
+			float[] m;
 			s = this.rotation;
 			m = TMP_MAT4x4.get();
 			quaternionToMatrix4x4(s, m);
 			mul4x4(matrix, m, matrix);
+
+			System.out.println("rotation");
+
+			read(matrix, true);
 
 			s = this.scale;
 			setIdentity4x4(m);

@@ -13,6 +13,7 @@ public class Accessor implements IDisposable {
 	private int bufferView;
 	private int byteOffset;
 	private ComponentType componentType;
+	@SerializedName("type")
 	private ElementType elementType;
 	private int count;
 	public Number[] max;
@@ -82,6 +83,10 @@ public class Accessor implements IDisposable {
 		return byteOffset;
 	}
 
+	public int getIndex(int elementIndex, int componentIndex) {
+		return byteOffset + elementIndex * elementType.size * componentType.size + componentIndex;
+	}
+
 	public void setTarget(int target) {
 		buffer.setTarget(target);
 	}
@@ -97,6 +102,16 @@ public class Accessor implements IDisposable {
 	public void bind() {
 		buffer.bind();
 	}
+
+	public void writeAsFloat() {
+		ByteBuffer buf = getBuffer();
+		for (int i = 0; i < count; i++) {
+
+			System.out.print(buf.getFloat(byteOffset + i * 4) + ", ");
+		}
+
+	}
+
 	public void bindAttribPointer(int index) {
 		GL20.glEnableVertexAttribArray(index);
 		GL20.glVertexAttribPointer(index, elementType.size, componentType.gl, false, buffer.getByteStride(), byteOffset);

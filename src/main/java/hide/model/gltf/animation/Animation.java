@@ -1,8 +1,11 @@
 package hide.model.gltf.animation;
 
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
 import de.javagl.jgltf.model.AccessorFloatData;
@@ -26,6 +29,16 @@ public class Animation {
 			channel.sampler = samplers.get(channel.samplerIndex);
 			channel.register(loader);
 		}
+
+		float min = Float.MAX_VALUE, max = -Float.MAX_VALUE;
+		for (Channel channel : channels) {
+			min = Math.min(channel.sampler.input.min[0].floatValue(), min);
+			max = Math.max(channel.sampler.input.max[0].floatValue(), max);
+		}
+		maxKey = max;
+		minKey = min;
+		System.out.println(min + " " + max);
+
 		return this;
 	}
 
@@ -58,6 +71,8 @@ public class Animation {
 			node = loader.getNode(nodeIndex);
 		}
 	}
+
+	static Gson testGson = new GsonBuilder().setPrettyPrinting().excludeFieldsWithModifiers(Modifier.STATIC).serializeNulls().create();
 
 	public static class Channel {
 		@SerializedName("sampler")
@@ -169,17 +184,6 @@ public class Animation {
 			set(value);
 		}
 
-	}
-
-	public Animation() {
-		float min = Float.MAX_VALUE, max = -Float.MAX_VALUE;
-		for (Channel channel : channels) {
-			min = Math.min((float) channel.sampler.input.min[0], min);
-			max = Math.max((float) channel.sampler.input.max[0], max);
-		}
-		maxKey = max;
-		minKey = min;
-		System.out.println(min + " " + max);
 	}
 
 	/**0-1*/

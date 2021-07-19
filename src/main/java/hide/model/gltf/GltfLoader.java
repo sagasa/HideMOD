@@ -28,6 +28,7 @@ import hide.model.gltf.base.Accessor;
 import hide.model.gltf.base.BufferView;
 import hide.model.gltf.base.ByteBufferInputStream;
 import hide.model.gltf.base.Material;
+import hide.model.gltf.base.Mesh;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.profiler.Profiler.Result;
@@ -62,7 +63,7 @@ public class GltfLoader {
 	public static void test() {
 		System.out.println("==================MODEL LOAD TEST==================");
 		long time = System.currentTimeMillis();
-		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "test.glb")))) {
+		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "box.glb")))) {
 			test = loadGlb("test", ins, Side.SERVER);
 		} catch (IOException | GltfException e) {
 			e.printStackTrace();
@@ -77,6 +78,8 @@ public class GltfLoader {
 
 		//*/
 	}
+
+	private static final Material DefatultMat = new Material();
 
 	public Mesh getMesh(int index) {
 		return meshCache.get(index);
@@ -95,7 +98,7 @@ public class GltfLoader {
 	}
 
 	public Material getMaterial(int index) {
-		return materials.get(index);
+		return index == -1 ? DefatultMat : materials.get(index);
 	}
 
 	private List<Mesh> meshCache = new ArrayList<>();
@@ -190,38 +193,39 @@ public class GltfLoader {
 				});
 			}
 
-
 		}
 
-		for (JsonElement element : root.get("materials").getAsJsonArray()) {
-			materials.add(gson.fromJson(element, Material.class).register(textures));
-			System.out.println("Add Mat");
-		}
-		System.out.println(root.get("materials").getAsJsonArray());
+		if (root.has("materials"))
+			for (JsonElement element : root.get("materials").getAsJsonArray()) {
+				materials.add(gson.fromJson(element, Material.class).register(textures));
+				System.out.println("Add Mat");
+			}
 		lap("load texture");
-		// Load skins
-		for (JsonElement element : root.get("skins").getAsJsonArray()) {
-			skins.add(gson.fromJson(element, Skin.class).register(accessors));
-		}
-		lap("load skins");
-		// Load meshes
-		for (JsonElement element : root.get("meshes").getAsJsonArray()) {
-			meshCache.add(gson.fromJson(element, Mesh.class).register(this));
-		}
-
-		lap("load mesh");
-
-
 
 		// Load nodes
 		for (JsonElement element : root.get("nodes").getAsJsonArray()) {
-			nodeCache.add(gson.fromJson(element, HideNode.class).register(this));
+			nodeCache.add(gson.fromJson(element, HideNode.class));
 		}
 
 		ArrayList<HideNode> rootNodes = new ArrayList<>();
 		for (int index : gson.fromJson(scene.get("nodes"), int[].class)) {
 			rootNodes.add(getNode(index));
 		}
+
+		// Load skins
+		if (root.has("skins"))
+			for (JsonElement element : root.get("skins").getAsJsonArray()) {
+				skins.add(gson.fromJson(element, Skin.class).register(this));
+			}
+
+		lap("load skins");
+		// Load meshes
+		for (JsonElement element : root.get("meshes").getAsJsonArray()) {
+			System.out.println(element);
+			meshCache.add(gson.fromJson(element, Mesh.class).register(this));
+		}
+
+		lap("load mesh");
 
 		// Load animations
 		HashMap<String, Animation> animations = new HashMap<>();
@@ -232,6 +236,12 @@ public class GltfLoader {
 				animations.put(name, gson.fromJson(element, Animation.class).register(this));
 			}
 		}
+
+		// register nodes
+		for (HideNode node : nodeCache) {
+			node.register(this);
+		}
+
 		lap("load end");
 		res = new Model(nodeCache, rootNodes, animations, materials);
 	}

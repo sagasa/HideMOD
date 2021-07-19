@@ -1,4 +1,4 @@
-package hide.model.gltf;
+package hide.model.gltf.base;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -16,15 +16,14 @@ import org.lwjgl.opengl.GLContext;
 
 import com.google.gson.annotations.SerializedName;
 
+import hide.model.gltf.GltfLoader;
+import hide.model.gltf.Model;
 import hide.model.gltf.Model.HideShader;
-import hide.model.gltf.base.Accessor;
-import hide.model.gltf.base.IDisposable;
-import hide.model.gltf.base.Material;
 
 public class Mesh implements IDisposable {
 	private static boolean GL30Supported = GLContext.getCapabilities().OpenGL30;
 
-	MeshPrimitives[] primitives;
+	private MeshPrimitives[] primitives;
 	private float[] weights = ArrayUtils.EMPTY_FLOAT_ARRAY;
 
 	public boolean hasWeights() {
@@ -54,14 +53,14 @@ public class Mesh implements IDisposable {
 
 	public static class MeshPrimitives implements IDisposable {
 		@SerializedName("attributes")
-		private Map<Attribute, Integer> attributeIndex;
+		private Map<String, Integer> attributeIndex;
 		@SerializedName("indices")
 		private int indicesIndex;
 		@SerializedName("material")
-		private int materialIndex;
+		private int materialIndex = -1;
 		private Mode mode = Mode.TRIANGLES;
 		@SerializedName("targets")
-		private Map<Attribute, Integer>[] targetsIndex;
+		transient private Map<Attribute, Integer>[] targetsIndex;
 
 		transient private int vao = -1;
 		transient private HideShader shader;
@@ -78,10 +77,15 @@ public class Mesh implements IDisposable {
 		transient private boolean hasTarget;
 
 		private void register(GltfLoader loader) {
+
 			material = loader.getMaterial(materialIndex);
 			indices = loader.getAccessor(indicesIndex);
 			attributes = new EnumMap<>(Attribute.class);
-			attributeIndex.forEach((att, index) -> attributes.put(att, loader.getAccessor(index)));
+			attributeIndex.forEach((att, index) -> {
+				Attribute attribute = Attribute.valueOf(att);
+				if (attribute != null)
+					attributes.put(attribute, loader.getAccessor(index));
+			});
 
 			vertexCount = indices.getCount();
 			componentType = indices.getComponentType().gl;
@@ -146,10 +150,13 @@ public class Mesh implements IDisposable {
 				int index = attribute.index;
 				vbo.bind();
 				vbo.bindAttribPointer(index);
+				System.out.println(attribute);
+				vbo.writeAsFloat();
 			}
 
 			indices.bind();
-
+			System.out.println("indices");
+			indices.writeAsFloat();
 			if (GL30Supported) {
 				GL30.glBindVertexArray(0);
 			}
@@ -164,7 +171,7 @@ public class Mesh implements IDisposable {
 				bind();
 			}
 
-			shader.material(material);
+			Model.BASE_SHADER.material(material);
 
 			GL11.glDrawElements(mode.gl, vertexCount, componentType, offset);
 
@@ -191,31 +198,32 @@ public class Mesh implements IDisposable {
 			}
 		}
 
-		public enum Mode {
-			@SerializedName("0")
-			POINTS(0), @SerializedName("1")
-			LINES(1), @SerializedName("2")
-			LINE_LOOP(2), @SerializedName("3")
-			LINE_STRIP(3), @SerializedName("4")
-			TRIANGLES(4), @SerializedName("5")
-			TRIANGLE_STRIP(5), @SerializedName("6")
-			TRIANGLE_FAN(6);
+	}
 
-			public final int gl;
+	public enum Mode {
+		@SerializedName("0")
+		POINTS(0), @SerializedName("1")
+		LINES(1), @SerializedName("2")
+		LINE_LOOP(2), @SerializedName("3")
+		LINE_STRIP(3), @SerializedName("4")
+		TRIANGLES(4), @SerializedName("5")
+		TRIANGLE_STRIP(5), @SerializedName("6")
+		TRIANGLE_FAN(6);
 
-			Mode(final int gl) {
-				this.gl = gl;
-			}
+		public final int gl;
+
+		Mode(final int gl) {
+			this.gl = gl;
 		}
+	}
 
-		public enum Attribute {
-			POSITION(0), NORMAL(1), TEXCOORD_0(2), TANGENT(3), COLOR_0(4), JOINTS_0(5), WEIGHTS_0(6);
+	public enum Attribute {
+		POSITION(0), NORMAL(1), TEXCOORD_0(2), TANGENT(3), COLOR_0(4), JOINTS_0(5), WEIGHTS_0(6);
 
-			public final int index;
+		public final int index;
 
-			Attribute(final int index) {
-				this.index = index;
-			}
+		Attribute(final int index) {
+			this.index = index;
 		}
 	}
 

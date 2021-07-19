@@ -2,7 +2,6 @@ package hide.model.gltf;
 
 import java.nio.FloatBuffer;
 import java.util.Arrays;
-import java.util.List;
 
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector4f;
@@ -14,28 +13,31 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class TransformMatUtil {
 
 	private static float[] cash = new float[16];
+	private static final ThreadLocal<float[]> TMP_MAT4x4_0 = ThreadLocal.withInitial(() -> new float[16]);
+	private static final ThreadLocal<float[]> TMP_MAT4x4_1 = ThreadLocal.withInitial(() -> new float[16]);
+	private static final ThreadLocal<float[]> TMP_MAT4x4_2 = ThreadLocal.withInitial(() -> new float[16]);
 
 	static void computeJointMatrix(final HideNode nodeModel, FloatBuffer fb) {
 		final Skin skin = nodeModel.getSkin();
 
-		float[] base = computeGlobalTransform(nodeModel, cash);
+		float[] base = computeGlobalTransform(nodeModel, TMP_MAT4x4_0.get());
 		invert4x4(base, base);
 
-		float[] bindShapeMatrix = skin.getBindShapeMatrix(null);
+		//float[] bindShapeMatrix = skin.getBindShapeMatrix(null);
 
-		float[] jointMat = new float[16];
+		float[] jointMat = TMP_MAT4x4_1.get();
 
-		List<HideNode> jointList = skin.getJoints();
-		for (int i = 0; i < jointList.size(); i++) {
-			HideNode joint = jointList.get(i);
+		HideNode[] jointList = skin.getJoints();
+		for (int i = 0; i < jointList.length; i++) {
+			HideNode joint = jointList[i];
 
 			computeGlobalTransform(joint, jointMat);
 			mul4x4(base, jointMat, jointMat);
 
-			float[] inverseBindMatrix = skin.getInverseBindMatrix(i, null);
+			float[] inverseBindMatrix = skin.getInverseBindMatrix(i, TMP_MAT4x4_2.get());
 			mul4x4(jointMat, inverseBindMatrix, jointMat);
 
-			mul4x4(jointMat, bindShapeMatrix, jointMat);
+			//mul4x4(jointMat, bindShapeMatrix, jointMat);
 			fb.put(jointMat);
 		}
 	}
@@ -196,12 +198,13 @@ public class TransformMatUtil {
 		m[15] = 1.0F;
 	}
 
-	public static void setIdentity4x4(float[] m) {
+	public static float[] setIdentity4x4(float[] m) {
 		Arrays.fill(m, 0.0F);
 		m[0] = 1.0F;
 		m[5] = 1.0F;
 		m[10] = 1.0F;
 		m[15] = 1.0F;
+		return m;
 	}
 
 	public static void invert4x4(float[] m, float[] inv) {
@@ -273,6 +276,11 @@ public class TransformMatUtil {
 	static void read(FloatBuffer fb, boolean transpose) {
 		float[] data = new float[16];
 		fb.get(data);
+		read(data, transpose);
+	}
+
+	@SideOnly(Side.CLIENT)
+	static void read(float[] data, boolean transpose) {
 		if (transpose) {
 			Matrix4f mat = new net.minecraft.client.renderer.Matrix4f(data);
 			mat.transpose();
@@ -293,6 +301,11 @@ public class TransformMatUtil {
 			data[14] = mat.m32;
 			data[15] = mat.m33;
 		}
+		System.out.println(String.format("[%.2f,%.2f,%.2f,%.2f]", data[0], data[1], data[2], data[3]));
+		System.out.println(String.format("[%.2f,%.2f,%.2f,%.2f]", data[4], data[5], data[6], data[7]));
+		System.out.println(String.format("[%.2f,%.2f,%.2f,%.2f]", data[8], data[9], data[10], data[11]));
+		System.out.println(String.format("[%.2f,%.2f,%.2f,%.2f]", data[12], data[13], data[14], data[15]));
+
 		System.out.println(String.format("pos[%.2f,%.2f,%.2f]", data[12], data[13], data[14]));
 		System.out.println(String.format("scale[%.2f,%.2f,%.2f]",
 				Math.sqrt(data[0] * data[0] + data[4] * data[4] + data[8] * data[8]), //X軸
