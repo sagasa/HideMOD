@@ -102,6 +102,10 @@ public class GltfLoader {
 		return index == -1 ? DefatultMat : materials.get(index);
 	}
 
+	public void addSkinNode(HideNode node) {
+		;
+	}
+
 	private List<Mesh> meshCache = new ArrayList<>();
 	private List<HideNode> nodeCache = new ArrayList<>();
 	private List<Accessor> accessors = new ArrayList<>();

@@ -4,6 +4,7 @@ import java.nio.FloatBuffer;
 import java.util.Arrays;
 
 import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import hide.model.gltf.animation.Skin;
@@ -20,7 +21,9 @@ public class TransformMatUtil {
 	static void computeJointMatrix(final HideNode nodeModel, FloatBuffer fb) {
 		final Skin skin = nodeModel.getSkin();
 
-		float[] base = computeGlobalTransform(nodeModel, TMP_MAT4x4_0.get());
+		//float[] base = computeGlobalTransform(nodeModel, TMP_MAT4x4_0.get());
+		float[] base = nodeModel.getGlobalMat();
+
 		invert4x4(base, base);
 
 		//float[] bindShapeMatrix = skin.getBindShapeMatrix(null);
@@ -32,6 +35,8 @@ public class TransformMatUtil {
 			HideNode joint = jointList[i];
 
 			mul4x4(base, joint.getGlobalMat(), jointMat);
+			//mul4x4(base, computeGlobalTransform(joint, jointMat), jointMat);
+
 
 			float[] inverseBindMatrix = skin.getInverseBindMatrix(i, TMP_MAT4x4_2.get());
 			mul4x4(jointMat, inverseBindMatrix, jointMat);
@@ -58,6 +63,15 @@ public class TransformMatUtil {
 		res.y = mat.m10 * pos.x + mat.m11 * pos.y + mat.m12 * pos.z + mat.m13 * pos.w;
 		res.z = mat.m20 * pos.x + mat.m21 * pos.y + mat.m22 * pos.z + mat.m23 * pos.w;
 		res.w = mat.m30 * pos.x + mat.m31 * pos.y + mat.m32 * pos.z + mat.m33 * pos.w;
+		return res;
+	}
+
+	static Vector3f mul(float[] mat, Vector3f pos) {
+		Vector3f res = new Vector3f();
+		res.x = mat[0] * pos.x + mat[4] * pos.y + mat[8] * pos.z + mat[12] * 1;
+		res.y = mat[1] * pos.x + mat[5] * pos.y + mat[9] * pos.z + mat[13] * 1;
+		res.z = mat[2] * pos.x + mat[6] * pos.y + mat[10] * pos.z + mat[14] * 1;
+		//res.w = mat[3] * pos.x + mat[7] * pos.y + mat[11] * pos.z + mat[15] * 1;
 		return res;
 	}
 

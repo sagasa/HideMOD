@@ -14,6 +14,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.util.vector.Vector3f;
 
 import de.javagl.jgltf.model.MaterialModel;
 import hide.model.gltf.animation.Animation;
@@ -30,26 +31,43 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class Model implements IDisposable {
 
-
 	public static Profiler profiler = new Profiler();
-
-
 
 	List<DynamicTexture> textures = new ArrayList<>();
 
-	List<HideNode> rootNodes = new ArrayList<>();
 	List<HideNode> nodes = new ArrayList<>();
 	Map<String, Animation> animations = new HashMap<>();
 	Map<MaterialModel, HideMaterial> matMap = new HashMap<>();
 
+	List<HideNode> debugRoot = new ArrayList<>();
+	List<HideNode> meshRoot = new ArrayList<>();
+	List<HideNode> skinRoot = new ArrayList<>();
 
-	public Model(List<HideNode> nodes, ArrayList<HideNode> root, HashMap<String, Animation> animations, List<Material> materials) {
-		this.rootNodes = root;
+	public Model(List<HideNode> nodes, List<HideNode> rootNodes, HashMap<String, Animation> animations, List<Material> materials) {
 		this.nodes = nodes;
 		this.animations = animations;
+
+		for (HideNode node : nodes)
+			if (node.hasSkin())
+				skinRoot.add(node);
+
+		for (HideNode node : rootNodes)
+			if (node.hasMesh() || hasMesh(node.children))
+				meshRoot.add(node);
+			else
+				debugRoot.add(node);
+
 		for (Animation hideAnimation : animations.values()) {
 			hideAnimation.apply(0.5f);
 		}
+	}
+
+	private boolean hasMesh(HideNode[] children) {
+		for (HideNode node : children) {
+			if (node.hasMesh() || hasMesh(node.children))
+				return true;
+		}
+		return false;
 	}
 
 	/**Client側処理*/
@@ -78,13 +96,32 @@ public class Model implements IDisposable {
 
 		//GlStateManager.translate(0, 2, 0);
 
-		for (HideNode node : rootNodes) {
+		for (HideNode node : meshRoot) {
 			node.render();
+		}
+
+		for (HideNode node : skinRoot) {
+			node.renderSkin();
 		}
 
 		GL20.glDisableVertexAttribArray(0);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 
+		HideNode node = nodes.get(8);
+		Vector3f vec = TransformMatUtil.mul(node.calcGlobalMat(), new Vector3f(0, 0, 0));
+
+		TransformMatUtil.read(node.calcGlobalMat(), false);
+		System.out.println(vec);
+
+		GlStateManager.disableDepth();
+		GlStateManager.disableTexture2D();
+		GlStateManager.color(0.5f, 1.0f, 0.5f, 1);
+		GL11.glPointSize(5);
+		GL11.glBegin(GL11.GL_POINTS);
+		GL11.glVertex3f(vec.x, vec.y, vec.z);
+		GL11.glEnd();
+		GlStateManager.enableTexture2D();
+		GlStateManager.enableDepth();
 		//GL11.glBindTexture(GL11.GL_TEXTURE_2D, textures.get(1).getGlTextureId());
 		//Gui.drawModalRectWithCustomSizedTexture(0, 0, 0, 0, 100, 100, 200, 200);
 
@@ -148,31 +185,31 @@ public class Model implements IDisposable {
 		}
 
 		public void material(Material material) {
-//			GL13.glActiveTexture(GL13.GL_TEXTURE0);
-//			GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.baseColorTexture);
-//			GL20.glUniform1i(BASE_COLOR_TEXTURE, 0);
-//
-//			GL20.glUniform1i(HAS_NORMAL_TEXTURE, material.normalTexture == -1 ? 0 : 1);
-//			if (material.normalTexture == -1) {
-//				GL13.glActiveTexture(GL13.GL_TEXTURE1);
-//				GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.normalTexture);
-//				GL20.glUniform1i(NORMAL_TEXTURE, 1);
-//			}
-//
-//			GL20.glUniform1i(HAS_EMISSIVE_TEXTURE, material.emissiveTexture == -1 ? 0 : 1);
-//			if (material.normalTexture == -1) {
-//				GL13.glActiveTexture(GL13.GL_TEXTURE2);
-//				GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.emissiveTexture);
-//				GL20.glUniform1i(EMISSIVE_TEXTURE, 2);
-//			}
-//
-//			GL20.glUniform1i(HAS_OCCLUSION_TEXTURE, material.occlusionTexture == -1 ? 0 : 1);
-//			if (material.normalTexture == -1) {
-//				GL13.glActiveTexture(GL13.GL_TEXTURE3);
-//				GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.occlusionTexture);
-//				GL20.glUniform1i(OCCLUSION_TEXTURE, 3);
-//			}
-//			GL13.glActiveTexture(GL13.GL_TEXTURE0);
+			//			GL13.glActiveTexture(GL13.GL_TEXTURE0);
+			//			GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.baseColorTexture);
+			//			GL20.glUniform1i(BASE_COLOR_TEXTURE, 0);
+			//
+			//			GL20.glUniform1i(HAS_NORMAL_TEXTURE, material.normalTexture == -1 ? 0 : 1);
+			//			if (material.normalTexture == -1) {
+			//				GL13.glActiveTexture(GL13.GL_TEXTURE1);
+			//				GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.normalTexture);
+			//				GL20.glUniform1i(NORMAL_TEXTURE, 1);
+			//			}
+			//
+			//			GL20.glUniform1i(HAS_EMISSIVE_TEXTURE, material.emissiveTexture == -1 ? 0 : 1);
+			//			if (material.normalTexture == -1) {
+			//				GL13.glActiveTexture(GL13.GL_TEXTURE2);
+			//				GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.emissiveTexture);
+			//				GL20.glUniform1i(EMISSIVE_TEXTURE, 2);
+			//			}
+			//
+			//			GL20.glUniform1i(HAS_OCCLUSION_TEXTURE, material.occlusionTexture == -1 ? 0 : 1);
+			//			if (material.normalTexture == -1) {
+			//				GL13.glActiveTexture(GL13.GL_TEXTURE3);
+			//				GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.occlusionTexture);
+			//				GL20.glUniform1i(OCCLUSION_TEXTURE, 3);
+			//			}
+			//			GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		}
 	}
 
@@ -226,7 +263,7 @@ public class Model implements IDisposable {
 
 	@Override
 	public void dispose() {
-		for (HideNode hideNode : rootNodes) {
+		for (HideNode hideNode : nodes) {
 			hideNode.dispose();
 		}
 		for (DynamicTexture texture : textures) {

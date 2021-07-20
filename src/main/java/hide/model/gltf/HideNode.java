@@ -53,6 +53,14 @@ public class HideNode implements IDisposable {
 		return skin;
 	}
 
+	public boolean hasSkin() {
+		return useSkin;
+	}
+
+	public boolean hasMesh() {
+		return hasMesh;
+	}
+
 	transient HideNode[] children = new HideNode[0];
 	transient HideNode parent = null;
 
@@ -90,14 +98,14 @@ public class HideNode implements IDisposable {
 		if (hasMesh) {
 			mesh = loader.getMesh(meshIndex);
 			hasWeight = mesh.hasWeights();
-		}
 
-		useSkin = skinIndex != -1;
-		shader = useSkin ? Model.SKIN_SHADER : Model.BASE_SHADER;
-		if (useSkin) {
-			skin = loader.getSkin(skinIndex);
-			inverseMatrices = skin.getInverseBindMatrices();
-			boneMat = BufferUtils.createFloatBuffer(inverseMatrices.getElementType().size * inverseMatrices.getCount());
+			useSkin = skinIndex != -1;
+			shader = useSkin ? Model.SKIN_SHADER : Model.BASE_SHADER;
+			if (useSkin) {
+				skin = loader.getSkin(skinIndex);
+				inverseMatrices = skin.getInverseBindMatrices();
+				boneMat = BufferUtils.createFloatBuffer(inverseMatrices.getElementType().size * inverseMatrices.getCount());
+			}
 		}
 		return this;
 	}
@@ -105,6 +113,24 @@ public class HideNode implements IDisposable {
 	private static final ThreadLocal<FloatBuffer> TMP_FB16 = ThreadLocal.withInitial(() -> BufferUtils.createFloatBuffer(16));
 
 	AxisAlignedBB aabb = new AxisAlignedBB(-0.2, -0.2, -0.2, 0.2, 0.2, 0.2);
+
+	public void renderSkin() {
+		if (useSkin) {
+
+			shader.use();
+
+
+			boneMat.rewind();
+			computeJointMatrix(this, boneMat);
+			boneMat.rewind();
+			GL20.glUniformMatrix4(Model.SKIN_BONE_MAT_INDEX, false, boneMat);
+
+			mesh.render();
+
+
+			GL20.glUseProgram(0);
+		}
+	}
 
 	public void render() {
 		Model.profiler.startSection("hide.render");
@@ -134,19 +160,14 @@ public class HideNode implements IDisposable {
 		GlStateManager.enableTexture2D();
 		Model.profiler.endStartSection("hide.render.calcBone");
 
-		shader.use();
-		if (useSkin) {
-			boneMat.rewind();
-			computeJointMatrix(this, boneMat);
-			boneMat.rewind();
-			GL20.glUniformMatrix4(Model.SKIN_BONE_MAT_INDEX, false, boneMat);
-		}
-		Model.profiler.endStartSection("hide.render.draw");
-
-		if (hasMesh) {
+		if (hasMesh&&!useSkin) {
+			shader.use();
 			//	System.out.println("do MeshRender");
 			mesh.render();
+
+
 		}
+		Model.profiler.endStartSection("hide.render.draw");
 
 		//----Test----
 		//		GL20.glDisableVertexAttribArray(0);
@@ -168,10 +189,6 @@ public class HideNode implements IDisposable {
 	@Override
 	public void dispose() {
 		mesh.dispose();
-
-		for (HideNode node : children) {
-			node.dispose();
-		}
 	}
 
 	public void setRotation(float[] value) {
@@ -252,7 +269,6 @@ public class HideNode implements IDisposable {
 			mul4x4(matrix, m, matrix);
 			isValidLocalMat = true;
 		}
-		NodeModel a;
 		return matrix;
 	}
 
@@ -267,6 +283,18 @@ public class HideNode implements IDisposable {
 			isValidGlobalMat = true;
 			//System.out.println("CalcBoneMat");
 		}
+		return globalMatrix;
+	}
+
+	public float[] calcGlobalMat() {
+		HideNode currentNode = this;
+		setIdentity4x4(globalMatrix);
+		while (currentNode != null) {
+			mul4x4(currentNode.getLocalMat(), globalMatrix, globalMatrix);
+			currentNode = currentNode.getParent();
+		}
+		isValidGlobalMat = true;
+		//System.out.println("CalcBoneMat");
 		return globalMatrix;
 	}
 }
