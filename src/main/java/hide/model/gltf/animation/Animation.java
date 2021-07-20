@@ -92,7 +92,7 @@ public class Animation {
 			Accessor input = sampler.input;
 			times = new float[input.getCount()];
 			for (int i = 0; i < input.getCount(); i++) {
-				times[i] = input.getBuffer().getFloat(i * 4);
+				times[i] = input.getBuffer().getFloat(input.getByteIndex(i , 0));
 			}
 
 			Accessor outAccessor = sampler.output;
@@ -109,7 +109,7 @@ public class Animation {
 			int index0 = getIndex(key);
 			int index1 = Math.min(times.length - 1, index0 + 1);
 			float alpha = getAlpha(key, index0);
-
+			//System.out.println("apply "+sampler.output.getBuffer().order() +" "+index0+" "+index1+" / "+times.length);
 			switch (sampler.interpolation) {
 			case CUBICSPLINE:
 				//TODO
@@ -176,9 +176,13 @@ public class Animation {
 
 		void linearInterpolator(int index0, int index1, float alpha) {
 			float[] value = gen();
-			for (int i = 0; i < value.length; i++) {
-				float a = sampler.output.getBuffer().getFloat(index0 * elementCount + i);
-				float b = sampler.output.getBuffer().getFloat(index1 * elementCount + i);//TODO SUS
+			Accessor out = sampler.output;
+
+			for (int i = 0; i < elementCount; i++) {
+				float a = out.getBuffer().getFloat(out.getByteIndex(index0, i));
+				float b = out.getBuffer().getFloat(out.getByteIndex(index1, i));//TODO SUS
+
+				//System.out.println(a+" "+b+" "+out.getByteIndex(index0, i)+" "+sampler.outputIndex+" ");
 				value[i] = a + alpha * (b - a);
 			}
 			set(value);

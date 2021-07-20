@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,7 +64,7 @@ public class GltfLoader {
 	public static void test() {
 		System.out.println("==================MODEL LOAD TEST==================");
 		long time = System.currentTimeMillis();
-		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "box.glb")))) {
+		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "test.glb")))) {
 			test = loadGlb("test", ins, Side.SERVER);
 		} catch (IOException | GltfException e) {
 			e.printStackTrace();
@@ -158,6 +159,7 @@ public class GltfLoader {
 		}
 
 		ByteBuffer binData = BufferUtils.createByteBuffer(data.length);
+		binData.order(ByteOrder.nativeOrder());
 		binData.put(data);
 		binData.rewind();
 
@@ -244,6 +246,7 @@ public class GltfLoader {
 
 		lap("load end");
 		res = new Model(nodeCache, rootNodes, animations, materials);
+
 	}
 
 	/**Client側処理*/

@@ -10,7 +10,7 @@ layout(location = 2) in vec2 in_TexCoord;
 uniform mat4 u_WorldViewProjectionMatrix;
 
 out vec2 v_TexCoord;
-out vec4 test_color;  
+out vec4 test_color;
 
 void main(void) {
     // スキニング後のローカル座標系に変換

@@ -20,6 +20,7 @@ import hide.model.gltf.base.Accessor;
 import hide.model.gltf.base.IDisposable;
 import hide.model.gltf.base.Mesh;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.math.AxisAlignedBB;
 
 public class HideNode implements IDisposable {
 
@@ -36,7 +37,7 @@ public class HideNode implements IDisposable {
 	private float[] translation = new float[3];
 	private float[] weights;
 
-	transient private float[] globalMatrix;
+	transient private float[] globalMatrix = new float[16];
 	transient private boolean isValidLocalMat = false;
 	transient private boolean isValidGlobalMat = false;
 	transient private boolean isValidWeight = false;
@@ -103,6 +104,8 @@ public class HideNode implements IDisposable {
 
 	private static final ThreadLocal<FloatBuffer> TMP_FB16 = ThreadLocal.withInitial(() -> BufferUtils.createFloatBuffer(16));
 
+	AxisAlignedBB aabb = new AxisAlignedBB(-0.2, -0.2, -0.2, 0.2, 0.2, 0.2);
+
 	public void render() {
 		Model.profiler.startSection("hide.render");
 		//モーフィング
@@ -116,10 +119,10 @@ public class HideNode implements IDisposable {
 		fb.rewind();
 		fb.put(getLocalMat());
 		fb.rewind();
-		//GL11.glMultMatrix(fb);
-		fb.rewind();
-		System.out.println(name + " ");
-		read(getLocalMat(), true);
+		GL11.glMultMatrix(fb);
+		//fb.rewind();
+		//System.out.println(name + " ");
+		//read(getLocalMat(), true);
 
 		Model.profiler.endStartSection("hide.render.debug");
 		GlStateManager.disableTexture2D();
@@ -145,6 +148,13 @@ public class HideNode implements IDisposable {
 			mesh.render();
 		}
 
+		//----Test----
+		//		GL20.glDisableVertexAttribArray(0);
+		//		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		//
+		//		RenderAABB.renderOffsetAABB(aabb, 0, 0, 0);
+		//----end----
+
 		GL20.glUseProgram(0);
 		Model.profiler.endSection();
 		for (HideNode node : children) {
@@ -169,6 +179,7 @@ public class HideNode implements IDisposable {
 			rotation = value;
 			isValidLocalMat = false;
 			markInvalidGlobalMat();
+			//System.out.println(name+" setRotation "+ArrayUtils.toString(value));
 		}
 	}
 
@@ -177,6 +188,7 @@ public class HideNode implements IDisposable {
 			scale = value;
 			isValidLocalMat = false;
 			markInvalidGlobalMat();
+			//System.out.println(name+" setScale "+ArrayUtils.toString(value));
 		}
 	}
 
@@ -185,6 +197,7 @@ public class HideNode implements IDisposable {
 			translation = value;
 			isValidLocalMat = false;
 			markInvalidGlobalMat();
+			//System.out.println(name+" setTranslation "+ArrayUtils.toString(value));
 		}
 	}
 
@@ -206,10 +219,10 @@ public class HideNode implements IDisposable {
 
 	public float[] getLocalMat() {
 		if (!isValidLocalMat) {
-			System.out.println("calc local mat ");
+			//System.out.println("calc local mat ");
 			setIdentity4x4(matrix);
 
-			read(matrix, true);
+			//read(matrix, true);
 
 			float[] s;
 
@@ -218,9 +231,8 @@ public class HideNode implements IDisposable {
 			this.matrix[13] = s[1];
 			this.matrix[14] = s[2];
 
-			System.out.println("translation");
-
-			read(matrix, true);
+			//System.out.println("translation");
+			//read(matrix, true);
 
 			float[] m;
 			s = this.rotation;
@@ -228,9 +240,8 @@ public class HideNode implements IDisposable {
 			quaternionToMatrix4x4(s, m);
 			mul4x4(matrix, m, matrix);
 
-			System.out.println("rotation");
-
-			read(matrix, true);
+			//System.out.println("rotation");
+			//read(matrix, true);
 
 			s = this.scale;
 			setIdentity4x4(m);
@@ -241,6 +252,7 @@ public class HideNode implements IDisposable {
 			mul4x4(matrix, m, matrix);
 			isValidLocalMat = true;
 		}
+		NodeModel a;
 		return matrix;
 	}
 
@@ -253,7 +265,7 @@ public class HideNode implements IDisposable {
 				currentNode = currentNode.getParent();
 			}
 			isValidGlobalMat = true;
-			System.out.println("CalcBoneMat");
+			//System.out.println("CalcBoneMat");
 		}
 		return globalMatrix;
 	}

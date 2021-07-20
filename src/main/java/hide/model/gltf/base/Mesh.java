@@ -83,7 +83,7 @@ public class Mesh implements IDisposable {
 			attributes = new EnumMap<>(Attribute.class);
 			attributeIndex.forEach((att, index) -> {
 				Attribute attribute = Attribute.valueOf(att);
-				if (attribute != null)
+				if (attribute != null&&attribute == Attribute.POSITION)
 					attributes.put(attribute, loader.getAccessor(index));
 			});
 
@@ -148,9 +148,8 @@ public class Mesh implements IDisposable {
 					vbo = attributes.get(attribute);
 				}
 				int index = attribute.index;
-				vbo.bind();
 				vbo.bindAttribPointer(index);
-				System.out.println(attribute);
+				System.out.println(attribute+ " "+index);
 				vbo.writeAsFloat();
 			}
 
@@ -172,7 +171,7 @@ public class Mesh implements IDisposable {
 			}
 
 			Model.BASE_SHADER.material(material);
-
+			//System.out.println("render "+vertexCount);
 			GL11.glDrawElements(mode.gl, vertexCount, componentType, offset);
 
 			if (GL30Supported) {

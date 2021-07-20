@@ -1,6 +1,7 @@
 package hide.model.gltf.base;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import org.lwjgl.opengl.GL15;
 
@@ -14,7 +15,9 @@ public class BufferView implements IDisposable {
 
 	public void slice(ByteBuffer from) {
 		buffer = (ByteBuffer) from.slice().position(byteOffset)
-				.limit(byteOffset + byteLength);
+				.limit(byteOffset + byteLength).mark();
+		//System.out.println("slice "+byteOffset+" "+byteLength+" "+buffer);
+		buffer.order(ByteOrder.nativeOrder());
 	}
 
 	/**新しくメモリを確保してコピーを作製*/
@@ -25,6 +28,7 @@ public class BufferView implements IDisposable {
 		res.byteStride = byteStride;
 		res.target = target;
 		res.buffer = buffer.duplicate();
+		System.out.println("copy buffer "+res);
 		return res;
 	}
 
@@ -46,8 +50,8 @@ public class BufferView implements IDisposable {
 		if (vbo == -1) {
 			vbo = GL15.glGenBuffers();
 			GL15.glBindBuffer(target, vbo);
-			buffer.rewind();
 			GL15.glBufferData(target, buffer, GL15.GL_STATIC_DRAW);
+
 		} else
 			GL15.glBindBuffer(target, vbo);
 	}
@@ -61,6 +65,13 @@ public class BufferView implements IDisposable {
 
 	public int getByteStride() {
 		return byteStride;
+	}
+
+	public int getByteOffset() {
+		return byteOffset;
+	}
+	public int getByteLength() {
+		return byteLength;
 	}
 
 	public void setTarget(int target) {

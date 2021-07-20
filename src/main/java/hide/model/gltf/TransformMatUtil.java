@@ -31,8 +31,7 @@ public class TransformMatUtil {
 		for (int i = 0; i < jointList.length; i++) {
 			HideNode joint = jointList[i];
 
-			computeGlobalTransform(joint, jointMat);
-			mul4x4(base, jointMat, jointMat);
+			mul4x4(base, joint.getGlobalMat(), jointMat);
 
 			float[] inverseBindMatrix = skin.getInverseBindMatrix(i, TMP_MAT4x4_2.get());
 			mul4x4(jointMat, inverseBindMatrix, jointMat);
@@ -301,10 +300,10 @@ public class TransformMatUtil {
 			data[14] = mat.m32;
 			data[15] = mat.m33;
 		}
-		System.out.println(String.format("[%.2f,%.2f,%.2f,%.2f]", data[0], data[1], data[2], data[3]));
-		System.out.println(String.format("[%.2f,%.2f,%.2f,%.2f]", data[4], data[5], data[6], data[7]));
-		System.out.println(String.format("[%.2f,%.2f,%.2f,%.2f]", data[8], data[9], data[10], data[11]));
-		System.out.println(String.format("[%.2f,%.2f,%.2f,%.2f]", data[12], data[13], data[14], data[15]));
+		//		System.out.println(String.format("[%.2f,%.2f,%.2f,%.2f]", data[0], data[1], data[2], data[3]));
+		//		System.out.println(String.format("[%.2f,%.2f,%.2f,%.2f]", data[4], data[5], data[6], data[7]));
+		//		System.out.println(String.format("[%.2f,%.2f,%.2f,%.2f]", data[8], data[9], data[10], data[11]));
+		//		System.out.println(String.format("[%.2f,%.2f,%.2f,%.2f]", data[12], data[13], data[14], data[15]));
 
 		System.out.println(String.format("pos[%.2f,%.2f,%.2f]", data[12], data[13], data[14]));
 		System.out.println(String.format("scale[%.2f,%.2f,%.2f]",

@@ -2,6 +2,7 @@ package hide.model.gltf.base;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.function.BiFunction;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
@@ -41,19 +42,26 @@ public class Accessor implements IDisposable {
 
 	public enum ComponentType {
 		@SerializedName("5120")
-		BYTE(1, GL11.GL_BYTE), @SerializedName("5121")
-		UNSIGNED_BYTE(1, GL11.GL_UNSIGNED_BYTE), @SerializedName("5122")
-		SHORT(2, GL11.GL_SHORT), @SerializedName("5123")
-		UNSIGNED_SHORT(2, GL11.GL_UNSIGNED_SHORT), @SerializedName("5125")
-		UNSIGNED_INT(4, GL11.GL_UNSIGNED_INT), @SerializedName("5126")
-		FLOAT(4, GL11.GL_FLOAT);
+		BYTE(1, GL11.GL_BYTE, (buf, index) -> String.valueOf(buf.get(index))), @SerializedName("5121")
+		UNSIGNED_BYTE(1, GL11.GL_UNSIGNED_BYTE, (buf, index) -> String.valueOf(buf.get() & 0xFF)), @SerializedName("5122")
+		SHORT(2, GL11.GL_SHORT, (buf, index) -> String.valueOf(buf.getShort(index))), @SerializedName("5123")
+		UNSIGNED_SHORT(2, GL11.GL_UNSIGNED_SHORT, (buf, index) -> String.valueOf(buf.getShort(index) & 0xFFFF)), @SerializedName("5125")
+		UNSIGNED_INT(4, GL11.GL_UNSIGNED_INT, (buf, index) -> String.valueOf((long) buf.getInt(index) & 0xFFFFFFFF)), @SerializedName("5126")
+		FLOAT(4, GL11.GL_FLOAT, (buf, index) -> String.valueOf(buf.getFloat(index)));
 
 		public final int size;
 		public final int gl;
 
-		ComponentType(final int size, final int gl) {
+		private final BiFunction<ByteBuffer, Integer, String> getter;
+
+		ComponentType(final int size, final int gl, BiFunction<ByteBuffer, Integer, String> getter) {
 			this.size = size;
 			this.gl = gl;
+			this.getter = getter;
+		}
+
+		public String getValue(ByteBuffer buf, int index) {
+			return getter.apply(buf, index);
 		}
 	}
 
@@ -83,8 +91,8 @@ public class Accessor implements IDisposable {
 		return byteOffset;
 	}
 
-	public int getIndex(int elementIndex, int componentIndex) {
-		return byteOffset + elementIndex * elementType.size * componentType.size + componentIndex;
+	public int getByteIndex(int elementIndex, int componentIndex) {
+		return buffer.getByteOffset() + elementIndex * elementType.size * componentType.size + componentIndex*componentType.size;
 	}
 
 	public void setTarget(int target) {
@@ -105,14 +113,22 @@ public class Accessor implements IDisposable {
 
 	public void writeAsFloat() {
 		ByteBuffer buf = getBuffer();
+		System.out.println("print acceser data count = " + count);
 		for (int i = 0; i < count; i++) {
-
-			System.out.print(buf.getFloat(byteOffset + i * 4) + ", ");
+			System.out.print("[");
+			for (int j = 0; j < getElementType().size; j++) {
+				if (j != 0)
+					System.out.print(", ");
+				System.out.print(getComponentType().getValue(buf, buffer.getByteOffset() + i * getComponentType().size));
+			}
+			System.out.print("]");
 		}
+		System.out.println();
 
 	}
 
 	public void bindAttribPointer(int index) {
+		bind();
 		GL20.glEnableVertexAttribArray(index);
 		GL20.glVertexAttribPointer(index, elementType.size, componentType.gl, false, buffer.getByteStride(), byteOffset);
 	}

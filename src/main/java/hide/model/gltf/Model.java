@@ -42,17 +42,14 @@ public class Model implements IDisposable {
 	Map<String, Animation> animations = new HashMap<>();
 	Map<MaterialModel, HideMaterial> matMap = new HashMap<>();
 
-	public Model() {
-		for (Animation hideAnimation : animations.values()) {
-			hideAnimation.apply(0.5f);
-		}
-	}
 
 	public Model(List<HideNode> nodes, ArrayList<HideNode> root, HashMap<String, Animation> animations, List<Material> materials) {
 		this.rootNodes = root;
 		this.nodes = nodes;
 		this.animations = animations;
-
+		for (Animation hideAnimation : animations.values()) {
+			hideAnimation.apply(0.5f);
+		}
 	}
 
 	/**Client側処理*/
@@ -77,6 +74,7 @@ public class Model implements IDisposable {
 		anim %= 1;
 
 		GlStateManager.enableBlend();
+		GlStateManager.disableCull();
 
 		//GlStateManager.translate(0, 2, 0);
 
@@ -90,6 +88,7 @@ public class Model implements IDisposable {
 		//GL11.glBindTexture(GL11.GL_TEXTURE_2D, textures.get(1).getGlTextureId());
 		//Gui.drawModalRectWithCustomSizedTexture(0, 0, 0, 0, 100, 100, 200, 200);
 
+		GlStateManager.enableCull();
 		GlStateManager.disableBlend();
 
 	}

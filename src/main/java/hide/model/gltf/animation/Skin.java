@@ -41,7 +41,7 @@ public class Skin {
 			res = new float[16];
 		ByteBuffer buf = inverseBindMatrices.getBuffer();
 		for (int i = 0; i < 16; i++) {
-			res[i] = buf.getFloat(inverseBindMatrices.getIndex(index, i));
+			res[i] = buf.getFloat(inverseBindMatrices.getByteIndex(index, i));
 		}
 		return res;
 	}
