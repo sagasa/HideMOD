@@ -12,8 +12,6 @@ import org.lwjgl.opengl.GL20;
 
 import com.google.gson.annotations.SerializedName;
 
-import de.javagl.jgltf.model.NodeModel;
-import de.javagl.jgltf.model.SkinModel;
 import hide.model.gltf.Model.HideShader;
 import hide.model.gltf.animation.Skin;
 import hide.model.gltf.base.Accessor;
@@ -68,11 +66,8 @@ public class HideNode implements IDisposable {
 		return parent;
 	}
 
-	transient public NodeModel nodeModel_;
 	transient private HideShader shader;
 
-	//skin render
-	transient SkinModel skinModel_;
 	transient private Accessor inverseMatrices;
 	transient private FloatBuffer boneMat;
 
@@ -119,14 +114,12 @@ public class HideNode implements IDisposable {
 
 			shader.use();
 
-
 			boneMat.rewind();
 			computeJointMatrix(this, boneMat);
 			boneMat.rewind();
 			GL20.glUniformMatrix4(Model.SKIN_BONE_MAT_INDEX, false, boneMat);
 
 			mesh.render();
-
 
 			GL20.glUseProgram(0);
 		}
@@ -160,11 +153,10 @@ public class HideNode implements IDisposable {
 		GlStateManager.enableTexture2D();
 		Model.profiler.endStartSection("hide.render.calcBone");
 
-		if (hasMesh&&!useSkin) {
+		if (hasMesh && !useSkin) {
 			shader.use();
 			//	System.out.println("do MeshRender");
 			mesh.render();
-
 
 		}
 		Model.profiler.endStartSection("hide.render.draw");

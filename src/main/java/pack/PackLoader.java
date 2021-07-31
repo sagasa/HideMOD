@@ -25,6 +25,7 @@ import hide.types.base.DataBase;
 import hide.types.base.DataBase.DataEntry;
 import hide.types.base.DataBase.ValueEntry;
 import hide.types.base.Info;
+import hide.types.guns.ProjectileData;
 import hide.types.items.GunData;
 import hide.types.items.ItemData;
 import hide.types.items.MagazineData;
@@ -53,6 +54,7 @@ public class PackLoader {
 		new GunData();
 		new MagazineData();
 		new PackInfo();
+		new ProjectileData();
 	}
 
 	public static void reloadInGame() {

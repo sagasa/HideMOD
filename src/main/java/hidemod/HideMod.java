@@ -17,6 +17,7 @@ import hide.guns.HideGunCommand;
 import hide.guns.HideGunSystem;
 import hide.guns.entiry.EntityBullet;
 import hide.model.gltf.GltfLoader;
+import hide.opengl.ServerRenderContext;
 import hide.ux.HideUXSystem;
 import items.ItemGun;
 import items.ItemMagazine;
@@ -87,14 +88,15 @@ public class HideMod {
 	@EventHandler
 	public void serverStop(FMLServerStoppedEvent event) {
 		subSystem.serverStop(event);
+		if (event.getSide().isServer())
+			//サーバーサイドの場合1回しか呼ばれないのでコンテキスト破棄
+			ServerRenderContext.destroyContext();
 	}
 
 	// アイテム登録
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		ModeDir = new File(event.getModConfigurationDirectory().getParentFile(), "/mods/");
-		// パック読み込み
-		PackLoader.load();
 		// パケットの初期設定
 		PacketHandler.init();
 		// ダメージの初期設定
@@ -120,6 +122,11 @@ public class HideMod {
 			//HideBaseのフックを追加
 			HideHook.initHookClient();
 			System.out.println(defaultResourcePacks);
+
+			ServerRenderContext.SUPPORT_CONTEXT=true;
+		} else {
+			//レンダリング用コンテキスト
+			ServerRenderContext.initContext();
 		}
 
 		HideBase.HideDirEntry.setChangeListener(PackLoader::reloadInGame);
@@ -131,7 +138,8 @@ public class HideMod {
 		if (FMLCommonHandler.instance().getSide().isClient()) {
 			initClient();
 		}
-
+		// パック読み込み
+		PackLoader.load();
 		GltfLoader.test();
 	}
 

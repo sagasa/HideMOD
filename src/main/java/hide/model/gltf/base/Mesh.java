@@ -19,9 +19,10 @@ import com.google.gson.annotations.SerializedName;
 import hide.model.gltf.GltfLoader;
 import hide.model.gltf.Model;
 import hide.model.gltf.Model.HideShader;
+import hide.opengl.ServerRenderContext;
 
 public class Mesh implements IDisposable {
-	private static boolean GL30Supported = GLContext.getCapabilities().OpenGL30;
+	private static boolean GL30Supported = ServerRenderContext.SUPPORT_CONTEXT && GLContext.getCapabilities().OpenGL30;
 
 	private MeshPrimitives[] primitives;
 	private float[] weights = ArrayUtils.EMPTY_FLOAT_ARRAY;
@@ -149,7 +150,7 @@ public class Mesh implements IDisposable {
 				}
 				int index = attribute.index;
 				vbo.bindAttribPointer(index);
-				System.out.println(attribute+ " "+index);
+				System.out.println(attribute + " " + index);
 				//vbo.writeAsFloat();
 			}
 

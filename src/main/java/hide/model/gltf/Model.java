@@ -12,17 +12,17 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.util.vector.Vector3f;
 
-import de.javagl.jgltf.model.MaterialModel;
 import hide.model.gltf.animation.Animation;
 import hide.model.gltf.base.ByteBufferInputStream;
 import hide.model.gltf.base.IDisposable;
 import hide.model.gltf.base.Material;
+import hide.opengl.ServerRenderContext;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.profiler.Profiler;
@@ -37,7 +37,6 @@ public class Model implements IDisposable {
 
 	List<HideNode> nodes = new ArrayList<>();
 	Map<String, Animation> animations = new HashMap<>();
-	Map<MaterialModel, HideMaterial> matMap = new HashMap<>();
 
 	List<HideNode> debugRoot = new ArrayList<>();
 	List<HideNode> meshRoot = new ArrayList<>();
@@ -94,6 +93,8 @@ public class Model implements IDisposable {
 		GlStateManager.enableBlend();
 		GlStateManager.disableCull();
 
+		GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
+
 		//GlStateManager.translate(0, 2, 0);
 
 		for (HideNode node : meshRoot) {
@@ -107,7 +108,7 @@ public class Model implements IDisposable {
 		GL20.glDisableVertexAttribArray(0);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 
-		HideNode node = nodes.get(8);
+		HideNode node = nodes.get(3);
 		Vector3f vec = TransformMatUtil.mul(node.calcGlobalMat(), new Vector3f(0, 0, 0));
 
 		TransformMatUtil.read(node.calcGlobalMat(), false);
@@ -125,6 +126,7 @@ public class Model implements IDisposable {
 		//GL11.glBindTexture(GL11.GL_TEXTURE_2D, textures.get(1).getGlTextureId());
 		//Gui.drawModalRectWithCustomSizedTexture(0, 0, 0, 0, 100, 100, 200, 200);
 
+		GL11.glPopAttrib();
 		GlStateManager.enableCull();
 		GlStateManager.disableBlend();
 
@@ -137,11 +139,16 @@ public class Model implements IDisposable {
 
 	static {
 		profiler.profilingEnabled = true;
+		if (ServerRenderContext.SUPPORT_CONTEXT) {
+			SKIN_SHADER = new HideShader("assets/hidemod/shader/skinshader.vert", "assets/hidemod/shader/skinshader.frag");
+			SKIN_BONE_MAT_INDEX = GL20.glGetUniformLocation(SKIN_SHADER.ID, "u_BoneMatrices");
 
-		SKIN_SHADER = new HideShader("assets/hidemod/shader/skinshader.vert", "assets/hidemod/shader/skinshader.frag");
-		SKIN_BONE_MAT_INDEX = GL20.glGetUniformLocation(SKIN_SHADER.ID, "u_BoneMatrices");
-
-		BASE_SHADER = new HideShader("assets/hidemod/shader/baseshader.vert", "assets/hidemod/shader/baseshader.frag");
+			BASE_SHADER = new HideShader("assets/hidemod/shader/baseshader.vert", "assets/hidemod/shader/baseshader.frag");
+		} else {
+			SKIN_SHADER = null;
+			SKIN_BONE_MAT_INDEX = 0;
+			BASE_SHADER = null;
+		}
 	}
 
 	public static class HideShader {
@@ -185,9 +192,9 @@ public class Model implements IDisposable {
 		}
 
 		public void material(Material material) {
-			//			GL13.glActiveTexture(GL13.GL_TEXTURE0);
-			//			GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.baseColorTexture);
-			//			GL20.glUniform1i(BASE_COLOR_TEXTURE, 0);
+			GL13.glActiveTexture(GL13.GL_TEXTURE0);
+			GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.getBaseColorTexture());
+			GL20.glUniform1i(BASE_COLOR_TEXTURE, 0);
 			//
 			//			GL20.glUniform1i(HAS_NORMAL_TEXTURE, material.normalTexture == -1 ? 0 : 1);
 			//			if (material.normalTexture == -1) {
@@ -220,7 +227,7 @@ public class Model implements IDisposable {
 		int fShaderId = makeShader(GL20.GL_FRAGMENT_SHADER, readResource(frag_path));
 
 		//プログラムオブジェクトの作成
-		int programId = OpenGlHelper.glCreateProgram();
+		int programId = GL20.glCreateProgram();
 		GL20.glAttachShader(programId, vShaderId);
 		GL20.glAttachShader(programId, fShaderId);
 
@@ -272,20 +279,7 @@ public class Model implements IDisposable {
 	}
 
 	class HideMaterial {
-		public HideMaterial(MaterialModel material) {
-			Map<String, Object> map = material.getValues();
-			if ((int) map.get("hasBaseColorTexture") == 1)
-				baseColorTexture = textures.get((int) map.get("baseColorTexture")).getGlTextureId();
-			if ((int) map.get("hasNormalTexture") == 1)
-				normalTexture = textures.get((int) map.get("normalTexture")).getGlTextureId();
-			if ((int) map.get("hasEmissiveTexture") == 1)
-				emissiveTexture = textures.get((int) map.get("emissiveTexture")).getGlTextureId();
-			if ((int) map.get("hasOcclusionTexture") == 1)
-				occlusionTexture = textures.get((int) map.get("occlusionTexture")).getGlTextureId();
 
-			metallicFactor = (float) map.get("metallicFactor");
-			roughnessFactor = (float) map.get("roughnessFactor");
-		}
 
 		int baseColorTexture = -1;
 		int normalTexture = -1;

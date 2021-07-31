@@ -2,64 +2,73 @@ package hide.model.gltf.base;
 
 import java.util.ArrayList;
 
-import net.minecraft.client.renderer.texture.DynamicTexture;
-
 public class Material implements IDisposable {
 
-	private MetallicRoughness pbrMetallicRoughness;
-	private NormalTextureInfo normalTexture;
-	private OcclusionTextureInfo occlusionTexture;
-	private TextureInfo emissiveTexture;
-	private float[] emissiveFactor;
-	private AlphaMode alphaMode;
+	private MetallicRoughness pbrMetallicRoughness = MetallicRoughness.DEFAULT;
+	private NormalTextureInfo normalTexture = NormalTextureInfo.DEFAULT;
+	private OcclusionTextureInfo occlusionTexture = OcclusionTextureInfo.DEFAULT;
+	private TextureInfo emissiveTexture = TextureInfo.DEFAULT;
+	private float[] emissiveFactor = new float[4];
+	private AlphaMode alphaMode = AlphaMode.BLEND;
 	private float alphaCutoff;
-	private boolean doubleSided;
+	private boolean doubleSided = false;
+
+	public int getBaseColorTexture() {
+		return pbrMetallicRoughness.baseColorTexture.texID;
+	}
+
+	public static final Material DUMMY = new Material();
 
 	public static class MetallicRoughness {
+		private static final MetallicRoughness DEFAULT = new MetallicRoughness();
+
 		private float[] baseColorFactor = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
-		private TextureInfo baseColorTexture;
-		private float metallicFactor;
-		private float roughnessFactor;
-		private TextureInfo metallicRoughnessTexture;
+		private TextureInfo baseColorTexture = TextureInfo.DEFAULT;
+		private float metallicFactor = 0;
+		private float roughnessFactor = 0;
+		private TextureInfo metallicRoughnessTexture = TextureInfo.DEFAULT;
 	}
 
 	public static class TextureInfo {
-		private int index;
+		private static final TextureInfo DEFAULT = new TextureInfo();
+
+		private int index = -1;
 		private int texCoord;
 
-		transient private int texID;
+		transient private int texID = 0;
 
-		public void regiser() {
-
+		public void regiser(ArrayList<HideTexture> textures) {
+			if (index != -1)
+				texID = textures.get(index).getTexID();
 		}
 	}
 
 	public static class NormalTextureInfo extends TextureInfo {
-		private float scale;
+		private static final NormalTextureInfo DEFAULT = new NormalTextureInfo();
+		private float scale = 1;
 	}
 
 	public static class OcclusionTextureInfo extends TextureInfo {
-		private float strength;
+		private static final OcclusionTextureInfo DEFAULT = new OcclusionTextureInfo();
+		private float strength = 1;
 	}
 
-	public Material regiser() {
-		if(pbrMetallicRoughness.baseColorTexture!=null)
-			pbrMetallicRoughness.baseColorTexture.regiser();
-
-
-		return this;
-	}
 	@Override
 	public void dispose() {
 
 	}
+
 	public enum AlphaMode {
 		OPAQUE, MASK, BLEND
 	}
-	public Material register(ArrayList<DynamicTexture> textures) {
-		// TODO 自動生成されたメソッド・スタブ
+
+	public Material register(ArrayList<HideTexture> textures) {
+		pbrMetallicRoughness.baseColorTexture.regiser(textures);
+		pbrMetallicRoughness.metallicRoughnessTexture.regiser(textures);
+		normalTexture.regiser(textures);
+		occlusionTexture.regiser(textures);
+		emissiveTexture.regiser(textures);
 		return this;
 	}
-
 
 }

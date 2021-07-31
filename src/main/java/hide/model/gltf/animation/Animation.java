@@ -8,7 +8,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
-import de.javagl.jgltf.model.AccessorFloatData;
 import hide.model.gltf.GltfLoader;
 import hide.model.gltf.HideNode;
 import hide.model.gltf.base.Accessor;
@@ -83,7 +82,6 @@ public class Animation {
 		transient private Sampler sampler;
 
 		float[] times;
-		AccessorFloatData _output;
 		int elementCount;
 
 		public void register(GltfLoader loader) {

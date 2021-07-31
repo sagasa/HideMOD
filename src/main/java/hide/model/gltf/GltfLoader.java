@@ -22,27 +22,24 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import de.javagl.jgltf.model.io.v2.GltfReaderV2;
 import hide.model.gltf.animation.Animation;
 import hide.model.gltf.animation.Skin;
 import hide.model.gltf.base.Accessor;
 import hide.model.gltf.base.BufferView;
 import hide.model.gltf.base.ByteBufferInputStream;
+import hide.model.gltf.base.HideTexture;
 import hide.model.gltf.base.Material;
 import hide.model.gltf.base.Mesh;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.TextureUtil;
+import hide.opengl.ServerRenderContext;
 import net.minecraft.profiler.Profiler.Result;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class GltfLoader {
 
 	private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	private static final int JSON_CHUNK = 0x4E4F534A;
 	private static final int BIN_CHUNK = 0x004E4942;
-	private static final GltfReaderV2 reader = new GltfReaderV2();
 
 	static Model test;
 
@@ -64,7 +61,7 @@ public class GltfLoader {
 	public static void test() {
 		System.out.println("==================MODEL LOAD TEST==================");
 		long time = System.currentTimeMillis();
-		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "test.glb")))) {
+		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "m2.glb")))) {
 			test = loadGlb("test", ins, Side.SERVER);
 		} catch (IOException | GltfException e) {
 			e.printStackTrace();
@@ -188,22 +185,23 @@ public class GltfLoader {
 		// Load textures
 
 		// Client
-		ArrayList<DynamicTexture> textures = new ArrayList<>();
-		if (side == Side.CLIENT) {
+		boolean useGL = side == Side.CLIENT || ServerRenderContext.SUPPORT_CONTEXT;
 
+		ArrayList<HideTexture> textures = new ArrayList<>();
+		if (useGL) {
 			if (root.has("images")) {
 				root.get("images").getAsJsonArray().forEach(imageJson -> {
 					JsonObject imageObj = imageJson.getAsJsonObject();
 					ByteBuffer bufferView = bufferViews.get(imageObj.get("bufferView").getAsInt()).getBuffer();
-					textures.add(registerTexture(bufferView));
+					textures.add(HideTexture.load(new ByteBufferInputStream(bufferView)));
 				});
 			}
-
 		}
 
 		if (root.has("materials"))
 			for (JsonElement element : root.get("materials").getAsJsonArray()) {
-				materials.add(gson.fromJson(element, Material.class).register(textures));
+				Material mat = useGL ? gson.fromJson(element, Material.class) : Material.DUMMY;
+				materials.add(mat.register(textures));
 				System.out.println("Add Mat");
 			}
 		lap("load texture");
@@ -251,17 +249,6 @@ public class GltfLoader {
 		lap("load end");
 		res = new Model(nodeCache, rootNodes, animations, materials);
 
-	}
-
-	/**Client側処理*/
-	@SideOnly(Side.CLIENT)
-	private static DynamicTexture registerTexture(ByteBuffer data) {
-		try (ByteBufferInputStream is = new ByteBufferInputStream(data)) {
-			return new DynamicTexture(TextureUtil.readBufferedImage(is));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
 	}
 
 	private static String getName(JsonObject object, String defaultName) {
