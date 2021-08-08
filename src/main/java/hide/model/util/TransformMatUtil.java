@@ -1,4 +1,4 @@
-package hide.model.gltf;
+package hide.model.util;
 
 import java.nio.FloatBuffer;
 import java.util.Arrays;
@@ -7,7 +7,8 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
-import hide.model.gltf.animation.Skin;
+import hide.model.impl.ISkin;
+import hide.model.impl.NodeImpl;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -18,25 +19,21 @@ public class TransformMatUtil {
 	private static final ThreadLocal<float[]> TMP_MAT4x4_1 = ThreadLocal.withInitial(() -> new float[16]);
 	private static final ThreadLocal<float[]> TMP_MAT4x4_2 = ThreadLocal.withInitial(() -> new float[16]);
 
-	static void computeJointMatrix(final HideNode nodeModel, FloatBuffer fb) {
-		final Skin skin = nodeModel.getSkin();
+	public static void computeJointMatrix(final NodeImpl nodeModel, FloatBuffer fb) {
+		final ISkin skin = nodeModel.getSkin();
 
-		//float[] base = computeGlobalTransform(nodeModel, TMP_MAT4x4_0.get());
-		float[] base = nodeModel.getGlobalMat();
-
-		invert4x4(base, base);
+		float[] base = computeGlobalTransform(nodeModel, TMP_MAT4x4_0.get());
+		invert4x4(nodeModel.getGlobalMat(), base);
 
 		//float[] bindShapeMatrix = skin.getBindShapeMatrix(null);
 
 		float[] jointMat = TMP_MAT4x4_1.get();
 
-		HideNode[] jointList = skin.getJoints();
+		NodeImpl[] jointList = skin.getJoints();
 		for (int i = 0; i < jointList.length; i++) {
-			HideNode joint = jointList[i];
+			NodeImpl joint = jointList[i];
 
 			mul4x4(base, joint.getGlobalMat(), jointMat);
-			//mul4x4(base, computeGlobalTransform(joint, jointMat), jointMat);
-
 
 			float[] inverseBindMatrix = skin.getInverseBindMatrix(i, TMP_MAT4x4_2.get());
 			mul4x4(jointMat, inverseBindMatrix, jointMat);
@@ -46,9 +43,9 @@ public class TransformMatUtil {
 		}
 	}
 
-	static float[] computeGlobalTransform(HideNode nodeModel, float[] result) {
+	public static float[] computeGlobalTransform(NodeImpl nodeModel, float[] result) {
 		float[] localResult = result;
-		HideNode currentNode = nodeModel;
+		NodeImpl currentNode = nodeModel;
 		setIdentity4x4(localResult);
 		while (currentNode != null && currentNode.getParent() != null) {
 			mul4x4(currentNode.getLocalMat(), localResult, localResult);
@@ -57,7 +54,7 @@ public class TransformMatUtil {
 		return localResult;
 	}
 
-	static Vector4f mul(Matrix4f mat, Vector4f pos) {
+	public static Vector4f mul(Matrix4f mat, Vector4f pos) {
 		Vector4f res = new Vector4f();
 		res.x = mat.m00 * pos.x + mat.m01 * pos.y + mat.m02 * pos.z + mat.m03 * pos.w;
 		res.y = mat.m10 * pos.x + mat.m11 * pos.y + mat.m12 * pos.z + mat.m13 * pos.w;
@@ -66,7 +63,7 @@ public class TransformMatUtil {
 		return res;
 	}
 
-	static Vector3f mul(float[] mat, Vector3f pos) {
+	public static Vector3f mul(float[] mat, Vector3f pos) {
 		Vector3f res = new Vector3f();
 		res.x = mat[0] * pos.x + mat[4] * pos.y + mat[8] * pos.z + mat[12] * 1;
 		res.y = mat[1] * pos.x + mat[5] * pos.y + mat[9] * pos.z + mat[13] * 1;
@@ -75,7 +72,7 @@ public class TransformMatUtil {
 		return res;
 	}
 
-	static void mul4x4(FloatBuffer left, int left_i, FloatBuffer right, int right_i, FloatBuffer dest, int dest_i) {
+	public static void mul4x4(FloatBuffer left, int left_i, FloatBuffer right, int right_i, FloatBuffer dest, int dest_i) {
 
 		float m00 = left.get(left_i + 0) * right.get(right_i + 0) + left.get(left_i + 4) * right.get(right_i + 1) + left.get(left_i + 8) * right.get(right_i + 2) + left.get(left_i + 12) * right.get(right_i + 3);
 		float m01 = left.get(left_i + 1) * right.get(right_i + 0) + left.get(left_i + 5) * right.get(right_i + 1) + left.get(left_i + 9) * right.get(right_i + 2) + left.get(left_i + 13) * right.get(right_i + 3);
@@ -220,7 +217,7 @@ public class TransformMatUtil {
 		return m;
 	}
 
-	public static void invert4x4(float[] m, float[] inv) {
+	public static void invert4x4(float[] m, float[] res) {
 		float m0 = m[0];
 		float m1 = m[1];
 		float m2 = m[2];
@@ -238,41 +235,41 @@ public class TransformMatUtil {
 		float mE = m[14];
 		float mF = m[15];
 
-		inv[0] = m5 * mA * mF - m5 * mB * mE - m9 * m6 * mF + m9 * m7 * mE + mD * m6 * mB - mD * m7 * mA;
+		res[0] = m5 * mA * mF - m5 * mB * mE - m9 * m6 * mF + m9 * m7 * mE + mD * m6 * mB - mD * m7 * mA;
 
-		inv[4] = -m4 * mA * mF + m4 * mB * mE + m8 * m6 * mF - m8 * m7 * mE - mC * m6 * mB + mC * m7 * mA;
+		res[4] = -m4 * mA * mF + m4 * mB * mE + m8 * m6 * mF - m8 * m7 * mE - mC * m6 * mB + mC * m7 * mA;
 
-		inv[8] = m4 * m9 * mF - m4 * mB * mD - m8 * m5 * mF + m8 * m7 * mD + mC * m5 * mB - mC * m7 * m9;
+		res[8] = m4 * m9 * mF - m4 * mB * mD - m8 * m5 * mF + m8 * m7 * mD + mC * m5 * mB - mC * m7 * m9;
 
-		inv[12] = -m4 * m9 * mE + m4 * mA * mD + m8 * m5 * mE - m8 * m6 * mD - mC * m5 * mA + mC * m6 * m9;
+		res[12] = -m4 * m9 * mE + m4 * mA * mD + m8 * m5 * mE - m8 * m6 * mD - mC * m5 * mA + mC * m6 * m9;
 
-		inv[1] = -m1 * mA * mF + m1 * mB * mE + m9 * m2 * mF - m9 * m3 * mE - mD * m2 * mB + mD * m3 * mA;
+		res[1] = -m1 * mA * mF + m1 * mB * mE + m9 * m2 * mF - m9 * m3 * mE - mD * m2 * mB + mD * m3 * mA;
 
-		inv[5] = m0 * mA * mF - m0 * mB * mE - m8 * m2 * mF + m8 * m3 * mE + mC * m2 * mB - mC * m3 * mA;
+		res[5] = m0 * mA * mF - m0 * mB * mE - m8 * m2 * mF + m8 * m3 * mE + mC * m2 * mB - mC * m3 * mA;
 
-		inv[9] = -m0 * m9 * mF + m0 * mB * mD + m8 * m1 * mF - m8 * m3 * mD - mC * m1 * mB + mC * m3 * m9;
+		res[9] = -m0 * m9 * mF + m0 * mB * mD + m8 * m1 * mF - m8 * m3 * mD - mC * m1 * mB + mC * m3 * m9;
 
-		inv[13] = m0 * m9 * mE - m0 * mA * mD - m8 * m1 * mE + m8 * m2 * mD + mC * m1 * mA - mC * m2 * m9;
+		res[13] = m0 * m9 * mE - m0 * mA * mD - m8 * m1 * mE + m8 * m2 * mD + mC * m1 * mA - mC * m2 * m9;
 
-		inv[2] = m1 * m6 * mF - m1 * m7 * mE - m5 * m2 * mF + m5 * m3 * mE + mD * m2 * m7 - mD * m3 * m6;
+		res[2] = m1 * m6 * mF - m1 * m7 * mE - m5 * m2 * mF + m5 * m3 * mE + mD * m2 * m7 - mD * m3 * m6;
 
-		inv[6] = -m0 * m6 * mF + m0 * m7 * mE + m4 * m2 * mF - m4 * m3 * mE - mC * m2 * m7 + mC * m3 * m6;
+		res[6] = -m0 * m6 * mF + m0 * m7 * mE + m4 * m2 * mF - m4 * m3 * mE - mC * m2 * m7 + mC * m3 * m6;
 
-		inv[10] = m0 * m5 * mF - m0 * m7 * mD - m4 * m1 * mF + m4 * m3 * mD + mC * m1 * m7 - mC * m3 * m5;
+		res[10] = m0 * m5 * mF - m0 * m7 * mD - m4 * m1 * mF + m4 * m3 * mD + mC * m1 * m7 - mC * m3 * m5;
 
-		inv[14] = -m0 * m5 * mE + m0 * m6 * mD + m4 * m1 * mE - m4 * m2 * mD - mC * m1 * m6 + mC * m2 * m5;
+		res[14] = -m0 * m5 * mE + m0 * m6 * mD + m4 * m1 * mE - m4 * m2 * mD - mC * m1 * m6 + mC * m2 * m5;
 
-		inv[3] = -m1 * m6 * mB + m1 * m7 * mA + m5 * m2 * mB - m5 * m3 * mA - m9 * m2 * m7 + m9 * m3 * m6;
+		res[3] = -m1 * m6 * mB + m1 * m7 * mA + m5 * m2 * mB - m5 * m3 * mA - m9 * m2 * m7 + m9 * m3 * m6;
 
-		inv[7] = m0 * m6 * mB - m0 * m7 * mA - m4 * m2 * mB + m4 * m3 * mA + m8 * m2 * m7 - m8 * m3 * m6;
+		res[7] = m0 * m6 * mB - m0 * m7 * mA - m4 * m2 * mB + m4 * m3 * mA + m8 * m2 * m7 - m8 * m3 * m6;
 
-		inv[11] = -m0 * m5 * mB + m0 * m7 * m9 + m4 * m1 * mB - m4 * m3 * m9 - m8 * m1 * m7 + m8 * m3 * m5;
+		res[11] = -m0 * m5 * mB + m0 * m7 * m9 + m4 * m1 * mB - m4 * m3 * m9 - m8 * m1 * m7 + m8 * m3 * m5;
 
-		inv[15] = m0 * m5 * mA - m0 * m6 * m9 - m4 * m1 * mA + m4 * m2 * m9 + m8 * m1 * m6 - m8 * m2 * m5;
+		res[15] = m0 * m5 * mA - m0 * m6 * m9 - m4 * m1 * mA + m4 * m2 * m9 + m8 * m1 * m6 - m8 * m2 * m5;
 
-		float det = m0 * inv[0] + m1 * inv[4] + m2 * inv[8] + m3 * inv[12];
+		float det = m0 * res[0] + m1 * res[4] + m2 * res[8] + m3 * res[12];
 		if (Math.abs(det) <= 1.0E-8F) {
-			setIdentity4x4(inv);
+			setIdentity4x4(res);
 		}
 	}
 
@@ -286,14 +283,14 @@ public class TransformMatUtil {
 	}
 
 	@SideOnly(Side.CLIENT)
-	static void read(FloatBuffer fb, boolean transpose) {
+	public static void read(FloatBuffer fb, boolean transpose) {
 		float[] data = new float[16];
 		fb.get(data);
 		read(data, transpose);
 	}
 
 	@SideOnly(Side.CLIENT)
-	static void read(float[] data, boolean transpose) {
+	public static void read(float[] data, boolean transpose) {
 		if (transpose) {
 			Matrix4f mat = new net.minecraft.client.renderer.Matrix4f(data);
 			mat.transpose();

@@ -1,4 +1,4 @@
-package hide.model.gltf.animation;
+package hide.model.gltf;
 
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -8,11 +8,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
-import hide.model.gltf.GltfLoader;
-import hide.model.gltf.HideNode;
-import hide.model.gltf.base.Accessor;
+import hide.model.impl.AccessorImpl;
+import hide.model.impl.IAnimation;
+import hide.model.impl.NodeImpl;
 
-public class Animation {
+class Animation implements IAnimation {
 
 	private List<Channel> channels;
 	private List<Sampler> samplers;
@@ -31,8 +31,8 @@ public class Animation {
 
 		float min = Float.MAX_VALUE, max = -Float.MAX_VALUE;
 		for (Channel channel : channels) {
-			min = Math.min(channel.sampler.input.min[0].floatValue(), min);
-			max = Math.max(channel.sampler.input.max[0].floatValue(), max);
+			min = Math.min(channel.sampler.input.getMin()[0].floatValue(), min);
+			max = Math.max(channel.sampler.input.getMax()[0].floatValue(), max);
 		}
 		maxKey = max;
 		minKey = min;
@@ -49,8 +49,8 @@ public class Animation {
 
 		private Interpolation interpolation;
 
-		transient private Accessor input;
-		transient private Accessor output;
+		transient private AccessorImpl input;
+		transient private AccessorImpl output;
 
 		public void register(GltfLoader loader) {
 			input = loader.getAccessor(inputIndex);
@@ -64,7 +64,7 @@ public class Animation {
 
 		private AnimationPath path;
 
-		transient private HideNode node;
+		transient private NodeImpl node;
 
 		public void register(GltfLoader loader) {
 			node = loader.getNode(nodeIndex);
@@ -87,13 +87,13 @@ public class Animation {
 		public void register(GltfLoader loader) {
 			target.register(loader);
 
-			Accessor input = sampler.input;
+			AccessorImpl input = sampler.input;
 			times = new float[input.getCount()];
 			for (int i = 0; i < input.getCount(); i++) {
-				times[i] = input.getBuffer().getFloat(input.getByteIndex(i , 0));
+				times[i] = input.getBuffer().getFloat(input.getByteIndex(i, 0));
 			}
 
-			Accessor outAccessor = sampler.output;
+			AccessorImpl outAccessor = sampler.output;
 			elementCount = target.path == AnimationPath.weights ? outAccessor.getCount() / times.length : outAccessor.getElementType().size;
 		}
 
@@ -174,7 +174,7 @@ public class Animation {
 
 		void linearInterpolator(int index0, int index1, float alpha) {
 			float[] value = gen();
-			Accessor out = sampler.output;
+			AccessorImpl out = sampler.output;
 
 			for (int i = 0; i < elementCount; i++) {
 				float a = out.getBuffer().getFloat(out.getByteIndex(index0, i));
@@ -189,6 +189,7 @@ public class Animation {
 	}
 
 	/**0-1*/
+	@Override
 	public void apply(float value) {
 		float key = minKey + value * (maxKey - minKey);
 		for (Channel channel : channels) {

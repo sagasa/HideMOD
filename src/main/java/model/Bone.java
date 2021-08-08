@@ -1,7 +1,6 @@
 package model;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,7 @@ public class Bone extends DataBase {
 		for (AnimationType type : animation.keySet()) {
 			//	AnimationKey.applyAnimation(animation.get(type), renderProp.get(type));
 		}
-		models.forEach(model -> rootModel.render(model.getModel(Collections.EMPTY_SET)));
+		//models.forEach(model -> rootModel.render(model.getModel(Collections.EMPTY_SET)));
 		children.forEach(bone -> bone.render(property));
 	}
 }

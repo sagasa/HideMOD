@@ -10,9 +10,13 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -21,19 +25,22 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.annotations.SerializedName;
 
-import hide.model.gltf.animation.Animation;
-import hide.model.gltf.animation.Skin;
-import hide.model.gltf.base.Accessor;
-import hide.model.gltf.base.BufferView;
-import hide.model.gltf.base.ByteBufferInputStream;
-import hide.model.gltf.base.HideTexture;
-import hide.model.gltf.base.Material;
-import hide.model.gltf.base.Mesh;
+import hide.model.impl.AccessorImpl;
+import hide.model.impl.BufferViewImpl;
+import hide.model.impl.IAnimation;
+import hide.model.impl.MeshImpl;
+import hide.model.impl.MeshImpl.Attribute;
+import hide.model.impl.MeshPrimitivesImpl;
+import hide.model.impl.ModelImpl;
+import hide.model.impl.NodeImpl;
+import hide.model.util.ByteBufferInputStream;
+import hide.model.util.HideTexture;
 import hide.opengl.ServerRenderContext;
 import net.minecraft.profiler.Profiler.Result;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.relauncher.Side;
 
 public class GltfLoader {
 
@@ -41,7 +48,7 @@ public class GltfLoader {
 	private static final int JSON_CHUNK = 0x4E4F534A;
 	private static final int BIN_CHUNK = 0x004E4942;
 
-	static Model test;
+	static ModelImpl test;
 
 	public static void render() {
 
@@ -52,8 +59,8 @@ public class GltfLoader {
 		}
 		GL11.glPopMatrix();
 
-		for (Result res : Model.profiler.getProfilingData("hide")) {
-			//System.out.println(res.profilerName+" "+res.totalUsePercentage+" "+res.usePercentage);
+		for (Result res : ModelImpl.profiler.getProfilingData("hide.render")) {
+			//System.out.println(res.profilerName + " " + res.totalUsePercentage + " " + res.usePercentage);
 		}
 
 	}
@@ -62,7 +69,7 @@ public class GltfLoader {
 		System.out.println("==================MODEL LOAD TEST==================");
 		long time = System.currentTimeMillis();
 		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "m2.glb")))) {
-			test = loadGlb("test", ins, Side.SERVER);
+			test = load(ins);
 		} catch (IOException | GltfException e) {
 			e.printStackTrace();
 		}
@@ -70,28 +77,135 @@ public class GltfLoader {
 		System.out.println("==================MODEL LOAD END================== " + time);
 	}
 
-	public static Model loadGlb(String modelname, InputStream stream, Side side) throws IOException, GltfException {
+	//=== パース用クラス ===
+	static class Accessor extends AccessorImpl {
 
-		return new GltfLoader(modelname, stream, side).res;
+		private int bufferView;
 
-		//*/
+		public Accessor register(ArrayList<BufferViewImpl> bufArray) {
+			buffer = bufArray.get(bufferView);
+			return this;
+		}
+	}
+
+	static class BufferView extends BufferViewImpl {
+
+		public BufferView slice(ByteBuffer from) {
+			buffer = (ByteBuffer) from.slice().position(byteOffset)
+					.limit(byteOffset + byteLength).mark();
+			buffer.order(ByteOrder.nativeOrder());
+			return this;
+		}
+	}
+
+	static class MeshPrimitives extends MeshPrimitivesImpl {
+		@SerializedName("attributes")
+		private Map<String, Integer> attributeIndex;
+		@SerializedName("indices")
+		private int indicesIndex;
+		@SerializedName("material")
+		private int materialIndex = -1;
+		@SerializedName("targets")
+		transient private Map<Attribute, Integer>[] targetsIndex;
+
+		private void register(GltfLoader loader) {
+
+			material = loader.getMaterial(materialIndex);
+			indices = loader.getAccessor(indicesIndex);
+			attributes = new EnumMap<>(Attribute.class);
+			attributeIndex.forEach((att, index) -> {
+				Attribute attribute = Attribute.valueOf(att);
+				if (attribute != null)
+					attributes.put(attribute, loader.getAccessor(index));
+			});
+
+			boolean hasTarget = targetsIndex != null && targetsIndex.length != 0;
+
+			//モーフィングがあるなら
+			if (hasTarget) {
+				targets = new ArrayList<>();
+				target = new EnumMap<>(Attribute.class);
+				for (Map<Attribute, Integer> src : targetsIndex) {
+					Map<Attribute, AccessorImpl> map = new EnumMap<>(Attribute.class);
+					for (Entry<Attribute, Integer> entry : src.entrySet()) {
+						map.put(entry.getKey(), loader.getAccessor(entry.getValue()));
+					}
+					targets.add(map);
+				}
+			}
+		}
+	}
+
+	static class Mesh extends MeshImpl {
+
+		private MeshPrimitives[] primitives;
+
+		@Override
+		protected MeshPrimitivesImpl[] getPrimitives() {
+			return primitives;
+		}
+
+		public Mesh register(GltfLoader loader) {
+			for (MeshPrimitives meshPrimitives : primitives) {
+				meshPrimitives.register(loader);
+			}
+			return this;
+		}
+	}
+
+	static class Node extends NodeImpl {
+
+		@SerializedName("children")
+		private int[] childrenIndex = ArrayUtils.EMPTY_INT_ARRAY;
+		@SerializedName("skin")
+		private int skinIndex = -1;
+		@SerializedName("mesh")
+		private int meshIndex = -1;
+		private String name;
+
+		public Node register(GltfLoader loader) {
+			children = new Node[childrenIndex.length];
+			for (int i = 0; i < childrenIndex.length; i++) {
+				Node child = loader.getNode(childrenIndex[i]);
+				child.parent = this;
+				children[i] = child;
+			}
+
+			mesh = loader.getMesh(meshIndex);
+			skin = loader.getSkin(skinIndex);
+			return this;
+		}
+	}
+
+
+	//=== 読み込み ===
+	public static ModelImpl load(InputStream stream) throws IOException, GltfException {
+		return new GltfLoader(stream).res;
 	}
 
 	private static final Material DefatultMat = new Material();
 
 	public Mesh getMesh(int index) {
+		if (index == -1)
+			return null;
 		return meshCache.get(index);
 	}
 
-	public HideNode getNode(int index) {
+	public Node getNode(int index) {
+		if (index == -1)
+			return null;
 		return nodeCache.get(index);
 	}
 
 	public Accessor getAccessor(int index) {
+		if (index == -1)
+			return null;
 		return accessors.get(index);
 	}
 
 	public Skin getSkin(int index) {
+		if (index == -1)
+			return null;
 		return skins.get(index);
 	}
 
@@ -99,19 +213,16 @@ public class GltfLoader {
 		return index == -1 ? DefatultMat : materials.get(index);
 	}
 
-	public void addSkinNode(HideNode node) {
-		;
-	}
-
 	private List<Mesh> meshCache = new ArrayList<>();
-	private List<HideNode> nodeCache = new ArrayList<>();
+	private List<Node> nodeCache = new ArrayList<>();
 	private List<Accessor> accessors = new ArrayList<>();
 	private List<Skin> skins = new ArrayList<>();
 	private List<Material> materials = new ArrayList<>();
 
-	private Model res;
+	private ModelImpl res;
+	private static final boolean useGL = FMLCommonHandler.instance().getSide().isClient() || ServerRenderContext.SUPPORT_CONTEXT;
 
-	private GltfLoader(String modelname, InputStream stream, Side side) throws GltfException, IOException {
+	private GltfLoader(InputStream stream) throws GltfException, IOException {
 		start();
 		lap("init stream");
 		int magic = readUnsignedInt(stream);
@@ -167,7 +278,7 @@ public class GltfLoader {
 		lap("load bin");
 
 		// Load buffer views
-		ArrayList<BufferView> bufferViews = new ArrayList<>();
+		ArrayList<BufferViewImpl> bufferViews = new ArrayList<>();
 		for (JsonElement element : root.get("bufferViews").getAsJsonArray()) {
 			BufferView bufferView = gson.fromJson(element, BufferView.class);
 			bufferView.slice(binData);
@@ -185,7 +296,6 @@ public class GltfLoader {
 		// Load textures
 
 		// Client
-		boolean useGL = side == Side.CLIENT || ServerRenderContext.SUPPORT_CONTEXT;
 
 		ArrayList<HideTexture> textures = new ArrayList<>();
 		if (useGL) {
@@ -208,10 +318,10 @@ public class GltfLoader {
 
 		// Load nodes
 		for (JsonElement element : root.get("nodes").getAsJsonArray()) {
-			nodeCache.add(gson.fromJson(element, HideNode.class));
+			nodeCache.add(gson.fromJson(element, Node.class));
 		}
 
-		ArrayList<HideNode> rootNodes = new ArrayList<>();
+		ArrayList<NodeImpl> rootNodes = new ArrayList<>();
 		for (int index : gson.fromJson(scene.get("nodes"), int[].class)) {
 			rootNodes.add(getNode(index));
 		}
@@ -232,7 +342,7 @@ public class GltfLoader {
 		lap("load mesh");
 
 		// Load animations
-		HashMap<String, Animation> animations = new HashMap<>();
+		HashMap<String, IAnimation> animations = new HashMap<>();
 		if (root.has("animations")) {
 			for (JsonElement element : root.get("animations").getAsJsonArray()) {
 				JsonObject object = element.getAsJsonObject();
@@ -242,13 +352,13 @@ public class GltfLoader {
 		}
 
 		// register nodes
-		for (HideNode node : nodeCache) {
+		for (Node node : nodeCache) {
 			node.register(this);
 		}
 
 		lap("load end");
 		res = new Model(nodeCache, rootNodes, animations, materials);
-
+		res.postInit();
 	}
 
 	private static String getName(JsonObject object, String defaultName) {

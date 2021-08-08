@@ -1,8 +1,11 @@
-package hide.model.gltf.base;
+package hide.model.gltf;
 
 import java.util.ArrayList;
 
-public class Material implements IDisposable {
+import hide.model.impl.IMaterial;
+import hide.model.util.HideTexture;
+
+class Material implements IMaterial {
 
 	private MetallicRoughness pbrMetallicRoughness = MetallicRoughness.DEFAULT;
 	private NormalTextureInfo normalTexture = NormalTextureInfo.DEFAULT;
@@ -13,6 +16,7 @@ public class Material implements IDisposable {
 	private float alphaCutoff;
 	private boolean doubleSided = false;
 
+	@Override
 	public int getBaseColorTexture() {
 		return pbrMetallicRoughness.baseColorTexture.texID;
 	}

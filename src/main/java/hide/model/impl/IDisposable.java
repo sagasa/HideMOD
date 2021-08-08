@@ -1,4 +1,4 @@
-package hide.model.gltf.base;
+package hide.model.impl;
 
 /**openglリソース用*/
 public interface IDisposable {

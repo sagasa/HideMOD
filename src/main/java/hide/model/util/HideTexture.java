@@ -1,4 +1,4 @@
-package hide.model.gltf.base;
+package hide.model.util;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;

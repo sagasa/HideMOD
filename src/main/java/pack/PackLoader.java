@@ -21,6 +21,9 @@ import org.apache.logging.log4j.util.Strings;
 import com.google.gson.Gson;
 
 import helper.ArrayEditor;
+import hide.model.gltf.GltfLoader;
+import hide.model.gltf.GltfLoader.GltfException;
+import hide.model.impl.ModelImpl;
 import hide.types.base.DataBase;
 import hide.types.base.DataBase.DataEntry;
 import hide.types.base.DataBase.ValueEntry;
@@ -32,7 +35,6 @@ import hide.types.items.MagazineData;
 import hide.types.pack.PackInfo;
 import hidemod.HideMod;
 import model.HideModel;
-import model.HideModel.HideVertex;
 import net.minecraftforge.fml.common.Loader;
 
 /** パックの読み取り */
@@ -127,7 +129,7 @@ public class PackLoader {
 		private Map<String, byte[]> Textures = new HashMap<>();
 		private Map<String, byte[]> Sounds = new HashMap<>();
 		private Map<String, byte[]> Scopes = new HashMap<>();
-		private Map<String, Map<String, HideVertex[]>> Models = new HashMap<>();
+		private Map<String, ModelImpl> Models = new HashMap<>();
 		private Map<String, HideModel> ModelInfos = new HashMap<>();
 
 		/** ファイルからパックのキャッシュを作成する */
@@ -193,13 +195,17 @@ public class PackLoader {
 			// model
 			if (PackPattern.MODEL_GLB.mache(name)) {
 				String n = PackPattern.MODEL_GLB.trim(name);
-				Models.put(n, ObjLoader.LoadModel(new ByteArrayInputStream(data)));
+				try {
+					Models.put(n, GltfLoader.load(new ByteArrayInputStream(data)));
+				} catch (GltfException e) {
+					e.printStackTrace();
+				}
 				LOGGER.info("add model[" + n + "] to PackReader");
 			}
 			// model
 			if (PackPattern.MODEL_OBJ.mache(name)) {
 				String n = PackPattern.MODEL_OBJ.trim(name);
-				Models.put(n, ObjLoader.LoadModel(new ByteArrayInputStream(data)));
+				//Models.put(n, ObjLoader.LoadModel(new ByteArrayInputStream(data)));
 				LOGGER.info("add model[" + n + "] to PackReader");
 			}
 			// model
