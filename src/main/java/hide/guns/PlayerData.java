@@ -16,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
@@ -30,6 +31,10 @@ public abstract class PlayerData implements IHidePlayerData {
 	public float adsRes = 0f;
 
 	public EquipMode CurrentEquipMode = EquipMode.None;
+
+	protected void onChangeItemGun(ItemStack item) {
+		item.getAttributeModifiers(EntityEquipmentSlot.MAINHAND).get("hide.gun");
+	}
 
 	public static class ServerPlayerData extends PlayerData {
 
@@ -85,13 +90,13 @@ public abstract class PlayerData implements IHidePlayerData {
 
 			if (changeAmmo) {
 				changeAmmo = false;
-				guns.forEach(gun -> HideGunNBT.setGunUseingBullet(gun.getGunTag(), gun.getNextUseMagazine()));
+				guns.forEach(gun -> HideGunNBT.GUN_USEBULLET.set(gun.getGunTag(), gun.getNextUseMagazine()));
 				// player.connection.sendPacket(new SPacketEntityEquipment(player.getEntityId(),
 				// EntityEquipmentSlot.MAINHAND, player.getHeldItemMainhand()));
 			}
 			if (changeFireMode) {
 				changeFireMode = false;
-				guns.forEach(gun -> HideGunNBT.setGunFireMode(gun.getGunTag(), gun.getNextFireMode()));
+				guns.forEach(gun -> HideGunNBT.GUN_FIREMODE.set(gun.getGunTag(), gun.getNextFireMode()));
 				// player.connection.sendPacket(new SPacketitem);
 			}
 			if (reload) {

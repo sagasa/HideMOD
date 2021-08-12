@@ -3,6 +3,7 @@ package model;
 import org.lwjgl.opengl.GL11;
 
 import hide.model.impl.ModelImpl;
+import hide.types.base.Info;
 import hide.types.base.NamedData;
 import hide.types.value.WeightEntry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -12,7 +13,7 @@ public class HideModel extends NamedData {
 
 	public static final DataEntry<String> Name = of("sample");
 
-	public static final DataEntry<String> Model = of("sample");
+	public static final DataEntry<String> Model = of("sample", new Info().IsName(true));
 
 	public static final DataEntry<String> HandPos = of("");
 	public static final DataEntry<String> SightPos = of("");
@@ -34,6 +35,7 @@ public class HideModel extends NamedData {
 	}
 
 	public HideModel setModel(ModelImpl model) {
+		System.out.println("setModel " + model);
 		this.model = model;
 		return this;
 	}

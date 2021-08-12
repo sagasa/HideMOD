@@ -1,0 +1,37 @@
+{
+  "Type": "MagazineData",
+  "Values": {
+    "DisplayName": "Ammo",
+    "ShortName": "ammo",
+    "StackSize": 32,
+    "Data": {
+      "Type": "ProjectileData",
+      "Values": {
+        "DamagePlayer": {
+          "Keys": [
+            {
+              "Key": 0.0,
+              "Value": 6.0
+            },
+            {
+              "Key": 20.0,
+              "Value": 12.0
+            }
+          ]
+        },
+        "DamageLiving": {
+          "Keys": [
+            {
+              "Key": 0.0,
+              "Value": 5.0
+            },
+            {
+              "Key": 10.0,
+              "Value": 11.0
+            }
+          ]
+        }
+      }
+    }
+  }
+}

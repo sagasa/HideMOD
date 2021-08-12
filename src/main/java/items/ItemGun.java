@@ -55,11 +55,11 @@ public class ItemGun extends HideItem<GunData> {
 		}
 		// タグがなければ書き込む;
 		NBTTagCompound hideTag = HideGunNBT.getHideTag(item);
-		hideTag.setString(HideGunNBT.DATA_NAME, data.get(ItemData.ShortName));
-		HideGunNBT.setGunShootDelay(hideTag, 0);
-		HideGunNBT.setGunFireMode(hideTag,
+		HideGunNBT.DATA_NAME.set(hideTag, data.get(ItemData.ShortName));
+		HideGunNBT.GUN_SHOOTDELAY.set(hideTag, 0);
+		HideGunNBT.GUN_FIREMODE.set(hideTag,
 				GunFireMode.getFireMode(Arrays.asList(data.get(GunData.FireMode)).iterator().next().toString()));
-		HideGunNBT.setGunUseingBullet(hideTag, CommonGun.LOAD_ANY);
+		HideGunNBT.GUN_USEBULLET.set(hideTag, CommonGun.LOAD_ANY);
 		return item;
 	}
 
@@ -91,12 +91,12 @@ public class ItemGun extends HideItem<GunData> {
 		super.addInformation(stack, worldIn, tooltip, flagIn);
 		// 破損チェック
 		NBTTagCompound hideTag = HideGunNBT.getHideTag(stack);
-		tooltip.add(ChatFormatting.GRAY + "FireMode : " + HideGunNBT.getGunFireMode(hideTag));
-		String useBullet = HideGunNBT.getGunUseingBullet(hideTag);
+		tooltip.add(ChatFormatting.GRAY + "FireMode : " + HideGunNBT.GUN_FIREMODE.get(hideTag));
+		String useBullet = HideGunNBT.GUN_USEBULLET.get(hideTag);
 		tooltip.add(ChatFormatting.GRAY + "UseBullet : "
 				+ (CommonGun.LOAD_ANY.equals(useBullet) ? CommonGun.LOAD_ANY
 						: ItemMagazine.getMagazineName(useBullet)));
-		for (Magazine magazine : HideGunNBT.getGunLoadedMagazines(hideTag).getList()) {
+		for (Magazine magazine : HideGunNBT.GUN_MAGAZINES.get(hideTag).getList()) {
 			if (magazine != null) {
 				tooltip.add(ItemMagazine.getMagazineName(magazine.name) + "x" + magazine.num);
 			} else {
@@ -120,7 +120,7 @@ public class ItemGun extends HideItem<GunData> {
 		if (item != null && !(item.getItem() instanceof ItemGun)) {
 			return null;
 		}
-		return PackData.getGunData(HideGunNBT.getHideTag(item).getString(HideGunNBT.DATA_NAME));
+		return PackData.getGunData(HideGunNBT.DATA_NAME.get(HideGunNBT.getHideTag(item)));
 	}
 
 	@Override

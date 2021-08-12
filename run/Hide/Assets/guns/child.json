@@ -1,0 +1,12 @@
+{
+  "Type": "GunData",
+  "Values": {
+    "ParentName": "parent",
+    "DisplayName": "child",
+    "ShortName": "child",
+    "Data": {
+      "Type": "ProjectileData",
+      "Values": {}
+    }
+  }
+}

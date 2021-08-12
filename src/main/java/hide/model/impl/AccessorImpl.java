@@ -108,7 +108,8 @@ public class AccessorImpl implements IDisposable {
 		BYTE(1, GL11.GL_BYTE, (buf, index) -> String.valueOf(buf.get(index))), @SerializedName("5121")
 		UNSIGNED_BYTE(1, GL11.GL_UNSIGNED_BYTE, (buf, index) -> String.valueOf(buf.get() & 0xFF)), @SerializedName("5122")
 		SHORT(2, GL11.GL_SHORT, (buf, index) -> String.valueOf(buf.getShort(index))), @SerializedName("5123")
-		UNSIGNED_SHORT(2, GL11.GL_UNSIGNED_SHORT, (buf, index) -> String.valueOf(buf.getShort(index) & 0xFFFF)), @SerializedName("5125")
+		UNSIGNED_SHORT(2, GL11.GL_UNSIGNED_SHORT, (buf, index) -> String.valueOf(buf.getShort(index) & 0xFFFF)), @SerializedName("5124")
+		INT(4, GL11.GL_INT, (buf, index) -> String.valueOf(buf.getInt(index))), @SerializedName("5125")
 		UNSIGNED_INT(4, GL11.GL_UNSIGNED_INT, (buf, index) -> String.valueOf((long) buf.getInt(index) & 0xFFFFFFFF)), @SerializedName("5126")
 		FLOAT(4, GL11.GL_FLOAT, (buf, index) -> String.valueOf(buf.getFloat(index)));
 

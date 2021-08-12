@@ -3,12 +3,15 @@ package hide.model.util;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import hide.model.impl.ISkin;
 import hide.model.impl.NodeImpl;
+import hidemod.HideMod;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -323,5 +326,16 @@ public class TransformMatUtil {
 				Math.sqrt(data[2] * data[2] + data[6] * data[6] + data[10] * data[10])//Z軸
 		));
 
+	}
+
+	public static void checkGLError(String message) {
+		int i = GL11.glGetError();
+
+		if (i != 0) {
+			String s = GLU.gluErrorString(i);
+			HideMod.LOGGER.error("########## GL ERROR ##########");
+			HideMod.LOGGER.error("@ {}", (Object) message);
+			HideMod.LOGGER.error("{}: {}", Integer.valueOf(i), s);
+		}
 	}
 }

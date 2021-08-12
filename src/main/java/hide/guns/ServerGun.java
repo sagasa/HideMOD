@@ -37,12 +37,12 @@ public class ServerGun extends CommonGun {
 	@Override
 	public boolean updateTag(NBTTagCompound gunTag) {
 		//持ち替えていない＋銃のマガジンが変化したなら
-		boolean magChange = gun != null && gunTag != null && !HideGunNBT.getGunLoadedMagazines(gunTag).magEquals(HideGunNBT.getGunLoadedMagazines(gun));
+		boolean magChange = gun != null && gunTag != null && !HideGunNBT.GUN_MAGAZINES.get(gunTag).magEquals(HideGunNBT.GUN_MAGAZINES.get(gun));
 		boolean res = super.updateTag(gunTag);
 
 		if (!res && magChange) {
 			//		HideNBT.setGunLoadedMagazines(gun, magazine);
-			magazine = HideGunNBT.getGunLoadedMagazines(gun);
+			magazine = HideGunNBT.GUN_MAGAZINES.get(gun);
 			HideMod.NETWORK.sendTo(new PacketSyncMag(magazine, hand), owner);
 		}
 		return res;
@@ -52,9 +52,9 @@ public class ServerGun extends CommonGun {
 	protected void updateData() {
 		lastShootTime = 0;
 		if (isGun()) {
-			magazine = HideGunNBT.getGunLoadedMagazines(gun);
+			magazine = HideGunNBT.GUN_MAGAZINES.get(gun);
 
-			int shootdelay = HideGunNBT.getGunShootDelay(gun);
+			int shootdelay = HideGunNBT.GUN_SHOOTDELAY.get(gun);
 			if (shootdelay != 0)
 				lastShootTime = System.currentTimeMillis() - RPMtoMillis(dataView.get(ProjectileData.RPM)) + shootdelay;
 		}
@@ -71,7 +71,6 @@ public class ServerGun extends CommonGun {
 		if (!isGun())
 			return;
 		//	System.out.println("magazineState " + magazine);/*
-
 		// リロードタイマー
 		if (reloadProgress > 0) {
 			reloadProgress--;
@@ -87,14 +86,14 @@ public class ServerGun extends CommonGun {
 			int shootdelay = (int) (RPMtoMillis(dataView.get(ProjectileData.RPM)) - (System.currentTimeMillis() - lastShootTime));
 			//残りが0になったら消しとく
 			if (0 < shootdelay) {
-				HideGunNBT.setGunShootDelay(gun, shootdelay);
+				HideGunNBT.GUN_SHOOTDELAY.set(gun, shootdelay);
 			} else {
-				HideGunNBT.setGunShootDelay(gun, 0);
+				HideGunNBT.GUN_SHOOTDELAY.set(gun, 0);
 				lastShootTime = 0;
 			}
 		}
 		//TODO
-		HideGunNBT.setGunLoadedMagazines(gun, magazine);
+		HideGunNBT.GUN_MAGAZINES.set(gun, magazine);
 	}
 
 	/** 保存時のShootDelay補完用 */

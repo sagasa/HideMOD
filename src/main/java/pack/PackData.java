@@ -34,85 +34,89 @@ import net.minecraftforge.registries.IForgeRegistry;
 public class PackData {
 	/*=================== 配信するもの ========================*/
 	/**パックの情報*/
-	List<PackInfo> PACK_INFO = new ArrayList<>();
+	public final List<PackInfo> packInfo = new ArrayList<>();
 
 	/** 弾 ショートネーム - MagazineData MAP */
-	Map<String, MagazineData> MAGAZINE_DATA_MAP = new HashMap<>();
+	public final Map<String, MagazineData> magazineDataMap = new HashMap<>();
 
 	/** 銃 ショートネーム - GunData MAP */
-	Map<String, GunData> GUN_DATA_MAP = new HashMap<>();
+	public final Map<String, GunData> gunDataMap = new HashMap<>();
 
 	/** アタッチメント ショートネーム - Attachment MAP */
-	Map<String, AttachmentsData> ATTACHMENT_DATA_MAP = new HashMap<>();
+	public final Map<String, AttachmentsData> attachmentDataMap = new HashMap<>();
 
 	/** アイコン 登録名 - byte[] MAP */
-	Map<String, byte[]> ICON_MAP = new HashMap<>();
+	public final Map<String, byte[]> iconMap = new HashMap<>();
 
 	/** サウンド 登録名 - byte[] MAP */
-	Map<String, byte[]> SOUND_MAP = new HashMap<>();
+	public final Map<String, byte[]> soundMap = new HashMap<>();
 
 	/** サイトの画像 登録名 - byte[] MAP */
-	Map<String, byte[]> SCOPE_MAP = new HashMap<>();
+	public final Map<String, byte[]> scopeMap = new HashMap<>();
 
 	/** テクスチャ 登録名 - byte[] MAP */
-	Map<String, byte[]> TEXTURE_MAP = new HashMap<>();
+	public final Map<String, byte[]> textureMap = new HashMap<>();
 
 	/** モデル 登録名 - Map<String,ModelPart> MAP */
-	Map<String, HideModel> MODEL_MAP = new HashMap<>();
+	public final Map<String, HideModel> modelMap = new HashMap<>();
 
-	static PackData readData = new PackData();
+	private static long sessionTime;
 
-	static PackData currentData = new PackData();
+	static PackData CurrentData = new PackData();
 
 	/** 登録名からGunData取得 */
 	public static ItemData getItemData(ItemStack item) {
 		Class<? extends Item> clazz = item.getItem().getClass();
 		if (ItemGun.class.equals(clazz)) {
-			return PackData.getGunData(HideGunNBT.getHideTag(item).getString(HideGunNBT.DATA_NAME));
+			return PackData.getGunData(HideGunNBT.DATA_NAME.get(HideGunNBT.getHideTag(item)));
 		}
 		if (ItemMagazine.class.equals(clazz)) {
-			return PackData.getBulletData(HideGunNBT.getHideTag(item).getString(HideGunNBT.DATA_NAME));
+			return PackData.getBulletData(HideGunNBT.DATA_NAME.get(HideGunNBT.getHideTag(item)));
 		}
 		return null;
 	}
 
 	/** 登録名からGunData取得 */
 	public static GunData getGunData(String name) {
-		return currentData.GUN_DATA_MAP.get(name);
+		return CurrentData.gunDataMap.get(name);
 	}
 
 	/**リストは編集しないで*/
 	public static Collection<GunData> getGunData() {
-		return currentData.GUN_DATA_MAP.values();
+		return CurrentData.gunDataMap.values();
 	}
 
 	/** 登録名からBulletData取得 */
 	public static MagazineData getBulletData(String name) {
-		return currentData.MAGAZINE_DATA_MAP.get(name);
+		return CurrentData.magazineDataMap.get(name);
 	}
 
 	/**リストは編集しないで*/
 	public static Collection<MagazineData> getMagazineData() {
-		return currentData.MAGAZINE_DATA_MAP.values();
+		return CurrentData.magazineDataMap.values();
 	}
 
 	/**登録名からアタッチメントを取得*/
 	public static AttachmentsData getAttachmentData(String name) {
-		return currentData.ATTACHMENT_DATA_MAP.get(name);
+		return CurrentData.attachmentDataMap.get(name);
 	}
 
 	/**リソース名からモデルを取得*/
 	public static HideModel getModel(String name) {
 		if (name.contains(":"))
 			name = name.split(":", 2)[1];
-		return currentData.MODEL_MAP.get(name);
+		return CurrentData.modelMap.get(name);
+	}
+
+	public static long getSessionTime() {
+		return sessionTime;
 	}
 
 	/** アイテム登録 */
 	public static void registerItems(Register<Item> event) {
 		IForgeRegistry<Item> register = event.getRegistry();
-		ItemGun.INSTANCE = new ItemGun("gun", currentData.GUN_DATA_MAP);
-		ItemMagazine.INSTANCE = new ItemMagazine("magazine", currentData.MAGAZINE_DATA_MAP);
+		ItemGun.INSTANCE = new ItemGun("gun", CurrentData.gunDataMap);
+		ItemMagazine.INSTANCE = new ItemMagazine("magazine", CurrentData.magazineDataMap);
 		register.register(ItemGun.INSTANCE);
 		register.register(ItemMagazine.INSTANCE);
 	}
@@ -126,7 +130,7 @@ public class PackData {
 
 	@SideOnly(Side.CLIENT)
 	public static void registerSound(Register<SoundEvent> event) {
-		for (String name : currentData.SOUND_MAP.keySet()) {
+		for (String name : CurrentData.soundMap.keySet()) {
 			System.out.println("SoundRegister " + name);
 			event.getRegistry().register(
 					new SoundEvent(new ResourceLocation(HideMod.MOD_ID, name))
@@ -134,30 +138,36 @@ public class PackData {
 		}
 	}
 
-	//
-	public void from(PackData from) {
-		ATTACHMENT_DATA_MAP.putAll(from.ATTACHMENT_DATA_MAP);
-		GUN_DATA_MAP.putAll(from.GUN_DATA_MAP);
-		ICON_MAP.putAll(from.ICON_MAP);
-		MAGAZINE_DATA_MAP.putAll(from.MAGAZINE_DATA_MAP);
-		MODEL_MAP.putAll(from.MODEL_MAP);
-		SCOPE_MAP.putAll(from.SCOPE_MAP);
-		SOUND_MAP.putAll(from.SOUND_MAP);
-		TEXTURE_MAP.putAll(from.TEXTURE_MAP);
-
-		NamedData.resolvParent(GUN_DATA_MAP.values());
-		NamedData.resolvParent(MAGAZINE_DATA_MAP.values());
+	public static void setPack(PackData from) {
+		CurrentData.clear();
+		CurrentData.from(from);
+		sessionTime = System.currentTimeMillis();
 	}
 
-	public void clear() {
-		ATTACHMENT_DATA_MAP.clear();
-		GUN_DATA_MAP.clear();
-		ICON_MAP.clear();
-		MAGAZINE_DATA_MAP.clear();
-		MODEL_MAP.clear();
-		SCOPE_MAP.clear();
-		SOUND_MAP.clear();
-		TEXTURE_MAP.clear();
+	//
+	void from(PackData from) {
+		attachmentDataMap.putAll(from.attachmentDataMap);
+		gunDataMap.putAll(from.gunDataMap);
+		iconMap.putAll(from.iconMap);
+		magazineDataMap.putAll(from.magazineDataMap);
+		modelMap.putAll(from.modelMap);
+		scopeMap.putAll(from.scopeMap);
+		soundMap.putAll(from.soundMap);
+		textureMap.putAll(from.textureMap);
+
+		NamedData.resolvParent(gunDataMap.values());
+		NamedData.resolvParent(magazineDataMap.values());
+	}
+
+	void clear() {
+		attachmentDataMap.clear();
+		gunDataMap.clear();
+		iconMap.clear();
+		magazineDataMap.clear();
+		modelMap.clear();
+		scopeMap.clear();
+		soundMap.clear();
+		textureMap.clear();
 	}
 
 	private void clearAndCopy(Map to, Map from) {

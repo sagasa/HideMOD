@@ -20,6 +20,7 @@ import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityEvent;
+import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.event.entity.player.PlayerEvent.StopTracking;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -60,6 +61,17 @@ public class HideEventHandler {
 	// ========接続イベント=========
 	@SubscribeEvent
 	public void onEvent(PlayerLoggedInEvent event) {
+		//	PackSync.syncPack();
+	}
+
+	@SubscribeEvent
+	public void onEvent(LivingJumpEvent event) {
+
+		if (event.getEntityLiving() instanceof EntityPlayer) {
+			System.out.println("YEEEEEEEEEEEEE");
+			System.out.println(event.getEntityLiving().motionY);
+			//event.getEntityLiving().capabilities.setPlayerWalkSpeed(3f);
+		}
 		//	PackSync.syncPack();
 	}
 

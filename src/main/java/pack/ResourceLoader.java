@@ -67,32 +67,32 @@ public class ResourceLoader implements IResourcePack {
 		if (itemTexture.matcher(resource.getResourcePath()).find()) {
 			String iconName = png.matcher(itemTexture.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
-			if (PackData.currentData.ICON_MAP.containsKey(iconName)) {
-				return new ByteArrayInputStream(PackData.currentData.ICON_MAP.get(iconName));
+			if (PackData.CurrentData.iconMap.containsKey(iconName)) {
+				return new ByteArrayInputStream(PackData.CurrentData.iconMap.get(iconName));
 			}
 		}
 		final Pattern modelSkin = Pattern.compile("^skin\\/");
 		if (modelSkin.matcher(resource.getResourcePath()).find()) {
 			String skinName = png.matcher(modelSkin.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
-			if (PackData.currentData.TEXTURE_MAP.containsKey(skinName)) {
-				return new ByteArrayInputStream(PackData.currentData.TEXTURE_MAP.get(skinName));
+			if (PackData.CurrentData.textureMap.containsKey(skinName)) {
+				return new ByteArrayInputStream(PackData.CurrentData.textureMap.get(skinName));
 			}
 		}
 		final Pattern scopeTex = Pattern.compile("^scopes\\/");
 		if (scopeTex.matcher(resource.getResourcePath()).find()) {
 			String name = png.matcher(scopeTex.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
-			if (PackData.currentData.SCOPE_MAP.containsKey(name)) {
-				return new ByteArrayInputStream(PackData.currentData.SCOPE_MAP.get(name));
+			if (PackData.CurrentData.scopeMap.containsKey(name)) {
+				return new ByteArrayInputStream(PackData.CurrentData.scopeMap.get(name));
 			}
 		}
 		final Pattern Sound = Pattern.compile("^sounds\\/");
 		final Pattern ogg = Pattern.compile("\\.ogg$");
 		if (Sound.matcher(resource.getResourcePath()).find()) {
 			String iconName = ogg.matcher(Sound.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
-			if (PackData.currentData.SOUND_MAP.containsKey(iconName)) {
-				return new ByteArrayInputStream(PackData.currentData.SOUND_MAP.get(iconName));
+			if (PackData.CurrentData.soundMap.containsKey(iconName)) {
+				return new ByteArrayInputStream(PackData.CurrentData.soundMap.get(iconName));
 			}
 		}
 		return null;
@@ -101,7 +101,7 @@ public class ResourceLoader implements IResourcePack {
 	/** sounds.jsonの内容 */
 	private static InputStream makeSoundJson() {
 		StringBuilder sb = new StringBuilder("{");
-		for (String name : PackData.currentData.SOUND_MAP.keySet()) {
+		for (String name : PackData.CurrentData.soundMap.keySet()) {
 			sb.append("\"" + name + "\": {\"category\" : \"player\",\"sounds\" : [ \"" + HideMod.MOD_ID + ":" + name
 					+ "\" ]},");
 		}
@@ -136,11 +136,11 @@ public class ResourceLoader implements IResourcePack {
 			String registerName = json.matcher(itemModel.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
 			// 銃なら
-			if (PackData.currentData.GUN_DATA_MAP.containsKey(registerName)) {
+			if (PackData.CurrentData.gunDataMap.containsKey(registerName)) {
 				return true;
 			}
 			// 弾なら
-			if (PackData.currentData.MAGAZINE_DATA_MAP.containsKey(registerName)) {
+			if (PackData.CurrentData.magazineDataMap.containsKey(registerName)) {
 				return true;
 			}
 		}
@@ -149,7 +149,7 @@ public class ResourceLoader implements IResourcePack {
 		if (itemTexture.matcher(resource.getResourcePath()).find()) {
 			String iconName = png.matcher(itemTexture.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
-			if (PackData.currentData.ICON_MAP.containsKey(iconName) && !iconName.equals("sample")) {
+			if (PackData.CurrentData.iconMap.containsKey(iconName) && !iconName.equals("sample")) {
 				return true;
 			}
 		}
@@ -157,7 +157,7 @@ public class ResourceLoader implements IResourcePack {
 		if (scopeTex.matcher(resource.getResourcePath()).find()) {
 			String name = png.matcher(scopeTex.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
-			if (PackData.currentData.SCOPE_MAP.containsKey(name)) {
+			if (PackData.CurrentData.scopeMap.containsKey(name)) {
 				return true;
 			}
 		}
@@ -165,7 +165,7 @@ public class ResourceLoader implements IResourcePack {
 		if (modelSkin.matcher(resource.getResourcePath()).find()) {
 			String skinName = png.matcher(modelSkin.matcher(resource.getResourcePath()).replaceAll(""))
 					.replaceAll("");
-			if (PackData.currentData.TEXTURE_MAP.containsKey(skinName)) {
+			if (PackData.CurrentData.textureMap.containsKey(skinName)) {
 				return true;
 			}
 		}
@@ -173,7 +173,7 @@ public class ResourceLoader implements IResourcePack {
 		final Pattern ogg = Pattern.compile("\\.ogg$");
 		if (Sound.matcher(resource.getResourcePath()).find()) {
 			String name = ogg.matcher(Sound.matcher(resource.getResourcePath()).replaceAll("")).replaceAll("");
-			if (PackData.currentData.SOUND_MAP.containsKey(name)) {
+			if (PackData.CurrentData.soundMap.containsKey(name)) {
 				return true;
 			}
 		}

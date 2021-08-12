@@ -35,7 +35,7 @@ public abstract class HideItem<T extends ItemData> extends Item {
 	public T getData(ItemStack stack) {
 		if (!isHideItem(stack))
 			return null;
-		return dagaMap.get(HideGunNBT.getHideTag(stack).getString(HideGunNBT.DATA_NAME));
+		return dagaMap.get(HideGunNBT.DATA_NAME.get(HideGunNBT.getHideTag(stack)));
 	}
 
 	public abstract ItemStack makeItem(T data);

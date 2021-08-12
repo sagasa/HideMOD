@@ -1,0 +1,165 @@
+{
+  "Type": "GunData",
+  "Values": {
+    "DisplayName": "parent",
+    "ShortName": "parent",
+    "Data": {
+      "Type": "ProjectileData",
+      "Values": {
+        "Recoil": {
+          "Type": "Recoil",
+          "Values": {
+            "HorizontalBase": {
+              "Keys": [
+                {
+                  "Key": 0.0,
+                  "Value": 0.004
+                },
+                {
+                  "Key": 0.272,
+                  "Value": 5.993
+                },
+                {
+                  "Key": 1.0,
+                  "Value": -5.11
+                }
+              ]
+            },
+            "HorizontalSpread": {
+              "Keys": [
+                {
+                  "Key": 0.003,
+                  "Value": 0.5
+                },
+                {
+                  "Key": 1.0,
+                  "Value": 3.0
+                }
+              ]
+            },
+            "HorizontalRecoilTick": {
+              "Keys": [
+                {
+                  "Key": 0.0,
+                  "Value": 2.0
+                }
+              ]
+            },
+            "VerticalBase": {
+              "Keys": [
+                {
+                  "Key": 0.0,
+                  "Value": 2.0
+                },
+                {
+                  "Key": 1.002,
+                  "Value": 3.0
+                }
+              ]
+            },
+            "VerticalSpread": {
+              "Keys": [
+                {
+                  "Key": 0.0,
+                  "Value": 0.009
+                },
+                {
+                  "Key": 0.988,
+                  "Value": 1.002
+                }
+              ]
+            },
+            "VerticalRecoilTick": {
+              "Keys": [
+                {
+                  "Key": 0.0,
+                  "Value": 2.0
+                }
+              ]
+            },
+            "VerticalReturnTick": {
+              "Keys": [
+                {
+                  "Key": 0.0,
+                  "Value": 2.0
+                }
+              ]
+            },
+            "PowerShoot": 0.1,
+            "PowerTick": 0.02
+          }
+        },
+        "RecoilADS": {
+          "Type": "Recoil",
+          "Values": {
+            "HorizontalBase": {
+              "Operator": "MULTIPLE",
+              "Object": {
+                "Keys": [
+                  {
+                    "Key": 0.0,
+                    "Value": 0.5
+                  }
+                ]
+              }
+            },
+            "VerticalBase": {
+              "Keys": [
+                {
+                  "Key": 0.0,
+                  "Value": 0.0
+                }
+              ]
+            }
+          }
+        },
+        "RecoilSneak": {
+          "Type": "Recoil",
+          "Values": {
+            "HorizontalSpread": {
+              "Operator": "MULTIPLE",
+              "Object": {
+                "Keys": [
+                  {
+                    "Key": 0.0,
+                    "Value": 0.376
+                  }
+                ]
+              }
+            },
+            "VerticalSpread": {
+              "Operator": "MULTIPLE",
+              "Object": {
+                "Keys": [
+                  {
+                    "Key": 0.0,
+                    "Value": 0.38
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "SoundShoot": {
+          "Type": "Sound",
+          "Values": {
+            "Name": "ak74_shoot"
+          }
+        },
+        "SoundReload": {
+          "Type": "Sound",
+          "Values": {
+            "Name": "ak74_reload"
+          }
+        }
+      }
+    },
+    "FireMode": [
+      "FULLAUTO",
+      "SEMIAUTO"
+    ],
+    "UseMagazine": [
+      "ammo"
+    ]
+  }
+}

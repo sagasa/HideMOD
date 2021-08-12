@@ -24,6 +24,7 @@ import helper.ArrayEditor;
 import hide.model.gltf.GltfLoader;
 import hide.model.gltf.GltfLoader.GltfException;
 import hide.model.impl.ModelImpl;
+import hide.model.obj.ObjLoader;
 import hide.types.base.DataBase;
 import hide.types.base.DataBase.DataEntry;
 import hide.types.base.DataBase.ValueEntry;
@@ -51,12 +52,15 @@ public class PackLoader {
 	/** gson オプションはなし */
 	private static Gson gson = new Gson();
 
+	private static PackData readData = new PackData();
+
 	/**DataBase系クラスの初期化*/
 	static {
 		new GunData();
 		new MagazineData();
 		new PackInfo();
 		new ProjectileData();
+		new HideModel();
 	}
 
 	public static void reloadInGame() {
@@ -74,7 +78,8 @@ public class PackLoader {
 			HideDir.mkdirs();
 		}
 
-		PackData.readData.clear();
+		readData.clear();
+		;
 		// 使うパターン
 		Pattern zip = Pattern.compile("(.+).zip$");
 
@@ -92,23 +97,41 @@ public class PackLoader {
 					LOGGER.info("Start check and add pack[" + cash.Pack.get(PackInfo.PackName) + "]");
 					String packDomain = toRegisterName(cash.Pack.get(PackInfo.PackDomain));
 					// パックの登録
-					PackData.readData.PACK_INFO.add(cash.Pack);
+					readData.packInfo.add(cash.Pack);
 					// 銃登録
-					checkAndAddToMap(PackData.readData.GUN_DATA_MAP, cash.Guns, packDomain);
+					checkAndAddToMap(readData.gunDataMap, cash.Guns, packDomain);
 					// 弾登録
-					checkAndAddToMap(PackData.readData.MAGAZINE_DATA_MAP, cash.Magazines, packDomain);
+					checkAndAddToMap(readData.magazineDataMap, cash.Magazines, packDomain);
 					// Icon登録
-					checkAndAddToMap(PackData.readData.ICON_MAP, cash.Icons, packDomain);
+					checkAndAddToMap(readData.iconMap, cash.Icons, packDomain);
 					// Texture登録
-					checkAndAddToMap(PackData.readData.TEXTURE_MAP, cash.Textures, packDomain);
+					checkAndAddToMap(readData.textureMap, cash.Textures, packDomain);
 					// Scope登録
-					checkAndAddToMap(PackData.readData.SCOPE_MAP, cash.Scopes, packDomain);
+					checkAndAddToMap(readData.scopeMap, cash.Scopes, packDomain);
 					// Sound登録
-					checkAndAddToMap(PackData.readData.SOUND_MAP, cash.Sounds, packDomain);
+					checkAndAddToMap(readData.soundMap, cash.Sounds, packDomain);
+
+					checkAndAddToMap(readData.modelMap, cash.ModelInfos, packDomain);
+
+					Map<String, ModelImpl> modelMap = new HashMap<>();
+					checkAndAddToMap(modelMap, cash.Models, packDomain);
+
+					System.out.println(modelMap);
+					System.out.println(cash.ModelInfos);
 					// Model登録
 					cash.ModelInfos.entrySet()
-							.forEach(entry -> entry.getValue().setModel(cash.Models.get(entry.getKey())));
-					checkAndAddToMap(PackData.readData.MODEL_MAP, cash.ModelInfos, packDomain);
+							.forEach(entry -> {
+								HideModel hideModel = entry.getValue();
+								String key = hideModel.get(HideModel.Model);
+								if (modelMap.containsKey(key)) {
+									ModelImpl model = modelMap.get(key);
+									model.setSystemName(key);
+									//System.out.println(hideModel.get(HideModel.Model) + " " + hideModel.toJson());
+									hideModel.setModel(model);
+								}
+
+							});
+
 					LOGGER.info("End check and add pack[" + cash.Pack.get(PackInfo.PackName) + "]");
 					LOGGER.info("End read file[" + file.getName() + "]");
 				} catch (IOException e1) {
@@ -117,7 +140,7 @@ public class PackLoader {
 			}
 		}
 		LOGGER.info("copy to currentData");
-		PackData.currentData.from(PackData.readData);
+		PackData.CurrentData.from(readData);
 	}
 
 	/** ファイルから読み込むモジュール */
@@ -205,13 +228,17 @@ public class PackLoader {
 			// model
 			if (PackPattern.MODEL_OBJ.mache(name)) {
 				String n = PackPattern.MODEL_OBJ.trim(name);
-				//Models.put(n, ObjLoader.LoadModel(new ByteArrayInputStream(data)));
+				try {
+					Models.put(n, ObjLoader.load(new ByteArrayInputStream(data)));
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
 				LOGGER.info("add model[" + n + "] to PackReader");
 			}
 			// model
 			if (PackPattern.MODEL_INFO.mache(name)) {
 				String n = PackPattern.MODEL_INFO.trim(name);
-				ModelInfos.put(n, gson.fromJson(new String(data, Charset.forName("UTF-8")), HideModel.class));
+				ModelInfos.put(n, DataBase.fromJson(new String(data, Charset.forName("UTF-8"))));
 				LOGGER.info("add model[" + n + "] to PackReader");
 			}
 			// scope

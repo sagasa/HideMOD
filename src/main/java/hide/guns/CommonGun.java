@@ -63,14 +63,14 @@ public abstract class CommonGun {
 			updateData();
 			return false;
 		}
-		List<String> attachments = HideGunNBT.getGunAttachments(gunTag);
-		String name = gunTag.getString(HideGunNBT.DATA_NAME);
+		List<String> attachments = HideGunNBT.GUN_ATTACHMENTS.get(gunTag);
+		String name = HideGunNBT.DATA_NAME.get(gunTag);
 		//データ更新の必要があるなら
 		if (!(attachments.equals(gunAttachments) && name.equals(gunName))) {
 			gunName = name;
 			gunAttachments = attachments;
 
-			gun = PackData.getGunData(gunTag.getString(HideGunNBT.DATA_NAME)) == null ? null : gunTag;
+			gun = PackData.getGunData(name) == null ? null : gunTag;
 			updateCustomize();
 			updateData();
 			return true;
@@ -86,8 +86,8 @@ public abstract class CommonGun {
 	 * カスタムパーツが見つからなければスキップ*/
 	protected void updateCustomize() {
 		if (isGun()) {
-			gunData = PackData.getGunData(gun.getString(HideGunNBT.DATA_NAME));
-			dataView.setBase((ProjectileData) gunData.get(GunData.Data));
+			gunData = PackData.getGunData(HideGunNBT.DATA_NAME.get(gun));
+			dataView.setBase(gunData.get(GunData.Data));
 			dataView.setModifier(0, null);
 		}
 	}
@@ -135,14 +135,14 @@ public abstract class CommonGun {
 	}
 
 	public void saveToNBT() {
-		HideGunNBT.setGunLoadedMagazines(gun, magazine);
+		HideGunNBT.GUN_MAGAZINES.set(gun, magazine);
 	}
 
 	/** 次の射撃モードを取得 */
 	public GunFireMode getNextFireMode() {
 		if (!isGun())
 			return null;
-		GunFireMode now = HideGunNBT.getGunFireMode(gun);
+		GunFireMode now = HideGunNBT.GUN_FIREMODE.get(gun);
 		List<GunFireMode> modes = Arrays.asList(gunData.get(GunData.FireMode));
 		int index = modes.indexOf(now) + 1;
 		if (index > modes.size() - 1) {
@@ -155,7 +155,7 @@ public abstract class CommonGun {
 	public String getNextUseMagazine() {
 		if (!isGun())
 			return null;
-		String now = HideGunNBT.getGunUseingBullet(gun);
+		String now = HideGunNBT.GUN_USEBULLET.get(gun);
 		List<String> modes = Arrays.asList(getUseMagazineList());
 		int index = modes.indexOf(now.toString()) + 1;
 		if (index > modes.size() - 1) {
@@ -180,14 +180,14 @@ public abstract class CommonGun {
 
 	/**利用可能なすべてのマガジンを返す NBTの文字列じゃないことに注意*/
 	public String[] getUseMagazines() {
-		String name = HideGunNBT.getGunUseingBullet(gun);
+		String name = HideGunNBT.GUN_USEBULLET.get(gun);
 		if (name == null)
 			return ArrayUtils.EMPTY_STRING_ARRAY;
 		return name.equals(LOAD_ANY) ? getUseMagazineList() : new String[] { name };
 	}
 
 	public String getUseMagazine() {
-		return HideGunNBT.getGunUseingBullet(gun);
+		return HideGunNBT.GUN_USEBULLET.get(gun);
 	}
 
 	public String[] getUseMagazineList() {
@@ -195,7 +195,7 @@ public abstract class CommonGun {
 	}
 
 	public GunFireMode getFireMode() {
-		return HideGunNBT.getGunFireMode(gun);
+		return HideGunNBT.GUN_FIREMODE.get(gun);
 	}
 
 	public List<GunFireMode> getFireModeList() {

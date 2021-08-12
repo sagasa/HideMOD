@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -30,11 +31,14 @@ import com.google.gson.annotations.SerializedName;
 import hide.model.impl.AccessorImpl;
 import hide.model.impl.BufferViewImpl;
 import hide.model.impl.IAnimation;
+import hide.model.impl.IMaterial;
+import hide.model.impl.ISkin;
 import hide.model.impl.MeshImpl;
 import hide.model.impl.MeshImpl.Attribute;
 import hide.model.impl.MeshPrimitivesImpl;
 import hide.model.impl.ModelImpl;
 import hide.model.impl.NodeImpl;
+import hide.model.obj.ObjLoader;
 import hide.model.util.ByteBufferInputStream;
 import hide.model.util.HideTexture;
 import hide.opengl.ServerRenderContext;
@@ -71,6 +75,12 @@ public class GltfLoader {
 		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "m2.glb")))) {
 			test = load(ins);
 		} catch (IOException | GltfException e) {
+			e.printStackTrace();
+		}
+
+		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "ModelBAR.obj")))) {
+			test = ObjLoader.load(ins);
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
 		time = System.currentTimeMillis() - time;
@@ -177,6 +187,70 @@ public class GltfLoader {
 		}
 	}
 
+	static class Skin implements ISkin {
+		@SerializedName("inverseBindMatrices")
+		private int inverseBindMatricesIndex;
+		@SerializedName("joints")
+		private int[] jointsIndex;
+
+		transient private AccessorImpl inverseBindMatrices;
+		transient private NodeImpl[] joints;
+
+		public Skin register(GltfLoader loader) {
+			inverseBindMatrices = loader.getAccessor(inverseBindMatricesIndex);
+			joints = new NodeImpl[jointsIndex.length];
+			for (int i = 0; i < joints.length; i++) {
+				joints[i] = loader.getNode(jointsIndex[i]);
+
+			}
+			return this;
+		}
+
+		@Override
+		public AccessorImpl getInverseBindMatrices() {
+			return inverseBindMatrices;
+		}
+
+		@Override
+		public NodeImpl[] getJoints() {
+			return joints;
+		}
+	}
+
+	static class Model extends ModelImpl {
+
+		public Model(List<? extends NodeImpl> nodes, List<NodeImpl> rootNodes, HashMap<String, IAnimation> animations, List<? extends IMaterial> materials) {
+			this.nodes = Collections.unmodifiableList(nodes);
+			this.animations = animations;
+
+			for (NodeImpl node : nodes)
+				if (node.hasSkin())
+					skinRoot.add(node);
+
+			for (NodeImpl node : rootNodes)
+				if (node.hasMesh())
+					meshRoot.add(node);
+				else
+					debugRoot.add(node);
+
+			for (IAnimation hideAnimation : animations.values()) {
+				hideAnimation.apply(0.5f);
+			}
+		}
+
+		float anim = 0;
+
+		@Override
+		public void render() {
+			for (IAnimation hideAnimation : animations.values()) {
+				hideAnimation.apply(anim);
+			}
+			anim += 0.001f;
+			anim %= 1;
+			super.render();
+		}
+
+	}
 
 	//=== 読み込み ===
 	public static ModelImpl load(InputStream stream) throws IOException, GltfException {
@@ -185,31 +259,31 @@ public class GltfLoader {
 
 	private static final Material DefatultMat = new Material();
 
-	public Mesh getMesh(int index) {
+	Mesh getMesh(int index) {
 		if (index == -1)
 			return null;
 		return meshCache.get(index);
 	}
 
-	public Node getNode(int index) {
+	Node getNode(int index) {
 		if (index == -1)
 			return null;
 		return nodeCache.get(index);
 	}
 
-	public Accessor getAccessor(int index) {
+	Accessor getAccessor(int index) {
 		if (index == -1)
 			return null;
 		return accessors.get(index);
 	}
 
-	public Skin getSkin(int index) {
+	Skin getSkin(int index) {
 		if (index == -1)
 			return null;
 		return skins.get(index);
 	}
 
-	public Material getMaterial(int index) {
+	Material getMaterial(int index) {
 		return index == -1 ? DefatultMat : materials.get(index);
 	}
 
@@ -250,7 +324,7 @@ public class GltfLoader {
 		JsonParser parser = new JsonParser();
 		JsonObject root = parser.parse(new String(data, StandardCharsets.UTF_8)).getAsJsonObject();
 
-		System.out.println(gson.toJson(root));
+		//System.out.println(gson.toJson(root));
 
 		// Get scene
 		if (!root.has("scenes")) {

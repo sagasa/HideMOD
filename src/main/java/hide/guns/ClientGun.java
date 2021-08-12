@@ -151,7 +151,7 @@ public class ClientGun extends CommonGun {
 	public void syncMag() {
 		if (!isGun())
 			return;
-		magazine = HideGunNBT.getGunLoadedMagazines(gun);
+		magazine = HideGunNBT.GUN_MAGAZINES.get(gun);
 	}
 
 	public void setMagazine(LoadedMagazine magazine) {
@@ -174,7 +174,7 @@ public class ClientGun extends CommonGun {
 		if (!isGun())
 			return;
 		syncMag();
-		shootDelay = HideGunNBT.getGunShootDelay(gun);
+		shootDelay = HideGunNBT.GUN_SHOOTDELAY.get(gun);
 	}
 
 }

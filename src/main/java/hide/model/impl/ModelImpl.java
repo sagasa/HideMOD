@@ -22,13 +22,18 @@ public class ModelImpl implements IDisposable {
 	protected List<NodeImpl> meshRoot = new ArrayList<>();
 	protected List<NodeImpl> skinRoot = new ArrayList<>();
 
-	public void postInit() {
-		nodes.forEach(n->n.postInit());
+	public ModelImpl setSystemName(String name) {
+		return this;
+	}
+
+	public ModelImpl postInit() {
+		nodes.forEach(n -> n.postInit());
+		return this;
 	}
 
 	public void render() {
 		GL11.glEnable(GL11.GL_BLEND);
-		//GL11.glDisable(GL11.GL_CULL_FACE);
+		GL11.glDisable(GL11.GL_CULL_FACE);
 
 		GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
 
@@ -50,7 +55,7 @@ public class ModelImpl implements IDisposable {
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 
 		GL11.glPopAttrib();
-		//GL11.glEnable(GL11.GL_CULL_FACE);
+		GL11.glEnable(GL11.GL_CULL_FACE);
 		GL11.glDisable(GL11.GL_BLEND);
 	}
 

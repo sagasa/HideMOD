@@ -56,6 +56,8 @@ public class HideShader {
 	}
 
 	public void material(IMaterial material) {
+		if (material == null)
+			return;
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, material.getBaseColorTexture());
 		GL20.glUniform1i(BASE_COLOR_TEXTURE, 0);

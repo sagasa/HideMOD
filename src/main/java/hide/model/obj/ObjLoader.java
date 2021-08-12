@@ -7,9 +7,8 @@ import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
@@ -20,30 +19,46 @@ import org.lwjgl.util.vector.Vector3f;
 
 import com.google.common.base.Strings;
 
+import hide.model.impl.AccessorImpl;
+import hide.model.impl.AccessorImpl.ComponentType;
+import hide.model.impl.AccessorImpl.ElementType;
+import hide.model.impl.BufferViewImpl;
+import hide.model.impl.IMaterial;
+import hide.model.impl.MeshImpl;
+import hide.model.impl.MeshImpl.Attribute;
+import hide.model.impl.MeshPrimitivesImpl;
+import hide.model.impl.ModelImpl;
+import hide.model.impl.NodeImpl;
+import hidemod.HideMod;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.ITextureObject;
+import net.minecraft.client.renderer.texture.SimpleTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
 public class ObjLoader {
 	private static final Pattern WHITE_SPACE = Pattern.compile("\\s+");
 	private static final Logger LOGGER = LogManager.getLogger();
 
-	/** リソースロケーションからグループ名-ポリゴン配列のMapを返す */
-	public static Map<String, HideVertex[]> LoadModel(InputStream model) {
-		try {
-			return new ObjLoader().Load(model);
-		} catch (Throwable e) {
-			LOGGER.warn(e.getMessage());
-		}
-		return null;
-	}
-
 	/**
-	 * Streamからグループ名-ポリゴン配列のMapを返す
+	 * Streamからモデルを返す
 	 * @throws IOException
 	 */
-	private Map<String, HideVertex[]> Load(InputStream model) throws Throwable {
+	public static ModelImpl load(InputStream model) throws Throwable {
 
 		List<Vector3f> position = new ArrayList<>();
 		List<Vector2f> texCoords = new ArrayList<>();
 		List<Vector3f> normals = new ArrayList<>();
-		List<HideVertex> index = new ArrayList<>();
+
+		List<HideVertex> verts = new ArrayList<>();
+
+		List<Integer> index = new ArrayList<>();
+
+		Vector3f vec0 = new Vector3f();
+		Vector3f vec1 = new Vector3f();
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(model, Charset.forName("UTF-8")));
 		String group = null;
@@ -73,7 +88,10 @@ public class ObjLoader {
 					LOGGER.warn("頂点数が足りません");
 					continue;
 				}
-				List<HideVertex> verts = new ArrayList<>();
+
+				final int start = verts.size();
+				final int count = splitData.length;
+
 				for (String str : splitData) {
 					String[] pts = str.split("/");
 					int pos = Integer.parseInt(pts[0]) - 1;
@@ -81,28 +99,60 @@ public class ObjLoader {
 					int norm = pts.length < 3 || Strings.isNullOrEmpty(pts[2]) ? -1 : Integer.parseInt(pts[2]) - 1;
 					verts.add(new HideVertex(pos, tex, norm));
 				}
+
 				//3角に変換
-				for (int i = 0; i < verts.size() - 2; i++) {
-					HideVertex v0 = verts.get(0);
-					HideVertex v1 = verts.get(i + 1);
-					HideVertex v2 = verts.get(i + 2);
+				for (int i = 0; i < count - 2; i++) {
+					HideVertex v0 = verts.get(start);
+					HideVertex v1 = verts.get(start + i + 1);
+					HideVertex v2 = verts.get(start + i + 2);
+
+					index.add(start);
+					index.add(start + i + 1);
+					index.add(start + i + 2);
+
 					//ノーマル自動計算
 					if (v0.norm == -1 || v1.norm == -1 || v2.norm == -1) {
 						Vector3f p0 = position.get(v0.pos);
 						Vector3f p1 = position.get(v1.pos);
 						Vector3f p2 = position.get(v2.pos);
 
-						Vector3f vec0 = new Vector3f();
-						Vector3f vec1 = new Vector3f();
-
 						Vector3f.sub(p0, p1, vec0);
 						Vector3f.sub(p2, p1, vec1);
 
-						Vector3f.cross(vec0, vec1, vec0);
-						vec0.normalise();
+						Vector3f norm = new Vector3f();
 
-						v0.norm = v1.norm = v2.norm = normals.size();
-						normals.add(vec0);
+						Vector3f.cross(vec0, vec1, norm);
+						norm.normalise();
+
+						int newNorm = normals.size();
+						boolean use = false;
+
+						if (v0.norm != -1) {
+							Vector3f vec = normals.get(v0.norm);
+							Vector3f.add(vec, norm, vec);
+						} else {
+							v0.norm = newNorm;
+							use = true;
+						}
+
+						if (v1.norm != -1) {
+							Vector3f vec = normals.get(v1.norm);
+							Vector3f.add(vec, norm, vec);
+						} else {
+							v1.norm = newNorm;
+							use = true;
+						}
+
+						if (v2.norm != -1) {
+							Vector3f vec = normals.get(v2.norm);
+							Vector3f.add(vec, norm, vec);
+						} else {
+							v2.norm = newNorm;
+							use = true;
+						}
+
+						if (use)
+							normals.add(norm);
 					}
 
 					//テクスチャパディング
@@ -114,53 +164,170 @@ public class ObjLoader {
 						v0.tex = v1.tex = v2.tex = texCoords.size();
 						texCoords.add(new Vector2f(0, 0));
 					}
-
-					index.add(v0);
-					index.add(v1);
-					index.add(v2);
 				}
 			}
 		}
+
+		//ノーマルのノーマライズ
+		normals.forEach(v -> {
+			v.normalise();
+		});
+
 		// フォーマットをまとめる
-		ByteBuffer posByteBuf = BufferUtils.createByteBuffer(position.size() * 4 * 3);
-		ByteBuffer texByteBuf = BufferUtils.createByteBuffer(texCoords.size() * 4 * 2);
-		ByteBuffer normByteBuf = BufferUtils.createByteBuffer(normals.size() * 4 * 3);
-		ByteBuffer indexByteBuf = BufferUtils.createByteBuffer(index.size() * 4 * 3);
+		ByteBuffer posByteBuf = BufferUtils.createByteBuffer(verts.size() * 4 * 3);
+		ByteBuffer texByteBuf = BufferUtils.createByteBuffer(verts.size() * 4 * 2);
+		ByteBuffer normByteBuf = BufferUtils.createByteBuffer(verts.size() * 4 * 3);
+		ByteBuffer indexByteBuf = BufferUtils.createByteBuffer(index.size() * 4);
 
 		Vector3f center = new Vector3f();
-		position.forEach(v -> {
-			posByteBuf.putFloat(v.x);
-			posByteBuf.putFloat(v.y);
-			posByteBuf.putFloat(v.z);
-			Vector3f.add(center, v, center);
+		verts.forEach(v -> {
+			Vector3f pos = position.get(v.pos);
+			posByteBuf.putFloat(pos.x);
+			posByteBuf.putFloat(pos.y);
+			posByteBuf.putFloat(pos.z);
+			Vector3f.add(center, pos, center);
+
+			Vector2f tex = texCoords.get(v.tex);
+			texByteBuf.putFloat(tex.x);
+			texByteBuf.putFloat(tex.y);
+
+			Vector3f norm = normals.get(v.norm);
+			normByteBuf.putFloat(norm.x);
+			normByteBuf.putFloat(norm.y);
+			normByteBuf.putFloat(norm.z);
 		});
+
 		center.x = center.x / position.size();
 		center.y = center.y / position.size();
 		center.z = center.z / position.size();
 
-		texCoords.forEach(v -> {
-			texByteBuf.putFloat(v.x);
-			texByteBuf.putFloat(v.y);
-		});
-		normals.forEach(v -> {
-			normByteBuf.putFloat(v.x);
-			normByteBuf.putFloat(v.y);
-			normByteBuf.putFloat(v.z);
-		});
 		index.forEach(v -> {
-			normByteBuf.putInt(v.pos);
-			normByteBuf.putInt(v.tex);
-			normByteBuf.putInt(v.norm);
+			indexByteBuf.putInt(v);
 		});
 
-		Map<String, HideVertex[]> res = new HashMap<>();
-		for (String str : index.keySet()) {
-			res.put(str, index.get(str).toArray(new HideVertex[index.get(str).size()]));
-		}
-		return res;
+		posByteBuf.rewind();
+		texByteBuf.rewind();
+		normByteBuf.rewind();
+		indexByteBuf.rewind();
+
+		List<Node> list = new ArrayList<>();
+		list.add(new Node(posByteBuf, texByteBuf, normByteBuf, indexByteBuf));
+		return new Model(list).postInit();
 	}
 
-	private Vector3f parseVec3f(String[] data) {
+	static class Accessor extends AccessorImpl {
+
+		public Accessor(ComponentType component, ElementType element, ByteBuffer buf) {
+			buffer = new BufferView(buf);
+			componentType = component;
+			elementType = element;
+			byteOffset = 0;
+			count = buffer.getByteLength() / componentType.size / elementType.size;
+		}
+	}
+
+	static class BufferView extends BufferViewImpl {
+		public BufferView(ByteBuffer buf) {
+			buffer = buf;
+			byteLength = buf.capacity();
+			byteOffset = byteStride = 0;
+		}
+	}
+
+	static class MeshPrimitives extends MeshPrimitivesImpl {
+		public MeshPrimitives(ByteBuffer pos, ByteBuffer tex, ByteBuffer norm, ByteBuffer index) {
+			attributes.put(Attribute.POSITION, new Accessor(ComponentType.FLOAT, ElementType.VEC3, pos));
+			attributes.put(Attribute.TEXCOORD_0, new Accessor(ComponentType.FLOAT, ElementType.VEC2, tex));
+			attributes.put(Attribute.NORMAL, new Accessor(ComponentType.FLOAT, ElementType.VEC3, norm));
+			indices = new Accessor(ComponentType.UNSIGNED_INT, ElementType.SCALAR, index);
+		}
+	}
+
+	static class Mesh extends MeshImpl {
+
+		private MeshPrimitives[] primitives;
+
+		public void setMaterial(IMaterial mat) {
+			for (MeshPrimitives primitive : primitives) {
+				primitive.setMaterial(mat);
+			}
+		}
+
+		public Mesh(ByteBuffer pos, ByteBuffer tex, ByteBuffer norm, ByteBuffer index) {
+			primitives = new MeshPrimitives[] { new MeshPrimitives(pos, tex, norm, index) };
+		}
+
+		@Override
+		protected MeshPrimitivesImpl[] getPrimitives() {
+			return primitives;
+		}
+	}
+
+	static class Node extends NodeImpl {
+		public void setMaterial(IMaterial mat) {
+			((Mesh) mesh).setMaterial(mat);
+		}
+
+		public Node(ByteBuffer pos, ByteBuffer tex, ByteBuffer norm, ByteBuffer index) {
+			mesh = new Mesh(pos, tex, norm, index);
+		}
+	}
+
+	static class Model extends ModelImpl {
+		@Override
+		public ModelImpl setSystemName(String name) {
+			nodes.forEach(e -> {
+				((Node) e).setMaterial(new Material(name));
+			});
+			return super.setSystemName(name);
+		}
+
+		public Model(List<? extends NodeImpl> nodes) {
+			this.nodes = Collections.unmodifiableList(nodes);
+			for (NodeImpl node : nodes)
+				meshRoot.add(node);
+		}
+	}
+
+	static class Material implements IMaterial {
+
+		public Material(String name) {
+			texture = new ResourceLocation(HideMod.MOD_ID, "skin/" + name);
+		}
+
+		@Override
+		public void dispose() {
+
+		}
+
+		private ResourceLocation texture;
+
+		@Override
+		public int getBaseColorTexture() {
+			if (FMLCommonHandler.instance().getSide().isClient()) {
+				return getTexID();
+			}
+			return 0;
+		}
+
+		@SideOnly(Side.CLIENT)
+		private int getTexID() {
+			TextureManager tm = Minecraft.getMinecraft().getTextureManager();
+			ITextureObject tex = tm.getTexture(texture);
+			if (tex == null) {
+				tex = new SimpleTexture(texture);
+				tm.loadTexture(texture, tex);
+			}
+			return tex != null ? tex.getGlTextureId() : 0;
+		}
+
+		@Override
+		public String toString() {
+			return texture.toString();
+		}
+	}
+
+	private static Vector3f parseVec3f(String[] data) {
 		Vector3f ret = new Vector3f();
 		ret.x = Float.parseFloat(data[0]);
 		ret.y = Float.parseFloat(data[1]);
@@ -168,7 +335,7 @@ public class ObjLoader {
 		return ret;
 	}
 
-	private Vector2f parseVec2f(String[] data) {
+	private static Vector2f parseVec2f(String[] data) {
 		Vector2f ret = new Vector2f();
 		ret.x = Float.parseFloat(data[0]);
 		ret.y = Float.parseFloat(data[1]);

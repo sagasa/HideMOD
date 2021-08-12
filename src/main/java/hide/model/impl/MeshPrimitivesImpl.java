@@ -2,6 +2,7 @@ package hide.model.impl;
 
 import java.nio.ByteBuffer;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,6 +15,7 @@ import org.lwjgl.opengl.GLContext;
 import hide.model.impl.MeshImpl.Attribute;
 import hide.model.impl.MeshImpl.Mode;
 import hide.model.util.HideShader;
+import hide.model.util.TransformMatUtil;
 import hide.opengl.ServerRenderContext;
 
 public abstract class MeshPrimitivesImpl implements IDisposable {
@@ -26,12 +28,12 @@ public abstract class MeshPrimitivesImpl implements IDisposable {
 	transient private HideShader shader;
 	transient protected IMaterial material;
 	transient protected AccessorImpl indices;
-	transient protected Map<Attribute, AccessorImpl> attributes;
+	transient protected Map<Attribute, AccessorImpl> attributes = new EnumMap<>(Attribute.class);;
 	transient protected List<Map<Attribute, AccessorImpl>> targets = Collections.EMPTY_LIST;
 	/**モーフィングがある場合の頂点データ*///TODO シェーダーでやりたい
 	transient protected Map<Attribute, AccessorImpl> target = Collections.EMPTY_MAP;
 
-	public void postInit() {
+	void postInit() {
 		if (!targets.isEmpty())
 			for (Entry<Attribute, AccessorImpl> entry : attributes.entrySet()) {
 				target.put(entry.getKey(), entry.getValue().copy());
@@ -41,6 +43,11 @@ public abstract class MeshPrimitivesImpl implements IDisposable {
 
 	public void setShader(HideShader shader) {
 		this.shader = shader;
+	}
+
+	public void setMaterial(IMaterial mat) {
+		material = mat;
+		System.out.println("setMaterial " + mat);
 	}
 
 	public void calcWeight(float[] weight) {
@@ -70,6 +77,7 @@ public abstract class MeshPrimitivesImpl implements IDisposable {
 			GL30.glBindVertexArray(vao);
 		}
 
+		//TransformMatUtil.checkGLError("pre bind");
 		//バッファバインド
 		for (Attribute attribute : attributes.keySet()) {
 			AccessorImpl vbo;
@@ -80,12 +88,12 @@ public abstract class MeshPrimitivesImpl implements IDisposable {
 			}
 			int index = attribute.index;
 			vbo.bindAttribPointer(index);
-			System.out.println(attribute + " " + index);
+			//System.out.println(attribute + " " + index);
 			//vbo.writeAsFloat();
 		}
 
 		indices.bind();
-		System.out.println("indices");
+		//System.out.println("indices");
 		//indices.writeAsFloat();
 		if (GL30Supported) {
 			GL30.glBindVertexArray(0);
@@ -93,17 +101,24 @@ public abstract class MeshPrimitivesImpl implements IDisposable {
 	}
 
 	public void render() {
+		TransformMatUtil.checkGLError("pre bind VAO");
 		if (GL30Supported) {
 			if (vao == -1)
 				bind();
 			GL30.glBindVertexArray(vao);
+			TransformMatUtil.checkGLError("bind VAO");
 		} else {
 			bind();
 		}
 
 		shader.material(material);
+
+		TransformMatUtil.checkGLError("bind material");
+
 		//System.out.println("render "+vertexCount);
 		GL11.glDrawElements(mode.gl, indices.getCount(), indices.getComponentType().gl, indices.getByteOffset());
+
+		TransformMatUtil.checkGLError("drawElements");
 
 		if (GL30Supported) {
 			GL30.glBindVertexArray(0);

@@ -52,8 +52,8 @@ public class ItemMagazine extends HideItem<MagazineData> {
 			return item;
 		}
 		NBTTagCompound hideTag = HideGunNBT.getHideTag(item);
-		hideTag.setString(HideGunNBT.DATA_NAME, data.get(ItemData.ShortName));
-		HideGunNBT.setMagazineBulletNum(hideTag, data.get(MagazineData.MagazineSize));
+		HideGunNBT.DATA_NAME.set(hideTag, data.get(ItemData.ShortName));
+		HideGunNBT.MAGAZINE_MUMBER.set(hideTag, data.get(MagazineData.MagazineSize));
 		return item;
 	}
 
@@ -153,7 +153,7 @@ public class ItemMagazine extends HideItem<MagazineData> {
 		if (!(item.getItem() instanceof ItemMagazine)) {
 			return null;
 		}
-		return PackData.getBulletData(HideGunNBT.getHideTag(item).getString(HideGunNBT.DATA_NAME));
+		return PackData.getBulletData(HideGunNBT.DATA_NAME.get(HideGunNBT.getHideTag(item)));
 	}
 
 	/** その名前の弾は存在するか */
