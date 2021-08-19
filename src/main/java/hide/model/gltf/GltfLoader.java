@@ -38,7 +38,6 @@ import hide.model.impl.MeshImpl.Attribute;
 import hide.model.impl.MeshPrimitivesImpl;
 import hide.model.impl.ModelImpl;
 import hide.model.impl.NodeImpl;
-import hide.model.obj.ObjLoader;
 import hide.model.util.ByteBufferInputStream;
 import hide.model.util.HideTexture;
 import hide.opengl.ServerRenderContext;
@@ -58,7 +57,7 @@ public class GltfLoader {
 
 		GL11.glPushMatrix();
 		for (int i = 0; i < 1; i++) {
-			test.render();
+			//test.render();
 			GL11.glTranslatef(10, 0, 0);
 		}
 		GL11.glPopMatrix();
@@ -78,11 +77,11 @@ public class GltfLoader {
 			e.printStackTrace();
 		}
 
-		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "ModelBAR.obj")))) {
-			test = ObjLoader.load(ins);
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
+		//		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "ModelBAR.obj")))) {
+		//			test = ObjLoader.load(ins);
+		//		} catch (Throwable e) {
+		//			e.printStackTrace();
+		//		}
 		time = System.currentTimeMillis() - time;
 		System.out.println("==================MODEL LOAD END================== " + time);
 	}

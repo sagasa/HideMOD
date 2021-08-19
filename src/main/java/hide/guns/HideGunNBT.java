@@ -17,8 +17,7 @@ public class HideGunNBT {
 
 	public static final String ITEM_TAG = "HideItem";
 
-	public static final NBTEntry<String> DATA_NAME = new NBTEntry<String>() {
-		final String key = "Name";
+	public static final NBTEntry<String> DATA_NAME = new NBTEntry<String>("Name") {
 
 		@Override
 		public String get(NBTTagCompound tag) {
@@ -34,8 +33,7 @@ public class HideGunNBT {
 		}
 	};
 
-	public static final NBTEntry<Long> DATA_SESSIONTIME = new NBTEntry<Long>() {
-		final String key = "LastSessionTime";
+	public static final NBTEntry<Long> DATA_SESSIONTIME = new NBTEntry<Long>("LastSessionTime") {
 
 		@Override
 		public Long get(NBTTagCompound tag) {
@@ -50,8 +48,7 @@ public class HideGunNBT {
 			tag.setLong(key, value);
 		}
 	};
-	public static final NBTEntry<GunFireMode> GUN_FIREMODE = new NBTEntry<GunFireMode>() {
-		final String key = "GunFireMode";
+	public static final NBTEntry<GunFireMode> GUN_FIREMODE = new NBTEntry<GunFireMode>("GunFireMode") {
 
 		@Override
 		public GunFireMode get(NBTTagCompound tag) {
@@ -66,8 +63,7 @@ public class HideGunNBT {
 			tag.setString(key, GunFireMode.getFireMode(value));
 		}
 	};
-	public static final NBTEntry<String> GUN_USEBULLET = new NBTEntry<String>() {
-		final String key = "GunUseMagazine";
+	public static final NBTEntry<String> GUN_USEBULLET = new NBTEntry<String>("GunUseMagazine") {
 
 		@Override
 		public String get(NBTTagCompound tag) {
@@ -82,8 +78,7 @@ public class HideGunNBT {
 			tag.setString(key, value);
 		}
 	};
-	public static final NBTEntry<Integer> GUN_SHOOTDELAY = new NBTEntry<Integer>() {
-		final String key = "GunShootDelay";
+	public static final NBTEntry<Integer> GUN_SHOOTDELAY = new NBTEntry<Integer>("GunShootDelay") {
 
 		@Override
 		public Integer get(NBTTagCompound tag) {
@@ -98,8 +93,7 @@ public class HideGunNBT {
 			tag.setInteger(key, value);
 		}
 	};
-	public static final NBTEntry<LoadedMagazine> GUN_MAGAZINES = new NBTEntry<LoadedMagazine>() {
-		final String key = "GunMagazines";
+	public static final NBTEntry<LoadedMagazine> GUN_MAGAZINES = new NBTEntry<LoadedMagazine>("GunMagazines") {
 
 		@Override
 		public LoadedMagazine get(NBTTagCompound tag) {
@@ -132,8 +126,7 @@ public class HideGunNBT {
 			tag.setTag(key, magazines);
 		}
 	};
-	public static final NBTEntry<List<String>> GUN_ATTACHMENTS = new NBTEntry<List<String>>() {
-		final String key = "GunAttachments";
+	public static final NBTEntry<List<String>> GUN_ATTACHMENTS = new NBTEntry<List<String>>("GunAttachments") {
 
 		@Override
 		public List<String> get(NBTTagCompound tag) {
@@ -153,9 +146,7 @@ public class HideGunNBT {
 		}
 	};
 
-	public static final NBTEntry<Integer> MAGAZINE_MUMBER = new NBTEntry<Integer>() {
-		final String key = "MagazineNumber";
-
+	public static final NBTEntry<Integer> MAGAZINE_MUMBER = new NBTEntry<Integer>("MagazineNumber") {
 		@Override
 		public Integer get(NBTTagCompound tag) {
 			// Nullチェック
@@ -170,10 +161,30 @@ public class HideGunNBT {
 		}
 	};
 
-	public interface NBTEntry<T> {
-		T get(NBTTagCompound tag);
+	public static class NBTEntry<T> {
+		protected final String key;
 
-		void set(NBTTagCompound tag, T value);
+		public NBTEntry(String key) {
+			this.key = key;
+		}
+
+		public boolean hasKey(NBTTagCompound tag) {
+			return tag.hasKey(key);
+		}
+
+		public boolean setIfNull(NBTTagCompound tag, T value) {
+			if (hasKey(tag))
+				return false;
+			set(tag, value);
+			return true;
+		}
+
+		public T get(NBTTagCompound tag) {
+			return null;
+		}
+
+		public void set(NBTTagCompound tag, T value) {
+		}
 	}
 
 	/**

@@ -12,14 +12,14 @@ import net.minecraft.util.NonNullList;
 public abstract class HideItem<T extends ItemData> extends Item {
 	public HideItem(String name, Map<String, T> data) {
 		super();
-		dagaMap = data;
+		dataMap = data;
 		this.setCreativeTab(CreativeTabs.COMBAT);
 		this.setUnlocalizedName(name);
 		this.setRegistryName(name);
 		this.setMaxStackSize(1);
 	}
 
-	private final Map<String, T> dagaMap;
+	private final Map<String, T> dataMap;
 
 	/**デフォルトのアイテム名*/
 	protected String defaultName = "Not Set";
@@ -35,7 +35,7 @@ public abstract class HideItem<T extends ItemData> extends Item {
 	public T getData(ItemStack stack) {
 		if (!isHideItem(stack))
 			return null;
-		return dagaMap.get(HideGunNBT.DATA_NAME.get(HideGunNBT.getHideTag(stack)));
+		return dataMap.get(HideGunNBT.DATA_NAME.get(HideGunNBT.getHideTag(stack)));
 	}
 
 	public abstract ItemStack makeItem(T data);
@@ -58,7 +58,7 @@ public abstract class HideItem<T extends ItemData> extends Item {
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
 		if (tab == CreativeTabs.COMBAT)
-			dagaMap.values().forEach(data -> {
+			dataMap.values().forEach(data -> {
 				items.add(makeItem(data));
 			});
 	}

@@ -37,6 +37,7 @@ public class ModelImpl implements IDisposable {
 
 		GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
 
+		GL11.glScalef(1, -1, 1);
 		//GlStateManager.translate(0, 2, 0);
 
 		for (NodeImpl node : meshRoot) {

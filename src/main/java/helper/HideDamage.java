@@ -83,16 +83,9 @@ public class HideDamage extends DamageSource {
 
 	@Override
 	public ITextComponent getDeathMessage(EntityLivingBase p_151519_1_) {
-		ITextComponent text = new TextComponentString("[");
-		setColor(text, TextFormatting.GOLD);
-		text.appendSibling(setColor("Kill", TextFormatting.DARK_RED));
-		text.appendSibling(setColor("]", TextFormatting.GOLD));
-		text.appendSibling(setColor(" ", TextFormatting.WHITE));
+		ITextComponent text = new TextComponentString("§6[§4Kill§6] §f");
 		text.appendSibling(Attacker.getDisplayName());
-		text.appendSibling(setColor(" == ", TextFormatting.GOLD));
-		text.appendSibling(setColor(Tool, TextFormatting.WHITE));
-		text.appendSibling(setColor(" =>>", TextFormatting.GOLD));
-		text.appendSibling(setColor(" ", TextFormatting.WHITE));
+		text.appendSibling(new TextComponentString(" §6== §f" + Tool + " §6=>> §f"));
 		text.appendSibling(p_151519_1_.getDisplayName());
 		return text;
 	}

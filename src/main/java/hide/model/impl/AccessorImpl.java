@@ -96,7 +96,7 @@ public class AccessorImpl implements IDisposable {
 			for (int j = 0; j < getElementType().size; j++) {
 				if (j != 0)
 					System.out.print(", ");
-				System.out.print(getComponentType().getValue(buf, buffer.getByteOffset() + i * getComponentType().size));
+				System.out.print(getComponentType().getValue(buf, getByteIndex(i, j)));
 			}
 			System.out.print("]");
 		}

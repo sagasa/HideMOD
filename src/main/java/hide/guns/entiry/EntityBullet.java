@@ -79,9 +79,10 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	public float life = 0;
 
 	public EntityBullet(ViewCache<ProjectileData> viewCache, Entity shooter, boolean isADS, float offset, double x,
-			double y, double z, float yaw, float pitch) {
+			double y, double z, float yaw, float pitch, String name) {
 		this(shooter.world);
 		//	System.out.println("off "+offset);
+		toolName = name;
 		dataView = viewCache;
 		Shooter = shooter;
 		AlreadyHit = new ArrayList<>();

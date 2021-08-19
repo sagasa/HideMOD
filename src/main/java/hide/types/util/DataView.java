@@ -151,8 +151,6 @@ public class DataView<T extends DataBase> {
 		}
 
 		public <R extends DataBase> ViewCache<R> getData(DataEntry<R> key) {
-			if (!(key.Default instanceof DataBase))
-				throw new IllegalArgumentException("must use get");
 			if (!dataMap.containsKey(key)) {
 				ViewCache<R> value = new ViewCache<>((Class) key.Default.getClass());
 				if (baseData != null) {

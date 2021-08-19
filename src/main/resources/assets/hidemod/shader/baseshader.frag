@@ -13,9 +13,14 @@ uniform int u_hasEmissiveTexture;
 
 in vec2 v_TexCoord;
 in vec4 test_color;
+in vec4 v_norm;
 
 void main(void) {
-    // 緑色を出力(RGBA)
-    out_FragColor = texture2D(u_baseColorTexture, v_TexCoord);
-	//out_FragColor = vec4(0.0, 1.0, 1.0, 0.4);
+	// 緑色を出力(RGBA)
+	//out_FragColor = texture2D(u_baseColorTexture, v_TexCoord);
+
+	float light = dot(v_norm, vec4(0.0, -1.0, 0.0, 0.0)) / 2.3 + 0.56;
+	out_FragColor = texture2D(u_baseColorTexture, v_TexCoord)
+			* vec4(light, light, light, 1);
+//out_FragColor = vec4(0.0, 1.0, 1.0, 0.4);
 }

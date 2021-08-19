@@ -11,11 +11,16 @@ uniform mat4 u_WorldViewProjectionMatrix;
 
 out vec2 v_TexCoord;
 out vec4 test_color;
+out vec4 v_norm;
 
 void main(void) {
-    // スキニング後のローカル座標系に変換
-    vec4 localPosition = in_Position;
-    v_TexCoord = in_TexCoord;
-    // ワールド・ビュー・プロジェクション変換
-    gl_Position = u_WorldViewProjectionMatrix*localPosition;
+
+	// スキニング後のローカル座標系に変換
+	vec4 localPosition = in_Position;
+
+	v_TexCoord = in_TexCoord;
+	// ワールド・ビュー・プロジェクション変換
+	v_norm = normalize(u_WorldViewProjectionMatrix * in_Normal);
+	v_norm = in_Normal;
+	gl_Position = u_WorldViewProjectionMatrix * localPosition;
 }

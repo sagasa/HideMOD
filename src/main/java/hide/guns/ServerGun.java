@@ -10,6 +10,7 @@ import hide.guns.entiry.EntityBullet;
 import hide.guns.network.PacketSyncMag;
 import hide.types.guns.ProjectileData;
 import hide.types.items.GunData;
+import hide.types.items.ItemData;
 import hide.types.items.MagazineData;
 import hide.types.util.DataView;
 import hide.ux.SoundHandler;
@@ -103,7 +104,7 @@ public class ServerGun extends CommonGun {
 	public void shoot(boolean isADS, float offset, double x, double y, double z, float yaw, float pitch) {
 		dataView.setModifier(0, magazine.getNextBullet().get(MagazineData.Data));
 
-		shoot(dataView, owner, isADS, offset, x, y, z, yaw, pitch);
+		shoot(dataView, owner, isADS, offset, x, y, z, yaw, pitch, gunData.get(ItemData.DisplayName));
 		stopReload();
 
 		World world = owner.world;
@@ -115,12 +116,13 @@ public class ServerGun extends CommonGun {
 		lastShootTime = System.currentTimeMillis();
 	}
 
-	/** エンティティを生成 ShootNumに応じた数弾を出す */
+	/** エンティティを生成 ShootNumに応じた数弾を出す
+	 * @param  name */
 	private static void shoot(DataView<ProjectileData> dataView, Entity shooter, boolean isADS, float offset,
-			double x, double y, double z, float yaw, float pitch) {
+			double x, double y, double z, float yaw, float pitch, String name) {
 		SoundHandler.broadcastSound(shooter, 0, 0, 0, dataView.getData(ProjectileData.SoundShoot), true);
 		for (int i = 0; i < dataView.get(ProjectileData.ShootCount); i++) {
-			EntityBullet bullet = new EntityBullet(dataView.getView(), shooter, isADS, offset, x, y, z, yaw, pitch);
+			EntityBullet bullet = new EntityBullet(dataView.getView(), shooter, isADS, offset, x, y, z, yaw, pitch, name);
 			if (!bullet.isDead)
 				shooter.world.spawnEntity(bullet);
 		}
