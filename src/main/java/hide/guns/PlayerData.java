@@ -16,7 +16,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
@@ -31,10 +30,6 @@ public abstract class PlayerData implements IHidePlayerData {
 	public float adsRes = 0f;
 
 	public EquipMode CurrentEquipMode = EquipMode.None;
-
-	protected void onChangeItemGun(ItemStack item) {
-		item.getAttributeModifiers(EntityEquipmentSlot.MAINHAND).get("hide.gun");
-	}
 
 	public static class ServerPlayerData extends PlayerData {
 
@@ -74,8 +69,10 @@ public abstract class PlayerData implements IHidePlayerData {
 			gunMain.tickUpdate();
 			gunOff.tickUpdate();
 
-			gunMain.updateTag(ItemGun.isGun(main) ? HideGunNBT.getHideTag(main) : null);
-			gunOff.updateTag(ItemGun.isGun(off) ? HideGunNBT.getHideTag(off) : null);
+			if (gunMain.updateTag(ItemGun.isGun(main) ? HideGunNBT.getHideTag(main) : null))
+				ItemGun.updateItenStack(main);
+			if (gunOff.updateTag(ItemGun.isGun(off) ? HideGunNBT.getHideTag(off) : null))
+				ItemGun.updateItenStack(off);
 
 			CurrentEquipMode = EquipMode.getEquipMode(gunMain, gunOff);
 
@@ -182,8 +179,10 @@ public abstract class PlayerData implements IHidePlayerData {
 			ItemStack off = player.getHeldItemOffhand();
 
 			//銃ではないならNullで初期化
-			gunMain.updateTag(ItemGun.isGun(main) ? HideGunNBT.getHideTag(main) : null);
-			gunOff.updateTag(ItemGun.isGun(off) ? HideGunNBT.getHideTag(off) : null);
+			if (gunMain.updateTag(ItemGun.isGun(main) ? HideGunNBT.getHideTag(main) : null))
+				ItemGun.updateItenStack(main);
+			if (gunOff.updateTag(ItemGun.isGun(off) ? HideGunNBT.getHideTag(off) : null))
+				ItemGun.updateItenStack(off);
 
 			CurrentEquipMode = EquipMode.getEquipMode(gunMain, gunOff);
 

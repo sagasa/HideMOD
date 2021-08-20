@@ -1,0 +1,8 @@
+{
+  "Type": "PackInfo",
+  "Values": {
+    "PackName": "HideTestAsset",
+    "PackVar": "0.1",
+    "PackDomain": "test"
+  }
+}

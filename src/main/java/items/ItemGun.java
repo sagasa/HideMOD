@@ -14,7 +14,9 @@ import hide.types.items.GunData;
 import hide.types.items.ItemData;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
@@ -61,6 +63,28 @@ public class ItemGun extends HideItem<GunData> {
 				GunFireMode.getFireMode(Arrays.asList(data.get(GunData.FireMode)).iterator().next().toString()));
 		HideGunNBT.GUN_USEBULLET.set(hideTag, CommonGun.LOAD_ANY);
 		return item;
+	}
+
+	private static final String HideItemModifiers = "HideItemModifiers";
+
+	public static void updateItenStack(ItemStack item) {
+		System.out.println("check item valid " + PackData.getSessionTime() + " " + HideGunNBT.DATA_SESSIONTIME.get(HideGunNBT.getHideTag(item)));
+		System.out.println("state " + item.getAttributeModifiers(EntityEquipmentSlot.MAINHAND));
+		if (PackData.getSessionTime() != HideGunNBT.DATA_SESSIONTIME.get(HideGunNBT.getHideTag(item))) {
+			System.out.println("update item modifire");
+			HideGunNBT.DATA_SESSIONTIME.set(HideGunNBT.getHideTag(item), PackData.getSessionTime());
+			GunData data = getGunData(item);
+			System.out.println(data.toJson());
+			item.addAttributeModifier("generic.movementSpeed", new AttributeModifier("hideItemAttrib", data.get(GunData.ItemMoveSpeed), 1), EntityEquipmentSlot.MAINHAND);
+			item.addAttributeModifier("generic.attackDamage", new AttributeModifier("hideItemAttrib", data.get(GunData.ItemAttackDamage), 1), EntityEquipmentSlot.MAINHAND);
+			item.addAttributeModifier("generic.knockbackResistance", new AttributeModifier("hideItemAttrib", data.get(GunData.ItemKnockbackResistance), 1), EntityEquipmentSlot.MAINHAND);
+			item.addAttributeModifier("generic.maxHealth", new AttributeModifier("hideItemAttrib", data.get(GunData.ItemMaxHealth), 1), EntityEquipmentSlot.MAINHAND);
+			if (data.get(GunData.UseSecondary)) {
+				//item.getAttributeModifiers(EntityEquipmentSlot.OFFHAND).replaceValues(HideItemModifiers, modifiers);
+			} else {
+				//item.getAttributeModifiers(EntityEquipmentSlot.OFFHAND).replaceValues(HideItemModifiers, Collections.emptyList());
+			}
+		}
 	}
 
 	/** データ破損チェック */

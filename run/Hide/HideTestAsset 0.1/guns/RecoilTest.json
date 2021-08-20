@@ -1,0 +1,99 @@
+{
+  "Type": "GunData",
+  "Values": {
+    "DisplayName": "RecoilTest",
+    "ShortName": "gun_1",
+    "IconName": "M14_scope",
+    "ModelName": "bar",
+    "Data": {
+      "Type": "ProjectileData",
+      "Values": {
+        "Recoil": {
+          "Type": "Recoil",
+          "Values": {
+            "HorizontalBase": {
+              "Keys": [
+                {
+                  "Key": 0.0,
+                  "Value": 0.0
+                },
+                {
+                  "Key": 0.498,
+                  "Value": -6.0
+                },
+                {
+                  "Key": 1.0,
+                  "Value": 6.0
+                }
+              ]
+            },
+            "HorizontalRecoilTick": {
+              "Keys": [
+                {
+                  "Key": 0.0,
+                  "Value": 3.0
+                }
+              ]
+            },
+            "VerticalBase": {
+              "Keys": [
+                {
+                  "Key": 0.0,
+                  "Value": 0.0
+                },
+                {
+                  "Key": 1.002,
+                  "Value": 3.43
+                }
+              ]
+            },
+            "VerticalRecoilTick": {
+              "Keys": [
+                {
+                  "Key": 0.0,
+                  "Value": 3.0
+                }
+              ]
+            },
+            "PowerShoot": 0.1,
+            "PowerTick": 0.02
+          }
+        },
+        "RecoilADS": {
+          "Type": "Recoil",
+          "Values": {
+            "HorizontalBase": {
+              "Operator": "MULTIPLE",
+              "Object": {
+                "Keys": [
+                  {
+                    "Key": 0.0,
+                    "Value": 0.5
+                  }
+                ]
+              }
+            },
+            "VerticalBase": {
+              "Operator": "MULTIPLE",
+              "Object": {
+                "Keys": [
+                  {
+                    "Key": 0.0,
+                    "Value": 0.3
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "ItemMoveSpeed": 1.0,
+    "FireMode": [
+      "FULLAUTO"
+    ],
+    "UseMagazine": [
+      "ammo"
+    ]
+  }
+}

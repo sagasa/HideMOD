@@ -140,7 +140,7 @@ public class PackLoader {
 			}
 		}
 		LOGGER.info("copy to currentData");
-		PackData.CurrentData.from(readData);
+		PackData.setPack(readData);
 	}
 
 	/** ファイルから読み込むモジュール */
