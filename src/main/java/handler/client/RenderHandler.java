@@ -22,9 +22,8 @@ import hide.types.items.ItemData;
 import hide.types.items.MagazineData;
 import items.ItemGun;
 import items.ItemMagazine;
-import model.AnimationType;
 import model.HideModel;
-import model.IRenderProperty;
+import model.IRenderProperty.PlayerProp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.Gui;
@@ -84,6 +83,14 @@ public class RenderHandler {
 			event.setCanceled(HideViewHandler.writeScope());
 			writeGunInfo(x - 120, y - 65);
 
+			if (data.ads == 0 && data.prevAds == 0)
+				HideViewHandler.clearADS();
+			else {
+				HideViewHandler.setADS(data.gunMain.getGunData().get(GunData.UseScope) ? data.gunMain.getGunData().get(GunData.ScopeName) : null,
+						HideMath.completion(1, data.gunMain.getGunData().get(GunData.ScopeZoom), HideMath.completion(data.prevAds, data.ads, event.getPartialTicks())),
+						data.gunMain.getGunData().get(GunData.ScopeSize));
+			}
+
 			/** スコープ */
 			//HideScope.renderOnGUI();
 		}
@@ -99,12 +106,7 @@ public class RenderHandler {
 		 * ItemStack(Item.getByNameOrId("hidemod:gun_ar"),1) , i, j);
 		 * RenderHelper.disableStandardItemLighting();
 		 */
-		if (data.adsRes == 0)
-			HideViewHandler.clearADS();
-		else {
-			HideViewHandler.setADS(data.gunMain.getGunData().get(GunData.UseScope) ? data.gunMain.getGunData().get(GunData.ScopeName) : null, HideMath.completion(1, data.gunMain.getGunData().get(GunData.ScopeZoom), data.adsRes),
-					data.gunMain.getGunData().get(GunData.ScopeSize));
-		}
+
 		// System.out.println("render");
 	}
 
@@ -292,27 +294,7 @@ public class RenderHandler {
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 	}
 
-	static IRenderProperty prop = new IRenderProperty() {
-
-		@Override
-		public Float getAnimationProp(AnimationType type) {
-			// TODO 自動生成されたメソッド・スタブ
-			return null;
-		}
-
-		@Override
-		public Float getYaw() {
-			// TODO 自動生成されたメソッド・スタブ
-			return null;
-		}
-
-		@Override
-		public Float getPitch() {
-			// TODO 自動生成されたメソッド・スタブ
-			return null;
-		}
-
-	};
+	static PlayerProp prop = new PlayerProp();
 
 	/** 自分の持ってる銃の描画 アニメーションとパーツの稼働はこのメゾットのみ */
 	public static void RenderHand(RenderHandEvent event) {//*
@@ -320,6 +302,7 @@ public class RenderHandler {
 		if (ItemGun.isGun(item)) {
 			HideModel model = PackData.getModel(ItemGun.getGunData(item).get(ItemData.ModelName));
 			if (model != null) {
+
 				if (mc.gameSettings.thirdPersonView != 0 || (HideViewHandler.isADS && HideViewHandler.isScope))//TODO モデルにサイトを付けたバージョンに対応しなきゃ
 					return;
 				int side = 1;

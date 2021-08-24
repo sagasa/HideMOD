@@ -2,9 +2,8 @@ package handler.client;
 
 import hide.types.items.GunData;
 import items.ItemGun;
-import model.AnimationType;
 import model.HideModel;
-import model.IRenderProperty;
+import model.IRenderProperty.PlayerProp;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -49,22 +48,7 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 		}
 	}
 
-	static IRenderProperty prop = new IRenderProperty() {
-		@Override
-		public Float getAnimationProp(AnimationType type) {
-			return null;
-		}
-
-		@Override
-		public Float getYaw() {
-			return null;
-		}
-
-		@Override
-		public Float getPitch() {
-			return null;
-		}
-	};
+	static PlayerProp prop = new PlayerProp();
 
 	private void renderHeldGun(EntityLivingBase p_188358_1_, ItemStack p_188358_2_,
 			ItemCameraTransforms.TransformType p_188358_3_, EnumHandSide handSide) {

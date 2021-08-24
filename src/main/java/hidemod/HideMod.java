@@ -103,6 +103,9 @@ public class HideMod {
 		HideDamage.init();
 		// ロガー保存
 		LOGGER = event.getModLog();
+
+
+
 		// エンティティ登録
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,
 				"entity_bullet", 1, MOD_ID, 512, 1, false);
@@ -123,11 +126,14 @@ public class HideMod {
 			HideHook.initHookClient();
 			System.out.println(defaultResourcePacks);
 
-			ServerRenderContext.SUPPORT_CONTEXT=true;
+			ServerRenderContext.SUPPORT_CONTEXT = true;
 		} else {
 			//レンダリング用コンテキスト
 			ServerRenderContext.initContext();
 		}
+
+		// パック読み込み
+				PackLoader.load();
 
 		HideBase.HideDirEntry.setChangeListener(PackLoader::reloadInGame);
 	}
@@ -138,8 +144,7 @@ public class HideMod {
 		if (FMLCommonHandler.instance().getSide().isClient()) {
 			initClient();
 		}
-		// パック読み込み
-		PackLoader.load();
+
 		GltfLoader.test();
 	}
 

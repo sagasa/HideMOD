@@ -14,6 +14,12 @@ import org.lwjgl.opengl.GL20;
 import hide.model.impl.IMaterial;
 import hide.model.impl.ModelImpl;
 import hide.opengl.ServerRenderContext;
+import hidemod.HideMod;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class HideShader {
 	public final int ID;
@@ -91,6 +97,7 @@ public class HideShader {
 	public static final HideShader BASE_SHADER;
 
 	static {
+
 		ModelImpl.profiler.profilingEnabled = true;
 		if (ServerRenderContext.SUPPORT_CONTEXT) {
 			SKIN_SHADER = new HideShader("assets/hidemod/shader/skinshader.vert", "assets/hidemod/shader/skinshader.frag");
@@ -104,8 +111,11 @@ public class HideShader {
 		}
 	}
 
+	@SideOnly(Side.CLIENT) //TODO ill be back
 	private static ByteBuffer readResource(String path) {
-		try (InputStream ins = ClassLoader.getSystemResourceAsStream(path)) {
+
+		//ClassLoader.getSystemResourceAsStream(path);
+		try (InputStream ins = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(HideMod.MOD_ID, path.replace("assets/hidemod/", ""))).getInputStream()) {
 			byte[] data = IOUtils.toByteArray(ins);
 			ByteBuffer bytebuffer = BufferUtils.createByteBuffer(data.length);
 			bytebuffer.put(data);
@@ -118,6 +128,9 @@ public class HideShader {
 	}
 
 	private static int makeProgram(String vert_path, String frag_path) {
+		if (FMLCommonHandler.instance().getSide().isServer())
+			return 0;
+
 		//バーテックスシェーダのコンパイル
 		int vShaderId = makeShader(GL20.GL_VERTEX_SHADER, readResource(vert_path));
 		//フラグメントシェーダのコンパイル

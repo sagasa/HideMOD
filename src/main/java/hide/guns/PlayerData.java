@@ -8,6 +8,7 @@ import handler.client.HideViewHandler;
 import hide.common.HideComplement;
 import hide.core.HidePlayerDataManager;
 import hide.core.HidePlayerDataManager.IHidePlayerData;
+import hide.guns.data.HideEntityDataManager;
 import hide.types.guns.GunFireMode;
 import hide.types.items.GunData;
 import hidemod.HideMod;
@@ -27,11 +28,11 @@ import network.PacketPlayerMotion;
 /**銃のプレイヤーごとの情報+処理*/
 public abstract class PlayerData implements IHidePlayerData {
 
-	public float adsRes = 0f;
-
 	public EquipMode CurrentEquipMode = EquipMode.None;
 
 	public static class ServerPlayerData extends PlayerData {
+
+		protected EntityPlayerMP owner;
 
 		public ServerPlayerData() {
 			gunMain = new ServerGun(EnumHand.MAIN_HAND);
@@ -40,9 +41,16 @@ public abstract class PlayerData implements IHidePlayerData {
 
 		@Override
 		public void init(EntityPlayer player) {
-			gunMain.setOwner((EntityPlayerMP) player);
-			gunOff.setOwner((EntityPlayerMP) player);
-			System.out.println("init ");
+			owner = (EntityPlayerMP) player;
+			gunMain.setOwner(owner);
+			gunOff.setOwner(owner);
+		}
+
+		public float adsRes = 0f;
+
+		public void setADS(float state) {
+			adsRes = state;
+			HideEntityDataManager.setADSState(owner, state);
 		}
 
 		public double lastPosX, lastPosY, lastPosZ;
@@ -168,6 +176,8 @@ public abstract class PlayerData implements IHidePlayerData {
 
 		//ADS用のカウンタ
 		public int adsstate = 0;
+		public float ads = 0f;
+		public float prevAds= 0f;
 
 		public void tickUpdate() {
 			// TODO 自動生成されたメソッド・スタブ

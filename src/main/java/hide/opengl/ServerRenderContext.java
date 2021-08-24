@@ -3,7 +3,6 @@ package hide.opengl;
 import java.io.File;
 import java.lang.reflect.Field;
 
-import org.lwjgl.LWJGLException;
 import org.lwjgl.LWJGLUtil;
 import org.lwjgl.opengl.Pbuffer;
 import org.lwjgl.opengl.PixelFormat;
@@ -19,6 +18,14 @@ public class ServerRenderContext {
 	public static boolean SUPPORT_CONTEXT = false;
 
 	public static void initContext() {
+		try {
+			ClassLoader.getSystemClassLoader().loadClass("org.lwjgl.LWJGLUtil");
+		} catch (ClassNotFoundException e1) {
+			HideMod.LOGGER.error("lwjgl lib not found");
+			// TODO 自動生成された catch ブロック
+			e1.printStackTrace();
+			return;
+		}
 
 		if (pbuffer != null) {
 			HideMod.LOGGER.warn("context has already been created");
@@ -64,16 +71,22 @@ public class ServerRenderContext {
 				return;
 			}
 			SUPPORT_CONTEXT = true;
-		} catch (LWJGLException e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
 	}
 
 	public static void destroyContext() {
+		System.out.println("SUPPORT_CONTEXT " + SUPPORT_CONTEXT);
+		if (!SUPPORT_CONTEXT)
+			return;
+		destroyPBuffer();
+	}
+
+	private static void destroyPBuffer() {
 		if (pbuffer != null)
 			return;
 		pbuffer.destroy();
 		pbuffer = null;
 	}
-
 }

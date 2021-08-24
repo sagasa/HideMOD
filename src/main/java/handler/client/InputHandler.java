@@ -105,10 +105,10 @@ public class InputHandler {
 			if (0 < data.adsstate)
 				data.adsstate--;
 		}
-		float oldADS = data.adsRes;
-		data.adsRes = data.adsstate == 0 ? 0 : data.adsstate / (float) adsTick;
-		if (oldADS != data.adsRes) {
-			HideMod.NETWORK.sendToServer(new PacketInput(data.adsRes));
+		data.prevAds = data.ads;
+		data.ads = data.adsstate == 0 ? 0 : data.adsstate / (float) adsTick;
+		if (data.prevAds != data.ads) {
+			HideMod.NETWORK.sendToServer(new PacketInput(data.ads));
 		}
 
 		// 兵器に乗っているか

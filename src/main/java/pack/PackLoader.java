@@ -134,8 +134,8 @@ public class PackLoader {
 
 					LOGGER.info("End check and add pack[" + cash.Pack.get(PackInfo.PackName) + "]");
 					LOGGER.info("End read file[" + file.getName() + "]");
-				} catch (IOException e1) {
-					LOGGER.error("error : IOException");
+				} catch (Exception e) {
+					LOGGER.error("error in reading pack", e);
 				}
 			}
 		}

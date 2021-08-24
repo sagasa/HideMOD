@@ -11,11 +11,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import javax.vecmath.Vector2f;
+import javax.vecmath.Vector3f;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.util.vector.Vector2f;
-import org.lwjgl.util.vector.Vector3f;
 
 import com.google.common.base.Strings;
 
@@ -29,6 +29,7 @@ import hide.model.impl.MeshImpl.Attribute;
 import hide.model.impl.MeshPrimitivesImpl;
 import hide.model.impl.ModelImpl;
 import hide.model.impl.NodeImpl;
+import hide.model.util.BufferUtil;
 import hidemod.HideMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.ITextureObject;
@@ -116,20 +117,20 @@ public class ObjLoader {
 						Vector3f p1 = position.get(v1.pos);
 						Vector3f p2 = position.get(v2.pos);
 
-						Vector3f.sub(p0, p1, vec0);
-						Vector3f.sub(p2, p1, vec1);
+						vec0.sub(p0, p1);
+						vec1.sub(p2, p1);
 
 						Vector3f norm = new Vector3f();
 
-						Vector3f.cross(vec0, vec1, norm);
-						norm.normalise();
+						norm.cross(vec0, vec1);
+						norm.normalize();
 
 						int newNorm = normals.size();
 						boolean use = false;
 
 						if (v0.norm != -1) {
 							Vector3f vec = normals.get(v0.norm);
-							Vector3f.add(vec, norm, vec);
+							vec.add(vec, norm);
 						} else {
 							v0.norm = newNorm;
 							use = true;
@@ -137,7 +138,7 @@ public class ObjLoader {
 
 						if (v1.norm != -1) {
 							Vector3f vec = normals.get(v1.norm);
-							Vector3f.add(vec, norm, vec);
+							vec.add(vec, norm);
 						} else {
 							v1.norm = newNorm;
 							use = true;
@@ -145,7 +146,7 @@ public class ObjLoader {
 
 						if (v2.norm != -1) {
 							Vector3f vec = normals.get(v2.norm);
-							Vector3f.add(vec, norm, vec);
+							vec.add(vec, norm);
 						} else {
 							v2.norm = newNorm;
 							use = true;
@@ -170,14 +171,14 @@ public class ObjLoader {
 
 		//ノーマルのノーマライズ
 		normals.forEach(v -> {
-			v.normalise();
+			v.normalize();
 		});
 
 		// フォーマットをまとめる
-		ByteBuffer posByteBuf = BufferUtils.createByteBuffer(verts.size() * 4 * 3);
-		ByteBuffer texByteBuf = BufferUtils.createByteBuffer(verts.size() * 4 * 2);
-		ByteBuffer normByteBuf = BufferUtils.createByteBuffer(verts.size() * 4 * 3);
-		ByteBuffer indexByteBuf = BufferUtils.createByteBuffer(index.size() * 4);
+		ByteBuffer posByteBuf = BufferUtil.createByteBuffer(verts.size() * 4 * 3);
+		ByteBuffer texByteBuf = BufferUtil.createByteBuffer(verts.size() * 4 * 2);
+		ByteBuffer normByteBuf = BufferUtil.createByteBuffer(verts.size() * 4 * 3);
+		ByteBuffer indexByteBuf = BufferUtil.createByteBuffer(index.size() * 4);
 
 		Vector3f center = new Vector3f();
 		verts.forEach(v -> {
@@ -185,7 +186,7 @@ public class ObjLoader {
 			posByteBuf.putFloat(pos.x);
 			posByteBuf.putFloat(pos.y);
 			posByteBuf.putFloat(pos.z);
-			Vector3f.add(center, pos, center);
+			center.add(center, pos);
 
 			Vector2f tex = texCoords.get(v.tex);
 			texByteBuf.putFloat(tex.x);

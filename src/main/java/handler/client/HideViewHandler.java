@@ -33,8 +33,10 @@ public class HideViewHandler {
 
 	/** ADSの切り替え クライアント側 */
 	public static void setADS(String scope, float dia, float size) {
-		if (isADS) {
+
+		if (dia <= 0) {
 			clearADS();
+			return;
 		}
 		//
 		isScope = !Strings.isNullOrEmpty(scope);
@@ -44,11 +46,14 @@ public class HideViewHandler {
 		scopeSize = size;
 		GameSettings setting = Minecraft.getMinecraft().gameSettings;
 		// FOV
-		defaultFOV = setting.fovSetting;
+		if (!isADS) {
+			defaultFOV = setting.fovSetting;
+			defaultMS = setting.mouseSensitivity;
+		}
 		setting.fovSetting = defaultFOV / dia;
-		// マウス感度
-		defaultMS = setting.mouseSensitivity;
 		setting.mouseSensitivity = defaultMS / dia;
+		// マウス感度
+
 		isADS = true;
 	}
 

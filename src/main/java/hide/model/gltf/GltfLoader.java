@@ -1,9 +1,6 @@
 package hide.model.gltf;
 
-import java.io.DataInputStream;
 import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -18,7 +15,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import com.google.gson.Gson;
@@ -38,12 +34,12 @@ import hide.model.impl.MeshImpl.Attribute;
 import hide.model.impl.MeshPrimitivesImpl;
 import hide.model.impl.ModelImpl;
 import hide.model.impl.NodeImpl;
+import hide.model.util.BufferUtil;
 import hide.model.util.ByteBufferInputStream;
 import hide.model.util.HideTexture;
 import hide.opengl.ServerRenderContext;
 import net.minecraft.profiler.Profiler.Result;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.Loader;
 
 public class GltfLoader {
 
@@ -71,11 +67,11 @@ public class GltfLoader {
 	public static void test() {
 		System.out.println("==================MODEL LOAD TEST==================");
 		long time = System.currentTimeMillis();
-		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "m2.glb")))) {
-			test = load(ins);
-		} catch (IOException | GltfException e) {
-			e.printStackTrace();
-		}
+//		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "m2.glb")))) {
+//			test = load(ins);
+//		} catch (IOException | GltfException e) {
+//			e.printStackTrace();
+//		}
 
 		//		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "ModelBAR.obj")))) {
 		//			test = ObjLoader.load(ins);
@@ -343,7 +339,7 @@ public class GltfLoader {
 			throw new IOException("Expected BIN data but didn't get it");
 		}
 
-		ByteBuffer binData = BufferUtils.createByteBuffer(data.length);
+		ByteBuffer binData = BufferUtil.createByteBuffer(data.length);
 		binData.order(ByteOrder.nativeOrder());
 		binData.put(data);
 		binData.rewind();

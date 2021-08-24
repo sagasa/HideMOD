@@ -5,10 +5,10 @@ import static hide.model.util.TransformMatUtil.*;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
+import hide.model.util.BufferUtil;
 import hide.model.util.HideShader;
 import net.minecraft.client.renderer.GlStateManager;
 
@@ -33,12 +33,14 @@ public class NodeImpl implements IDisposable {
 		}
 		if (hasMesh) {
 			shader = hasSkin ? HideShader.SKIN_SHADER : HideShader.BASE_SHADER;
+
+			System.out.println("post init in "+shader);
 			mesh.setShader(shader);
 			mesh.postInit();
 		}
 		if (hasSkin) {
 			AccessorImpl inverseMatrices = skin.getInverseBindMatrices();
-			boneMat = BufferUtils.createFloatBuffer(inverseMatrices.getElementType().size * inverseMatrices.getCount());
+			boneMat = BufferUtil.createFloatBuffer(inverseMatrices.getElementType().size * inverseMatrices.getCount());
 			for (NodeImpl nodeImpl : skin.getJoints()) {
 				nodeImpl.isJoint = true;
 			}
@@ -193,7 +195,7 @@ public class NodeImpl implements IDisposable {
 		}
 	}
 
-	private static final ThreadLocal<FloatBuffer> TMP_FB16 = ThreadLocal.withInitial(() -> BufferUtils.createFloatBuffer(16));
+	private static final ThreadLocal<FloatBuffer> TMP_FB16 = ThreadLocal.withInitial(() -> BufferUtil.createFloatBuffer(16));
 
 	public void render(boolean debug) {
 		ModelImpl.profiler.startSection("hide.render");

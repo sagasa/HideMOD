@@ -69,12 +69,14 @@ public class ItemGun extends HideItem<GunData> {
 
 	public static void updateItenStack(ItemStack item) {
 		System.out.println("check item valid " + PackData.getSessionTime() + " " + HideGunNBT.DATA_SESSIONTIME.get(HideGunNBT.getHideTag(item)));
-		System.out.println("state " + item.getAttributeModifiers(EntityEquipmentSlot.MAINHAND));
+		//System.out.println("state " + item.getAttributeModifiers(EntityEquipmentSlot.MAINHAND));
 		if (PackData.getSessionTime() != HideGunNBT.DATA_SESSIONTIME.get(HideGunNBT.getHideTag(item))) {
+
 			System.out.println("update item modifire");
 			HideGunNBT.DATA_SESSIONTIME.set(HideGunNBT.getHideTag(item), PackData.getSessionTime());
 			GunData data = getGunData(item);
-			System.out.println(data.toJson());
+			//System.out.println(data.toJson());
+			item.getTagCompound().removeTag("AttributeModifiers");
 			item.addAttributeModifier("generic.movementSpeed", new AttributeModifier("hideItemAttrib", data.get(GunData.ItemMoveSpeed), 1), EntityEquipmentSlot.MAINHAND);
 			item.addAttributeModifier("generic.attackDamage", new AttributeModifier("hideItemAttrib", data.get(GunData.ItemAttackDamage), 1), EntityEquipmentSlot.MAINHAND);
 			item.addAttributeModifier("generic.knockbackResistance", new AttributeModifier("hideItemAttrib", data.get(GunData.ItemKnockbackResistance), 1), EntityEquipmentSlot.MAINHAND);
