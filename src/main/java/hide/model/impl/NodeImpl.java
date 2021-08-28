@@ -5,19 +5,21 @@ import static hide.model.util.TransformMatUtil.*;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
 import hide.model.util.BufferUtil;
 import hide.model.util.HideShader;
+import hide.model.util.TransformMatUtil;
 import net.minecraft.client.renderer.GlStateManager;
 
 public class NodeImpl implements IDisposable {
+	protected String name;
 
 	transient protected MeshImpl mesh;
-	transient protected ISkin skin;
+	transient protected SkinImpl skin;
 
-	transient private FloatBuffer boneMat;
 	transient private boolean hasSkin, hasMesh, hasMorphing, isJoint;
 	transient private HideShader shader;
 
@@ -34,13 +36,12 @@ public class NodeImpl implements IDisposable {
 		if (hasMesh) {
 			shader = hasSkin ? HideShader.SKIN_SHADER : HideShader.BASE_SHADER;
 
-			System.out.println("post init in "+shader);
+			System.out.println("post init in " + shader);
 			mesh.setShader(shader);
 			mesh.postInit();
 		}
 		if (hasSkin) {
-			AccessorImpl inverseMatrices = skin.getInverseBindMatrices();
-			boneMat = BufferUtil.createFloatBuffer(inverseMatrices.getElementType().size * inverseMatrices.getCount());
+
 			for (NodeImpl nodeImpl : skin.getJoints()) {
 				nodeImpl.isJoint = true;
 			}
@@ -59,6 +60,10 @@ public class NodeImpl implements IDisposable {
 		return hasSkin;
 	}
 
+	public String getName() {
+		return name;
+	}
+
 	/**子の中にmeshがある場合もtrue*/
 	public boolean hasMesh() {
 		if (hasMesh)
@@ -70,7 +75,7 @@ public class NodeImpl implements IDisposable {
 		return false;
 	}
 
-	public ISkin getSkin() {
+	public SkinImpl getSkin() {
 		return skin;
 	}
 
@@ -86,7 +91,7 @@ public class NodeImpl implements IDisposable {
 	}
 
 	private float[] matrix;
-	private float[] rotation = new float[] { 1, 0, 0, 0 };
+	private float[] rotation = new float[] { 0.707107f, 0, 0, 0.707107f};
 	private float[] scale = new float[] { 1, 1, 1 };
 	private float[] translation = new float[3];
 	private float[] weights;
@@ -94,6 +99,14 @@ public class NodeImpl implements IDisposable {
 	transient private boolean isValidLocalMat = false;
 	transient private boolean isValidGlobalMat = false;
 	transient private boolean isValidWeight = false;
+
+	public void mulRotation(float[] value) {
+		System.out.println("Rotate pre" + ArrayUtils.toString(rotation));
+		TransformMatUtil.quatMul(rotation, value, rotation);
+		isValidLocalMat = false;
+		markInvalidGlobalMat();
+		System.out.println("Rotate " + ArrayUtils.toString(rotation));
+	}
 
 	public void setRotation(float[] value) {
 		if (!Arrays.equals(rotation, value)) {
@@ -184,10 +197,7 @@ public class NodeImpl implements IDisposable {
 		if (hasSkin) {
 			shader.use();
 
-			boneMat.rewind();
-			computeJointMatrix(this, boneMat);
-			boneMat.rewind();
-			GL20.glUniformMatrix4(HideShader.SKIN_BONE_MAT_INDEX, false, boneMat);
+			GL20.glUniformMatrix4(HideShader.SKIN_BONE_MAT_INDEX, false, skin.computeJointMatrix(this));
 
 			mesh.render();
 
@@ -219,9 +229,14 @@ public class NodeImpl implements IDisposable {
 			GlStateManager.disableDepth();
 			GlStateManager.disableTexture2D();
 			GlStateManager.color(1f, 0.5f, 0.5f, 1);
-			GL11.glPointSize(5);
+			GL11.glPointSize(8);
 			GL11.glBegin(GL11.GL_POINTS);
 			GL11.glVertex3f(0, 0, 0);
+			GL11.glEnd();
+			GL11.glPointSize(5);
+			GL11.glBegin(GL11.GL_LINES);
+			GL11.glVertex3f(0, 0, 0);
+			GL11.glVertex3f(0, 1, 0);
 			GL11.glEnd();
 			GlStateManager.enableTexture2D();
 			GlStateManager.enableDepth();
@@ -244,6 +259,11 @@ public class NodeImpl implements IDisposable {
 
 		GL11.glPopMatrix();
 
+	}
+
+	@Override
+	public String toString() {
+		return String.format("NodeImpl[Name=%s]", name);
 	}
 
 	@Override

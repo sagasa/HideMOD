@@ -28,12 +28,12 @@ import hide.model.impl.AccessorImpl;
 import hide.model.impl.BufferViewImpl;
 import hide.model.impl.IAnimation;
 import hide.model.impl.IMaterial;
-import hide.model.impl.ISkin;
 import hide.model.impl.MeshImpl;
 import hide.model.impl.MeshImpl.Attribute;
 import hide.model.impl.MeshPrimitivesImpl;
 import hide.model.impl.ModelImpl;
 import hide.model.impl.NodeImpl;
+import hide.model.impl.SkinImpl;
 import hide.model.util.BufferUtil;
 import hide.model.util.ByteBufferInputStream;
 import hide.model.util.HideTexture;
@@ -49,13 +49,17 @@ public class GltfLoader {
 
 	static ModelImpl test;
 
-	public static void render() {
+	public static void render(float f) {
 
 		GL11.glPushMatrix();
 		for (int i = 0; i < 1; i++) {
 			//test.render();
-			GL11.glTranslatef(10, 0, 0);
+
 		}
+
+		//HideModel model = PackData.getModel("default_m2carbine");
+		//model.render(false, null, f);
+
 		GL11.glPopMatrix();
 
 		for (Result res : ModelImpl.profiler.getProfilingData("hide.render")) {
@@ -67,11 +71,11 @@ public class GltfLoader {
 	public static void test() {
 		System.out.println("==================MODEL LOAD TEST==================");
 		long time = System.currentTimeMillis();
-//		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "m2.glb")))) {
-//			test = load(ins);
-//		} catch (IOException | GltfException e) {
-//			e.printStackTrace();
-//		}
+		//		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "m2.glb")))) {
+		//			test = load(ins);
+		//		} catch (IOException | GltfException e) {
+		//			e.printStackTrace();
+		//		}
 
 		//		try (InputStream ins = new DataInputStream(new FileInputStream(new File(Loader.instance().getConfigDir().getParent(), "ModelBAR.obj")))) {
 		//			test = ObjLoader.load(ins);
@@ -166,7 +170,6 @@ public class GltfLoader {
 		private int skinIndex = -1;
 		@SerializedName("mesh")
 		private int meshIndex = -1;
-		private String name;
 
 		public Node register(GltfLoader loader) {
 			children = new Node[childrenIndex.length];
@@ -182,14 +185,11 @@ public class GltfLoader {
 		}
 	}
 
-	static class Skin implements ISkin {
+	static class Skin extends SkinImpl {
 		@SerializedName("inverseBindMatrices")
 		private int inverseBindMatricesIndex;
 		@SerializedName("joints")
 		private int[] jointsIndex;
-
-		transient private AccessorImpl inverseBindMatrices;
-		transient private NodeImpl[] joints;
 
 		public Skin register(GltfLoader loader) {
 			inverseBindMatrices = loader.getAccessor(inverseBindMatricesIndex);
@@ -201,47 +201,43 @@ public class GltfLoader {
 			return this;
 		}
 
-		@Override
-		public AccessorImpl getInverseBindMatrices() {
-			return inverseBindMatrices;
-		}
-
-		@Override
-		public NodeImpl[] getJoints() {
-			return joints;
-		}
 	}
+
+	private static final float[] Rotate180 = new float[] { 1, 0, 0, 0 };
 
 	static class Model extends ModelImpl {
 
-		public Model(List<? extends NodeImpl> nodes, List<NodeImpl> rootNodes, HashMap<String, IAnimation> animations, List<? extends IMaterial> materials) {
+		public Model(List<? extends NodeImpl> nodes, List<NodeImpl> rootNodes, HashMap<String, IAnimation> animations, List<? extends IMaterial> materials, List<? extends SkinImpl> skin) {
 			this.nodes = Collections.unmodifiableList(nodes);
 			this.animations = animations;
+			this.skins = Collections.unmodifiableList(skin);
 
 			for (NodeImpl node : nodes)
 				if (node.hasSkin())
 					skinRoot.add(node);
 
-			for (NodeImpl node : rootNodes)
+			for (NodeImpl node : rootNodes) {
 				if (node.hasMesh())
 					meshRoot.add(node);
 				else
 					debugRoot.add(node);
-
-			for (IAnimation hideAnimation : animations.values()) {
-				hideAnimation.apply(0.5f);
+				//node.mulRotation(Rotate180);
 			}
+
+//			for (IAnimation hideAnimation : animations.values()) {
+//				hideAnimation.apply(0.5f);
+//			}
 		}
 
-		float anim = 0;
+//		float anim = 0;
 
 		@Override
 		public void render() {
-			for (IAnimation hideAnimation : animations.values()) {
-				hideAnimation.apply(anim);
-			}
-			anim += 0.001f;
-			anim %= 1;
+//			for (IAnimation hideAnimation : animations.values()) {
+//				hideAnimation.apply(anim);
+//			}
+//			anim += 0.001f;
+//			anim %= 1;
 			super.render();
 		}
 
@@ -426,7 +422,7 @@ public class GltfLoader {
 		}
 
 		lap("load end");
-		res = new Model(nodeCache, rootNodes, animations, materials);
+		res = new Model(nodeCache, rootNodes, animations, materials, skins);
 		res.postInit();
 	}
 

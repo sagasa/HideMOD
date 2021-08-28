@@ -9,8 +9,8 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
-import hide.model.impl.ISkin;
 import hide.model.impl.NodeImpl;
+import hide.model.impl.SkinImpl;
 import hidemod.HideMod;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -23,9 +23,10 @@ public class TransformMatUtil {
 	private static final ThreadLocal<float[]> TMP_MAT4x4_2 = ThreadLocal.withInitial(() -> new float[16]);
 
 	public static void computeJointMatrix(final NodeImpl nodeModel, FloatBuffer fb) {
-		final ISkin skin = nodeModel.getSkin();
+		final SkinImpl skin = nodeModel.getSkin();
 
-		float[] base = computeGlobalTransform(nodeModel, TMP_MAT4x4_0.get());
+		float[] base = TMP_MAT4x4_0.get();
+		setIdentity4x4(base);
 		invert4x4(nodeModel.getGlobalMat(), base);
 
 		//float[] bindShapeMatrix = skin.getBindShapeMatrix(null);
@@ -46,15 +47,12 @@ public class TransformMatUtil {
 		}
 	}
 
-	public static float[] computeGlobalTransform(NodeImpl nodeModel, float[] result) {
-		float[] localResult = result;
-		NodeImpl currentNode = nodeModel;
-		setIdentity4x4(localResult);
-		while (currentNode != null && currentNode.getParent() != null) {
-			mul4x4(currentNode.getLocalMat(), localResult, localResult);
-			currentNode = currentNode.getParent();
-		}
-		return localResult;
+	public static float[] quatMul(float[] a, float[] b, float[] res) {
+		res[0] = a[1] * b[2] - a[2] * b[1] + a[3] * b[0] + a[0] * b[3];
+		res[1] = a[2] * b[0] - a[0] * b[2] + a[3] * b[1] + a[1] * b[3];
+		res[2] = a[0] * b[1] - a[1] * b[0] + a[3] * b[2] + a[2] * b[3];
+		res[3] = a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2];
+		return res;
 	}
 
 	public static Vector4f mul(Matrix4f mat, Vector4f pos) {

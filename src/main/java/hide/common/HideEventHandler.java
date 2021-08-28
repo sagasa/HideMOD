@@ -66,7 +66,6 @@ public class HideEventHandler {
 
 	@SubscribeEvent
 	public void onEvent(LivingJumpEvent event) {
-
 		if (event.getEntityLiving() instanceof EntityPlayer) {
 			System.out.println("YEEEEEEEEEEEEE");
 			System.out.println(event.getEntityLiving().motionY);
@@ -134,7 +133,7 @@ public class HideEventHandler {
 	// オーバーレイGUI表示
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
-	public void onEvent(RenderGameOverlayEvent event) {
+	public void onEvent(RenderGameOverlayEvent.Pre event) {
 		// System.out.println(event.target+"Stop");
 		RenderHandler.writeGameOverlay(event);
 	}
@@ -152,7 +151,7 @@ public class HideEventHandler {
 	public void onRenderTest(RenderWorldLastEvent event) {
 		EntityPlayer p = Minecraft.getMinecraft().player;
 		GlStateManager.translate(-p.posX, -p.posY, -p.posZ);
-		GltfLoader.render();
+		GltfLoader.render(event.getPartialTicks());
 		// System.out.println(event.target+"Stop");
 		//System.out.println(event);
 	}

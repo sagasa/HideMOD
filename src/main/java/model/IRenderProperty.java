@@ -1,21 +1,32 @@
 package model;
 
+import hide.core.HidePlayerDataManager;
+import hide.guns.PlayerData.ClientPlayerData;
 import hide.guns.data.HideEntityDataManager;
 import net.minecraft.entity.EntityLivingBase;
 
 public interface IRenderProperty {
-	float getAnimationProp(AnimationType type);
+	float getAnimationProp(AnimationType type, float partialTicks);
 
 	float getYaw();
 
 	float getPitch();
 
-	static public class SelfProp extends PlayerProp{
+	static public class SelfProp extends PlayerProp {
+
 		@Override
-		public float getAnimationProp(AnimationType type) {
-			if(type!=AnimationType.ADS&&entity!=null)
-				;
-			return super.getAnimationProp(type);
+		public float getAnimationProp(AnimationType type, float partialTicks) {
+			if (entity != null) {
+				if (type == AnimationType.ADS) {
+					ClientPlayerData data = HidePlayerDataManager.getClientData(ClientPlayerData.class);
+					return data.getAds(partialTicks);
+				} else if (type == AnimationType.Reload) {
+					ClientPlayerData data = HidePlayerDataManager.getClientData(ClientPlayerData.class);
+					return data.getReload(partialTicks);
+				}
+			}
+
+			return super.getAnimationProp(type, partialTicks);
 		}
 	}
 
@@ -28,13 +39,13 @@ public interface IRenderProperty {
 		}
 
 		@Override
-		public float getAnimationProp(AnimationType type) {
+		public float getAnimationProp(AnimationType type, float partialTicks) {
 			if (entity != null)
 				switch (type) {
 				case ADS:
 					return HideEntityDataManager.getADSState(entity);
 				case Reload:
-					return HideEntityDataManager.getReloadState(entity);
+					return HideEntityDataManager.getReloadState(entity) < 0 ? -1 : 1 - HideEntityDataManager.getReloadState(entity);
 				default:
 					break;
 				}

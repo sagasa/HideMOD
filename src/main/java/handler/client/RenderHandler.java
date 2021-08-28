@@ -15,15 +15,15 @@ import hide.guns.CommonGun;
 import hide.guns.HideGunNBT;
 import hide.guns.PlayerData.ClientPlayerData;
 import hide.guns.PlayerData.EquipMode;
-import hide.guns.data.HideEntityDataManager;
 import hide.guns.data.LoadedMagazine.Magazine;
 import hide.types.items.GunData;
 import hide.types.items.ItemData;
 import hide.types.items.MagazineData;
 import items.ItemGun;
 import items.ItemMagazine;
+import model.AnimationType;
 import model.HideModel;
-import model.IRenderProperty.PlayerProp;
+import model.IRenderProperty.SelfProp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.gui.Gui;
@@ -67,7 +67,7 @@ public class RenderHandler {
 	}
 
 	/** オーバーレイGUI */
-	public static void writeGameOverlay(RenderGameOverlayEvent event) {
+	public static void writeGameOverlay(RenderGameOverlayEvent.Pre event) {
 		ScaledResolution scaledresolution = new ScaledResolution(mc);
 		// System.out.println(scaledresolution.getScaledWidth()+"
 		// "+scaledresolution.getScaledHeight()+" : "+mc.displayWidth+"
@@ -80,14 +80,15 @@ public class RenderHandler {
 			//		event.setCanceled(true);
 			writeHitMarker(x, y);
 
-			event.setCanceled(HideViewHandler.writeScope());
-			writeGunInfo(x - 120, y - 65);
+			event.setCanceled(HideViewHandler.writeScope() || data.getAds(event.getPartialTicks()) > 0);
+			writeGunInfo(x - 120, y - 65, event.getPartialTicks());
 
-			if (data.ads == 0 && data.prevAds == 0)
+			float ads = data.getAds(event.getPartialTicks());
+			if (ads == 0)
 				HideViewHandler.clearADS();
 			else {
 				HideViewHandler.setADS(data.gunMain.getGunData().get(GunData.UseScope) ? data.gunMain.getGunData().get(GunData.ScopeName) : null,
-						HideMath.completion(1, data.gunMain.getGunData().get(GunData.ScopeZoom), HideMath.completion(data.prevAds, data.ads, event.getPartialTicks())),
+						HideMath.completion(1, data.gunMain.getGunData().get(GunData.ScopeZoom), ads),
 						data.gunMain.getGunData().get(GunData.ScopeSize));
 			}
 
@@ -110,22 +111,23 @@ public class RenderHandler {
 		// System.out.println("render");
 	}
 
-	/** 画面右下に 残弾 射撃モード 使用する弾を描画 */
-	private static void writeGunInfo(int x, int y) {
+	/** 画面右下に 残弾 射撃モード 使用する弾を描画
+	 * @param partialTicks */
+	private static void writeGunInfo(int x, int y, float partialTicks) {
 		ClientPlayerData data = HidePlayerDataManager.getClientData(ClientPlayerData.class);
 		if (data == null)
 			return;
 		EquipMode em = data.CurrentEquipMode;
 		if (em == EquipMode.Main) {
-			writeGunInfo(x, y, data.gunMain);
+			writeGunInfo(x, y, data.gunMain, partialTicks);
 		} else if (em == EquipMode.Off) {
-			writeGunInfo(x, y, data.gunOff);
+			writeGunInfo(x, y, data.gunOff, partialTicks);
 		} else if (em == EquipMode.Dual) {
-			writeGunInfo(x, y, data.gunMain);
-			writeGunInfo(x - 120, y, data.gunOff);
+			writeGunInfo(x, y, data.gunMain, partialTicks);
+			writeGunInfo(x - 120, y, data.gunOff, partialTicks);
 		} else if (em == EquipMode.OtherDual) {
-			writeGunInfo(x, y, data.gunMain);
-			writeGunInfo(x - 120, y, data.gunOff);
+			writeGunInfo(x, y, data.gunMain, partialTicks);
+			writeGunInfo(x - 120, y, data.gunOff, partialTicks);
 		}
 
 	}
@@ -133,7 +135,7 @@ public class RenderHandler {
 	static ItemStack stack = new ItemStack(ItemMagazine.INSTANCE);
 
 	/** 銃のステータスGUI描画 */
-	private static void writeGunInfo(int x, int y, CommonGun gun) {
+	private static void writeGunInfo(int x, int y, CommonGun gun, float partialTicks) {
 		if (gun == null || !gun.isGun()) {
 			return;
 		}
@@ -173,11 +175,13 @@ public class RenderHandler {
 			}
 			offset += 16;
 		}
-		float reload = HideEntityDataManager.getReloadState(mc.player);
+
+		//リロード
+		ClientPlayerData data = HidePlayerDataManager.getClientData(ClientPlayerData.class);
+		float reload = data.getReload(partialTicks);
 		if (0.01f <= reload) {
 			int left = x + 1 + offset;
 			int top = y + 1;
-			reload = 1 - reload;
 			Gui.drawRect(left, top, (int) (left + 16 * reload), top + 16, 0xFFAAAAAA);
 		}
 		// 射撃モードを描画
@@ -294,7 +298,7 @@ public class RenderHandler {
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 	}
 
-	static PlayerProp prop = new PlayerProp();
+	static SelfProp prop = new SelfProp();
 
 	/** 自分の持ってる銃の描画 アニメーションとパーツの稼働はこのメゾットのみ */
 	public static void RenderHand(RenderHandEvent event) {//*
@@ -305,13 +309,34 @@ public class RenderHandler {
 
 				if (mc.gameSettings.thirdPersonView != 0 || (HideViewHandler.isADS && HideViewHandler.isScope))//TODO モデルにサイトを付けたバージョンに対応しなきゃ
 					return;
+
 				int side = 1;
 				if (mc.gameSettings.mainHand == EnumHandSide.LEFT)
 					side = -1;
+
+				prop.setEntity(mc.player);
+				float progress = prop != null ? prop.getAnimationProp(AnimationType.ADS, event.getPartialTicks()) : 0;
+
+				Vector3f sight = model.model.getNodePos(model.get(HideModel.SightPos));
+				Vector3f hand = model.model.getNodePos(model.get(HideModel.HandPos));
+
+				//hand.scale(-1);
+				Vector3f.sub(sight, hand, hand);
+				//Vector3f.add(hand, sight, hand);
+
+				//System.out.println(prop.getAnimationProp(AnimationType.ADS, event.getPartialTicks()) + " " + event.getPartialTicks());
+				Vector3f vec = new Vector3f(1, -1.0f, 0.6f * side);
+
+				//hand.scale(progress);
+				//hand.scale(-1);
+				vec.scale(1 - progress);
+				//Vector3f.add(vec, hand, vec);
+
 				GlStateManager.pushMatrix();
 				GlStateManager.rotate(90, 0, 1, 0);
-				GlStateManager.translate(1, -1.0, 0.6 * side);
-				GlStateManager.rotate(-5 * side, 0, 1, 0);
+				//GlStateManager.translate(0.2, 0.0, 0.0);
+				GlStateManager.translate(vec.x, vec.y, vec.z);
+				//GlStateManager.rotate(-5 * side, 0, 1, 0);
 
 				mc.entityRenderer.enableLightmap();
 				AbstractClientPlayer abstractclientplayer = mc.player;
@@ -326,7 +351,7 @@ public class RenderHandler {
 				GlStateManager.enableBlend();
 				GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 
-				model.render(true, prop);
+				model.render(true, prop, event.getPartialTicks());
 
 				//GlStateManager.disableRescaleNormal();
 				GlStateManager.disableBlend();

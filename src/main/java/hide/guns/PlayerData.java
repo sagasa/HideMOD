@@ -5,6 +5,7 @@ import java.util.List;
 
 import entity.EntityDrivable;
 import handler.client.HideViewHandler;
+import helper.HideMath;
 import hide.common.HideComplement;
 import hide.core.HidePlayerDataManager;
 import hide.core.HidePlayerDataManager.IHidePlayerData;
@@ -177,11 +178,30 @@ public abstract class PlayerData implements IHidePlayerData {
 		//ADS用のカウンタ
 		public int adsstate = 0;
 		public float ads = 0f;
-		public float prevAds= 0f;
+		public float prevAds = 0f;
+
+		public float reload = 0f;
+		public float prevReload = 0f;
+
+		public float getAds(Float partialTicks) {
+			return HideMath.completion(prevAds, ads, partialTicks);
+		}
+
+		public float getReload(Float partialTicks) {
+			return HideMath.completion(prevReload, reload, partialTicks);
+		}
 
 		public void tickUpdate() {
 			// TODO 自動生成されたメソッド・スタブ
 			EntityPlayer player = Minecraft.getMinecraft().player;
+
+			prevReload = reload;
+			if (HideEntityDataManager.getReloadState(player) < 0) {
+				prevReload = reload = -1;
+			} else {
+				reload = 1 - HideEntityDataManager.getReloadState(player);
+			}
+
 			gunMain.setGun(player);
 			gunOff.setGun(player);
 
