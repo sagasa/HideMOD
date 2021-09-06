@@ -67,7 +67,6 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 			GL11.glPopMatrix();//*/
 	}
 
-
 	public static void registerLoader() {
 		System.out.println("Register ModelLoader");
 		init();
@@ -85,8 +84,8 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 			if (!data.get(ItemData.IconName).isEmpty())
 				textures.add(new ResourceLocation(data.get(ItemData.IconName)));
 			HideModel model = PackData.getModel(data.get(ItemData.ModelName));
-//			if (model != null && !model.texture.isEmpty())
-//				System.out.println(model.texture);
+			//			if (model != null && !model.texture.isEmpty())
+			//				System.out.println(model.texture);
 			//		textures.add(new ResourceLocation(model.texture));
 		}
 	}
@@ -188,7 +187,7 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 			System.out.println(data.get(ItemData.IconName) + " " + data.get(ItemData.DisplayName));
 			if (model == null) {
 				modelCash.put(type, bakeItemModel(data.get(ItemData.IconName), true));
-			}else {
+			} else {
 				System.out.println(model);
 			}
 			modelCash.put(type, bakeItemModel(data.get(ItemData.IconName), false));
@@ -198,13 +197,14 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 
 	protected static IBakedModel bakeItemModel(String textureLoc, boolean inHand) {
 		TextureAtlasSprite textureatlassprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(textureLoc);
-
+		textureLoc = "hidemod:sample";
 		ModelBlock itemModel = itemmodelGen.makeItemModel(Minecraft.getMinecraft().getTextureMapBlocks(), ModelBlock.deserialize((inHand ? SimpleIconModel : SimpleIconModelNoHand).replace("ICON", textureLoc)));
 		itemModel.parent = EmptyGenModel;
 
 		SimpleBakedModel.Builder simplebakedmodel$builder = (new SimpleBakedModel.Builder(itemModel, ItemOverrideList.NONE)).setTexture(textureatlassprite);
 		System.out.println("bake");
 		for (BlockPart blockpart : itemModel.getElements()) {
+			System.out.println("part " + blockpart.mapFaces);
 			for (EnumFacing enumfacing : blockpart.mapFaces.keySet()) {
 				BlockPartFace blockpartface = blockpart.mapFaces.get(enumfacing);
 				simplebakedmodel$builder.addGeneralQuad(makeBakedQuad(blockpart, blockpartface,

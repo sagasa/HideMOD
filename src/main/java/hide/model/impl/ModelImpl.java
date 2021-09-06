@@ -58,7 +58,7 @@ public class ModelImpl implements IDisposable {
 		}
 
 		for (NodeImpl node : debugRoot) {
-			node.render(true);
+			node.render(false);
 		}
 
 		for (NodeImpl node : skinRoot) {

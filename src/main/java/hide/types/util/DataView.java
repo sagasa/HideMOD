@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import hide.types.base.DataBase;
 import hide.types.base.DataBase.DataEntry;
 import hide.types.base.DataMap;
@@ -32,7 +34,6 @@ public class DataView<T extends DataBase> {
 	public void setModifier(int index, IDataHolder value) {
 		if (cache.staticModifier[index] == value)
 			return;
-		//System.out.println("setMod " + index + " " + value);
 		dep();
 		cache.setModifier(index, value);
 	}
@@ -86,11 +87,13 @@ public class DataView<T extends DataBase> {
 		void setModifier(int index, IDataHolder value) {
 			if (staticModifier[index] == value)
 				return;
+			System.out.println("setMod " + target.getSimpleName() + " " + index + " " + value);
+
 			clearMap((IDataHolder) staticModifier[index]);
 			staticModifier[index] = value;
 			dataMap.forEach((k, v) -> {
 				if (k.Default instanceof DataBase)
-					((ViewCache) v.value).setModifier(index, value == null ? null : (IDataHolder) value.get(k));
+					((ViewCache) v.value).setModifier(index, (value == null || !value.hasValue(k)) ? null : (IDataHolder) value.get(k));
 			});
 			clearMap(value);
 		}
@@ -105,13 +108,14 @@ public class DataView<T extends DataBase> {
 			modifier = mod;
 			dataMap.forEach((k, v) -> {
 				if (k.Default instanceof DataBase) {
-					((ViewCache) v.value).setModifier(modifier.stream().map(m -> m.get(k)).collect(Collectors.toList()));
+					((ViewCache) v.value).setModifier(modifier.stream().filter(m -> m.hasValue(k)).map(m -> m.get(k)).collect(Collectors.toList()));
 				}
 			});
 			modifier.forEach(m -> clearMap(m));
 		}
 
 		private ViewCache<T> dep() {
+			System.out.println("make dep from " + ArrayUtils.toString(staticModifier) + " " + dataMap);
 			ViewCache<T> cache = new ViewCache<>(target);
 			cache.baseData = baseData;
 			cache.modifier = modifier;
@@ -122,12 +126,13 @@ public class DataView<T extends DataBase> {
 				else
 					cache.dataMap.put(k, new ViewEntry(v.value, v.base));
 			});
+			System.out.println("make dep to " + ArrayUtils.toString(cache.staticModifier) + " " + cache.dataMap);
 			return cache;
 		}
 
 		@Override
 		public String toString() {
-			return super.toString();
+			return String.format("[Type=%s, %s]", target.getSimpleName(), dataMap.toString());
 		}
 
 		/**キャッシュを削除*/
@@ -136,18 +141,21 @@ public class DataView<T extends DataBase> {
 
 				//return;
 			}
-			//System.out.println("clear req " + value);
+			System.out.println("clear req " + value);
 			//DataBase以外なら全削除
 			//value instanceof DataBase ? ((DataBase) value).getKeySet() :
 			for (DataEntry<?> key : dataMap.keySet()) {
 				if (key.Default instanceof DataBase) {
 					if (dataMap.containsKey(key)) {
-						//System.out.println("clear " + key);
+						System.out.println("next clear " + key);
 						((ViewCache) dataMap.get(key).value).clearMap(value == null ? null : (IDataHolder) value.get(key));
 					}
-				} else
+				} else {
 					dataMap.remove(key);
+					System.out.println("clear value " + key);
+				}
 			}
+			System.out.println("clear res " + dataMap);
 		}
 
 		public <R extends DataBase> ViewCache<R> getData(DataEntry<R> key) {
@@ -171,6 +179,11 @@ public class DataView<T extends DataBase> {
 		}
 
 		@Override
+		public boolean hasValue(DataEntry key) {
+			return dataMap.containsKey(key);
+		}
+
+		@Override
 		public <R> R get(DataEntry<R> key, R base) {
 			if (key.Default instanceof DataBase)
 				throw new IllegalArgumentException("must use getData");
@@ -178,22 +191,23 @@ public class DataView<T extends DataBase> {
 				R value = base;
 				if (baseData != null)
 					value = baseData.get(key, value);
-				//System.out.println("calc " + key);
-				//System.out.println("base " + value);
+				System.out.println("calc " + key);
+				System.out.println("base " + value);
 				for (int i = 0; i < staticModifier.length; i++)
 					if (staticModifier[i] != null) {
 						value = ((IDataHolder) staticModifier[i]).get(key, value);
-						//System.out.println("staticModifier " + value);
+						System.out.println("staticModifier " + value);
 					}
 				for (IDataHolder mod : modifier) {
 					value = mod.get(key, value);
 				}
 
-				//System.out.println("res " + value);
+				System.out.println("res " + value);
 				dataMap.put(key, new ViewEntry(value, base));
 			}
 			return (R) dataMap.get(key).value;
 		}
+
 	}
 
 	private static class ViewEntry {
@@ -203,6 +217,11 @@ public class DataView<T extends DataBase> {
 		public ViewEntry(Object value, Object base) {
 			this.base = base;
 			this.value = value;
+		}
+
+		@Override
+		public String toString() {
+			return "[Value=" + value + " Base=" + base + "]";
 		}
 	}
 }

@@ -67,8 +67,8 @@ public class HideEventHandler {
 	@SubscribeEvent
 	public void onEvent(LivingJumpEvent event) {
 		if (event.getEntityLiving() instanceof EntityPlayer) {
-			System.out.println("YEEEEEEEEEEEEE");
-			System.out.println(event.getEntityLiving().motionY);
+			//System.out.println("YEEEEEEEEEEEEE");
+			//System.out.println(event.getEntityLiving().motionY);
 			//event.getEntityLiving().capabilities.setPlayerWalkSpeed(3f);
 		}
 		//	PackSync.syncPack();

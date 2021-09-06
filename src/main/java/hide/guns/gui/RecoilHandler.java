@@ -57,7 +57,7 @@ public class RecoilHandler {
 			yawReturnTo = getHorizontalReturn(recoil, yawrecoil);
 			pitchReturnTo = getVerticalReturn(recoil, pitchrecoil);
 
-			System.out.println("recoil " + yawrecoil + " " + pitchrecoil);
+			//System.out.println("recoil " + yawrecoil + " " + pitchrecoil);
 
 			// リコイル
 			yawShakeTo += yawrecoil;

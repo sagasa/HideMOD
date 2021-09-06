@@ -56,14 +56,18 @@ public class ClientGun extends CommonGun {
 	private long lastTime = -1;
 	private int shootDelay = 0;
 	private int shootNum = 0;
-	private boolean stopshoot = false;
+	private boolean stopShoot = false;
 
 	/** このTickで射撃可能かどうか */
 	public boolean canShoot() {
-		return magazine.getLoadedNum() > 0 && !stopshoot && shootDelay <= 0 & shootNum <= 0;
+		return magazine.getLoadedNum() > 0 && !stopShoot && shootDelay <= 0 & shootNum <= 0;
 	}
 
 	private float completionTick = 0;
+
+	public void stopShoot() {
+		stopShoot=true;
+	}
 
 	/** 50Hzのアップデート処理プレイヤー以外はこのメゾットを使わない */
 	@SideOnly(Side.CLIENT)
@@ -79,42 +83,42 @@ public class ClientGun extends CommonGun {
 			shootDelay -= Minecraft.getSystemTime() - lastTime;
 		lastTime = Minecraft.getSystemTime();
 		if (!trigger)
-			stopshoot = false;
+			stopShoot = false;
 		GunFireMode firemode = getFireMode();
 
-		if (firemode == GunFireMode.SEMIAUTO && !stopshoot && shootDelay <= 0 && trigger) {
+		if (firemode == GunFireMode.SEMIAUTO && !stopShoot && shootDelay <= 0 && trigger) {
 			if (shootDelay < 0) {
 				shootDelay = 0;
 			}
 			shoot(MillistoTick(shootDelay));
 			shootDelay += RPMtoMillis(dataView.get(ProjectileData.RPM));
-			stopshoot = true;
-		} else if (firemode == GunFireMode.FULLAUTO && !stopshoot && shootDelay <= 0 && trigger) {
-			while (shootDelay <= 0 && !stopshoot) {
+			stopShoot = true;
+		} else if (firemode == GunFireMode.FULLAUTO && !stopShoot && shootDelay <= 0 && trigger) {
+			while (shootDelay <= 0 && !stopShoot) {
 				shoot(MillistoTick(shootDelay));
 				shootDelay += RPMtoMillis(dataView.get(ProjectileData.RPM));
 			}
-		} else if (firemode == GunFireMode.BURST && !stopshoot) {
+		} else if (firemode == GunFireMode.BURST && !stopShoot) {
 			// 射撃開始
-			if (trigger && shootNum == -1 && shootDelay <= 0 && !stopshoot) {
+			if (trigger && shootNum == -1 && shootDelay <= 0 && !stopShoot) {
 				shootNum = dataView.get(ProjectileData.BurstCount);
 			}
-			while (shootNum > 0 && shootDelay <= 0 && !stopshoot) {
+			while (shootNum > 0 && shootDelay <= 0 && !stopShoot) {
 				shoot(MillistoTick(shootDelay));
 				shootDelay += RPMtoMillis(dataView.get(ProjectileData.BurstRPM));
 				shootNum--;
 			}
 			if (shootNum == 0) {
-				stopshoot = true;
+				stopShoot = true;
 				shootNum = -1;
 				shootDelay += RPMtoMillis(dataView.get(ProjectileData.RPM));
 			}
-			if (stopshoot) {
+			if (stopShoot) {
 				shootNum = -1;
 			}
 
-		} else if (firemode == GunFireMode.MINIGUN && !stopshoot && shootDelay <= 0 && trigger) {
-			while (shootDelay <= 0 && !stopshoot) {
+		} else if (firemode == GunFireMode.MINIGUN && !stopShoot && shootDelay <= 0 && trigger) {
+			while (shootDelay <= 0 && !stopShoot) {
 				shoot(MillistoTick(shootDelay));
 				shootDelay += RPMtoMillis(dataView.get(ProjectileData.RPM));
 			}
@@ -144,7 +148,7 @@ public class ClientGun extends CommonGun {
 					new PacketShoot(isADS, offset, x, y, z, yaw, pitch, hand == EnumHand.MAIN_HAND));
 
 		} else {
-			stopshoot = true;
+			stopShoot = true;
 		}
 	}
 

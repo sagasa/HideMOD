@@ -224,7 +224,7 @@ public class NodeImpl implements IDisposable {
 		fb.rewind();
 		GL11.glMultMatrix(fb);
 
-		if (!hasMesh || debug) {
+		if (!hasMesh && debug) {
 			ModelImpl.profiler.endStartSection("hide.render.debug");
 			GlStateManager.disableDepth();
 			GlStateManager.disableTexture2D();

@@ -11,14 +11,12 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class SoundHandler {
-	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用
-	 * @param exept */
+	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用*/
 	public static void broadcastSound(Entity e, double x, double y, double z, ViewCache<Sound> sound, boolean excepting) {
 		broadcastSound(e, x, y, z, sound, excepting, (byte) 0);
 	}
 
-	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用
-	 * @param exept */
+	/** 再生リクエストを送信 サーバーサイドで呼んでください 射撃音など遠距離まで聞こえる必要がある音に使用*/
 	public static void broadcastSound(Entity e, double x, double y, double z, ViewCache<Sound> viewCache, boolean excepting,
 			byte cate) {
 		broadcastSound(e.world, e, viewCache.get(Sound.Name), x, y, z, viewCache.get(Sound.Range), viewCache.get(Sound.Volume), viewCache.get(Sound.Pitch),

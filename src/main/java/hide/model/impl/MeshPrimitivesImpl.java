@@ -88,8 +88,8 @@ public abstract class MeshPrimitivesImpl implements IDisposable {
 			}
 			int index = attribute.index;
 			vbo.bindAttribPointer(index);
-			System.out.println(attribute + " " + index);
-			vbo.writeAsFloat();
+			//System.out.println(attribute + " " + index);
+			//vbo.writeAsFloat();
 		}
 
 		indices.bind();

@@ -19,7 +19,7 @@ public class HideEntityDataManager {
 		if (e instanceof EntityPlayer) {
 			e.getDataManager().register(RELOAD_KEY, -1f);
 			e.getDataManager().register(ADS_KEY, 0f);
-			System.out.println("REGISTER "+e.getClass());
+			//System.out.println("REGISTER "+e.getClass());
 		}
 	}
 

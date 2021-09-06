@@ -35,7 +35,7 @@ public class GunData extends ItemData {
 	/** モデルスコープを使用するか Boolean */
 	public static final DataEntry<Boolean> ModelScope = of(false, new Info().Cate(ScopeInfo));
 	/** スコープ名 : String型 */
-	public static final DataEntry<String> ScopeName = of("", new Info().IsResourceName(true));
+	public static final DataEntry<String> ScopeName = of("", new Info().IsResourceName(true).ResourceHeader("scopes/"));
 	/** スコープの表示サイズ 画面上の占有率 float */
 	public static final DataEntry<Float> ScopeSize = of(0.7f, new Info().Cate(ScopeInfo).Min(0.1f).Max(1f));
 	/** スコープの中心位置 左上原点 Float */

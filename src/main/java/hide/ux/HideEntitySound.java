@@ -87,11 +87,13 @@ public class HideEntitySound extends PositionedSound implements ITickableSound {
 
 	@Override
 	public void update() {
-		if (entity == null)
+		if (entity == null) {
+			System.out.println("entity is null");
 			return;
-
+		}
 		if (entity.isDead) {
 			donePlaying = true;
+			System.out.println("entity is dead");
 			return;
 		}
 		//位置更新
@@ -103,8 +105,10 @@ public class HideEntitySound extends PositionedSound implements ITickableSound {
 		xPosF = (float) location.x;
 		yPosF = (float) location.y;
 		zPosF = (float) location.z;
-		if (USE_DECAY)
+		if (USE_DECAY) {
 			volume = VOL * (float) Math.min(1.3f - (getDistance() / RANGE), 1f);
+			//System.out.println("Vol=" + Math.min(1.3f - (getDistance() / RANGE), 1f) + " Distance=" + getDistance() + " " + getSoundLocation());
+		}
 	}
 
 	@Override

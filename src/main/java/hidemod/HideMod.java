@@ -18,6 +18,10 @@ import hide.guns.HideGunSystem;
 import hide.guns.entiry.EntityBullet;
 import hide.model.gltf.GltfLoader;
 import hide.opengl.ServerRenderContext;
+import hide.types.effects.Sound;
+import hide.types.guns.ProjectileData;
+import hide.types.util.DataView;
+import hide.types.value.Operator;
 import hide.ux.HideUXSystem;
 import items.ItemGun;
 import items.ItemMagazine;
@@ -104,7 +108,16 @@ public class HideMod {
 		// ロガー保存
 		LOGGER = event.getModLog();
 
+		ProjectileData proj = new ProjectileData();
+		ProjectileData proj2 = new ProjectileData();
+		proj.put(ProjectileData.SoundShoot, Operator.SET, new Sound("Fuck", 40));
+		DataView<ProjectileData> dataView = new DataView<>(ProjectileData.class, 1);
+		dataView.setBase(proj);
+		dataView.setModifier(0, proj2);
+		System.out.println("\n\\n\\n\\n\\n===========================================================");
 
+		System.out.println(dataView.getData(ProjectileData.SoundShoot).get(Sound.Name));
+		;
 
 		// エンティティ登録
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,
@@ -133,7 +146,7 @@ public class HideMod {
 		}
 
 		// パック読み込み
-				PackLoader.load();
+		PackLoader.load();
 
 		HideBase.HideDirEntry.setChangeListener(PackLoader::reloadInGame);
 	}

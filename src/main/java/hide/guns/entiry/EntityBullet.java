@@ -61,7 +61,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	private float addtick;
-	public Entity Shooter;
+	public EntityPlayer Shooter;
 	private ViewCache<ProjectileData> dataView;
 
 	private String toolName;
@@ -78,7 +78,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 	/** 消えるまでの距離 */
 	public float life = 0;
 
-	public EntityBullet(ViewCache<ProjectileData> viewCache, Entity shooter, boolean isADS, float offset, double x,
+	public EntityBullet(ViewCache<ProjectileData> viewCache, EntityPlayer shooter, boolean isADS, float offset, double x,
 			double y, double z, float yaw, float pitch, String name) {
 		this(shooter.world);
 		//	System.out.println("off "+offset);
@@ -237,6 +237,15 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 					if (Shooter instanceof EntityPlayerMP && isDamaged && damage > 0.5) {
 						HideMod.NETWORK.sendTo(new PacketHit(isHeadShot), (EntityPlayerMP) Shooter);
 					}
+
+					//worldserver.spawnParticle(EnumParticleTypes.BLOCK_CRACK, true, endPos.x, endPos.y, endPos.z, 5, 0.0, 0.0, 0.0, 1.0, Block.getStateId(blockState));
+
+					Vec3d vec = lvo.subtract(lvt).normalize().scale(0.7);
+					HideMod.NETWORK.sendToAll(new PacketHideParticle(EnumParticleTypes.BLOCK_CRACK.getParticleID(), 152)
+							.spawnBox((float) hit.hitVec.x, (float) hit.hitVec.y, (float) hit.hitVec.z, 0, 0, 0, 6)
+							.setVelecity(0.02f)
+							.setVelecity3((float) vec.x, (float) vec.y, (float) vec.z));
+
 					bulletPower--;
 					AlreadyHit.add(e);
 					// もしこの衝突で消えたなら
@@ -326,7 +335,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 				HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 			}
 			// サウンド
-			SoundHandler.broadcastSound(this, endPos.x, endPos.y, endPos.z, explosion.getData(Explosion.Sound), false);
+			SoundHandler.broadcastSound(Shooter, endPos.x, endPos.y, endPos.z, explosion.getData(Explosion.Sound), false);
 			// TODO エフェクト サウンドの対象を座標に変えなきゃ
 		}
 	}

@@ -68,7 +68,7 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 			GlStateManager.translate((flag ? -1 : 1) / 16.0F + 0.45f, -0F, -0F);
 
 			GlStateManager.translate(0f, -0.2f, 0f);
-			//			GlStateManager.scale(0.5f, 0.5f, 0.5f);
+			GlStateManager.scale(0.5f, 0.5f, 0.5f);
 
 			//RenderHandler.makeDot();
 

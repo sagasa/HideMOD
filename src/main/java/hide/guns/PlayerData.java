@@ -16,6 +16,7 @@ import hidemod.HideMod;
 import items.ItemGun;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -42,9 +43,11 @@ public abstract class PlayerData implements IHidePlayerData {
 
 		@Override
 		public void init(EntityPlayer player) {
+			if(owner==player)return;
 			owner = (EntityPlayerMP) player;
 			gunMain.setOwner(owner);
 			gunOff.setOwner(owner);
+			System.out.println("set owner "+player);
 		}
 
 		public float adsRes = 0f;
@@ -118,7 +121,6 @@ public abstract class PlayerData implements IHidePlayerData {
 
 	@SideOnly(Side.CLIENT)
 	public static class ClientPlayerData extends PlayerData {
-		private static ClientPlayerData ClientData = new ClientPlayerData();
 
 		private static boolean dualToggle = false;
 		private static boolean lastTrigger = false;
@@ -134,25 +136,27 @@ public abstract class PlayerData implements IHidePlayerData {
 		/**監視スレッドからの呼び出し 取扱注意*/
 		public void clientGunUpdate(float completion, boolean fireKey) {
 			EntityPlayerSP player = Minecraft.getMinecraft().player;
-			boolean trigger = player.isDead || !Minecraft.getMinecraft().inGameHasFocus ? false : fireKey;
+			final boolean cantShoot = player.isDead ||player.deathTime != 0 || !Minecraft.getMinecraft().inGameHasFocus;
+			if(cantShoot){
+				fireKey = false;
+			}
 
 			// 射撃処理
 			if (CurrentEquipMode == EquipMode.Main) {
-				gunMain.gunUpdate(trigger, completion);
-
+				gunMain.gunUpdate(fireKey, completion);
 			} else if (CurrentEquipMode == EquipMode.Off) {
-				gunOff.gunUpdate(trigger, completion);
+				gunOff.gunUpdate(fireKey, completion);
 
 			} else if (CurrentEquipMode == EquipMode.OtherDual) {
-				gunMain.gunUpdate(trigger, completion);
-				gunOff.gunUpdate(trigger, completion);
+				gunMain.gunUpdate(fireKey, completion);
+				gunOff.gunUpdate(fireKey, completion);
 			} else if (CurrentEquipMode == EquipMode.Dual) {
 
 				boolean mainTrigger = false;
 				boolean offTrigger = false;
 				GunFireMode mode = gunMain.getFireMode();// TODO
 				if (mode == GunFireMode.BURST || mode == GunFireMode.SEMIAUTO) {
-					if (trigger != lastTrigger && trigger) {
+					if (fireKey != lastTrigger && fireKey) {
 						if ((dualToggle || !gunOff.canShoot()) && gunMain.canShoot()) {
 							mainTrigger = true;
 							dualToggle = false;
@@ -162,12 +166,18 @@ public abstract class PlayerData implements IHidePlayerData {
 						}
 					}
 				} else {
-					mainTrigger = offTrigger = trigger;
+					mainTrigger = offTrigger = fireKey;
 				}
 				gunMain.gunUpdate(mainTrigger, completion);
 				gunOff.gunUpdate(offTrigger, completion);
 			}
-			lastTrigger = trigger;
+
+			if(cantShoot){
+				gunMain.stopShoot();
+				gunOff.stopShoot();
+			}
+
+			lastTrigger = fireKey;
 		}
 
 		public void setPos(double x, double y, double z, float yaw, float pitch) {
@@ -256,8 +266,8 @@ public abstract class PlayerData implements IHidePlayerData {
 	/** 装備の状態 */
 	public enum EquipMode {
 		Main(true, false), Off(false, true), Dual(true, true), OtherDual(true, true), None(false, false);
-		private boolean hasMain;
-		private boolean hasOff;
+		private final boolean hasMain;
+		private final boolean hasOff;
 
 		EquipMode(boolean main, boolean off) {
 			hasMain = main;

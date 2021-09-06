@@ -15,7 +15,7 @@ import hide.types.items.MagazineData;
 import hide.types.util.DataView;
 import hide.ux.SoundHandler;
 import hidemod.HideMod;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
@@ -43,7 +43,9 @@ public class ServerGun extends CommonGun {
 
 		if (!res && magChange) {
 			//		HideNBT.setGunLoadedMagazines(gun, magazine);
+			System.out.println("updateMagazine ");
 			magazine = HideGunNBT.GUN_MAGAZINES.get(gun);
+			HideEntityDataManager.setReloadState(owner, -1);
 			HideMod.NETWORK.sendTo(new PacketSyncMag(magazine, hand), owner);
 		}
 		return res;
@@ -51,6 +53,7 @@ public class ServerGun extends CommonGun {
 
 	@Override
 	protected void updateData() {
+		System.out.println("updateData ");
 		lastShootTime = 0;
 		if (isGun()) {
 			magazine = HideGunNBT.GUN_MAGAZINES.get(gun);
@@ -102,7 +105,12 @@ public class ServerGun extends CommonGun {
 
 	/** サーバーサイド */
 	public void shoot(boolean isADS, float offset, double x, double y, double z, float yaw, float pitch) {
-		dataView.setModifier(0, magazine.getNextBullet().get(MagazineData.Data));
+		MagazineData data = magazine.getNextBullet();
+		if (data == null) {
+			System.out.println(magazine);
+			return;
+		}
+		dataView.setModifier(0, data.get(MagazineData.Data));
 
 		shoot(dataView, owner, isADS, offset, x, y, z, yaw, pitch, gunData.get(ItemData.DisplayName));
 		stopReload();
@@ -118,8 +126,9 @@ public class ServerGun extends CommonGun {
 
 	/** エンティティを生成 ShootNumに応じた数弾を出す
 	 * @param  name */
-	private static void shoot(DataView<ProjectileData> dataView, Entity shooter, boolean isADS, float offset,
+	private static void shoot(DataView<ProjectileData> dataView, EntityPlayer shooter, boolean isADS, float offset,
 			double x, double y, double z, float yaw, float pitch, String name) {
+		//System.out.println(dataView.getData(ProjectileData.SoundShoot) + " shoot sound ");
 		SoundHandler.broadcastSound(shooter, 0, 0, 0, dataView.getData(ProjectileData.SoundShoot), true);
 		for (int i = 0; i < dataView.get(ProjectileData.ShootCount); i++) {
 			EntityBullet bullet = new EntityBullet(dataView.getView(), shooter, isADS, offset, x, y, z, yaw, pitch, name);

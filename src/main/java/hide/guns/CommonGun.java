@@ -58,9 +58,11 @@ public abstract class CommonGun {
 	/**NBTを読んで銃のデータ更新の必要があれば更新する*/
 	public boolean updateTag(NBTTagCompound gunTag) {
 		if (gunTag == null) {
-			gun = null;
-			gunName = null;
-			updateData();
+			if (gun != null) {
+				gun = null;
+				gunName = null;
+				updateData();
+			}
 			return false;
 		}
 		List<String> attachments = HideGunNBT.GUN_ATTACHMENTS.get(gunTag);
