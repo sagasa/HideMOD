@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import hide.common.entity.EntityDebugAABB;
-import hide.common.entity.RenderAABB;
+import hide.common.entity.EntityDebugLine;
+import hide.common.entity.RenderDebug;
 import hide.guns.HideGunNBT;
 import hide.guns.entiry.EntityBullet;
 import hide.guns.entiry.RenderBullet;
@@ -125,7 +126,8 @@ public class PackData {
 	@SideOnly(Side.CLIENT)
 	public static void registerModel() {
 		RenderingRegistry.registerEntityRenderingHandler(EntityBullet.class, RenderBullet::new);
-		RenderingRegistry.registerEntityRenderingHandler(EntityDebugAABB.class, RenderAABB::new);
+		RenderingRegistry.registerEntityRenderingHandler(EntityDebugAABB.class, RenderDebug::new);
+		RenderingRegistry.registerEntityRenderingHandler(EntityDebugLine.class, RenderDebug::new);
 	}
 
 	@SideOnly(Side.CLIENT)

@@ -195,7 +195,6 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			break;
 
 		}
-		DamageSource damagesource = new HideDamage(HideDamageCase.GUN_BULLET, Shooter, toolName);
 		//if (gunData.HIT_IGNORING_ARMOR)
 		//	damagesource.setDamageBypassesArmor();
 
@@ -208,7 +207,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 			if (!AlreadyHit.contains(e)) {
 				// ダメージが与えられる対象なら
 				if (e instanceof EntityLivingBase && ((EntityLivingBase) e).deathTime == 0 && !(e.equals(Shooter))) {
-					// System.out.println("Shooter "+Shooter+" HitEntity "+e);
+					//System.out.println("Shooter "+Shooter+" HitEntity "+e);
 					// ダメージを算出
 
 					DamageTarget dt = DamageTarget.getTarget(e);
@@ -228,6 +227,7 @@ public class EntityBullet extends Entity implements IEntityAdditionalSpawnData {
 						}
 					}
 					// ダメージを与える
+					DamageSource damagesource = new HideDamage(HideDamageCase.GUN_BULLET, Shooter, toolName);
 					boolean isDamaged = HideDamage.Attack((EntityLivingBase) e, (HideDamage) damagesource, damage);
 
 					// 爆発があるなら

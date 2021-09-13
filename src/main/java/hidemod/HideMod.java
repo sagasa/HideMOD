@@ -3,6 +3,7 @@ package hidemod;
 import java.io.File;
 import java.util.List;
 
+import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.Logger;
 
 import handler.client.HideItemRender;
@@ -100,6 +101,8 @@ public class HideMod {
 	// アイテム登録
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
+
+
 		ModeDir = new File(event.getModConfigurationDirectory().getParentFile(), "/mods/");
 		// パケットの初期設定
 		PacketHandler.init();
@@ -107,17 +110,6 @@ public class HideMod {
 		HideDamage.init();
 		// ロガー保存
 		LOGGER = event.getModLog();
-
-		ProjectileData proj = new ProjectileData();
-		ProjectileData proj2 = new ProjectileData();
-		proj.put(ProjectileData.SoundShoot, Operator.SET, new Sound("Fuck", 40));
-		DataView<ProjectileData> dataView = new DataView<>(ProjectileData.class, 1);
-		dataView.setBase(proj);
-		dataView.setModifier(0, proj2);
-		System.out.println("\n\\n\\n\\n\\n===========================================================");
-
-		System.out.println(dataView.getData(ProjectileData.SoundShoot).get(Sound.Name));
-		;
 
 		// エンティティ登録
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,

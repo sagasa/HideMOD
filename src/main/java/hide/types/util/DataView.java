@@ -87,7 +87,7 @@ public class DataView<T extends DataBase> {
 		void setModifier(int index, IDataHolder value) {
 			if (staticModifier[index] == value)
 				return;
-			System.out.println("setMod " + target.getSimpleName() + " " + index + " " + value);
+			//System.out.println("setMod " + target.getSimpleName() + " " + index + " " + value);
 
 			clearMap((IDataHolder) staticModifier[index]);
 			staticModifier[index] = value;
@@ -115,7 +115,7 @@ public class DataView<T extends DataBase> {
 		}
 
 		private ViewCache<T> dep() {
-			System.out.println("make dep from " + ArrayUtils.toString(staticModifier) + " " + dataMap);
+			//System.out.println("make dep from " + ArrayUtils.toString(staticModifier) + " " + dataMap);
 			ViewCache<T> cache = new ViewCache<>(target);
 			cache.baseData = baseData;
 			cache.modifier = modifier;
@@ -126,7 +126,7 @@ public class DataView<T extends DataBase> {
 				else
 					cache.dataMap.put(k, new ViewEntry(v.value, v.base));
 			});
-			System.out.println("make dep to " + ArrayUtils.toString(cache.staticModifier) + " " + cache.dataMap);
+			//System.out.println("make dep to " + ArrayUtils.toString(cache.staticModifier) + " " + cache.dataMap);
 			return cache;
 		}
 
@@ -141,21 +141,21 @@ public class DataView<T extends DataBase> {
 
 				//return;
 			}
-			System.out.println("clear req " + value);
+			//System.out.println("clear req " + value);
 			//DataBase以外なら全削除
 			//value instanceof DataBase ? ((DataBase) value).getKeySet() :
 			for (DataEntry<?> key : dataMap.keySet()) {
 				if (key.Default instanceof DataBase) {
 					if (dataMap.containsKey(key)) {
-						System.out.println("next clear " + key);
+						//System.out.println("next clear " + key);
 						((ViewCache) dataMap.get(key).value).clearMap(value == null ? null : (IDataHolder) value.get(key));
 					}
 				} else {
 					dataMap.remove(key);
-					System.out.println("clear value " + key);
+					//System.out.println("clear value " + key);
 				}
 			}
-			System.out.println("clear res " + dataMap);
+			//System.out.println("clear res " + dataMap);
 		}
 
 		public <R extends DataBase> ViewCache<R> getData(DataEntry<R> key) {
@@ -191,18 +191,18 @@ public class DataView<T extends DataBase> {
 				R value = base;
 				if (baseData != null)
 					value = baseData.get(key, value);
-				System.out.println("calc " + key);
-				System.out.println("base " + value);
+				//System.out.println("calc " + key);
+				//System.out.println("base " + value);
 				for (int i = 0; i < staticModifier.length; i++)
 					if (staticModifier[i] != null) {
 						value = ((IDataHolder) staticModifier[i]).get(key, value);
-						System.out.println("staticModifier " + value);
+						//System.out.println("staticModifier " + value);
 					}
 				for (IDataHolder mod : modifier) {
 					value = mod.get(key, value);
 				}
 
-				System.out.println("res " + value);
+				//System.out.println("res " + value);
 				dataMap.put(key, new ViewEntry(value, base));
 			}
 			return (R) dataMap.get(key).value;

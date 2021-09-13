@@ -53,7 +53,7 @@ public class HideDamage extends DamageSource {
 	}
 
 	public HideDamage(HideDamageCase Case, Entity attacker, String tool) {
-		super(Case.langName);
+		super("arrow");
 		this.Tool = tool;
 		this.Attacker = attacker;
 		this.DamageCase = Case;

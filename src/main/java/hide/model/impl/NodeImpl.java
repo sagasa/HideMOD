@@ -5,6 +5,7 @@ import static hide.model.util.TransformMatUtil.*;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 
+import handler.client.HideGunRender;
 import org.apache.commons.lang3.ArrayUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
@@ -226,20 +227,7 @@ public class NodeImpl implements IDisposable {
 
 		if (!hasMesh && debug) {
 			ModelImpl.profiler.endStartSection("hide.render.debug");
-			GlStateManager.disableDepth();
-			GlStateManager.disableTexture2D();
-			GlStateManager.color(1f, 0.5f, 0.5f, 1);
-			GL11.glPointSize(8);
-			GL11.glBegin(GL11.GL_POINTS);
-			GL11.glVertex3f(0, 0, 0);
-			GL11.glEnd();
-			GL11.glPointSize(5);
-			GL11.glBegin(GL11.GL_LINES);
-			GL11.glVertex3f(0, 0, 0);
-			GL11.glVertex3f(0, 1, 0);
-			GL11.glEnd();
-			GlStateManager.enableTexture2D();
-			GlStateManager.enableDepth();
+			HideGunRender.debugDot();
 		}
 
 		ModelImpl.profiler.endStartSection("hide.render.draw");

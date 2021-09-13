@@ -1,66 +1,46 @@
 package hide.common.entity;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
+import org.lwjgl.opengl.GL11;
 
-public class EntityDebugAABB extends Entity implements IEntityAdditionalSpawnData {
+public class EntityDebugAABB extends EntityDebug {
 
-	public EntityDebugAABB(World worldIn) {
-		super(worldIn);
-		this.setSize(0.5F, 0.5F);
-	}
 
 	/** 消えるまでの時間 */
-	private float life = 20;
-	public float r, g, b;
-	public AxisAlignedBB aabb = new AxisAlignedBB(0, 0, 0, 0, 0, 0);
+	public AxisAlignedBB aabb;
+
+	public EntityDebugAABB(World w){
+		super(w);
+	}
 
 	public EntityDebugAABB(World w, AxisAlignedBB aabb, float r, float g, float b) {
-		this(w);
+		super(w, r, g, b);
 		this.aabb = aabb;
-		this.r = r;
-		this.g = g;
-		this.b = b;
 		setPosition(aabb.minX, aabb.minY, aabb.minZ);
 	}
 
 	@Override
-	public boolean isInRangeToRender3d(double x, double y, double z) {
-		double d0 = this.posX - x;
-		double d2 = this.posZ - z;
-		double d3 = d0 * d0 + d2 * d2;
-		return this.isInRangeToRenderDist(d3);
-	}
+	public void render(EntityDebug entity, double d, double d1, double d2, float f, float f1) {
+		EntityDebugAABB aabb = (EntityDebugAABB) entity;
+		// GL11.glColor4ub(1,0, 0, 0.2F);
+		Tessellator tessellator = Tessellator.getInstance();
+		BufferBuilder buf = tessellator.getBuffer();
+		GL11.glLineWidth(3);
+		//RenderGlobal.drawBoundingBox(0, 0, 0, aabb.aabb.maxX - aabb.aabb.minX, aabb.aabb.maxY - aabb.aabb.minY, aabb.aabb.maxZ - aabb.aabb.minZ, aabb.r, aabb.g, aabb.b, 0.5f);
 
-	@Override
-	public boolean isInRangeToRenderDist(double distance) {
-		return distance < 800;
-	}
-
-	@Override
-	public void onUpdate() {
-		life--;
-		if (life < 0)
-			setDead();
-	}
-
-	@Override
-	protected void entityInit() {
-
-	}
-
-	@Override
-	protected void readEntityFromNBT(NBTTagCompound compound) {
-
-	}
-
-	@Override
-	protected void writeEntityToNBT(NBTTagCompound compound) {
-
+		buf.begin(GL11.GL_TRIANGLE_STRIP, DefaultVertexFormats.POSITION_COLOR);
+		RenderGlobal.addChainedFilledBoxVertices(buf, 0, 0, 0, aabb.aabb.maxX - aabb.aabb.minX, aabb.aabb.maxY - aabb.aabb.minY, aabb.aabb.maxZ - aabb.aabb.minZ, aabb.r, aabb.g, aabb.b, 0.2f);
+		tessellator.draw();
 	}
 
 	@Override

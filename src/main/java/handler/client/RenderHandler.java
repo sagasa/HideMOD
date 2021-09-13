@@ -364,7 +364,4 @@ public class RenderHandler {
 		} //*/
 	}
 
-	public static void renderPoly() {
-
-	}
 }

@@ -1,5 +1,6 @@
 package handler.client;
 
+import hide.model.impl.ModelImpl;
 import hide.types.items.ItemData;
 import items.ItemGun;
 import model.HideModel;
@@ -14,6 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHandSide;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 import pack.PackData;
 
 @SideOnly(Side.CLIENT)
@@ -64,10 +66,8 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 			GlStateManager.rotate(-90.0F, 1.0F, 0.0F, 0.0F);
 			GlStateManager.rotate(-90.0F, 0.0F, 1.0F, 0.0F);
 			boolean flag = handSide == EnumHandSide.LEFT;
-			//GlStateManager.translate((float)(flag ? -1 : 1) / 16.0F, 0.125F, -0.625F);
 			GlStateManager.translate((flag ? -1 : 1) / 16.0F + 0.45f, -0F, -0F);
 
-			GlStateManager.translate(0f, -0.2f, 0f);
 			GlStateManager.scale(0.5f, 0.5f, 0.5f);
 
 			//RenderHandler.makeDot();
@@ -80,6 +80,23 @@ public class HideGunRender implements LayerRenderer<EntityLivingBase> {
 
 			GlStateManager.popMatrix();
 		}
+	}
+
+	public static void debugDot() {
+		GlStateManager.disableDepth();
+		GlStateManager.disableTexture2D();
+		GlStateManager.color(1f, 0.5f, 0.5f, 1);
+		GL11.glPointSize(8);
+		GL11.glBegin(GL11.GL_POINTS);
+		GL11.glVertex3f(0, 0, 0);
+		GL11.glEnd();
+		GL11.glPointSize(5);
+		GL11.glBegin(GL11.GL_LINES);
+		GL11.glVertex3f(0, 0, 0);
+		GL11.glVertex3f(0, 1, 0);
+		GL11.glEnd();
+		GlStateManager.enableTexture2D();
+		GlStateManager.enableDepth();
 	}
 
 	protected void translateToHand(EnumHandSide p_191361_1_) {

@@ -193,10 +193,13 @@ public class RayTracer {
 					AxisAlignedBB aabbBlock = block1.getBoundingBox(iblockstate1, world, blockpos);
 					List<Vec3d> crossingList = getCrossing(lv0.subtract(new Vec3d(blockpos.getX(), blockpos.getY(), blockpos.getZ())), ray, aabbBlock);
 					float distance = crossingList.size() != 2 ? 0 : HideMathHelper.getDistance(crossingList.get(0), crossingList.get(1));
+					if(crossingList.size()!=2){
+						System.out.println(crossingList);
+					}
 					//TODO distanceが通過距離 ↓削除しといて
-					//System.out.println("Pent Dist. :" + distance);
+					System.out.println("Pent Dist. :" + distance);
 					//このmethodは透過しない確率を返す probability:透過しない確率 defaultThickness:鉄格子とかの厚み materialThickness 材質（たとえば鉄格子だったら鉄ブロック）の厚み
-					//System.out.println(generateSigmoidFunction(0.58F, distance, 0.125F, 1F));
+					System.out.println(generateSigmoidFunction(0.58F, distance, 0.125F, 1F));
 				}
 			}
 
