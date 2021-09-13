@@ -63,7 +63,7 @@ public class PackData {
 
 	private static long sessionTime;
 
-	static PackData CurrentData = new PackData();
+	static final PackData CurrentData = new PackData();
 
 	/** 登録名からGunData取得 */
 	public static ItemData getItemData(ItemStack item) {

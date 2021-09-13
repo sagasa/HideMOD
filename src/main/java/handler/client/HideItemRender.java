@@ -184,12 +184,12 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 		String type = data.get(ItemData.IconName) + data.get(ItemData.ModelName);
 		if (!modelCash.containsKey(type)) {
 			HideModel model = PackData.getModel(data.get(ItemData.ModelName));
-			System.out.println(data.get(ItemData.IconName) + " " + data.get(ItemData.DisplayName));
+			//System.out.println(data.get(ItemData.IconName) + " " + data.get(ItemData.DisplayName));
 			if (model == null) {
 				modelCash.put(type, bakeItemModel(data.get(ItemData.IconName), true));
-			} else {
-				System.out.println(model);
 			}
+				//System.out.println(model);
+
 			modelCash.put(type, bakeItemModel(data.get(ItemData.IconName), false));
 		}
 		return modelCash.get(type);
@@ -197,21 +197,20 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 
 	protected static IBakedModel bakeItemModel(String textureLoc, boolean inHand) {
 		TextureAtlasSprite textureatlassprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(textureLoc);
-		textureLoc = "hidemod:sample";
 		ModelBlock itemModel = itemmodelGen.makeItemModel(Minecraft.getMinecraft().getTextureMapBlocks(), ModelBlock.deserialize((inHand ? SimpleIconModel : SimpleIconModelNoHand).replace("ICON", textureLoc)));
 		itemModel.parent = EmptyGenModel;
 
-		SimpleBakedModel.Builder simplebakedmodel$builder = (new SimpleBakedModel.Builder(itemModel, ItemOverrideList.NONE)).setTexture(textureatlassprite);
-		System.out.println("bake");
+		SimpleBakedModel.Builder builder = (new SimpleBakedModel.Builder(itemModel, ItemOverrideList.NONE)).setTexture(textureatlassprite);
+		//System.out.println("bake");
 		for (BlockPart blockpart : itemModel.getElements()) {
-			System.out.println("part " + blockpart.mapFaces);
+			//System.out.println("part " + blockpart.mapFaces);
 			for (EnumFacing enumfacing : blockpart.mapFaces.keySet()) {
 				BlockPartFace blockpartface = blockpart.mapFaces.get(enumfacing);
-				simplebakedmodel$builder.addGeneralQuad(makeBakedQuad(blockpart, blockpartface,
+				builder.addGeneralQuad(makeBakedQuad(blockpart, blockpartface,
 						textureatlassprite, enumfacing, ModelRotation.X0_Y0, false));
 			}
 		}
-		return simplebakedmodel$builder.makeBakedModel();
+		return builder.makeBakedModel();
 	}
 
 	protected static BakedQuad makeBakedQuad(BlockPart p_177589_1_, BlockPartFace p_177589_2_,
@@ -220,68 +219,4 @@ public class HideItemRender extends TileEntityItemStackRenderer {
 		return faceBakery.makeBakedQuad(p_177589_1_.positionFrom, p_177589_1_.positionTo, p_177589_2_, p_177589_3_,
 				p_177589_4_, p_177589_5_, p_177589_1_.partRotation, p_177589_6_, p_177589_1_.shade);
 	}
-
-	static IBakedModel testModel = new IBakedModel() {
-
-		@Override
-		public boolean isGui3d() {
-			return false;
-		}
-
-		@Override
-		public boolean isBuiltInRenderer() {
-			return false;
-		}
-
-		@Override
-		public boolean isAmbientOcclusion() {
-			return false;
-		}
-
-		@Override
-		public List<BakedQuad> getQuads(IBlockState state, EnumFacing face, long rand) {
-			if (face != EnumFacing.DOWN)
-				return Collections.emptyList();
-			//面の始点
-			Vector3f from = new Vector3f(0, 0, 0);
-
-			//面の終点
-			Vector3f to = new Vector3f(16, 16, 16);
-
-			//TextureのUVの指定
-			BlockFaceUV uv = new BlockFaceUV(new float[] { 0.0F, 0.0F, 16.0F, 16.0F }, 0);
-
-			//面の描画の設定、ほぼ使用されないと思われる。
-			//第一引数:cullface(使用されない)
-			//第二引数:tintindex兼layer兼renderPass
-			//第三引数:テクスチャの場所(使用されない)
-			//第四引数:TextureのUVの指定
-			BlockPartFace partFace = new BlockPartFace(face, face.getIndex(), new ResourceLocation("blocks/stone").toString(), uv);
-
-			//Quadの設定
-			//第一引数:面の始点
-			//第二引数:面の終点
-			//第三引数:面の描画の設定
-			//第四引数:テクスチャ
-			//第五引数:面の方向
-			//第六引数:モデルの回転
-			//第七引数:面の回転(nullで自動)
-			//第八引数:モデルの回転に合わせてテクスチャを回転させるか
-			//第九引数:陰らせるかどうか
-			//BakedQuad bakedQuad = faceBakery.makeBakedQuad(from, to, partFace, stone, face, ModelRotation.X90_Y0, null, true, true);
-
-			//return Lists.newArrayList(bakedQuad);
-			return Collections.emptyList();
-		}
-
-		@Override
-		public TextureAtlasSprite getParticleTexture() {
-			return null;
-		}
-
-		@Override
-		public ItemOverrideList getOverrides() {
-			return ItemOverrideList.NONE;
-		}
-	};
 }

@@ -111,6 +111,8 @@ public class HideMod {
 		// ロガー保存
 		LOGGER = event.getModLog();
 
+
+
 		// エンティティ登録
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,
 				"entity_bullet", 1, MOD_ID, 512, 1, false);
@@ -118,27 +120,27 @@ public class HideMod {
 				"entity_aabb", 10, MOD_ID, 32, 20, false);
 
 		if (FMLCommonHandler.instance().getSide().isClient()) {
-			HideItemRender.registerLoader();
 			// リソースローダーを追加
 			List<IResourcePack> defaultResourcePacks = ObfuscationReflectionHelper.getPrivateValue(Minecraft.class,
 					Minecraft.getMinecraft(), "defaultResourcePacks", "field_110449_ao");
 			defaultResourcePacks.add(new ResourceLoader());
-
 			Minecraft.getMinecraft().refreshResources();
-
 			Minecraft.getMinecraft().getFramebuffer().enableStencil();
 			//HideBaseのフックを追加
 			HideHook.initHookClient();
-			System.out.println(defaultResourcePacks);
-
 			ServerRenderContext.SUPPORT_CONTEXT = true;
-		} else {
-			//レンダリング用コンテキスト
-			ServerRenderContext.initContext();
 		}
 
 		// パック読み込み
 		PackLoader.load();
+
+		if (FMLCommonHandler.instance().getSide().isClient()) {
+			//アイテム表示登録
+			HideItemRender.registerLoader();
+		} else {
+			//レンダリング用コンテキスト
+			ServerRenderContext.initContext();
+		}
 
 		HideBase.HideDirEntry.setChangeListener(PackLoader::reloadInGame);
 	}
