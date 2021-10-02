@@ -3,6 +3,7 @@ package helper;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.util.math.RayTraceResult;
 import org.la4j.LinearAlgebra;
 import org.la4j.Matrix;
 import org.la4j.Vector;
@@ -19,7 +20,7 @@ public class HideCollisionDetector {
 		collisionVec = model;
 	}
 
-	public void isHit(List<RayTracer.Hit> list, Vec3d startv, Vec3d endv) {
+	public void isHit(List<RayTraceResult> list, Vec3d startv, Vec3d endv) {
 		for (int n = 0; n < collisionVec.size() / 3; n++) {
 			//rayのベクトルを取得
 			Vec3d ray = endv.subtract(startv);
@@ -65,7 +66,7 @@ public class HideCollisionDetector {
 		}
 	}
 
-	public void isProximity(List<RayTracer.Hit> list, Vec3d startv, Vec3d endv, float radius) {
+	public void isProximity(List<RayTraceResult> list, Vec3d startv, Vec3d endv, float radius) {
 		for (int n = 0; n < collisionVec.size() / 3; n++) {
 			Vec3d vecPos = new Vec3d(0, 0, 0);
 			for (int m = 0; m < 3; m++) {

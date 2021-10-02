@@ -14,6 +14,11 @@ public class HideMath {
 		return (x);
 	}
 
+	/**一様分布*/
+	public static double randome(double center, double spread) {
+		return Math.random()*spread*2-spread+center;
+	}
+
 	public static double completion(double old, double now, Float completion) {
 		return completion == null ? now : old + (now - old) * completion;
 	}

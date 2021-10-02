@@ -30,7 +30,7 @@ public final class RenderDebug extends Render {
 		GlStateManager.disableTexture2D();
 		GlStateManager.enableBlend();
 
-		((EntityDebug)entity).render((EntityDebugAABB) entity, d, d1, d2, f, f1);
+		((EntityDebug)entity).render((EntityDebug) entity, d, d1, d2, f, f1);
 
 		GlStateManager.disableBlend();
 		GlStateManager.enableTexture2D();

@@ -66,7 +66,8 @@ public abstract class EntityDebug extends Entity implements IEntityAdditionalSpa
     @Override
     public void onUpdate() {
         life--;
-        if (life < 0)
+        if (life < 0){
             setDead();
+        }
     }
 }

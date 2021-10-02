@@ -3,6 +3,7 @@ package hidemod;
 import java.io.File;
 import java.util.List;
 
+import hide.common.entity.EntityDebugLine;
 import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.Logger;
 
@@ -115,9 +116,11 @@ public class HideMod {
 
 		// エンティティ登録
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_bullet"), EntityBullet.class,
-				"entity_bullet", 1, MOD_ID, 512, 1, false);
+				"entity_bullet", 1, MOD_ID, 512, 1, true);
 		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_aabb"), EntityDebugAABB.class,
 				"entity_aabb", 10, MOD_ID, 32, 20, false);
+		EntityRegistry.registerModEntity(new ResourceLocation(MOD_ID, "entity_line"), EntityDebugLine.class,
+				"entity_line", 11, MOD_ID, 32, 20, false);
 
 		if (FMLCommonHandler.instance().getSide().isClient()) {
 			// リソースローダーを追加
